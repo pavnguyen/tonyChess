@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { pickMove, toEngineMove } from './minimax'
+import { DIFFICULTY, pickMove, toEngineMove } from './minimax'
 import type { Difficulty, EngineMove } from './minimax'
 
 interface EngineResponse {
@@ -7,28 +7,57 @@ interface EngineResponse {
   move: EngineMove | null
 }
 
+interface PendingRequest {
+  fen: string
+  difficulty: Difficulty
+  timer: ReturnType<typeof setTimeout>
+  resolve: (move: EngineMove | null) => void
+}
+
+/** Tính ngay trên luồng chính khi Worker không dùng được. */
+const computeHere = (fen: string, difficulty: Difficulty) =>
+  toEngineMove(pickMove(fen, difficulty))
+
 /**
  * Cầu nối tới "bộ não" cờ vua. Chạy trong Web Worker để bàn cờ của bé
- * không bao giờ bị đứng hình khi máy đang suy nghĩ.
- * Nếu trình duyệt chặn Worker, tự động tính ngay trên luồng chính.
+ * không bao giờ đứng hình khi máy đang suy nghĩ.
+ *
+ * Ba lớp bảo hiểm để máy không bao giờ "đứng hình":
+ * 1. Worker lỗi → giải phóng mọi yêu cầu bằng cách tính trực tiếp.
+ * 2. Worker im lặng quá lâu (quá ngân sách thời gian) → tính trực tiếp.
+ * 3. Trình duyệt chặn Worker → dùng luôn luồng chính.
  */
 export function useChessEngine() {
   const workerRef = useRef<Worker | null>(null)
-  const pendingRef = useRef(new Map<number, (move: EngineMove | null) => void>())
+  const pendingRef = useRef(new Map<number, PendingRequest>())
   const idRef = useRef(0)
 
   useEffect(() => {
+    // Giữ tham chiếu tới Map để hàm dọn dẹp không truy cập `.current` trực tiếp.
+    const pending = pendingRef.current
+
+    const settleAllHere = () => {
+      for (const [id, item] of pending) {
+        pending.delete(id)
+        clearTimeout(item.timer)
+        item.resolve(computeHere(item.fen, item.difficulty))
+      }
+    }
+
     let worker: Worker | null = null
     try {
       worker = new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' })
       worker.onmessage = (event: MessageEvent<EngineResponse>) => {
         const { id, move } = event.data
-        const resolve = pendingRef.current.get(id)
-        pendingRef.current.delete(id)
-        resolve?.(move)
+        const item = pending.get(id)
+        if (!item) return
+        pending.delete(id)
+        clearTimeout(item.timer)
+        item.resolve(move)
       }
       worker.onerror = () => {
         workerRef.current = null
+        settleAllHere()
       }
       workerRef.current = worker
     } catch {
@@ -38,7 +67,8 @@ export function useChessEngine() {
     return () => {
       worker?.terminate()
       workerRef.current = null
-      pendingRef.current.clear()
+      for (const item of pending.values()) clearTimeout(item.timer)
+      pending.clear()
     }
   }, [])
 
@@ -48,12 +78,18 @@ export function useChessEngine() {
       new Promise((resolve) => {
         const worker = workerRef.current
         if (!worker) {
-          // Dự phòng: tính trực tiếp (chấp nhận khựng nhẹ nếu Worker bị chặn).
-          resolve(toEngineMove(pickMove(fen, difficulty)))
+          resolve(computeHere(fen, difficulty))
           return
         }
         const id = (idRef.current += 1)
-        pendingRef.current.set(id, resolve)
+        const timer = setTimeout(() => {
+          const item = pendingRef.current.get(id)
+          if (!item) return
+          pendingRef.current.delete(id)
+          item.resolve(computeHere(fen, difficulty))
+        }, DIFFICULTY[difficulty].timeBudget + 2000)
+
+        pendingRef.current.set(id, { fen, difficulty, timer, resolve })
         worker.postMessage({ id, fen, difficulty })
       }),
     [],

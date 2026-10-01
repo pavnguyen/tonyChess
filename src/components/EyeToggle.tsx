@@ -20,8 +20,8 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
         title="Mắt Thần Cờ Vua: nhìn toàn cảnh nguy hiểm"
         className={`flex items-center gap-2 rounded-full border-[3px] border-white px-3 py-2 text-xs font-extrabold shadow-lg transition-all active:translate-y-[2px] sm:text-sm ${
           on
-            ? 'bg-gradient-to-br from-emerald-400 to-sky-500 text-white animate-pulse-ring'
-            : 'bg-white text-violet-600'
+            ? 'bg-gradient-to-br from-brand-700 to-leaf-500 text-white animate-pulse-ring'
+            : 'bg-white text-brand-600'
         }`}
       >
         <span className={`text-xl ${on ? '' : 'grayscale'}`} aria-hidden>
@@ -30,7 +30,7 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
         <span className="whitespace-nowrap">Mắt Thần Cờ Vua</span>
         <span
           className={`grid size-5 place-items-center rounded-full text-[0.6rem] ${
-            on ? 'bg-white text-emerald-600' : 'bg-violet-100 text-violet-500'
+            on ? 'bg-white text-leaf-600' : 'bg-brand-100 text-brand-500'
           }`}
         >
           {on ? 'BẬT' : 'TẮT'}
@@ -41,7 +41,7 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
         type="button"
         onClick={() => setShowLegend((value) => !value)}
         aria-expanded={showLegend}
-        className="grid size-9 place-items-center rounded-full border-[3px] border-white bg-white text-sm font-extrabold text-violet-600 shadow-lg"
+        className="grid size-9 place-items-center rounded-full border-[3px] border-white bg-white text-sm font-extrabold text-brand-600 shadow-lg"
         title="Xem chú giải màu"
       >
         ?
@@ -49,10 +49,10 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
 
       {showLegend && (
         <div className="animate-pop-in absolute right-0 top-full z-30 mt-2 w-72 rounded-2xl border-[3px] border-white bg-white p-3 text-left shadow-2xl">
-          <p className="mb-2 text-sm font-extrabold text-violet-900">
+          <p className="mb-2 text-sm font-extrabold text-brand-900">
             👁️ Mắt Thần đọc bàn cờ thế nào?
           </p>
-          <ul className="space-y-1.5 text-xs font-bold text-violet-700">
+          <ul className="space-y-1.5 text-xs font-bold text-brand-700">
             <li className="flex items-center gap-2">
               <span
                 className="grid size-5 shrink-0 place-items-center rounded-md text-[0.6rem] font-extrabold text-white"
@@ -64,21 +64,21 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
             </li>
             <li className="flex items-center gap-2">
               <span
-                className="size-5 shrink-0 rounded-md border border-rose-300"
+                className="size-5 shrink-0 rounded-md border border-coral-300"
                 style={{ backgroundColor: HEATMAP_COLORS.danger }}
               />
               Ô ĐỎ = đối thủ đang kiểm soát, đừng đưa quân vào!
             </li>
             <li className="flex items-center gap-2">
               <span
-                className="size-5 shrink-0 rounded-md border border-emerald-300"
+                className="size-5 shrink-0 rounded-md border border-leaf-300"
                 style={{ backgroundColor: HEATMAP_COLORS.center }}
               />
               Ô XANH ĐẬM = ô trung tâm quý, nên chiếm.
             </li>
             <li className="flex items-center gap-2">
               <span
-                className="size-5 shrink-0 rounded-md border border-emerald-200"
+                className="size-5 shrink-0 rounded-md border border-leaf-200"
                 style={{ backgroundColor: HEATMAP_COLORS.safe }}
               />
               Ô XANH NHẠT = vùng an toàn.

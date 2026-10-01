@@ -5,11 +5,20 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
+import { ProgressMap } from '../components/ProgressMap'
+import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { useCurriculum } from '../hooks/useCurriculum'
 import { TACTIC_META } from '../data/tactics'
 import { useTacticsQuery } from '../data/queries'
 import { useChessGame } from '../hooks/useChessGame'
-import { pieceFromSan } from '../lib/notation'
+import {
+  ARROW_COLOR,
+  BOARD_MARKS,
+  HINT_FROM_STYLE,
+  HINT_TO_STYLE,
+  pieceFromSan,
+} from '../lib/notation'
 import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
 import type { MoveAnnotation, TacticPuzzle, TacticType } from '../types'
@@ -47,6 +56,9 @@ export function TacticsPage() {
   const safeIndex = list.length ? Math.min(index, list.length - 1) : 0
   const puzzle = list[safeIndex]
 
+  // Bản đồ leo cấp cho từng loại đòn.
+  const curriculum = useCurriculum(list, 'tactics')
+
   const board = useChessGame(puzzle?.fen ?? START_FEN, 'white')
 
   // Đổi bài → trả về trạng thái ban đầu.
@@ -66,16 +78,59 @@ export function TacticsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, board.playerToMove, board.sans.length])
 
-  const solutionArrow = useMemo(() => {
-    if (!puzzle || phase === 'solved' || !hint) return []
+  const solved = phase === 'solved'
+
+  /**
+   * Nước giải của thế cờ - chỉ lộ ra khi bé bấm 💡 Gợi ý (hoặc đi sai một lần),
+   * để bài đố vẫn còn là bài đố. `null` = không gợi ý gì.
+   */
+  const hintMove = useMemo(() => {
+    if (!puzzle || solved || !hint) return null
     try {
       const probe = new Chess(puzzle.fen)
       const move = probe.move(puzzle.solution)
-      return [{ startSquare: move.from, endSquare: move.to, color: '#f59e0b' }]
+      return { from: move.from, to: move.to }
     } catch {
-      return []
+      return null
     }
-  }, [puzzle, hint, phase])
+  }, [puzzle, hint, solved])
+
+  const solutionArrow = useMemo(
+    () =>
+      hintMove
+        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
+        : [],
+    [hintMove],
+  )
+
+  /**
+   * Tô sáng QUÂN CẦN ĐI (viền vàng) và Ô ĐÍCH (viền xanh) - giống hệt tab Khai
+   * cuộc, để bé 7 tuổi nhìn là biết phải kéo quân nào đi đâu.
+   */
+  const hintSquares = useMemo(() => {
+    if (!hintMove) return undefined
+    return {
+      [hintMove.from]: HINT_FROM_STYLE,
+      [hintMove.to]: HINT_TO_STYLE,
+    }
+  }, [hintMove])
+
+  const lastMoveSquares = useMemo(
+    () =>
+      board.lastMove
+        ? {
+            [board.lastMove.from]: { boxShadow: BOARD_MARKS.lastMoveFrom },
+            [board.lastMove.to]: { boxShadow: BOARD_MARKS.lastMoveTo },
+          }
+        : undefined,
+    [board.lastMove],
+  )
+
+  /** Vệt nước vừa đi + vệt gợi ý quân cần đi (gợi ý đè lên vệt cũ). */
+  const squareStyles = useMemo(
+    () => (hintSquares ? { ...lastMoveSquares, ...hintSquares } : lastMoveSquares),
+    [lastMoveSquares, hintSquares],
+  )
 
   const puzzleAnnotation: MoveAnnotation | null = useMemo(
     () =>
@@ -96,9 +151,16 @@ export function TacticsPage() {
     setIndex(nextPuzzle ? Math.max(0, nextList.findIndex((item) => item.id === nextPuzzle.id)) : 0)
   }
 
+  /** Sang bài kế tiếp đã được mở khoá (bỏ qua bài còn khoá). */
   const nextPuzzle = () => {
-    if (!list.length) return
-    setIndex((value) => (value + 1) % list.length)
+    if (!curriculum.length) return
+    for (let step = 1; step <= curriculum.length; step += 1) {
+      const candidate = (safeIndex + step) % curriculum.length
+      if (curriculum[candidate]?.unlocked) {
+        setIndex(candidate)
+        return
+      }
+    }
   }
 
   const handleDrop = (from: string, to: string): boolean => {
@@ -141,50 +203,36 @@ export function TacticsPage() {
     return false
   }
 
-  const solved = phase === 'solved'
   const solvedCount = (puzzles ?? []).filter(
     (item) => item.type === type && isCompleted(`tactics:${item.id}`),
   ).length
   const activeMeta = TACTIC_META[type]
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
-      <div className="grid gap-3">
-        <Panel>
-          <SectionTitle
-            icon="⚔️"
-            title="Trung cuộc — Mẹo săn quân"
-            subtitle="Nhìn ra đòn hiểm, bắt quân đối thủ thật ngọt!"
-          />
-          <div className="mt-3">
-            <Segmented
-              options={TYPE_OPTIONS}
-              value={type}
-              onChange={(value) => goTo(value)}
-              size="sm"
-            />
-          </div>
-        </Panel>
-
-        <Panel className="grid gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
+      <BoardStage
+        reserve={232}
+        top={
+          <>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-extrabold text-violet-700">
+              <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
               {puzzle && isCompleted(`tactics:${puzzle.id}`) && (
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-extrabold text-emerald-700">
+                <span className="rounded-full bg-leaf-100 px-3 py-1 text-xs font-extrabold text-leaf-700">
                   🏅 Đã giải
                 </span>
               )}
             </div>
             <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
-          </div>
-
-          {isLoading || !puzzle ? (
-            <div className="aspect-square w-full animate-pulse rounded-[1.4rem] bg-violet-100" />
+          </>
+        }
+        board={
+          isLoading || !puzzle ? (
+            <div className="aspect-square w-full animate-pulse rounded-[1.4rem] bg-brand-100" />
           ) : (
             <ChessBoardPanel
               fen={board.fen}
@@ -193,73 +241,76 @@ export function TacticsPage() {
               interactive={board.playerToMove && !board.game.isGameOver()}
               heatmap={heatmap}
               arrows={solutionArrow}
-              extraSquareStyles={
-                board.lastMove
-                  ? {
-                      [board.lastMove.from]: {
-                        boxShadow: 'inset 0 0 0 3px rgba(250, 204, 21, 0.95)',
-                      },
-                      [board.lastMove.to]: {
-                        boxShadow: 'inset 0 0 0 4px rgba(250, 204, 21, 0.95)',
-                      },
-                    }
-                  : undefined
-              }
+              extraSquareStyles={squareStyles}
               onDrop={handleDrop}
             />
-          )}
+          )
+        }
+        under={
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <KidButton variant="sky" onClick={() => setHint(true)} disabled={hint || solved}>
+                💡 Gợi ý
+              </KidButton>
+              <KidButton variant="primary" onClick={nextPuzzle}>
+                ➡️ Bài tiếp
+              </KidButton>
+              <KidButton
+                variant="ghost"
+                onClick={() => {
+                  board.reset()
+                  setPhase('solve')
+                  setWrongTries(0)
+                  setHint(false)
+                }}
+              >
+                🔄 Làm lại
+              </KidButton>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <KidButton variant="sky" onClick={() => setHint(true)} disabled={hint || solved}>
-              💡 Gợi ý
-            </KidButton>
-            <KidButton variant="primary" onClick={nextPuzzle}>
-              ➡️ Bài tiếp
-            </KidButton>
-            <KidButton
-              variant="ghost"
-              onClick={() => {
-                board.reset()
-                setPhase('solve')
-                setWrongTries(0)
-                setHint(false)
-              }}
-            >
-              🔄 Làm lại
-            </KidButton>
-          </div>
+            {wrongTries > 0 && !solved && (
+              <p className="animate-pop-in rounded-2xl bg-coral-50 px-3 py-2 text-center text-sm font-extrabold text-coral-600">
+                🤔 Chưa trúng rồi! Bé nhìn 👉 quân viền VÀNG đưa sang ô viền XANH rồi thử lại nhé.
+              </p>
+            )}
+            {solved ? (
+              <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
+                🎉 Giải xong rồi! Giờ bé thử bắt thêm quân cho vui - đối thủ sẽ tự đi.
+              </p>
+            ) : (
+              <p className="text-[0.7rem] font-bold text-brand-400">
+                🖐️ Kéo quân của bé vào ô bé muốn · 💡 bí quá thì bấm Gợi ý
+              </p>
+            )}
+          </>
+        }
+      />
 
-          {wrongTries > 0 && !solved && (
-            <p className="animate-pop-in rounded-2xl bg-rose-50 px-3 py-2 text-center text-sm font-extrabold text-rose-600">
-              🤔 Chưa trúng rồi! Bé nhìn mũi tên vàng rồi thử nước khác nhé.
-            </p>
-          )}
-          {solved && (
-            <p className="animate-pop-in rounded-2xl bg-emerald-50 px-3 py-2 text-center text-sm font-extrabold text-emerald-700">
-              🎉 Giải xong rồi! Giờ bé thử bắt thêm quân cho vui — đối thủ sẽ tự đi.
-            </p>
-          )}
-        </Panel>
-      </div>
-
-      <div className="grid gap-3">
-        <Panel>
+      {/* Cột phải: tab loại đòn, nhiệm vụ, băng giải thích, bản đồ săn quân */}
+      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+        <Panel className="grid gap-2">
           <SectionTitle
-            icon={activeMeta.emoji}
-            title={activeMeta.label}
-            subtitle={`Bé đã giải ${solvedCount}/${list.length} bài`}
+            icon="⚔️"
+            title="Trung cuộc - Mẹo săn quân"
+            subtitle={`Bé đã giải ${solvedCount}/${list.length} bài ${activeMeta.label.toLowerCase()}`}
           />
-          <p className="mt-3 rounded-2xl bg-violet-50 px-3 py-2 text-sm font-bold text-violet-700">
+          <Segmented
+            options={TYPE_OPTIONS}
+            value={type}
+            onChange={(value) => goTo(value)}
+            size="sm"
+          />
+          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
             {activeMeta.blurb}
           </p>
           {puzzle && (
-            <div className="mt-3 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 px-3 py-2">
-              <div className="text-xs font-extrabold uppercase text-amber-600">
+            <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
+              <div className="text-xs font-extrabold uppercase text-gold-600">
                 🎯 Nhiệm vụ của bé
               </div>
-              <div className="text-base font-extrabold text-amber-900">{puzzle.title}</div>
+              <div className="text-base font-extrabold text-gold-900">{puzzle.title}</div>
               {wrongTries > 0 && (
-                <div className="mt-1 text-xs font-bold text-amber-700">💡 {puzzle.hint}</div>
+                <div className="mt-1 text-xs font-bold text-gold-700">💡 {puzzle.hint}</div>
               )}
             </div>
           )}
@@ -275,34 +326,25 @@ export function TacticsPage() {
         )}
 
         <Panel>
-          <SectionTitle
-            icon="📚"
-            title="Thư viện đòn hiểm"
-            subtitle="Bé sưu tầm đủ 3 loại đòn nhé!"
+          <ProgressMap
+            nodes={curriculum.map((entry) => ({
+              id: entry.item.id,
+              level: entry.level,
+              title: entry.item.title,
+              emoji: TACTIC_META[type].emoji,
+              subtitle: `Khẩu quyết: “${entry.item.rhyme}”`,
+              completed: entry.completed,
+              unlocked: entry.unlocked,
+            }))}
+            activeId={puzzle?.id}
+            onSelect={(id) => {
+              const target = list.find((item) => item.id === id)
+              if (target) goTo(target.type, target)
+            }}
+            title="Bản đồ săn quân"
+            unitLabel="thế cờ"
+            allDoneMessage="Bé đã giải hết các thế cờ loại này - sang loại đòn khác thôi! 🏆"
           />
-          <div className="mt-3 grid gap-2">
-            {(puzzles ?? []).map((item) => {
-              const itemSolved = isCompleted(`tactics:${item.id}`)
-              const active = puzzle?.id === item.id
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => goTo(item.type, item)}
-                  className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left transition-all active:translate-y-[2px] ${
-                    active
-                      ? 'border-violet-400 bg-violet-50'
-                      : 'border-violet-100 bg-white hover:border-violet-200'
-                  }`}
-                >
-                  <span className="text-lg">{TACTIC_META[item.type].emoji}</span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-extrabold text-violet-900">
-                    {item.title}
-                  </span>
-                  <span className="text-lg">{itemSolved ? '🏅' : '⬜'}</span>
-                </button>
-              )
-            })}
-          </div>
         </Panel>
       </div>
 

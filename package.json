@@ -1,14 +1,25 @@
 {
-  "name": "tonychess",
+  "name": "hoc-vien-co-vua-nhi",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "check:chess": "node scripts/validate-chess.ts && node scripts/smoke-logic.ts"
+    "check:chess": "node scripts/validate-chess.ts && node scripts/smoke-logic.ts",
+    "check:engine": "node scripts/smoke-engine.ts",
+    "check": "npm run check:chess && npm run check:engine",
+    "check:layout": "node scripts/browser-layout-test.mjs",
+    "check:learn": "node scripts/browser-learn-drag-test.mjs",
+    "check:theme": "node scripts/browser-theme-test.mjs",
+    "check:hints": "node scripts/browser-hint-drag-test.mjs",
+    "check:assets": "node scripts/generate-assets.mjs",
+    "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:theme && npm run check:layout"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.0",

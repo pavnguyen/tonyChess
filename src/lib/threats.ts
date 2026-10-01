@@ -7,13 +7,17 @@ export interface HeatmapColors {
   danger: string
   safe: string
   center: string
+  /** Quân của bé đang bị treo - đỏ đậm kèm huy hiệu ⚠️. */
+  hanging: string
 }
 
+// Bảng màu "đất nung" cho nguy hiểm và "xanh non" cho an toàn - hai gam này
+// vẫn nổi rõ trên nền ô trắng lẫn ô xanh lá đậm của bàn cờ.
 export const HEATMAP_COLORS: HeatmapColors = {
-  danger: 'rgba(244, 63, 94, 0.42)',
-  safe: 'rgba(34, 197, 94, 0.13)',
-  center: 'rgba(34, 197, 94, 0.45)',
-  hanging: 'rgba(244, 63, 94, 0.52)',
+  danger: 'rgba(188, 95, 78, 0.42)',
+  safe: 'rgba(104, 174, 119, 0.3)',
+  center: 'rgba(74, 145, 89, 0.55)',
+  hanging: 'rgba(160, 74, 59, 0.58)',
 }
 
 /** Giá trị quân cờ dùng để phát hiện quân đang bị treo. */
@@ -32,7 +36,7 @@ const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 /** Huy hiệu ⚠️ (dấu chấm than trong vòng tròn đỏ) vẽ bằng SVG nội tuyến. */
 const BADGE_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">' +
-  '<circle cx="20" cy="20" r="16" fill="#be123c" stroke="#ffffff" stroke-width="4"/>' +
+  '<circle cx="20" cy="20" r="16" fill="#a04a3b" stroke="#ffffff" stroke-width="4"/>' +
   '<text x="20" y="29" font-family="Arial,Helvetica,sans-serif" font-size="24" ' +
   'font-weight="bold" fill="#ffffff" text-anchor="middle">!</text></svg>'
 
@@ -48,7 +52,7 @@ export interface HangingPiece {
 }
 
 /**
- * Tìm những quân của bé đang "bị treo" — tức là đối phương có thể ăn mà
+ * Tìm những quân của bé đang "bị treo" - tức là đối phương có thể ăn mà
  * giành lợi thế. Đây là phần quan trọng nhất của Mắt Thần Cờ Vua.
  *
  * Một quân bị coi là treo khi:
@@ -117,7 +121,7 @@ export function computeHeatmap(
       if (hanging.has(square)) {
         styles[square] = {
           backgroundColor: HEATMAP_COLORS.hanging,
-          boxShadow: 'inset 0 0 0 3px #be123c',
+          boxShadow: 'inset 0 0 0 3px #a04a3b',
           backgroundImage: WARNING_BADGE,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'top right',
@@ -130,12 +134,12 @@ export function computeHeatmap(
       if (attacked) {
         styles[square] = {
           backgroundColor: HEATMAP_COLORS.danger,
-          boxShadow: 'inset 0 0 0 2px rgba(220, 38, 38, 0.55)',
+          boxShadow: 'inset 0 0 0 2px rgba(160, 74, 59, 0.5)',
         }
       } else if (CENTER_SQUARES.has(square)) {
         styles[square] = {
           backgroundColor: HEATMAP_COLORS.center,
-          boxShadow: 'inset 0 0 0 2px rgba(22, 163, 74, 0.5)',
+          boxShadow: 'inset 0 0 0 2px rgba(58, 117, 71, 0.55)',
         }
       } else {
         styles[square] = { backgroundColor: HEATMAP_COLORS.safe }

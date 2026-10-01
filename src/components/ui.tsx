@@ -2,16 +2,20 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 type Variant = 'primary' | 'sun' | 'grass' | 'rose' | 'sky' | 'ghost'
 
+/**
+ * Bóng đổ dùng tông XANH RỪNG đậm thay cho tím như bản cũ, và độ dày giảm từ
+ * 5px xuống 4px - vẫn giữ cảm giác "bấm được" cho bé nhưng bớt nặng nề.
+ */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-violet-600 text-white shadow-[0_5px_0_#4c1d95] hover:bg-violet-500 active:shadow-[0_2px_0_#4c1d95]',
-  sun: 'bg-amber-400 text-amber-950 shadow-[0_5px_0_#b45309] hover:bg-amber-300 active:shadow-[0_2px_0_#b45309]',
+    'bg-brand-700 text-white shadow-[0_4px_0_#163125] hover:bg-brand-600 active:shadow-[0_2px_0_#163125]',
+  sun: 'bg-gold-400 text-gold-950 shadow-[0_4px_0_#9c711a] hover:bg-gold-300 active:shadow-[0_2px_0_#9c711a]',
   grass:
-    'bg-emerald-500 text-white shadow-[0_5px_0_#065f46] hover:bg-emerald-400 active:shadow-[0_2px_0_#065f46]',
-  rose: 'bg-rose-500 text-white shadow-[0_5px_0_#9f1239] hover:bg-rose-400 active:shadow-[0_2px_0_#9f1239]',
-  sky: 'bg-sky-500 text-white shadow-[0_5px_0_#075985] hover:bg-sky-400 active:shadow-[0_2px_0_#075985]',
+    'bg-leaf-600 text-white shadow-[0_4px_0_#24482d] hover:bg-leaf-500 active:shadow-[0_2px_0_#24482d]',
+  rose: 'bg-coral-500 text-white shadow-[0_4px_0_#823c30] hover:bg-coral-400 active:shadow-[0_2px_0_#823c30]',
+  sky: 'bg-info-500 text-white shadow-[0_4px_0_#2a535f] hover:bg-info-400 active:shadow-[0_2px_0_#2a535f]',
   ghost:
-    'bg-white text-violet-700 shadow-[0_4px_0_#ddd6fe] hover:bg-violet-50 active:shadow-[0_2px_0_#ddd6fe]',
+    'border border-sand-200 bg-white text-brand-700 shadow-[0_3px_0_#dcd4c1] hover:bg-brand-50 active:shadow-[0_2px_0_#dcd4c1]',
 }
 
 interface KidButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -59,7 +63,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="tablist"
-      className={`inline-flex flex-wrap gap-1 rounded-2xl bg-violet-100/80 p-1 ${className}`}
+      className={`inline-flex flex-wrap gap-1 rounded-2xl border border-sand-200 bg-sand-100 p-1 ${className}`}
     >
       {options.map((option) => {
         const active = option.value === value
@@ -73,8 +77,8 @@ export function Segmented<T extends string>({
               size === 'sm' ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-sm'
             } ${
               active
-                ? 'bg-white text-violet-700 shadow-[0_3px_0_#c4b5fd]'
-                : 'text-violet-500 hover:bg-white/60'
+                ? 'bg-white text-brand-700 shadow-[0_2px_4px_rgba(31,42,36,0.16)]'
+                : 'text-ink-500 hover:bg-white/70 hover:text-brand-700'
             }`}
           >
             {option.icon && <span aria-hidden>{option.icon}</span>}
@@ -93,7 +97,7 @@ export function Panel({
   children: ReactNode
   className?: string
 }) {
-  return <div className={`card-pop p-3 sm:p-4 ${className}`}>{children}</div>
+  return <div className={`card-pop p-2.5 sm:p-3 ${className}`}>{children}</div>
 }
 
 export function SectionTitle({
@@ -106,13 +110,15 @@ export function SectionTitle({
   subtitle?: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-2xl shadow-md">
+    // `min-w-0` rất quan trọng: tiêu đề dùng `truncate` (nowrap) nên nếu đặt
+    // trong lưới mà không cho phép co lại, cả lưới sẽ bị đẩy rộng hơn màn hình.
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-700 to-brand-500 text-2xl shadow-[0_8px_18px_-10px_rgba(13,32,24,0.9)]">
         {icon}
       </span>
       <div className="min-w-0">
-        <h2 className="truncate text-lg font-extrabold text-violet-900 sm:text-xl">{title}</h2>
-        {subtitle && <p className="truncate text-xs font-bold text-violet-500 sm:text-sm">{subtitle}</p>}
+        <h2 className="truncate text-lg font-extrabold text-brand-900 sm:text-xl">{title}</h2>
+        {subtitle && <p className="truncate text-xs font-bold text-brand-500 sm:text-sm">{subtitle}</p>}
       </div>
     </div>
   )

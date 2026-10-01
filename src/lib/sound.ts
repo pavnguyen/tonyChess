@@ -1,5 +1,5 @@
 /**
- * Âm thanh vui nhộn cho bé — tổng hợp bằng Web Audio, không cần file mp3.
+ * Âm thanh vui nhộn cho bé - tổng hợp bằng Web Audio, không cần file mp3.
  */
 
 let ctx: AudioContext | null = null

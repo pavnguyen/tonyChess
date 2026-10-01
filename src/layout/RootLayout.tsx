@@ -1,77 +1,76 @@
 import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
-import { KidOptions } from '../components/KidOptions'
-import { StarHud } from '../components/StarHud'
+import { HeaderOptions } from '../components/HeaderOptions'
+import { useKidProgress } from '../store/progress'
 
 const TABS = [
-  { to: '/', label: 'Khai cuộc Đại Kiện Tướng', short: 'Khai cuộc', icon: '🛡️' },
-  { to: '/tactics', label: 'Trung cuộc — Mẹo săn quân', short: 'Săn quân', icon: '⚔️' },
-  { to: '/endgames', label: 'Tàn cuộc — Trạm Hậu', short: 'Tàn cuộc', icon: '👑' },
-  { to: '/free-play', label: 'Đấu tập với Máy', short: 'Đấu Máy', icon: '🎮' },
+  { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Đại Kiện Tướng', icon: '🛡️' },
+  { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Mẹo săn quân', icon: '⚔️' },
+  { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc - Trạm năng lượng Hậu', icon: '👑' },
+  { to: '/free-play', label: 'Đấu với Máy', full: 'Đấu tập tự do với chú Máy', icon: '🎮' },
 ] as const
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
+  const { stars, rank, nextRank } = useKidProgress()
 
   return (
-    <div className="min-h-dvh pb-8">
-      <header className="sticky top-0 z-30 border-b-4 border-white/70 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-sky-500 shadow-lg">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-3 py-2.5 sm:px-4">
-          <div className="flex items-center justify-between gap-2">
-            <Link to="/" className="flex min-w-0 items-center gap-2">
-              <span className="animate-float-slow grid size-10 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-md sm:size-11">
-                ♟️
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-base font-extrabold leading-tight text-white sm:text-xl">
-                  Học Viện Cờ Vua Nhí
-                </span>
-                <span className="block truncate text-[0.68rem] font-bold text-white/80 sm:text-xs">
-                  Bé 7 tuổi chinh phục Khai cuộc · Trung cuộc · Tàn cuộc
-                </span>
-              </span>
-            </Link>
-            <div className="hidden w-72 lg:block">
-              <StarHud />
-            </div>
-          </div>
+    // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
+    // từng cột. Trên điện thoại: để trang cuộn dọc như bình thường cho dễ đọc.
+    <div className="flex min-h-dvh flex-col stage:h-dvh stage:overflow-hidden">
+      <header className="sticky top-0 z-30 shrink-0 border-b border-brand-900/40 bg-gradient-to-r from-brand-900 via-brand-800 to-brand-700 shadow-[0_6px_18px_-12px_rgba(13,32,24,0.8)] stage:static">
+        <div className="mx-auto flex w-full max-w-[1500px] items-center gap-2 px-2 py-1.5 sm:px-3">
+          <Link to="/" className="flex shrink-0 items-center gap-1.5" title="Học Viện Cờ Vua Nhí">
+            <span className="grid size-8 place-items-center rounded-xl bg-white text-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)]">
+              ♟️
+            </span>
+            <span className="hidden text-sm font-extrabold leading-tight text-white sm:block">
+              Học Viện Cờ Vua Nhí
+            </span>
+          </Link>
 
-          <nav className="-mx-1 flex gap-1.5 overflow-x-auto pb-0.5">
+          <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
             {TABS.map((tab) => {
               const active = Boolean(matchRoute({ to: tab.to }))
               return (
                 <Link
                   key={tab.to}
                   to={tab.to}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-extrabold transition-all active:translate-y-[2px] sm:text-sm ${
+                  title={tab.full}
+                  className={`flex shrink-0 items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                     active
-                      ? 'bg-white text-violet-700 shadow-[0_4px_0_rgba(255,255,255,0.45)]'
-                      : 'bg-white/20 text-white hover:bg-white/30'
+                      ? 'bg-white text-brand-800 shadow-[0_2px_6px_rgba(0,0,0,0.25)]'
+                      : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white'
                   }`}
                 >
-                  <span className="text-base" aria-hidden>
+                  <span className="text-sm" aria-hidden>
                     {tab.icon}
                   </span>
-                  <span className="sm:hidden">{tab.short}</span>
-                  <span className="hidden sm:inline">{tab.label}</span>
+                  {tab.label}
                 </Link>
               )
             })}
           </nav>
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            <span
+              className="hidden items-center gap-1 rounded-xl bg-gold-400/20 px-2 py-1 ring-1 ring-gold-300/40 md:flex"
+              title={
+                nextRank
+                  ? `${rank.title} - còn ${nextRank.minStars - stars} ⭐ để lên ${nextRank.title}`
+                  : `${rank.title} - danh hiệu cao nhất`
+              }
+            >
+              <span aria-hidden>{rank.emoji}</span>
+              <span className="text-xs font-extrabold text-gold-200">⭐ {stars}</span>
+            </span>
+            <HeaderOptions />
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto mt-3 grid max-w-6xl gap-3 px-3 sm:px-4">
-        <div className="lg:hidden">
-          <StarHud />
-        </div>
-        <KidOptions />
+      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-2 py-2 sm:px-3">
         <Outlet />
       </main>
-
-      <footer className="mx-auto mt-6 max-w-6xl px-3 text-center text-xs font-bold text-violet-400 sm:px-4">
-        ♟️ Học Viện Cờ Vua Nhí — dữ liệu khai cuộc tham khảo các ván đấu của Carlsen, Kasparov,
-        Nakamura, Wesley So. Chúc bé chơi vui!
-      </footer>
     </div>
   )
 }

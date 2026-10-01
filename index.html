@@ -2,20 +2,54 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#6d28d9" />
+
+    <title>♟️ Học Viện Cờ Vua Nhí - Cùng Bé Lên Đại Kiện Tướng</title>
     <meta
       name="description"
-      content="Học viện Cờ vua Nhí - Bé 7 tuổi học Khai cuộc Đại Kiện Tướng, Trung cuộc và Tàn cuộc vui như chơi."
+      content="Học viện Cờ vua Nhí - bé 7 tuổi học Khai cuộc Đại Kiện Tướng, mẹo săn quân Trung cuộc và Tàn cuộc, có bàn cờ tương tác, Mắt Thần Cờ Vua và leo cấp Kỳ thủ Nhí."
     />
+
+    <!-- Icon: SVG cho trình duyệt + PNG cho iOS khi bé "Thêm vào màn hình chính". -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#1f4132" />
+    <meta name="color-scheme" content="light" />
+    <meta name="apple-mobile-web-app-title" content="Cờ Vua Nhí" />
+
+    <!--
+      Thẻ chia sẻ mạng xã hội (Facebook / Zalo / X).
+      `og:url` và `og:image` nên là ĐỊA CHỈ TUYỆT ĐỐI khi đã có tên miền, ví dụ:
+        <meta property="og:url" content="https://co-vua-nhi.vn/" />
+        <meta property="og:image" content="https://co-vua-nhi.vn/og-image.png" />
+      Ảnh `public/og-image.png` (1200×630) sinh bằng: node scripts/generate-assets.mjs
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:site_name" content="Học Viện Cờ Vua Nhí" />
+    <meta property="og:title" content="♟️ Học Viện Cờ Vua Nhí - Cùng Bé Lên Đại Kiện Tướng" />
+    <meta
+      property="og:description"
+      content="Bé học Khai cuộc Đại Kiện Tướng, săn quân Trung cuộc và Tàn cuộc qua bàn cờ tương tác - mỗi nước đi đều có lời giải thích dễ hiểu."
+    />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Học Viện Cờ Vua Nhí - bàn cờ trắng xanh lá và quân Tốt trên nền giấy ngà" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="♟️ Học Viện Cờ Vua Nhí - Cùng Bé Lên Đại Kiện Tướng" />
+    <meta
+      name="twitter:description"
+      content="Bé học Khai cuộc Đại Kiện Tướng, săn quân Trung cuộc và Tàn cuộc qua bàn cờ tương tác - mỗi nước đi đều có lời giải thích dễ hiểu."
+    />
+    <meta name="twitter:image" content="/og-image.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <title>♟️ Học Viện Cờ Vua Nhí — Cùng Bé Lên Đại Kiện Tướng</title>
   </head>
   <body>
     <div id="root"></div>

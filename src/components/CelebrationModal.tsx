@@ -29,7 +29,7 @@ export function CelebrationModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-40 grid place-items-center bg-violet-950/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-40 grid place-items-center bg-brand-950/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -37,10 +37,10 @@ export function CelebrationModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="animate-float-slow text-6xl sm:text-7xl">{emoji}</div>
-        <h3 className="mt-2 text-2xl font-extrabold text-violet-900 sm:text-3xl">{title}</h3>
-        <p className="mt-1 text-sm font-bold text-violet-600 sm:text-base">{message}</p>
+        <h3 className="mt-2 text-2xl font-extrabold text-brand-900 sm:text-3xl">{title}</h3>
+        <p className="mt-1 text-sm font-bold text-brand-600 sm:text-base">{message}</p>
 
-        <div className="my-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-lg font-extrabold text-amber-800">
+        <div className="my-3 inline-flex items-center gap-2 rounded-full bg-gold-100 px-4 py-2 text-lg font-extrabold text-gold-800">
           +{stars} ⭐
         </div>
 

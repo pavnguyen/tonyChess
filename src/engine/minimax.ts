@@ -13,7 +13,7 @@ export interface EngineMove {
 export interface EngineConfig {
   /** Độ sâu tối đa của cây tìm kiếm. */
   depth: number
-  /** Ngân sách thời gian cho mỗi nước (ms) — luôn ưu tiên không làm bé phải chờ. */
+  /** Ngân sách thời gian cho mỗi nước (ms) - luôn ưu tiên không làm bé phải chờ. */
   timeBudget: number
   /** Xác suất đi bừa cho tự nhiên (bé dễ thắng hơn). */
   blunderChance: number
@@ -32,7 +32,7 @@ const VALUES: Record<string, number> = { p: 100, n: 320, b: 330, r: 500, q: 900,
 
 /**
  * Bảng điểm vị trí (Piece-Square Table) viết theo thứ tự "nhìn từ trên bàn cờ":
- * phần tử 0 là ô a8, phần tử 63 là ô h1 — đúng thứ tự `chess.board()` trả về.
+ * phần tử 0 là ô a8, phần tử 63 là ô h1 - đúng thứ tự `chess.board()` trả về.
  */
 const PST: Record<string, number[]> = {
   p: [

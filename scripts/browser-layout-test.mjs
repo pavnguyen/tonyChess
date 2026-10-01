@@ -1,0 +1,181 @@
+/**
+ * Kiểm tra bố cục: nội dung chính phải nằm gọn trong màn hình, hạn chế tối đa
+ * việc bé phải cuộn dọc / cuộn ngang, và bàn cờ phải đủ to.
+ *
+ * Chạy: node scripts/browser-layout-test.mjs  (cần `npx vite preview --port 5198`)
+ */
+import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+
+const BASE = process.env.APP_URL ?? 'http://localhost:5198'
+
+// `minBoard`: bàn cờ phải chiếm phần lớn khung nhìn, không được teo nhỏ lại.
+// `mustFitHeight`: cả trang không được cuộn dọc (cửa sổ rộng như máy tính).
+// Mọi khung nhìn đều phải thấy TRỌN khối bàn cờ (bàn cờ + băng giải thích / nút)
+// mà không cần cuộn - đó là điều bé cần nhất.
+const VIEWPORTS = [
+  { name: 'Máy tính 1440×900', width: 1440, height: 900, mustFitHeight: true, minBoard: 600 },
+  { name: 'Laptop 1366×768', width: 1366, height: 768, mustFitHeight: true, minBoard: 480 },
+  { name: 'Tablet 1024×768', width: 1024, height: 768, mustFitHeight: true, minBoard: 440 },
+  { name: 'Cửa sổ hẹp 980×720', width: 980, height: 720, mustFitHeight: true, minBoard: 360 },
+  { name: 'Cửa sổ vuông 1200×1200', width: 1200, height: 1200, mustFitHeight: true, minBoard: 480 },
+  { name: 'Máy tính dọc 1024×1366', width: 1024, height: 1366, mustFitHeight: false, minBoard: 600 },
+  { name: 'iPad dọc 820×1180', width: 820, height: 1180, mustFitHeight: false, minBoard: 600 },
+  { name: 'Điện thoại 390×844', width: 390, height: 844, mustFitHeight: false, minBoard: 330 },
+]
+
+const ROUTES = [
+  { path: '/', name: 'Khai cuộc' },
+  { path: '/tactics', name: 'Săn quân' },
+  { path: '/endgames', name: 'Tàn cuộc' },
+  { path: '/free-play', name: 'Đấu Máy' },
+]
+
+const { skipped, failedToConnect, evaluate, send, close } = await openPage(
+  `${BASE}/#layout`,
+  { port: 9335 },
+)
+
+if (skipped) {
+  console.log('⚠️  Không tìm thấy Chrome - bỏ qua bài kiểm tra bố cục.')
+  console.log('   Đặt biến môi trường CHROME_PATH để chạy bài này.')
+  process.exit(0)
+}
+if (failedToConnect) {
+  console.error('  ✗ Không kết nối được vào Chrome DevTools Protocol')
+  process.exit(1)
+}
+
+const { check, finish } = makeChecker()
+
+console.log('\n▶ Kiểm tra bố cục: hạn chế cuộn dọc / cuộn ngang')
+
+const measure = () =>
+  evaluate(`
+    (() => {
+      const de = document.documentElement
+      const boardEl0 = document.getElementById('kid-board-board')
+      const board = boardEl0 ?? document.querySelector('div[class*="aspect-square"]')
+      const card = board && board.closest('.card-pop')
+      const cols = [...document.querySelectorAll('div')].filter((el) => {
+        const s = getComputedStyle(el)
+        return s.overflowY === 'auto' && el.scrollHeight > el.clientHeight + 2
+      })
+      const worst = cols
+        .map((el) => el.scrollHeight - el.clientHeight)
+        .sort((a, b) => b - a)[0] ?? 0
+      const rect = board ? board.getBoundingClientRect() : null
+      const cardRect = card ? card.getBoundingClientRect() : null
+      return {
+        card: cardRect
+          ? { top: cardRect.top, bottom: cardRect.bottom, left: cardRect.left, right: cardRect.right }
+          : null,
+        scrollW: de.scrollWidth,
+        scrollH: de.scrollHeight,
+        innerW: window.innerWidth,
+        innerH: window.innerHeight,
+        hiddenColumns: cols.length,
+        worstHidden: worst,
+        board: rect
+          ? { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, size: rect.width }
+          : null,
+      }
+    })()
+  `)
+
+/**
+ * Chờ cho bàn cờ thật sự được render thay vì ngủ một khoảng cố định: khi cả bộ
+ * bài kiểm tra chạy liên tiếp, Chrome lúc nhanh lúc chậm nên chờ cứng dễ "báo
+ * lỗi oan" (từng có lần báo "không tìm thấy bàn cờ" dù bố cục hoàn toàn đúng).
+ */
+const waitForBoard = async (timeoutMs = 10000) => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    let ready = false
+    try {
+      ready = await evaluate(
+        `Boolean(document.getElementById('kid-board-board'))`,
+      )
+    } catch {
+      // Trang đang chuyển hướng → thử lại.
+    }
+    if (ready) {
+      // Thêm một nhịp ngắn để font và hiệu ứng bố cục ổn định.
+      await sleep(350)
+      return true
+    }
+    await sleep(150)
+  }
+  return false
+}
+
+for (const viewport of VIEWPORTS) {
+  await send('Emulation.setDeviceMetricsOverride', {
+    width: viewport.width,
+    height: viewport.height,
+    deviceScaleFactor: 1,
+    mobile: false,
+  })
+  console.log(`\n  ── ${viewport.name} ──`)
+
+  for (const route of ROUTES) {
+    await evaluate(`location.href = ${JSON.stringify(`${BASE}${route.path}`)}`)
+    await waitForBoard()
+    const m = await measure()
+    if (!m) {
+      check(false, `${route.name}: không đo được bố cục`)
+      continue
+    }
+
+    // 1. Không bao giờ được tràn ngang.
+    check(
+      m.scrollW <= m.innerW + 2,
+      `${route.name}: không tràn ngang (${m.scrollW} ≤ ${m.innerW}px)`,
+    )
+
+    // 2. Trên máy tính/tablet: cả trang không được cuộn dọc.
+    if (viewport.mustFitHeight) {
+      check(
+        m.scrollH <= m.innerH + 2,
+        `${route.name}: trang không cuộn dọc (${m.scrollH} ≤ ${m.innerH}px)`,
+      )
+    }
+
+    // 3. Bàn cờ luôn nằm trọn trong màn hình.
+    if (m.board) {
+      check(
+        m.board.top >= -2 &&
+          m.board.bottom <= m.innerH + 2 &&
+          m.board.left >= -2 &&
+          m.board.right <= m.innerW + 2,
+        `${route.name}: bàn cờ nằm trọn trong màn hình (${Math.round(m.board.size)}px)`,
+      )
+      check(
+        m.board.size >= viewport.minBoard,
+        `${route.name}: bàn cờ đủ lớn (${Math.round(m.board.size)} ≥ ${viewport.minBoard}px)`,
+      )
+    } else {
+      check(false, `${route.name}: không tìm thấy bàn cờ`)
+    }
+
+    // 4. Cả khối bàn cờ (kèm băng giải thích / nút bên dưới) phải nằm trong màn hình.
+    if (m.card) {
+      check(
+        m.card.top >= -2 && m.card.bottom <= m.innerH + 2,
+        `${route.name}: thấy trọn khối bàn cờ, không phải cuộn (đáy ${Math.round(
+          m.card.bottom,
+        )} ≤ ${m.innerH}px)`,
+      )
+      const slack = m.innerH - m.card.bottom
+      if (slack > 40) console.log(`     ℹ còn dư ${Math.round(slack)}px dưới khối bàn cờ`)
+    }
+
+    if (m.hiddenColumns > 0) {
+      console.log(
+        `     ℹ ${route.name}: ${m.hiddenColumns} cột phải cuộn nội bộ, nhiều nhất ${m.worstHidden}px`,
+      )
+    }
+  }
+}
+
+close()
+finish('BROWSER LAYOUT')

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { MoveAnnotation, NotationStyle, PieceCode } from '../types'
 
 /** Tên quân cờ tiếng Việt đầy đủ. */
@@ -20,6 +21,20 @@ const FIGURINE: Record<PieceCode, string> = {
   p: '♙',
 }
 
+/**
+ * Hình quân cờ "đặc" (♚♛♜♝♞♟) - nhìn là nhận ra ngay quân gì, dùng cho những
+ * chỗ cần icon to như banner giải thích. Khác với `FIGURINE` (hình rỗng
+ * ♔♕♖♗♘♙) vốn dùng trong ký hiệu nước đi.
+ */
+export const PIECE_GLYPH: Record<PieceCode, string> = {
+  k: '♚',
+  q: '♛',
+  r: '♜',
+  b: '♝',
+  n: '♞',
+  p: '♟',
+}
+
 /** Ký hiệu chuẩn thi đấu quốc tế FIDE. */
 const ENGLISH: Record<PieceCode, string> = {
   k: 'K',
@@ -38,6 +53,50 @@ const VIETNAMESE: Record<PieceCode, string> = {
   b: 'T',
   n: 'M',
   p: '',
+}
+
+/** Màu vàng đồng của mũi tên chỉ nước đi kế tiếp. */
+export const ARROW_COLOR = '#d9a93f'
+
+/**
+ * Các vệt tô trên bàn cờ - khai báo một chỗ để gam màu luôn khớp nhau.
+ *
+ * Quy ước màu cho bé:
+ * - **Nước vừa đi**: viền xám nhạt (thông tin, không tranh sự chú ý).
+ * - **Quân bé cần đi**: viền VÀNG ĐỒNG đậm + nền vàng nhạt.
+ * - **Ô đích**: viền XANH THÉP + nền xanh nhạt (khác hẳn màu quân cần đi).
+ *
+ * Vàng đồng và xanh thép đều nổi rõ trên cả ô trắng lẫn ô xanh lá đậm của bàn cờ.
+ */
+export const BOARD_MARKS = {
+  lastMoveFrom: 'inset 0 0 0 3px rgba(110, 120, 114, 0.5)',
+  lastMoveTo: 'inset 0 0 0 4px rgba(110, 120, 114, 0.62)',
+  hintFromFill: 'rgba(217, 169, 63, 0.4)',
+  hintFromRing: 'inset 0 0 0 5px #c08e22',
+  hintToFill: 'rgba(147, 192, 205, 0.42)',
+  hintToRing: 'inset 0 0 0 4px #5f9faf',
+} as const
+
+/**
+ * Style hoàn chỉnh cho hai ô gợi ý - dùng chung cho cả ba tab có bàn cờ, nên
+ * muốn đổi cách nháy chỉ cần sửa ở đây.
+ *
+ * Nhịp “thở” khai báo ở `src/index.css`: viền dày lên rồi trả về, chu kỳ 1.5s.
+ * Nền + viền tĩnh vẫn được đặt song song để bé nào bật chế độ “giảm chuyển
+ * động” thì ô gợi ý vẫn hiện ra bình thường.
+ */
+export const HINT_FROM_STYLE: CSSProperties = {
+  backgroundColor: BOARD_MARKS.hintFromFill,
+  boxShadow: BOARD_MARKS.hintFromRing,
+  // Ô của QUÂN BÉ CẦN ĐI: nhịp mạnh hơn một chút cho bé bắt được ngay.
+  animation: 'hint-breathe-gold 1.5s ease-in-out infinite',
+}
+
+export const HINT_TO_STYLE: CSSProperties = {
+  backgroundColor: BOARD_MARKS.hintToFill,
+  boxShadow: BOARD_MARKS.hintToRing,
+  // Ô ĐÍCH: nhịp dịu hơn, để mắt bé tập trung vào quân cần đi.
+  animation: 'hint-breathe-steel 1.5s ease-in-out infinite',
 }
 
 export const NOTATION_OPTIONS: {

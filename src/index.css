@@ -1,12 +1,108 @@
 @import 'tailwindcss';
 
+/**
+ * Biến thể `stage` quyết định khi nào chuyển sang bố cục "bàn làm việc" 2 cột:
+ * cửa sổ đủ rộng **và** không cao hơn bề rộng (dạng nằm ngang hoặc vuông).
+ *
+ * - Cửa sổ nằm ngang / vuông (máy tính, laptop, cửa sổ bị thu hẹp chiều cao,
+ *   màn hình chia đôi) → 2 cột: bàn cờ và phần giải thích nằm cạnh nhau, cả
+ *   trang không phải cuộn.
+ * - Cửa sổ dạng đứng (iPad dọc, điện thoại) → 1 cột, bàn cờ to hết bề rộng,
+ *   phần phụ nằm bên dưới.
+ * - Cửa sổ hẹp (< 60rem) mà vẫn thấp → 1 cột và bàn cờ tự thu cho vừa tầm mắt.
+ */
+@custom-variant stage (@media (min-width: 60rem) and (min-aspect-ratio: 1/1));
+
+/**
+ * Bảng màu "Sồi & Ngọc": xanh rừng sâu là màu chủ đạo (trùng với bàn cờ), nền
+ * giấy ngà ấm, điểm nhấn vàng đồng cho sao/cúp, và hai màu chức năng dịu mắt
+ * (đất nung cho lỗi, xanh thép cho thông tin) - không còn tím.
+ *
+ * Đặt tên theo VAI TRÒ chứ không theo màu, để đổi gam sau này chỉ cần sửa ở đây:
+ *   brand  → xanh rừng: thanh điều hướng, nút chính, viền nhấn
+ *   sand   → giấy ngà: nền trang, viền thẻ, vùng chờ
+ *   leaf   → xanh non: trạng thái đúng / an toàn (Mắt Thần)
+ *   gold   → vàng đồng: sao ⭐, cúp 🏆, nút "mặt trời", mũi tên gợi ý
+ *   coral  → đất nung: nước sai, cảnh báo quân bị treo
+ *   info   → xanh thép: nước của đối thủ, ô đích gợi ý, túi chiến lợi phẩm
+ *   ink    → xám ngả xanh: chữ phụ, đường kẻ
+ */
 @theme {
   --font-sans: 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
-  --color-grape: #6d28d9;
-  --color-candy: #ec4899;
-  --color-sky: #0ea5e9;
-  --color-sun: #facc15;
-  --color-grass: #22c55e;
+
+  --color-brand-50: #f2f7f4;
+  --color-brand-100: #e3efe8;
+  --color-brand-200: #c7dfd1;
+  --color-brand-300: #9fc6ae;
+  --color-brand-400: #6fa687;
+  --color-brand-500: #4a8767;
+  --color-brand-600: #356c4f;
+  --color-brand-700: #295640;
+  --color-brand-800: #1f4132;
+  --color-brand-900: #163125;
+  --color-brand-950: #0d2018;
+
+  --color-sand-50: #fcfaf5;
+  --color-sand-100: #f6f2e9;
+  --color-sand-200: #ebe5d7;
+  --color-sand-300: #dcd4c1;
+  --color-sand-400: #c4baa2;
+
+  --color-leaf-50: #f1f8f2;
+  --color-leaf-100: #e0f0e3;
+  --color-leaf-200: #c2e1c8;
+  --color-leaf-300: #96cba1;
+  --color-leaf-400: #68ae77;
+  --color-leaf-500: #4a9159;
+  --color-leaf-600: #3a7547;
+  --color-leaf-700: #2e5c39;
+  --color-leaf-800: #24482d;
+  --color-leaf-900: #1c3823;
+
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #faefd3;
+  --color-gold-200: #f3dca6;
+  --color-gold-300: #e8c471;
+  --color-gold-400: #d9a93f;
+  --color-gold-500: #c08e22;
+  --color-gold-600: #9c711a;
+  --color-gold-700: #7c5914;
+  --color-gold-800: #5f4410;
+  --color-gold-900: #46330c;
+  --color-gold-950: #2f2208;
+
+  --color-coral-50: #fcf3f1;
+  --color-coral-100: #f8e4e0;
+  --color-coral-200: #f0c9c1;
+  --color-coral-300: #e3a79b;
+  --color-coral-400: #d07f70;
+  --color-coral-500: #bc5f4e;
+  --color-coral-600: #a04a3b;
+  --color-coral-700: #823c30;
+  --color-coral-800: #673028;
+  --color-coral-900: #52271f;
+
+  --color-info-50: #f1f7f9;
+  --color-info-100: #e0edf1;
+  --color-info-200: #c0dbe3;
+  --color-info-300: #93c0cd;
+  --color-info-400: #5f9faf;
+  --color-info-500: #417f91;
+  --color-info-600: #336675;
+  --color-info-700: #2a535f;
+  --color-info-800: #22434c;
+  --color-info-900: #1b363d;
+
+  --color-ink-50: #f7f8f7;
+  --color-ink-100: #eef0ee;
+  --color-ink-200: #dde1de;
+  --color-ink-300: #c2c8c4;
+  --color-ink-400: #98a19b;
+  --color-ink-500: #6e7872;
+  --color-ink-600: #525b55;
+  --color-ink-700: #404741;
+  --color-ink-800: #2e332f;
+  --color-ink-900: #1f2320;
 }
 
 @layer base {
@@ -18,10 +114,14 @@
     margin: 0;
     min-height: 100vh;
     font-family: var(--font-sans);
-    color: #3b1e59;
-    background: radial-gradient(circle at 12% 8%, #ffe9b0 0%, transparent 45%),
-      radial-gradient(circle at 88% 4%, #b6e6ff 0%, transparent 42%),
-      radial-gradient(circle at 50% 100%, #ffd6ef 0%, transparent 55%), #fdf7ff;
+    color: #1f2a24;
+    /* Nền giấy ngà với hai vệt sáng rất nhẹ: vàng đồng ở góc trên trái, xanh
+       ngọc ở góc trên phải - đủ để bề mặt không phẳng lì mà vẫn dịu mắt. */
+    background:
+      radial-gradient(circle at 12% 6%, rgba(217, 169, 63, 0.16) 0%, transparent 42%),
+      radial-gradient(circle at 88% 4%, rgba(63, 130, 97, 0.14) 0%, transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(192, 142, 34, 0.1) 0%, transparent 55%),
+      #fbf9f4;
     background-attachment: fixed;
   }
 
@@ -29,13 +129,23 @@
     font-family: inherit;
     -webkit-tap-highlight-color: transparent;
   }
+
+  ::selection {
+    background: rgba(74, 135, 103, 0.24);
+  }
 }
 
+/**
+ * Thẻ nội dung: viền mảnh màu giấy ngà và bóng đổ mềm nhiều lớp - thay cho kiểu
+ * bóng cứng màu tím của bản cũ, nên nhìn "chìm" và trang nhã hơn.
+ */
 @utility card-pop {
   background: #ffffff;
-  border-radius: 1.5rem;
-  border: 3px solid #ffffff;
-  box-shadow: 0 10px 0 rgb(0 0 0 / 0.07), 0 18px 34px -18px rgb(88 28 135 / 0.55);
+  border-radius: 1.25rem;
+  border: 1px solid #ebe5d7;
+  box-shadow:
+    0 1px 2px rgb(31 42 36 / 0.04),
+    0 14px 30px -20px rgb(31 42 36 / 0.45);
 }
 
 /* ---------- Animations ---------- */
@@ -84,12 +194,44 @@
   }
 }
 
+/**
+ * Nhịp "thở" nhẹ cho ô gợi ý: viền dày lên và nền đậm hơn rồi trở về. Chu kỳ
+ * 1.5s, chuyển động mượt (ease-in-out) - đủ để mắt bé 7 tuổi bắt được ngay mà
+ * không nhấp nháy gắt. Ô của QUÂN CẦN ĐI nhấn mạnh hơn, Ô ĐÍCH dịu hơn.
+ *
+ * Viền/nền tĩnh cùng màu được khai báo trong `BOARD_MARKS` (src/lib/notation.ts)
+ * nên nếu bé bật "giảm chuyển động" thì vẫn thấy ô gợi ý bình thường.
+ */
+@keyframes hint-breathe-gold {
+  0%,
+  100% {
+    background-color: rgba(217, 169, 63, 0.36);
+    box-shadow: inset 0 0 0 4px #c08e22;
+  }
+  50% {
+    background-color: rgba(217, 169, 63, 0.62);
+    box-shadow: inset 0 0 0 7px #e8c471;
+  }
+}
+
+@keyframes hint-breathe-steel {
+  0%,
+  100% {
+    background-color: rgba(147, 192, 205, 0.34);
+    box-shadow: inset 0 0 0 4px #5f9faf;
+  }
+  50% {
+    background-color: rgba(147, 192, 205, 0.54);
+    box-shadow: inset 0 0 0 6px #93c0cd;
+  }
+}
+
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgb(250 204 21 / 0.75);
+    box-shadow: 0 0 0 0 rgb(217 169 63 / 0.7);
   }
   100% {
-    box-shadow: 0 0 0 18px rgb(250 204 21 / 0);
+    box-shadow: 0 0 0 18px rgb(217 169 63 / 0);
   }
 }
 
@@ -116,5 +258,14 @@
   .animate-wiggle,
   .animate-pulse-ring {
     animation: none;
+  }
+
+  /*
+   * Bé bật "giảm chuyển động" thì tắt nhịp thở của ô gợi ý. Nhịp này được gắn
+   * bằng style nội tuyến của react-chessboard nên không thể tắt theo tên class,
+   * phải bắt theo chính tên animation trong thuộc tính style.
+   */
+  [style*='hint-breathe'] {
+    animation: none !important;
   }
 }

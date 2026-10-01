@@ -38,7 +38,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     fen: 'k7/2K1Q3/8/8/8/8/8/8 w - - 0 1',
     playerSide: 'white',
     hint: 'Đưa Hậu xuống cột a để chiếu dọc; Vua Trắng đã canh chặt cửa b8, b7.',
-    explanation: 'Hậu chiếu dọc cột a, Vua Trắng khóa cửa b8 — Vua Đen hết đường chạy.',
+    explanation: 'Hậu chiếu dọc cột a, Vua Trắng khóa cửa b8 - Vua Đen hết đường chạy.',
     rhyme: 'Hậu kề Vua bí',
   },
 ]

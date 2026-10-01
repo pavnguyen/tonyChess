@@ -4,10 +4,12 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
+import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
 import { useChessGame } from '../hooks/useChessGame'
 import { findHintMove } from '../lib/hints'
+import { ARROW_COLOR, BOARD_MARKS, HINT_FROM_STYLE, HINT_TO_STYLE } from '../lib/notation'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
 import type { EndgameChallenge, MoveAnnotation } from '../types'
@@ -113,14 +115,52 @@ export function EndgamesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.sans, finished, challenge])
 
-  const hintArrow = useMemo(() => {
-    if (!challenge || finished || !hintVisible) return []
-    if (!board.playerToMove) return []
+  /**
+   * Nước hay nhất cho bé ở thế cờ hiện tại - chỉ tính khi bé bấm 💡 Gợi ý.
+   * Khác bài đố của tab Trung cuộc: ở đây thế cờ đổi sau mỗi nước nên gợi ý
+   * luôn được tính lại theo thế mới.
+   */
+  const hintMove = useMemo(() => {
+    if (!challenge || finished || !hintVisible) return null
+    if (!board.playerToMove) return null
     const move = findHintMove(board.game, challenge.goal, PLAYER_COLOR)
-    if (!move) return []
-    return [{ startSquare: move.from, endSquare: move.to, color: '#f59e0b' }]
+    return move ? { from: move.from, to: move.to } : null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challenge, finished, hintVisible, board.fen, board.playerToMove])
+
+  const hintArrow = useMemo(
+    () =>
+      hintMove
+        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
+        : [],
+    [hintMove],
+  )
+
+  /** Tô sáng QUÂN CẦN ĐI (viền vàng) + Ô ĐÍCH (viền xanh), y như tab Khai cuộc. */
+  const hintSquares = useMemo(() => {
+    if (!hintMove) return undefined
+    return {
+      [hintMove.from]: HINT_FROM_STYLE,
+      [hintMove.to]: HINT_TO_STYLE,
+    }
+  }, [hintMove])
+
+  const lastMoveSquares = useMemo(
+    () =>
+      board.lastMove
+        ? {
+            [board.lastMove.from]: { boxShadow: BOARD_MARKS.lastMoveFrom },
+            [board.lastMove.to]: { boxShadow: BOARD_MARKS.lastMoveTo },
+          }
+        : undefined,
+    [board.lastMove],
+  )
+
+  /** Vệt nước vừa đi + vệt gợi ý quân cần đi (gợi ý đè lên vệt cũ). */
+  const squareStyles = useMemo(
+    () => (hintSquares ? { ...lastMoveSquares, ...hintSquares } : lastMoveSquares),
+    [lastMoveSquares, hintSquares],
+  )
 
   const handleDrop = (from: string, to: string): boolean => {
     const move = board.playMove(from, to)
@@ -133,6 +173,8 @@ export function EndgamesPage() {
     return true
   }
 
+  const doneCount = (endgames ?? []).filter((item) => isCompleted(`endgame:${item.id}`)).length
+
   const annotation: MoveAnnotation | null = challenge
     ? {
         san: challenge.goal === 'promote' ? 'e8=Q' : 'Q#',
@@ -143,39 +185,111 @@ export function EndgamesPage() {
     : null
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
-      <div className="grid gap-3">
+      {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
+      <BoardStage
+        reserve={232}
+        top={
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
+                {challenge?.goal === 'promote'
+                  ? '🛡️ Đưa Tốt lên thành Hậu'
+                  : '🏁 Chiếu bí Vua Đen'}
+              </span>
+              <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
+                {board.history.length} nước
+              </span>
+            </div>
+            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
+          </>
+        }
+        board={
+          isLoading || !challenge ? (
+            <div className="aspect-square w-full animate-pulse rounded-[1.4rem] bg-brand-100" />
+          ) : (
+            <ChessBoardPanel
+              fen={board.fen}
+              orientation="white"
+              playerSide="white"
+              interactive={board.playerToMove && !finished}
+              heatmap={heatmap}
+              arrows={hintArrow}
+              extraSquareStyles={squareStyles}
+              onDrop={handleDrop}
+            />
+          )
+        }
+        under={
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <KidButton
+                variant="sky"
+                onClick={() => setHintVisible(true)}
+                disabled={hintVisible || finished || !board.playerToMove}
+              >
+                💡 Gợi ý
+              </KidButton>
+              <KidButton
+                variant="ghost"
+                onClick={() => {
+                  board.reset()
+                  setFinished(false)
+                  setHintVisible(false)
+                }}
+              >
+                🔄 Làm lại
+              </KidButton>
+            </div>
+
+            {!finished && (
+              <p className="text-[0.7rem] font-bold text-brand-400">
+                🖐️ Kéo quân của bé tới ô bé muốn · 💡 bấm Gợi ý để xem quân viền vàng đi sang ô viền xanh
+              </p>
+            )}
+
+            {finished && (
+              <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
+                🎯 Bài đã hoàn thành! Bé chọn bài khác hoặc bấm Làm lại để chơi nữa nhé.
+              </p>
+            )}
+          </>
+        }
+      />
+
+      {/* Cột phải: chọn bài, hướng dẫn, băng giải thích, huy chương */}
+      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel>
           <SectionTitle
             icon="👑"
-            title="Tàn cuộc — Trạm năng lượng Hậu"
-            subtitle="Bé là người lái con Tốt và Vua của mình!"
+            title="Tàn cuộc - Trạm năng lượng Hậu"
+            subtitle={`Bé lái Tốt & Vua của mình · 🏅 ${doneCount}/${endgames?.length ?? 0} bài xong`}
           />
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
             {endgames?.map((item) => {
               const active = item.id === challenge?.id
               return (
                 <button
                   key={item.id}
                   onClick={() => setChallengeId(item.id)}
-                  className={`rounded-2xl border-[3px] p-2.5 text-left transition-all active:translate-y-[2px] ${
+                  className={`rounded-2xl border-[3px] p-2 text-left transition-all active:translate-y-[2px] ${
                     active
-                      ? 'border-violet-500 bg-violet-50 shadow-[0_4px_0_#c4b5fd]'
-                      : 'border-violet-100 bg-white hover:border-violet-300'
+                      ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+                      : 'border-brand-100 bg-white hover:border-brand-300'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">
                       {item.goal === 'promote' ? '🛡️' : '🏁'}
                     </span>
-                    <span className="text-sm font-extrabold text-violet-900">{item.title}</span>
+                    <span className="text-sm font-extrabold text-brand-900">{item.title}</span>
                     {isCompleted(`endgame:${item.id}`) && (
                       <span className="ml-auto text-base">🏆</span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-[0.7rem] font-bold text-violet-500">
+                  <div className="mt-0.5 text-[0.7rem] font-bold text-brand-500">
                     {item.goal === 'promote'
                       ? 'Mục tiêu: Tốt lên hàng 8 thành Hậu'
                       : 'Mục tiêu: Chiếu bí Vua Đen'}
@@ -186,99 +300,29 @@ export function EndgamesPage() {
           </div>
         </Panel>
 
-        <Panel className="grid gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-800">
-                {challenge?.goal === 'promote'
-                  ? '🛡️ Đưa Tốt lên thành Hậu'
-                  : '🏁 Chiếu bí Vua Đen'}
-              </span>
-              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-extrabold text-violet-700">
-                {board.history.length} nước
-              </span>
-            </div>
-            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
-          </div>
-
-          {isLoading || !challenge ? (
-            <div className="aspect-square w-full animate-pulse rounded-[1.4rem] bg-violet-100" />
-          ) : (
-            <ChessBoardPanel
-              fen={board.fen}
-              orientation="white"
-              playerSide="white"
-              interactive={board.playerToMove && !finished}
-              heatmap={heatmap}
-              arrows={hintArrow}
-              extraSquareStyles={
-                board.lastMove
-                  ? {
-                      [board.lastMove.from]: {
-                        boxShadow: 'inset 0 0 0 3px rgba(250, 204, 21, 0.95)',
-                      },
-                      [board.lastMove.to]: {
-                        boxShadow: 'inset 0 0 0 4px rgba(250, 204, 21, 0.95)',
-                      },
-                    }
-                  : undefined
-              }
-              onDrop={handleDrop}
-            />
-          )}
-
-          <div className="flex flex-wrap items-center gap-2">
-            <KidButton
-              variant="sky"
-              onClick={() => setHintVisible(true)}
-              disabled={hintVisible || finished || !board.playerToMove}
-            >
-              💡 Gợi ý
-            </KidButton>
-            <KidButton
-              variant="ghost"
-              onClick={() => {
-                board.reset()
-                setFinished(false)
-                setHintVisible(false)
-              }}
-            >
-              🔄 Làm lại
-            </KidButton>
-            <span className="text-xs font-bold text-violet-400">
-              🤖 Vua Đen đi ngẫu nhiên như một bạn nhỏ đang tập chơi.
-            </span>
-          </div>
-
-          {finished && (
-            <p className="animate-pop-in rounded-2xl bg-emerald-50 px-3 py-2 text-center text-sm font-extrabold text-emerald-700">
-              🎯 Bài đã hoàn thành! Bé chọn bài khác hoặc bấm Làm lại để chơi nữa nhé.
-            </p>
-          )}
-        </Panel>
-      </div>
-
-      <div className="grid gap-3">
         <Panel>
           <SectionTitle
             icon="🧭"
             title={challenge?.title ?? ''}
             subtitle={challenge?.hint}
           />
-          <div className="mt-3 grid gap-2">
-            <div className="rounded-2xl bg-violet-50 px-3 py-2 text-sm font-bold text-violet-700">
+          <div className="mt-2 grid gap-2">
+            <div className="whitespace-pre-line rounded-2xl bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700 sm:text-sm">
               {challenge?.goal === 'promote'
                 ? '1️⃣ Vua Trắng đi trước che chở cho Tốt.\n2️⃣ Đẩy Tốt thẳng tiến lên hàng 8.\n3️⃣ Tốt chạm đích là biến thành Hậu ngay!'
                 : '1️⃣ Xe/Hậu canh chặt hàng ngang.\n2️⃣ Đưa quân còn lại chiếu Vua Đen.\n3️⃣ Vua Đen hết đường chạy là chiếu bí!'}
             </div>
-            <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 px-3 py-2">
-              <div className="text-xs font-extrabold uppercase text-amber-600">
+            <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
+              <div className="text-xs font-extrabold uppercase text-gold-600">
                 🎵 Khẩu quyết vè
               </div>
-              <div className="text-base font-extrabold text-amber-900">
+              <div className="text-base font-extrabold text-gold-900">
                 “{challenge?.rhyme}”
               </div>
             </div>
+            <p className="text-xs font-bold text-brand-500">
+              🤖 Vua Đen đi ngẫu nhiên như một bạn nhỏ đang tập chơi - bé cứ bình tĩnh dồn Vua nhé.
+            </p>
           </div>
         </Panel>
 
@@ -291,27 +335,6 @@ export function EndgamesPage() {
           />
         )}
 
-        <Panel>
-          <SectionTitle
-            icon="⭐"
-            title="Bé sưu tầm Huy chương Tàn cuộc"
-            subtitle={`${(endgames ?? []).filter((item) => isCompleted(`endgame:${item.id}`)).length}/${endgames?.length ?? 0} bài đã hoàn thành`}
-          />
-          <div className="mt-3 grid gap-2">
-            {(endgames ?? []).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-2 rounded-2xl border-2 border-violet-100 bg-white px-3 py-2"
-              >
-                <span className="text-lg">{item.goal === 'promote' ? '🛡️' : '🏁'}</span>
-                <span className="min-w-0 flex-1 truncate text-sm font-extrabold text-violet-900">
-                  {item.title}
-                </span>
-                <span className="text-lg">{isCompleted(`endgame:${item.id}`) ? '🏅' : '⬜'}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
       </div>
 
       <CelebrationModal

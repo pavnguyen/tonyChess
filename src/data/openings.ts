@@ -156,7 +156,7 @@ export const OPENINGS: Opening[] = [
     gm: 'GM Bobby Fischer',
     side: 'white',
     emoji: '🇪🇸',
-    tagline: 'Tượng ra ghim Mã đen rồi nhập thành — khai cuộc huyền thoại của Fischer.',
+    tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
     moves: annotate(['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7'], {
       0: {
         san: 'e4',
@@ -173,7 +173,7 @@ export const OPENINGS: Opening[] = [
       4: {
         san: 'Bb5',
         piece: 'b',
-        reason: 'Tượng áp sát Mã c6 — quân đang giữ Tốt e5.',
+        reason: 'Tượng áp sát Mã c6 - quân đang giữ Tốt e5.',
         rhyme: 'Tượng ghim Mã Đen',
       },
       6: {
@@ -197,7 +197,7 @@ export const OPENINGS: Opening[] = [
     gm: 'GM Judit Polgár',
     side: 'white',
     emoji: '🇭🇺',
-    tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân — tuyệt kỹ của Judit.',
+    tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
     moves: annotate(['d4', 'd5', 'c4', 'e6', 'Nc3', 'Nf6', 'Bg5', 'Be7', 'e3', 'O-O'], {
       0: {
         san: 'd4',
@@ -279,7 +279,7 @@ export const OPENINGS: Opening[] = [
     gm: 'GM Tigran Petrosian',
     side: 'black',
     emoji: '🛡️',
-    tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 — bí quyết của Petrosian.',
+    tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
     moves: annotate(['e4', 'c6', 'd4', 'd5', 'Nc3', 'dxe4', 'Nxe4', 'Bf5'], {
       1: {
         san: 'c6',
@@ -302,7 +302,7 @@ export const OPENINGS: Opening[] = [
       7: {
         san: 'Bf5',
         piece: 'b',
-        reason: 'Tượng ra ngoài trước khi đóng Tốt e6 — tuyệt chiêu Caro-Kann!',
+        reason: 'Tượng ra ngoài trước khi đóng Tốt e6 - tuyệt chiêu Caro-Kann!',
         rhyme: 'Tượng ra trước Tốt',
       },
     }),

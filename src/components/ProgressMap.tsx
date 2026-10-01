@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 export interface ProgressNode {
   id: string
   level: number
@@ -17,9 +15,14 @@ interface Props {
   title: string
   unitLabel: string
   allDoneMessage: string
+  /** Nhãn hiện dưới ô đang chọn, ví dụ "Cấp 3 · Phòng thủ King's Indian". */
+  levelLabel?: string
 }
 
-/** Bản đồ leo cấp: mỗi bài là một trạm, trạm sau mở khi trạm trước đã xong. */
+/**
+ * Bản đồ leo cấp dạng ô vuông gọn gàng: trạm sau chỉ mở khi trạm trước đã xong.
+ * Thiết kế để cả bản đồ nằm gọn trong ~2 hàng ô, bé nhìn thấy hết mà không phải cuộn.
+ */
 export function ProgressMap({
   nodes,
   activeId,
@@ -27,119 +30,97 @@ export function ProgressMap({
   title,
   unitLabel,
   allDoneMessage,
+  levelLabel = 'Cấp',
 }: Props) {
   const done = nodes.filter((node) => node.completed).length
   const unlocked = nodes.filter((node) => node.unlocked).length
-  const ratio = nodes.length ? done / nodes.length : 0
   const allDone = nodes.length > 0 && done === nodes.length
+  const active = nodes.find((node) => node.id === activeId)
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-extrabold uppercase tracking-wide text-violet-500">
-          🗺️ {title}
-        </p>
-        <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-extrabold text-violet-700">
-          Đã xong {done}/{nodes.length} {unitLabel} · mở {unlocked}
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <p className="shrink-0 text-[0.7rem] font-extrabold uppercase tracking-wide text-brand-500">
+            🗺️ {title}
+          </p>
+          <div className="h-1.5 min-w-8 flex-1 overflow-hidden rounded-full bg-sand-200">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-brand-600 to-leaf-400 transition-all duration-500"
+              style={{
+                width: `${nodes.length ? Math.round((done / nodes.length) * 100) : 0}%`,
+              }}
+            />
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-[0.7rem] font-extrabold text-brand-700 ring-1 ring-brand-100">
+          Xong {done}/{nodes.length} {unitLabel} · mở {unlocked}
         </span>
       </div>
 
-      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-violet-100">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-sky-400 transition-all duration-500"
-          style={{ width: `${Math.round(ratio * 100)}%` }}
-        />
-      </div>
-
-      <ol className="mt-3 grid gap-1">
-        {nodes.map((node, index) => {
-          const active = node.id === activeId
-          const state = node.completed
-            ? {
-                ring: 'border-emerald-300 bg-emerald-50',
-                badge: 'bg-emerald-500 text-white',
-                tag: '🏆 Đã xong',
-                tagClass: 'bg-emerald-100 text-emerald-700',
-              }
+      <div
+        className="grid gap-1.5"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(2.7rem, 1fr))' }}
+      >
+        {nodes.map((node) => {
+          const isActive = node.id === activeId
+          const skin = node.completed
+            ? 'border-leaf-300 bg-leaf-50'
             : node.unlocked
-              ? {
-                  ring: active
-                    ? 'border-violet-500 bg-violet-50 shadow-[0_4px_0_#c4b5fd]'
-                    : 'border-violet-200 bg-white hover:border-violet-400',
-                  badge: 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white',
-                  tag: active ? '▶️ Đang học' : '🔓 Học ngay',
-                  tagClass: 'bg-violet-100 text-violet-700',
-                }
-              : {
-                  ring: 'border-slate-200 bg-slate-50',
-                  badge: 'bg-slate-300 text-slate-600',
-                  tag: '🔒 Học bài trước',
-                  tagClass: 'bg-slate-100 text-slate-500',
-                }
+              ? isActive
+                ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+                : 'border-sand-200 bg-white hover:border-brand-400'
+              : 'border-ink-200 bg-ink-50'
+          const badge = node.completed
+            ? 'bg-leaf-500 text-white'
+            : node.unlocked
+              ? 'bg-gradient-to-br from-brand-700 to-brand-500 text-white'
+              : 'bg-ink-300 text-ink-600'
 
           return (
-            <Fragment key={node.id}>
-              {index > 0 && (
-                <li
-                  aria-hidden
-                  className={`ml-7 h-3 w-1 rounded-full ${
-                    node.unlocked ? 'bg-violet-200' : 'bg-slate-200'
-                  }`}
-                />
-              )}
-              <li>
-                <button
-                  type="button"
-                  onClick={() => node.unlocked && onSelect(node.id)}
-                  disabled={!node.unlocked}
-                  aria-current={active}
-                  className={`flex w-full items-center gap-3 rounded-2xl border-[3px] p-2.5 text-left transition-all active:translate-y-[2px] disabled:cursor-not-allowed disabled:active:translate-y-0 ${state.ring}`}
-                >
-                  <span
-                    className={`grid size-10 shrink-0 place-items-center rounded-full text-sm font-extrabold shadow-sm ${state.badge}`}
-                  >
-                    {node.completed ? '🏆' : node.unlocked ? node.level : '🔒'}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-extrabold text-violet-900">
-                      {node.emoji} {node.title}
-                    </span>
-                    <span className="block truncate text-[0.7rem] font-bold text-violet-500">
-                      {node.unlocked ? node.subtitle : 'Bé học xong bài trước để mở khoá nhé!'}
-                    </span>
-                  </span>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-[0.65rem] font-extrabold ${state.tagClass}`}
-                  >
-                    {state.tag}
-                  </span>
-                </button>
-              </li>
-            </Fragment>
+            <button
+              key={node.id}
+              type="button"
+              onClick={() => node.unlocked && onSelect(node.id)}
+              disabled={!node.unlocked}
+              aria-current={isActive}
+              title={
+                node.unlocked
+                  ? `${levelLabel} ${node.level} · ${node.title} - ${node.subtitle}`
+                  : `${levelLabel} ${node.level} · ${node.title} (chưa mở khoá)`
+              }
+              className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] disabled:cursor-not-allowed disabled:active:translate-y-0 ${skin}`}
+            >
+              <span
+                className={`grid size-5 place-items-center rounded-full text-[0.6rem] font-extrabold ${badge} ${
+                  isActive && !node.completed ? 'animate-pulse-ring' : ''
+                }`}
+              >
+                {node.completed ? '✓' : node.unlocked ? node.level : '🔒'}
+              </span>
+              <span className="text-sm leading-none" aria-hidden>
+                {node.emoji}
+              </span>
+            </button>
           )
         })}
 
-        <li
-          aria-hidden
-          className={`ml-7 h-3 w-1 rounded-full ${allDone ? 'bg-amber-300' : 'bg-slate-200'}`}
-        />
-        <li>
-          <div
-            className={`flex items-center gap-3 rounded-2xl border-[3px] border-dashed p-2.5 ${
-              allDone
-                ? 'border-amber-400 bg-amber-50'
-                : 'border-slate-200 bg-slate-50 opacity-80'
-            }`}
-          >
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-amber-100 text-xl">
-              🏁
-            </span>
-            <span className="text-xs font-extrabold text-violet-700">
-              {allDone ? allDoneMessage : 'Chạm đích: hoàn thành hết các trạm phía trên!'}
-            </span>
-          </div>
-        </li>
-      </ol>
+        <div
+          title={allDone ? allDoneMessage : 'Chạm đích: hoàn thành hết các trạm phía trên!'}
+          className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed ${
+            allDone ? 'border-gold-400 bg-gold-50' : 'border-ink-200 bg-ink-50'
+          }`}
+        >
+          <span className="text-[0.6rem] font-extrabold text-brand-400">🏁</span>
+          <span className="text-sm leading-none">🏆</span>
+        </div>
+      </div>
+
+      <p className="text-[0.7rem] font-bold text-brand-500">
+        {active
+          ? `${levelLabel} ${active.level} · ${active.emoji} ${active.title} - ${active.subtitle}`
+          : 'Bé bấm vào một ô đã mở khoá để bắt đầu nhé!'}
+      </p>
     </div>
   )
 }

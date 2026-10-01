@@ -7,7 +7,7 @@ export const TACTIC_META: Record<
   fork: {
     label: 'Bắt đôi (Fork)',
     emoji: '🍴',
-    blurb: 'Một quân tấn công HAI mục tiêu cùng lúc — đối thủ chỉ cứu được một!',
+    blurb: 'Một quân tấn công HAI mục tiêu cùng lúc - đối thủ chỉ cứu được một!',
   },
   pin: {
     label: 'Ghim quân (Pin)',
@@ -49,7 +49,7 @@ export const TACTICS: TacticPuzzle[] = [
     fen: '3rkr2/8/8/2N5/8/8/8/K7 w - - 0 1',
     solution: 'Ne6',
     hint: 'Nhảy Mã vào chính giữa hai chiếc Xe đen.',
-    explanation: 'Mã tới e6 chĩa hai mũi vào cả Xe d8 lẫn Xe f8 — đối thủ chỉ cứu được một!',
+    explanation: 'Mã tới e6 chĩa hai mũi vào cả Xe d8 lẫn Xe f8 - đối thủ chỉ cứu được một!',
     rhyme: 'Một nước hai Xe',
   },
   {
@@ -79,7 +79,7 @@ export const TACTICS: TacticPuzzle[] = [
     fen: '4k3/8/8/8/4n3/8/8/R6K w - - 0 1',
     solution: 'Re1',
     hint: 'Đưa Xe vào cột e để khóa chặt quân Mã đen.',
-    explanation: 'Xe lên e1 ghim Mã e4 vào Vua e8 — Mã thành con tin!',
+    explanation: 'Xe lên e1 ghim Mã e4 vào Vua e8 - Mã thành con tin!',
     rhyme: 'Khóa chặt con tin',
   },
   {
@@ -99,7 +99,7 @@ export const TACTICS: TacticPuzzle[] = [
     fen: '3qk3/8/5n2/8/8/8/8/2B1K3 w - - 0 1',
     solution: 'Bg5',
     hint: 'Đưa Tượng ra ghim Mã f6 đang đứng chắn trước Hậu Đen.',
-    explanation: 'Tượng lên g5 ghim Mã f6 vào Hậu d8 — Mã đen thành con tin!',
+    explanation: 'Tượng lên g5 ghim Mã f6 vào Hậu d8 - Mã đen thành con tin!',
     rhyme: 'Ghim Mã vào Hậu',
   },
   {

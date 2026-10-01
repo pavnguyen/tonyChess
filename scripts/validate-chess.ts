@@ -40,7 +40,7 @@ for (const opening of OPENINGS) {
     fail(`${opening.id}: bài của Đen nhưng có annotation ở ply chẵn`)
     bad = true
   }
-  if (!bad) ok(`${opening.id} — ${opening.moves.length} ply hợp lệ`)
+  if (!bad) ok(`${opening.id} - ${opening.moves.length} ply hợp lệ`)
 }
 
 console.log('\n▶ Trung cuộc (đòn chiến thuật)')
@@ -49,7 +49,7 @@ for (const puzzle of TACTICS) {
   try {
     game.load(puzzle.fen)
   } catch (error) {
-    fail(`${puzzle.id}: FEN không hợp lệ — ${String(error)}`)
+    fail(`${puzzle.id}: FEN không hợp lệ - ${String(error)}`)
     continue
   }
   let move
@@ -77,7 +77,7 @@ for (const puzzle of TACTICS) {
   }
 
   ok(
-    `${puzzle.id} — ${puzzle.solution} hợp lệ${givesCheck ? ', chiếu Vua' : ''}${
+    `${puzzle.id} - ${puzzle.solution} hợp lệ${givesCheck ? ', chiếu Vua' : ''}${
       capturedValue ? ', ăn quân' : ''
     }, tấn công ${hits} quân (${hitSquares.join(', ')})`,
   )
@@ -101,7 +101,7 @@ for (const challenge of ENDGAMES) {
   try {
     game.load(challenge.fen)
   } catch (error) {
-    fail(`${challenge.id}: FEN không hợp lệ — ${String(error)}`)
+    fail(`${challenge.id}: FEN không hợp lệ - ${String(error)}`)
     continue
   }
   if (game.turn() !== challenge.playerSide[0]) {
@@ -116,7 +116,7 @@ for (const challenge of ENDGAMES) {
       .flat()
       .some((square) => square && square.type === 'p' && square.color === challenge.playerSide[0])
     if (!hasPawn) fail(`${challenge.id}: mục tiêu phong Hậu nhưng không có Tốt nào`)
-    else ok(`${challenge.id} — có Tốt của bé, lượt đi đúng`)
+    else ok(`${challenge.id} - có Tốt của bé, lượt đi đúng`)
   } else {
     const matingMoves: string[] = []
     for (const san of game.moves()) {
@@ -125,7 +125,7 @@ for (const challenge of ENDGAMES) {
       if (probe.isCheckmate()) matingMoves.push(san)
     }
     if (matingMoves.length === 0) fail(`${challenge.id}: không tồn tại nước chiếu bí nào`)
-    else ok(`${challenge.id} — có ${matingMoves.length} nước chiếu bí: ${matingMoves.join(', ')}`)
+    else ok(`${challenge.id} - có ${matingMoves.length} nước chiếu bí: ${matingMoves.join(', ')}`)
   }
 }
 

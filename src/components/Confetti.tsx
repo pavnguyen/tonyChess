@@ -13,7 +13,8 @@ interface Particle {
   angle: number
 }
 
-const COLORS = ['#f43f5e', '#facc15', '#22c55e', '#0ea5e9', '#a855f7', '#fb923c', '#ffffff']
+// Giấy hoa theo gam "Sồi & Ngọc": vàng đồng, xanh ngọc, đất nung, xanh non.
+const COLORS = ['#d9a93f', '#356c4f', '#68ae77', '#bc5f4e', '#417f91', '#e8c471', '#ffffff']
 
 /**
  * Pháo hoa giấy khen bé giải đúng. Vẽ bằng canvas, tự tắt sau ~2.6 giây.

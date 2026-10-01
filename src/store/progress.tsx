@@ -31,7 +31,6 @@ const DEFAULTS: Persisted = {
 }
 
 interface KidContextValue extends Persisted {
-  unlockedCount: number
   rank: RankInfo
   nextRank: RankInfo | null
   progressToNext: number

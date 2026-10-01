@@ -8,7 +8,12 @@ import { OPENINGS } from '../src/data/openings.ts'
 import { TACTICS } from '../src/data/tactics.ts'
 import { findHintMove } from '../src/lib/hints.ts'
 import { formatSan, moveLabel, pieceFromSan } from '../src/lib/notation.ts'
-import { computeHeatmap, findHangingPieces, legalTargets } from '../src/lib/threats.ts'
+import {
+  computeHeatmap,
+  findHangingPieces,
+  HEATMAP_COLORS,
+  legalTargets,
+} from '../src/lib/threats.ts'
 
 let failures = 0
 const check = (condition: boolean, label: string) => {
@@ -36,8 +41,10 @@ for (const opening of OPENINGS) {
   const fen = game.fen()
   const map = computeHeatmap(game, 'white')
   const squares = Object.keys(map)
-  const red = Object.values(map).filter((style) =>
-    String(style.backgroundColor).includes('244, 63, 94'),
+  // Đối chiếu với chính bảng màu của app (không viết lại mã màu ở đây), để đổi
+  // gam màu không làm bài kiểm tra "chết" oan.
+  const red = Object.values(map).filter(
+    (style) => style.backgroundColor === HEATMAP_COLORS.danger,
   ).length
   check(squares.length === 64, `${opening.id}: tô đủ 64 ô (FEN ${fen.slice(0, 12)}…)`)
   check(red > 0, `${opening.id}: thế đầu ván có ${red} ô bị đe dọa`)

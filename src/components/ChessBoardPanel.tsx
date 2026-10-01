@@ -1,10 +1,9 @@
-import { Chessboard } from 'react-chessboard'
+import { Chessboard, defaultArrowOptions } from 'react-chessboard'
 import type { Arrow } from 'react-chessboard'
 import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Chess } from 'chess.js'
-import { PIECE_NAME_VI } from '../lib/notation'
-import { computeHeatmap, findHangingPieces, legalTargets } from '../lib/threats'
+import { computeHeatmap, legalTargets } from '../lib/threats'
 import type { Side } from '../types'
 
 export interface ChessBoardPanelProps {
@@ -19,8 +18,9 @@ export interface ChessBoardPanelProps {
   className?: string
 }
 
-const DARK_SQUARE: CSSProperties = { backgroundColor: '#7ea6f5' }
-const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#fdf3d8' }
+// Bàn cờ kiểu giải đấu: ô trắng ngà + ô xanh lá đậm, viền ngoài xanh rừng.
+const DARK_SQUARE: CSSProperties = { backgroundColor: '#2f6b4f' }
+const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#ffffff' }
 
 /**
  * Bàn cờ hoạt hình dành cho bé: kéo-thả hoặc bấm-chọn-đi,
@@ -57,12 +57,6 @@ export function ChessBoardPanel({
 
   const playerColorChar = playerSide === 'white' ? 'w' : 'b'
 
-  // Quân của bé đang bị treo — hiện kèm danh sách cảnh báo bên dưới bàn cờ.
-  const hanging = useMemo(
-    () => (heatmap ? findHangingPieces(game, playerSide) : []),
-    [game, heatmap, playerSide],
-  )
-
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {}
     if (heatmap) Object.assign(styles, computeHeatmap(game, playerSide))
@@ -70,7 +64,7 @@ export function ChessBoardPanel({
       Object.assign(styles, legalTargets(game, selected))
       styles[selected] = {
         ...(styles[selected] ?? {}),
-        boxShadow: 'inset 0 0 0 4px #facc15',
+        boxShadow: 'inset 0 0 0 4px #d9a93f',
       }
     }
     if (extraSquareStyles) Object.assign(styles, extraSquareStyles)
@@ -86,7 +80,7 @@ export function ChessBoardPanel({
 
   return (
     <div className={`relative w-full ${className}`}>
-      <div className="aspect-square w-full overflow-hidden rounded-[1.4rem] border-[6px] border-white bg-white shadow-[0_16px_30px_-16px_rgba(88,28,135,0.65)]">
+      <div className="aspect-square w-full overflow-hidden rounded-[1.1rem] border-[6px] border-brand-800 bg-white shadow-[0_18px_34px_-18px_rgba(13,32,24,0.7)]">
         <Chessboard
           options={{
             id: 'kid-board',
@@ -110,29 +104,20 @@ export function ChessBoardPanel({
             allowDragging: interactive,
             allowDrawingArrows: false,
             arrows,
+            // Chỉ nắn nhẹ phần nhìn thấy cho bé; TOÀN BỘ thông số hình học
+            // (độ dài, độ dày, điểm bắt đầu) lấy từ mặc định của thư viện.
+            // Lưu ý: `arrowStartOffset` tính bằng PHẦN của một ô cờ (0 = tâm ô,
+            // 0.5 = mép ô) - đặt sai giá trị sẽ làm đuôi mũi tên nhảy sang ô khác.
             arrowOptions: {
-              colors: {
-                default: '#f59e0b',
-                shift: '#f59e0b',
-                ctrl: '#f59e0b',
-                alt: '#f59e0b',
-                meta: '#f59e0b',
-              },
-              color: '#f59e0b',
-              secondaryColor: '#f59e0b',
-              tertiaryColor: '#f59e0b',
-              arrowLengthReducerDenominator: 5,
-              sameTargetArrowLengthReducerDenominator: 6,
-              arrowWidthDenominator: 5,
-              activeArrowWidthMultiplier: 1.1,
+              ...defaultArrowOptions,
               opacity: 0.9,
-              activeOpacity: 0.9,
-              arrowStartOffset: 6,
+              // Đuôi mũi tên bắt đầu gần chân quân cờ cho giống chess.com.
+              arrowStartOffset: 0.35,
             },
             squareStyles,
             darkSquareStyle: DARK_SQUARE,
             lightSquareStyle: LIGHT_SQUARE,
-            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #facc15' },
+            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #d9a93f' },
             showNotation: true,
             animationDurationInMs: 280,
             allowDragOffBoard: false,
@@ -140,34 +125,6 @@ export function ChessBoardPanel({
           }}
         />
       </div>
-
-      {heatmap && hanging.length > 0 && (
-        <div className="animate-pop-in mt-2 rounded-2xl border-[3px] border-rose-300 bg-rose-50 p-2.5">
-          <p className="text-xs font-extrabold uppercase tracking-wide text-rose-600">
-            ⚠️ Mắt Thần báo động: {hanging.length} quân đang bị treo!
-          </p>
-          <ul className="mt-1 flex flex-wrap gap-1.5">
-            {hanging.map((item) => (
-              <li
-                key={item.square}
-                className="rounded-xl bg-white px-2 py-1 text-xs font-extrabold text-rose-700 shadow-sm"
-              >
-                {PIECE_NAME_VI[item.piece]} ở ô {item.square}
-                {item.defenders === 0 ? ' — không ai đỡ!' : ' — bị quân rẻ hơn tấn công!'}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-1.5 text-[0.7rem] font-bold text-rose-500">
-            🆘 Bé hãy tìm cách cứu quân, hoặc đổi quân cho ngang sức nhé!
-          </p>
-        </div>
-      )}
-
-      {heatmap && hanging.length === 0 && (
-        <p className="mt-2 rounded-2xl border-[3px] border-emerald-200 bg-emerald-50 p-2 text-center text-xs font-extrabold text-emerald-700">
-          ✅ Mắt Thần thấy an toàn: chưa có quân nào của bé bị treo!
-        </p>
-      )}
     </div>
   )
 }

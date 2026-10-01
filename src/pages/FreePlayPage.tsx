@@ -3,11 +3,12 @@ import { CelebrationModal } from '../components/CelebrationModal'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
+import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
 import { useChessEngine } from '../engine/useChessEngine'
 import { useChessGame } from '../hooks/useChessGame'
-import { formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
+import { BOARD_MARKS, formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
 import type { Side } from '../types'
@@ -37,7 +38,7 @@ const DIFFICULTY_OPTIONS: { value: Difficulty; label: string; icon: string }[] =
 ]
 
 const DIFFICULTY_BLURB: Record<Difficulty, string> = {
-  easy: 'Máy chơi ngây thơ, hay quên bảo vệ quân — bé tha hồ săn quân!',
+  easy: 'Máy chơi ngây thơ, hay quên bảo vệ quân - bé tha hồ săn quân!',
   medium: 'Máy biết ăn quân và tránh mất quân. Bé phải nhìn kỹ nhé!',
   hard: 'Máy tính trước 3 nước. Hãy bật 👁️ Mắt Thần trước khi đi!',
 }
@@ -204,71 +205,34 @@ export function FreePlayPage() {
       : isKidTurn
         ? kidInCheck
           ? '⚠️ Vua của bé đang bị chiếu! Bé phải cứu Vua ngay!'
-          : '👉 Lượt của bé — suy nghĩ rồi đi nhé!'
+          : '👉 Lượt của bé - suy nghĩ rồi đi nhé!'
         : '⏳ Chờ máy đi...'
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
-      <div className="grid gap-3">
-        <Panel>
-          <SectionTitle
-            icon="🎮"
-            title="Đấu tập tự do cùng chú Máy"
-            subtitle="Chơi trọn một ván cờ thật, có Vua, Hậu, Xe, Tượng, Mã, Tốt đông đủ!"
-          />
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div>
-              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-violet-500">
-                🐣 Bé cầm quân gì?
-              </p>
-              <Segmented
-                options={[
-                  { value: 'white', label: 'Trắng', icon: '⬜' },
-                  { value: 'black', label: 'Đen', icon: '⬛' },
-                ]}
-                value={kidSide}
-                onChange={(value) => newGame(value)}
-                size="sm"
-              />
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-violet-500">
-                🤖 Máy chơi giỏi cỡ nào?
-              </p>
-              <Segmented
-                options={DIFFICULTY_OPTIONS}
-                value={difficulty}
-                onChange={setDifficulty}
-                size="sm"
-              />
-            </div>
-          </div>
-          <p className="mt-2 rounded-2xl bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700">
-            {DIFFICULTY_BLURB[difficulty]}
-          </p>
-        </Panel>
-
-        <Panel className="grid gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-extrabold ${
-                  kidInCheck
-                    ? 'animate-pulse bg-rose-100 text-rose-700'
-                    : 'bg-violet-100 text-violet-700'
-                }`}
-              >
-                {statusText}
-              </span>
-              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-800">
-                Nước {board.history.length + 1}
-              </span>
-            </div>
+      {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
+      <BoardStage
+        reserve={300}
+        top={
+          <>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+                kidInCheck
+                  ? 'animate-pulse bg-coral-100 text-coral-700'
+                  : 'bg-brand-100 text-brand-700'
+              }`}
+            >
+              {statusText}
+            </span>
+            <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
+              Nước {board.history.length + 1}
+            </span>
             <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
-          </div>
-
+          </>
+        }
+        board={
           <ChessBoardPanel
             key={gameKey}
             fen={board.fen}
@@ -280,19 +244,21 @@ export function FreePlayPage() {
               board.lastMove
                 ? {
                     [board.lastMove.from]: {
-                      boxShadow: 'inset 0 0 0 3px rgba(250, 204, 21, 0.95)',
+                      boxShadow: BOARD_MARKS.lastMoveFrom,
                     },
                     [board.lastMove.to]: {
-                      boxShadow: 'inset 0 0 0 4px rgba(250, 204, 21, 0.95)',
+                      boxShadow: BOARD_MARKS.lastMoveTo,
                     },
                   }
                 : undefined
             }
             onDrop={handleDrop}
           />
-
-          <div className="flex flex-wrap items-center gap-2">
-            <KidButton variant="grass" onClick={() => newGame()}>
+        }
+        under={
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <KidButton variant="grass" onClick={() => newGame()}>
               ♟️ Ván mới
             </KidButton>
             <KidButton
@@ -312,49 +278,98 @@ export function FreePlayPage() {
             </KidButton>
           </div>
 
-          <div className="rounded-2xl bg-violet-50 p-2.5">
-            <div className="mb-1 flex items-center justify-between text-xs font-extrabold text-violet-700">
-              <span>🍬 Chiến lợi phẩm của bé</span>
-              <span>{captures.byKid.length} quân</span>
+          {/* Túi chiến lợi phẩm: hai dòng gọn để không chiếm chiều cao. */}
+          <div className="grid gap-1 rounded-2xl bg-brand-50 px-2.5 py-2">
+            <div className="flex items-center gap-2 text-xs leading-none">
+              <span className="shrink-0 font-extrabold text-brand-700">
+                🍬 Bé ăn {captures.byKid.length}:
+              </span>
+              <span className="flex flex-wrap items-center gap-0.5 text-lg">
+                {captures.byKid.length === 0 ? (
+                  <span className="text-[0.7rem] font-bold text-brand-400">
+                    chưa ăn được quân nào
+                  </span>
+                ) : (
+                  captures.byKid.map((item, index) => (
+                    <span key={index}>
+                      {GLYPH[`${item.color}${item.type.toUpperCase()}`] ?? '♟'}
+                    </span>
+                  ))
+                )}
+              </span>
             </div>
-            <div className="flex min-h-7 flex-wrap items-center gap-0.5 text-xl leading-none">
-              {captures.byKid.length === 0 ? (
-                <span className="text-xs font-bold text-violet-400">
-                  Chưa ăn được quân nào — hãy tìm quân đối thủ sơ hở nhé!
-                </span>
-              ) : (
-                captures.byKid.map((item, index) => (
-                  <span key={index}>{GLYPH[`${item.color}${item.type.toUpperCase()}`] ?? '♟'}</span>
-                ))
-              )}
+            <div className="flex items-center gap-2 text-xs leading-none">
+              <span className="shrink-0 font-extrabold text-coral-500">
+                🤖 Máy ăn {captures.byEngine.length}:
+              </span>
+              <span className="flex flex-wrap items-center gap-0.5 text-lg opacity-80">
+                {captures.byEngine.length === 0 ? (
+                  <span className="text-[0.7rem] font-bold text-coral-300">
+                    chưa mất quân nào, giỏi quá!
+                  </span>
+                ) : (
+                  captures.byEngine.map((item, index) => (
+                    <span key={index}>
+                      {GLYPH[`${item.color}${item.type.toUpperCase()}`] ?? '♟'}
+                    </span>
+                  ))
+                )}
+              </span>
             </div>
-            <div className="mt-2 mb-1 flex items-center justify-between text-xs font-extrabold text-rose-500">
-              <span>🤖 Máy đã ăn của bé</span>
-              <span>{captures.byEngine.length} quân</span>
             </div>
-            <div className="flex min-h-6 flex-wrap items-center gap-0.5 text-xl leading-none opacity-80">
-              {captures.byEngine.length === 0 ? (
-                <span className="text-xs font-bold text-rose-300">Chưa mất quân nào, giỏi quá!</span>
-              ) : (
-                captures.byEngine.map((item, index) => (
-                  <span key={index}>{GLYPH[`${item.color}${item.type.toUpperCase()}`] ?? '♟'}</span>
-                ))
-              )}
+          </>
+        }
+      />
+
+      {/* Cột phải: chọn quân / độ khó, sách ghi ván cờ, bí kíp */}
+      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+        <Panel className="grid gap-2">
+          <SectionTitle
+            icon="🎮"
+            title="Đấu tập tự do cùng chú Máy"
+            subtitle="Chơi trọn một ván cờ thật, có Vua, Hậu, Xe, Tượng, Mã, Tốt đông đủ!"
+          />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div>
+              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+                🐣 Bé cầm quân gì?
+              </p>
+              <Segmented
+                options={[
+                  { value: 'white', label: 'Trắng', icon: '⬜' },
+                  { value: 'black', label: 'Đen', icon: '⬛' },
+                ]}
+                value={kidSide}
+                onChange={(value) => newGame(value)}
+                size="sm"
+              />
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+                🤖 Máy chơi giỏi cỡ nào?
+              </p>
+              <Segmented
+                options={DIFFICULTY_OPTIONS}
+                value={difficulty}
+                onChange={setDifficulty}
+                size="sm"
+              />
             </div>
           </div>
+          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700">
+            {DIFFICULTY_BLURB[difficulty]}
+          </p>
         </Panel>
-      </div>
 
-      <div className="grid gap-3">
         <Panel>
           <SectionTitle
             icon="📜"
             title="Sách ghi ván cờ"
             subtitle="Bé tập đọc lại ván đấu của mình như một kỳ thủ nhí!"
           />
-          <div className="mt-3 max-h-64 overflow-y-auto rounded-2xl bg-violet-50 p-2">
+          <div className="mt-2 max-h-56 overflow-y-auto rounded-2xl bg-brand-50 p-2">
             {moveRows.length === 0 ? (
-              <p className="px-2 py-4 text-center text-sm font-bold text-violet-400">
+              <p className="px-2 py-4 text-center text-sm font-bold text-brand-400">
                 Ván cờ chưa bắt đầu. Bé đi nước đầu tiên nào! 🚀
               </p>
             ) : (
@@ -362,13 +377,13 @@ export function FreePlayPage() {
                 <tbody>
                   {moveRows.map((row) => (
                     <tr key={row.no} className="odd:bg-white/70">
-                      <td className="w-8 rounded-l-lg px-2 py-1 text-right font-extrabold text-violet-400">
+                      <td className="w-8 rounded-l-lg px-2 py-1 text-right font-extrabold text-brand-400">
                         {row.no}.
                       </td>
-                      <td className="px-2 py-1 font-extrabold text-violet-900">
+                      <td className="px-2 py-1 font-extrabold text-brand-900">
                         {row.white ? formatSan(row.white, notation) : ''}
                       </td>
-                      <td className="px-2 py-1 font-extrabold text-violet-600">
+                      <td className="px-2 py-1 font-extrabold text-brand-600">
                         {row.black ? formatSan(row.black, notation) : ''}
                       </td>
                     </tr>
@@ -385,24 +400,24 @@ export function FreePlayPage() {
             title="Bí kíp thắng chú Máy"
             subtitle="Ba điều bé nên nhớ trong mỗi nước đi"
           />
-          <ul className="mt-3 grid gap-2 text-sm font-bold text-violet-700">
-            <li className="rounded-2xl bg-violet-50 px-3 py-2">
+          <ul className="mt-2 grid gap-1.5 text-xs font-bold text-brand-700 sm:text-sm">
+            <li className="rounded-xl bg-brand-50 px-2.5 py-1.5">
               1️⃣ Bật 👁️ Mắt Thần, tránh xa những ô 🔴 đỏ.
             </li>
-            <li className="rounded-2xl bg-violet-50 px-3 py-2">
+            <li className="rounded-xl bg-brand-50 px-2.5 py-1.5">
               2️⃣ Chiếm ô trung tâm 🟢 để quân cờ của bé tung hoành.
             </li>
-            <li className="rounded-2xl bg-violet-50 px-3 py-2">
+            <li className="rounded-xl bg-brand-50 px-2.5 py-1.5">
               3️⃣ Đừng quên nhập thành để giấu Vua vào lều an toàn!
             </li>
           </ul>
-          <p className="mt-3 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs font-extrabold text-amber-800">
-            🎵 Khẩu quyết vè: “Nhìn kỹ trước khi đi — ăn quân không bị mất quân!”
+          <p className="mt-2 rounded-xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-gold-800">
+            🎵 Khẩu quyết vè: “Nhìn kỹ trước khi đi - ăn quân không bị mất quân!”
           </p>
           {board.history.length > 0 && (
-            <p className="mt-2 text-center text-xs font-bold text-violet-400">
+            <p className="mt-2 text-center text-xs font-bold text-brand-400">
               Nước vừa rồi:{' '}
-              <span className="font-extrabold text-violet-700">
+              <span className="font-extrabold text-brand-700">
                 {formatSan(board.history[board.history.length - 1].san, notation)}
               </span>{' '}
               ({PIECE_NAME_VI[pieceFromSan(board.history[board.history.length - 1].san)]})

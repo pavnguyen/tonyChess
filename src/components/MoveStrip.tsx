@@ -25,10 +25,10 @@ export function MoveStrip({ opening, ply, notation, onJump, className = '' }: Pr
             disabled={!onJump}
             className={`shrink-0 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-all sm:text-sm ${
               done
-                ? 'border-emerald-300 bg-emerald-100 text-emerald-800'
+                ? 'border-leaf-300 bg-leaf-100 text-leaf-800'
                 : isNext
-                  ? 'border-amber-400 bg-amber-100 text-amber-900 shadow-[0_3px_0_#fbbf24]'
-                  : 'border-violet-200 bg-white text-violet-500'
+                  ? 'border-gold-400 bg-gold-100 text-gold-900 shadow-[0_2px_5px_rgba(124,89,20,0.28)]'
+                  : 'border-brand-200 bg-white text-brand-500'
             } ${onJump ? 'active:translate-y-[2px]' : 'cursor-default'}`}
             title={isKid ? 'Nước của bé' : 'Nước của đối thủ'}
           >
