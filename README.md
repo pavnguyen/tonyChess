@@ -1,4 +1,4 @@
-# ♟️ Học Viện Cờ Vua Nhí
+# ♟️ Nam An - Cờ Vua
 
 Web App tương tác (SPA) giúp **bé 7 tuổi** học thuộc **Khai cuộc Đại Kiện Tướng (GM)**, kỹ năng
 **Trung cuộc**, **Tàn cuộc**, và **đấu tập cả ván cờ với chú Máy** - giao diện hoạt hình tươi sáng,
@@ -61,14 +61,16 @@ gồm đúng 3 phần:
 2. **Lý do** - 1 câu logic, dễ hiểu.
 3. **Khẩu quyết vè** - 4–6 chữ để bé nhẩm thuộc lòng.
 
-## 🗂️ Bốn tab học tập
+## 🗂️ Sáu tab học tập
 
 | Tab | Nội dung |
 | --- | --- |
-| 🛡️ **Khai cuộc Đại Kiện Tướng** | **8 khai cuộc**: London System (Carlsen), Ván cờ Ý (Wesley So), King's Indian (Nakamura), Sicilian (Kasparov), Ruy López (Fischer), Gambit Hậu (Judit Polgár), Phòng thủ Pháp (Botvinnik), Caro-Kann (Petrosian). Có chế độ **Học từng bước** (bé **kéo-thả quân viền vàng** sang **ô viền xanh**, hoặc bấm nút / **phím ◀ ▶ ▲ ▼**), **Luyện thuộc lòng** (nhận Cúp Vàng 🏆) và **Đua tốc độ 30s**. |
-| ⚔️ **Trung cuộc - Mẹo săn quân** | **12 thế cờ** cho các đòn **Bắt đôi (Fork)**, **Ghim quân (Pin)**, **Xiên quân (Skewer)**. Bé **kéo-thả quân** để giải; bấm **💡 Gợi ý** thì quân cần đi hiện **viền vàng** và ô đích hiện **viền xanh**. Giải đúng → pháo hoa 🎆 + âm thanh “Ting!” reo hò. |
-| 👑 **Tàn cuộc - Trạm năng lượng Hậu** | “Vua + Tốt đua biến Hậu” và “Chiếu bí bằng 2 Xe / Hậu + Vua”, đấu với Vua Đen đi ngẫu nhiên như một bạn nhỏ đang tập chơi. Bé kéo-thả như đang chơi thật; **💡 Gợi ý** sẽ khoanh **quân cần đi** theo đúng thế cờ hiện tại. |
-| 🎮 **Đấu tập với Máy** | Chơi **trọn một ván cờ thật** với bộ máy mini (negamax + bảng điểm vị trí). 3 mức 🐣 Dễ / 🐰 Vừa / 🦊 Khó, chọn quân Trắng/Đen, nút **Đi lại nước vừa rồi**, “Sách ghi ván cờ” và túi chiến lợi phẩm. |
+| 🛡️ **Khai cuộc Đại Kiện Tướng** | **8 khai cuộc**: London System (Carlsen), Ván cờ Ý (Wesley So), King's Indian (Nakamura), Sicilian (Kasparov), Ruy López (Fischer), Gambit Hậu (Judit Polgár), Phòng thủ Pháp (Botvinnik), Caro-Kann (Petrosian). Có chế độ **Học từng bước** (bé **kéo-thả quân viền vàng** sang **ô viền xanh**, hoặc bấm nút / **phím ◀ ▶ ▲ ▼**) và **Luyện thuộc lòng** (nhận Cúp Vàng 🏆). |
+| ⚔️ **Trung cuộc - Mẹo săn quân** | **20 thế cờ** cho **7 họ đòn**: 🍴 Bắt đôi (Fork) · 📌 Ghim quân (Pin) · 🍢 Xiên quân (Skewer) · 🔓 **Đòn mở (Discovered check)** · ⚡ **Chiếu đôi (Double check)** · 🧱 **Chiếu bí hàng cuối (Back rank)** · 🕸️ **Chiếu bí ngạt (Smothered mate)**. Bé **kéo-thả quân** để giải; bấm **💡 Gợi ý** thì quân cần đi hiện **viền vàng** và ô đích hiện **viền xanh**. Giải đúng → pháo hoa 🎆 + âm thanh “Ting!” reo hò. |
+| 👑 **Tàn cuộc - Trạm năng lượng Hậu** | **8 thế cờ**: “Vua + Tốt đua biến Hậu” và **bốn thế chiếu bí kinh điển** mà kỳ thủ nào cũng phải thuộc - **Xe + Vua**, **chiếu bí hàng cuối**, **Tượng đôi**, **chiếu bí ngạt bằng Mã** - bên cạnh “chiếu bí bằng 2 Xe / Hậu + Vua”. Bé đấu với Vua Đen đi theo **máy mini mức Dễ** (nước đáp trả có ý nghĩa nhưng thỉnh thoảng mắc lỗi để bé tận dụng), kéo-thả như đang chơi thật; **💡 Gợi ý** sẽ khoanh **quân cần đi** theo đúng thế cờ hiện tại. Danh sách bài nay là **dải chip gọn** nên cột phải hết phải cuộn - trước đây 8 thế xếp thành lưới thẻ to 4 hàng nên trang bị cuộn mất một đoạn. |
+| 🎓 **Chiến lược Đại Kiện Tướng** | **4 bài giảng có kịch bản** (cả hai bên đi theo đúng dòng của Đại Kiện Tướng): ⚖️ **Đòn bẩy cấu trúc Tốt** (Carlsbad, 5 nước), 🛡️ **Phòng thủ dự phòng** (Karpov - đi `h3` bịt ô `g4`), 🌉 **Bắc cầu Lucena**, 🧱 **Bức tường hàng 6 Philidor** (bài cờ **Đen đi trước**, bàn cờ tự xoay). Kèm module **🧬 Cấu trúc Tốt** dạy bé nhận diện **Tốt Thông / Tốt Chồng / Tốt Cô Lập** bằng màu (🟢 khoẻ, 🔴 yếu). Bé kéo-thả, mũi tên vàng chỉ nước kế tiếp, ◀ ▶ tua từng bước, danh sách bước đánh dấu ✓ / 👉. |
+| 🔁 **Ôn tập ngắt quãng** | **Tab thứ 6**: gặp lại đúng câu bé **sắp quên** theo lịch Leitner (đúng thì hẹn xa dần 1 → 3 → 7 → 21 ngày, sai thì gặp lại sau 10 phút). Huy hiệu đỏ trên tab cho biết còn bao nhiêu câu tới hạn. Nguồn thẻ: câu đố Trung cuộc, thế Tàn cuộc, khai cuộc luyện thuộc lòng, bài giảng GM và cấu trúc Tốt. Tiến độ lưu trong `localStorage` (khoá `hoc-vien-co-vua-nhi.review.v1`). |
+| 🎮 **Đấu tập với Máy** | Chơi **trọn một ván cờ thật** với bộ máy mini (negamax + bảng điểm vị trí). 4 mức 🐣 Dễ / 🐰 Vừa / 🦊 Khó / 🦁 Siêu, chọn quân Trắng/Đen, nút **Đi lại nước vừa rồi**, “Sách ghi ván cờ” và túi chiến lợi phẩm. |
 
 ## 🗺️ Bản đồ leo cấp
 
@@ -113,6 +115,41 @@ Mục tiêu: dạy bé thói quen nhìn toàn cảnh bàn cờ để không “c
 - **Gamification**: tích luỹ ⭐ để thăng cấp từ *Kỳ thủ Nhí* → *Tập sự Cờ vua* → *Kiện tướng Nhí* →
   *Đại Kiện tướng Nhí*. Tiến độ lưu trong `localStorage` (kèm nút 🧹 chơi lại từ đầu).
 
+## 🎚️ Lộ trình 7 → 18 tuổi
+
+Một app không thể dùng cùng một giao diện từ 7 tuổi tới 18 tuổi. Toàn bộ thiết kế nằm trong
+`src/lib/stages.ts` (logic thuần, test bằng `npm run check:stages`).
+
+**Nguyên tắc gốc: tuổi chỉ là gợi ý, trình độ mới là quyết định.** Một bé 13 tuổi mới chơi cờ lần
+đầu cần giao diện của “Thiếu nhi”, không phải của “Thiếu niên”. Vì vậy mô hình tách làm hai thứ:
+
+- **`stage`** - giai đoạn *đang học*, quyết định nội dung, độ mạnh của máy, lịch ôn tập, tính năng
+  đã mở khoá. Mặc định suy ra từ **năm sinh** (nên app tự “lớn lên” theo bé) nhưng bố mẹ chọn lại được.
+- **`density`** - độ lớn của *giao diện* (Nhí = to, hoạt hình, ít chữ; Chuyên nghiệp = dày, nhiều
+  số liệu, không emoji). Kéo riêng được, để bé 9 tuổi thích “người lớn” vẫn dùng được.
+
+| Giai đoạn | Tuổi | Độ mạnh máy | Buổi ôn | Vè 4-6 chữ | Ký hiệu | Mở khoá thêm |
+| --- | --- | --- | --- | --- | --- | --- |
+| 🐣 **Nhí Tò Mò** | 7-9 | dễ | 6 câu | có (3 nấc ôn) | hình quân cờ | Mắt Thần, cảnh báo quân treo, mũi tên vàng |
+| 🛡️ **Thiếu Nhi Tập Sự** | 10-12 | trung bình | 8 câu | có (đủ 5 nấc) | chuẩn quốc tế | PGN, chọn câu đố theo chủ đề |
+| ⚔️ **Thiếu Niên Chiến Lược** | 13-15 | khó | 12 câu | không | chuẩn quốc tế | Xem lại ván, máy tự chỉnh độ khó, đồng hồ 5\|0 |
+| 👑 **Kỳ Thủ Trưởng Thành** | 16-18 | siêu cấp | 20 câu | không | chuẩn quốc tế | Bàn phân tích nhiều biến, tàn cuộc lý thuyết, nhập PGN |
+
+Bố mẹ mở **⚙️ Tùy chọn của bé** để chọn giai đoạn hoặc nhập **năm sinh**; tên giai đoạn hiện ngay
+trên thanh tiêu đề (màn hình rộng). Khi chưa tự chọn cách ghi nước đi, app lấy mặc định theo giai
+đoạn (Nhí = hình quân cờ, từ 10 tuổi = chuẩn quốc tế) và **không ghi đè** lựa chọn của bé.
+
+Ba cơ chế được suy ra từ giai đoạn, không cần cấu hình thêm:
+
+- **Lịch ôn ngắn dần theo tuổi** (`reviewStepsFor`): bé Nhí chỉ đi 3 nấc (ngay → 1 → 3 ngày) để
+  câu nào cũng được gặp lại sớm; kỳ thủ lớn đi đủ 5 nấc mới nhớ dai.
+- **Chính sách gợi ý** (`shouldAutoHint`): bé Nhí sai một lần là gợi ý **tự hiện** (không để bé bí rồi
+  nản); từ 10 tuổi gợi ý chỉ hiện khi bé **bấm xin**; bản trưởng thành **không gợi ý**, phải tự tính.
+- **Tắt dần hoạt hình**: hiệu ứng ăn mừng tắt từ 13 tuổi, emoji + banner dạy học tắt ở bản trưởng thành.
+
+Mỗi giai đoạn còn có `focus` (trọng tâm cần tập) và `promotion` (mốc để lên nấc tiếp theo) - ví dụ
+Nhí Tò Mò lên Thiếu Nhi khi *đi hết 4 khai cuộc không cần gợi ý và giải 30 đòn đôi/ghim*.
+
 ## 🧱 Công nghệ
 
 - **React 19 + Vite + TypeScript**
@@ -129,33 +166,42 @@ Mục tiêu: dạy bé thói quen nhìn toàn cảnh bàn cờ để không “c
 Mỗi tab là **một file JS riêng**, bé chỉ tải đúng tab đang mở. Ở `src/router.tsx`, bốn trang được
 nạp bằng `lazyRouteComponent(() => import('./pages/X'), 'X')` của TanStack Router, kèm
 `defaultPreload: 'intent'` để **rê chuột / chạm vào tab là tải trước** - bấm vào mở ngay, gần như
-không thấy màn hình chờ. Trong lúc chờ chunk tải về, router hiện `PageFallback`
-(`src/components/PageFallback.tsx`) - một thẻ nhỏ “Đang mở bàn cờ cho bé…” chỉ vài thẻ `div`, không
-kéo thêm thư viện nào.
+không thấy màn hình chờ.
 
-Kết quả build (`npm run build`):
+Trong lúc chờ chunk tải về, router hiện `PageFallback` (`src/components/PageFallback.tsx`): một
+**bàn cờ xương 8×8** dựng bằng `div` thuần, dùng đúng 2 màu ô của bàn cờ thật
+(`#2f6b4f` / `#ffffff`) + hai hàng quân mờ trên hàng 8 và hàng 2. Vì đúng tỉ lệ và đúng màu nên khi
+bàn cờ thật hiện ra bé gần như không thấy “nhảy” bố cục. File này **không import thư viện nào**.
+
+Thư viện ít khi đổi được tách thành chunk riêng trong `vite.config.ts` (`build.rollupOptions.output.
+manualChunks`), để trình duyệt giữ trong cache dài hạn - bé nhận code mới mà không phải tải lại
+React / TanStack / thư viện cờ:
 
 | File | Trước | Sau |
 | --- | --- | --- |
-| `index-*.js` (khung app + router) | 516.30 kB (gzip 162.28) | **334.80 kB (gzip 107.64)** |
+| `index-*.js` (mã app + router) | **516.30 kB** (gzip 162.28) | **16.55 kB** (gzip 6.43) |
 
-Các chunk tách ra: `BoardStage` 119.79 kB (dùng chung: bàn cờ + chess.js) · `OpeningsPage`
-12.50 kB · `FreePlayPage` 13.13 kB · `EndgamesPage` 7.94 kB · `TacticsPage` 6.24 kB. Lần đầu mở một
-tab mới gần như chỉ tải thêm 6-13 kB, vì các chunk dùng chung đã nằm trong cache trình duyệt.
+Các chunk còn lại: `vendor-react` 206.83 · `vendor-tanstack` 107.88 · `vendor-chess` 119.51
+(chess.js + react-chessboard + dnd-kit) · `BoardStage` 12.39 · `OpeningsPage` 12.58 ·
+`FreePlayPage` 13.21 · `EndgamesPage` 8.03 · `TacticsPage` 6.33 · `queries` 15.07 kB. Không chunk
+nào vượt 500 kB, và lần đầu mở một tab mới chỉ tải thêm **6-13 kB**.
+
 
 ## 📁 Cấu trúc
 
 ```
 src/
-├── components/     # Bàn cờ, BoardStage (khối bàn cờ tự co), banner giải thích, Mắt Thần, bản đồ leo cấp, modal, UI
-├── data/           # openings · tactics · endgames · ranks · queries (TanStack Query)
+├── components/     # Bàn cờ, BoardStage (khối bàn cờ tự co), banner giải thích, Mắt Thần, bản đồ leo cấp, modal, UI, PageFallback (bàn cờ xương lúc chờ tab)
+├── data/           # openings · tactics (7 họ đòn) · endgames · ranks · queries (TanStack Query)
 ├── engine/         # minimax.ts · engine.worker.ts · useChessEngine.ts
 ├── hooks/          # useChessGame (ván cờ SAN) · useCurriculum (mở khoá theo cấp)
-├── layout/         # RootLayout: header, 4 tab, thanh tuỳ chọn của bé
+├── layout/         # RootLayout: header, 6 tab, huy hiệu ôn tập, thanh tuỳ chọn của bé
 ├── lib/            # notation · threats (heatmap + quân bị treo) · hints · sound (Web Audio)
-├── pages/          # Openings · Tactics · Endgames · FreePlay
-└── store/          # KidProgressProvider (⭐, huy chương, tuỳ chọn - localStorage)
-scripts/            # validate-chess · smoke-logic · smoke-engine
+│                   # review (lịch ôn tập ngắt quãng) · stages (lộ trình 7 → 18 tuổi)
+├── pages/          # Openings · Tactics · Endgames · Strategy · Review · FreePlay
+└── store/          # KidProgressProvider (⭐, huy chương, giai đoạn, tuỳ chọn - localStorage)
+                    # ReviewProvider (lịch ôn tập - localStorage)
+scripts/            # validate-chess · smoke-logic · smoke-review · smoke-stages · smoke-engine
                     # browser-engine-test · browser-arrow-test
                     # browser-learn-drag-test · browser-hint-drag-test
                     # browser-theme-test · browser-layout-test
@@ -221,8 +267,10 @@ chốt - nền giấy ngà, khung bàn cờ xanh rừng, quân Tốt trắng tr�
 
 | Script | Nội dung |
 | --- | --- |
-| `validate-chess.ts` | Mọi FEN hợp lệ, mọi dòng khai cuộc đi đúng luật, và **chứng minh bản chất từng đòn**: Fork phải tấn công ≥ 2 quân, Pin ≥ 1 quân, Skewer phải chiếu Vua. Thế tàn cờ phải thật sự có nước chiếu bí. |
+| `validate-chess.ts` | Mọi FEN hợp lệ, mọi dòng khai cuộc đi đúng luật, và **chứng minh bản chất từng đòn**: Fork phải tấn công ≥ 2 quân, Pin ≥ 1 quân, Skewer phải chiếu Vua, Đòn mở phải chiếu bằng quân phía sau (chứ không phải quân vừa đi), Chiếu đôi phải có ≥ 2 quân cùng chiếu, Hàng cuối phải là chiếu bí đúng ở hàng 1/8, Bí ngạt phải là chiếu bí do Mã. Thế tàn cờ phải thật sự có nước chiếu bí. |
 | `smoke-logic.ts` | Ký hiệu nước đi, heatmap 64 ô, **cảnh báo quân bị treo**, gợi ý tàn cuộc. |
+| `smoke-review.ts` | Bộ lịch **ôn tập ngắt quãng**: đúng thì lên hộp và hẹn xa dần (1 → 3 → 7 → 21 ngày), sai thì rơi về hộp đầu và hẹn lại sau 10 phút, tới hạn thì quá hạn lâu nhất lên trước. |
+| `smoke-stages.ts` | **Lộ trình 7 → 18 tuổi**: bốn giai đoạn phủ kín từng tuổi không hở cũng không chồng, suy từ năm sinh, máy mạnh dần và buổi ôn dài dần theo tuổi, chính sách gợi ý chặt dần. |
 | `smoke-engine.ts` | Bộ máy tự đấu hết ván, tìm được chiếu bí, biết ăn Hậu bị treo, không bao giờ trả nước sai luật. |
 | `browser-engine-test.mjs` | Mở Chrome thật qua DevTools Protocol, bấm “Bé cầm quân Đen” và xác nhận **Web Worker trả về một nước đi hợp lệ** cho bé (kiểm tra độc lập với tuýp ký hiệu đang chọn). |
 | `browser-arrow-test.mjs` | Đo hình học thật của **mũi tên vàng đồng**: đuôi phải nằm trong ô xuất phát, đầu phải nằm trong ô đích, dài ~2 ô, và đúng cả khi bàn cờ đã **xoay 180°** cho bé cầm quân Đen. Bài này còn **quét 6 nước liên tiếp** và đọc toạ độ thật trong thẻ `<path>` của mũi tên để xác nhận **đuôi luôn nằm trên quân của bên đang đi** (Trắng/Đen xen kẽ), kể cả nước chéo và nước Mã. Cuối cùng, bài này **bấm thử cả 4 phím mũi tên** và kiểm tra bàn cờ có nhảy đúng nước không. |

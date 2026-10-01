@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useKidProgress } from '../store/progress'
 
 interface Particle {
   x: number
@@ -18,13 +19,16 @@ const COLORS = ['#d9a93f', '#356c4f', '#68ae77', '#bc5f4e', '#417f91', '#e8c471'
 
 /**
  * Pháo hoa giấy khen bé giải đúng. Vẽ bằng canvas, tự tắt sau ~2.6 giây.
+ * Tự tắt hẳn từ giai đoạn Thiếu niên (13+) theo `stages.ts`.
  */
 export function Confetti({ show, onDone }: { show: boolean; onDone?: () => void }) {
+  const { stage } = useKidProgress()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const frameRef = useRef<number | null>(null)
+  const active = show && stage.confetti
 
   useEffect(() => {
-    if (!show) return
+    if (!active) return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -115,9 +119,9 @@ export function Confetti({ show, onDone }: { show: boolean; onDone?: () => void 
       window.removeEventListener('resize', resize)
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
     }
-  }, [show, onDone])
+  }, [active, onDone])
 
-  if (!show) return null
+  if (!active) return null
 
   return (
     <canvas

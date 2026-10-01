@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { router } from './router'
 import { KidProgressProvider } from './store/progress'
+import { ReviewProvider } from './store/review'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <KidProgressProvider>
-        <RouterProvider router={router} />
+        <ReviewProvider>
+          <RouterProvider router={router} />
+        </ReviewProvider>
       </KidProgressProvider>
     </QueryClientProvider>
   </StrictMode>,

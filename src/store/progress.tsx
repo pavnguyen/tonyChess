@@ -8,7 +8,9 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import { currentRank, nextRankOf } from '../data/ranks'
+import { DEFAULT_STAGE_ID, stageById, suggestedStage } from '../lib/stages'
 import { setMuted } from '../lib/sound'
+import type { Stage, StageId } from '../lib/stages'
 import type { NotationStyle, RankInfo } from '../types'
 
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.v1'
@@ -20,6 +22,12 @@ interface Persisted {
   soundOn: boolean
   /** Bố mẹ mở khoá toàn bộ bài học, bỏ qua thứ tự leo cấp. */
   unlockAll: boolean
+  /** Giai đoạn đang học (quyết định nội dung, gợi ý, vè, pháo hoa). */
+  stageId: StageId
+  /** Năm sinh của bé - nguồn gợi ý giai đoạn (null = bố mẹ chọn tay). */
+  birthYear: number | null
+  /** Bé/bố mẹ đã tự chọn cách ghi nước đi chưa (nếu rồi thì không ghi đè). */
+  notationPinned: boolean
 }
 
 const DEFAULTS: Persisted = {
@@ -28,12 +36,17 @@ const DEFAULTS: Persisted = {
   notation: 'figurine',
   soundOn: true,
   unlockAll: false,
+  stageId: DEFAULT_STAGE_ID,
+  birthYear: null,
+  notationPinned: false,
 }
 
 interface KidContextValue extends Persisted {
   rank: RankInfo
   nextRank: RankInfo | null
   progressToNext: number
+  /** Giai đoạn đang học, đã giải sẵn từ `stageId`. */
+  stage: Stage
   isCompleted: (id: string) => boolean
   addStars: (amount: number) => void
   /** Trả về `true` nếu đây là lần đầu hoàn thành hoạt động này. */
@@ -41,6 +54,8 @@ interface KidContextValue extends Persisted {
   setNotation: (notation: NotationStyle) => void
   toggleSound: () => void
   toggleUnlockAll: () => void
+  setStageId: (id: StageId) => void
+  setBirthYear: (year: number | null) => void
   resetProgress: () => void
 }
 
@@ -58,6 +73,9 @@ function load(): Persisted {
       notation: parsed.notation ?? 'figurine',
       soundOn: parsed.soundOn ?? true,
       unlockAll: parsed.unlockAll ?? false,
+      stageId: parsed.stageId ?? DEFAULT_STAGE_ID,
+      birthYear: typeof parsed.birthYear === 'number' ? parsed.birthYear : null,
+      notationPinned: parsed.notationPinned ?? false,
     }
   } catch {
     return DEFAULTS
@@ -95,7 +113,28 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setNotation = useCallback((notation: NotationStyle) => {
-    setState((prev) => ({ ...prev, notation }))
+    // Bé/bố mẹ tự chọn → đánh dấu để giai đoạn không ghi đè nữa.
+    setState((prev) => ({ ...prev, notation, notationPinned: true }))
+  }, [])
+
+  const setStageId = useCallback((id: StageId) => {
+    setState((prev) => ({
+      ...prev,
+      stageId: id,
+      notation: prev.notationPinned ? prev.notation : stageById(id).notation,
+    }))
+  }, [])
+
+  const setBirthYear = useCallback((year: number | null) => {
+    setState((prev) => {
+      const stage = suggestedStage({ birthYear: year })
+      return {
+        ...prev,
+        birthYear: year,
+        stageId: stage.id,
+        notation: prev.notationPinned ? prev.notation : stage.notation,
+      }
+    })
   }, [])
 
   const toggleSound = useCallback(() => {
@@ -120,12 +159,15 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
       rank,
       nextRank,
       progressToNext,
+      stage: stageById(state.stageId),
       isCompleted: (id: string) => state.completed.includes(id),
       addStars,
       completeActivity,
       setNotation,
       toggleSound,
       toggleUnlockAll,
+      setStageId,
+      setBirthYear,
       resetProgress,
     }
   }, [
@@ -135,6 +177,8 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
     setNotation,
     toggleSound,
     toggleUnlockAll,
+    setStageId,
+    setBirthYear,
     resetProgress,
   ])
 

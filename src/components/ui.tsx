@@ -18,13 +18,24 @@ const VARIANTS: Record<Variant, string> = {
     'border border-sand-200 bg-white text-brand-700 shadow-[0_3px_0_#dcd4c1] hover:bg-brand-50 active:shadow-[0_2px_0_#dcd4c1]',
 }
 
+/**
+ * Cỡ nút. `sm` dùng cho những hàng có nhiều nút (trang Chiến lược) - nhờ vậy cả
+ * hàng nút nằm gọn một dòng, bé không phải cuộn và bàn cờ được rộng hơn.
+ */
+const SIZES = {
+  md: 'px-4 py-2.5 text-sm sm:text-base',
+  sm: 'px-2.5 py-1.5 text-xs sm:text-sm',
+} as const
+
 interface KidButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
+  size?: keyof typeof SIZES
   children: ReactNode
 }
 
 export function KidButton({
   variant = 'primary',
+  size = 'md',
   className = '',
   children,
   ...rest
@@ -32,7 +43,7 @@ export function KidButton({
   return (
     <button
       {...rest}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-extrabold transition-all duration-100 select-none active:translate-y-[3px] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:translate-y-[3px] sm:text-base ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-2xl font-extrabold transition-all duration-100 select-none active:translate-y-[3px] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:translate-y-[3px] ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
     >
       {children}
     </button>

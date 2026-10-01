@@ -12,6 +12,7 @@ import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useCurriculum } from '../hooks/useCurriculum'
+import { useEyeCheck } from '../hooks/useEyeCheck'
 import { useOpeningsQuery } from '../data/queries'
 import {
   ARROW_COLOR,
@@ -21,31 +22,31 @@ import {
   opponentAnnotation,
   pieceFromSan,
 } from '../lib/notation'
-import { playError, playMove, playTick, playWin } from '../lib/sound'
+import { reviewKey } from '../lib/review'
+import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useReview } from '../store/review'
 import type { CSSProperties } from 'react'
 import type { MoveAnnotation, Opening } from '../types'
 
-type Mode = 'learn' | 'memorize' | 'speed'
+type Mode = 'learn' | 'memorize'
 
 const MODES: { value: Mode; label: string; icon: string }[] = [
   { value: 'learn', label: 'Học từng bước', icon: '📖' },
   { value: 'memorize', label: 'Luyện thuộc lòng', icon: '🧠' },
-  { value: 'speed', label: 'Đua tốc độ 30s', icon: '⚡' },
 ]
-
-const SPEED_SECONDS = 30
 
 const NO_OPENINGS: Opening[] = []
 
 export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
-  const { notation, completeActivity, soundOn } = useKidProgress()
+  const { notation, completeActivity, soundOn, stage } = useKidProgress()
+  const { record } = useReview()
+  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [openingId, setOpeningId] = useState('london')
   const [mode, setMode] = useState<Mode>('learn')
   const [ply, setPly] = useState(0)
-  const [heatmap, setHeatmap] = useState(false)
   const [autoPlay, setAutoPlay] = useState(false)
   const [hintVisible, setHintVisible] = useState(true)
   const [confetti, setConfetti] = useState(false)
@@ -54,9 +55,6 @@ export function OpeningsPage() {
     plyIndex: number
   } | null>(null)
   const [finished, setFinished] = useState(false)
-  const [secondsLeft, setSecondsLeft] = useState(SPEED_SECONDS)
-  const [running, setRunning] = useState(false)
-  const [speedScore, setSpeedScore] = useState(0)
   const [result, setResult] = useState<{
     emoji: string
     title: string
@@ -101,9 +99,6 @@ export function OpeningsPage() {
     setWrongInfo(null)
     setFinished(false)
     setAutoPlay(false)
-    setRunning(false)
-    setSecondsLeft(SPEED_SECONDS)
-    setSpeedScore(0)
     awardedRef.current = false
     replyAfterDropRef.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,61 +133,27 @@ export function OpeningsPage() {
     return () => clearTimeout(timer)
   }, [mode, autoPlay, ply, opening])
 
-  // Đồng hồ đua tốc độ.
-  useEffect(() => {
-    if (!running) return
-    const id = setInterval(() => {
-      setSecondsLeft((value) => Math.max(0, Math.round((value - 0.1) * 10) / 10))
-    }, 100)
-    return () => clearInterval(id)
-  }, [running])
-
-  // Tích tắc cảnh báo 5 giây cuối (đặt ngoài updater để không lặp âm thanh).
-  const wholeSecond = Math.ceil(secondsLeft)
-  useEffect(() => {
-    if (!running || wholeSecond <= 0 || wholeSecond > 5) return
-    if (soundOn) playTick()
-  }, [wholeSecond, running, soundOn])
-
-  useEffect(() => {
-    if (!running || secondsLeft > 0) return
-    setRunning(false)
-    const stars = Math.max(2, speedScore * 2)
-    completeActivity(`openings:${opening?.id}:speed`, stars)
-    if (soundOn) playTick()
-    setResult({
-      emoji: '⏰',
-      title: 'Hết giờ rồi!',
-      message: `Bé xếp được ${speedScore}/${totalKidMoves} nước đúng trong 30 giây. Giỏi lắm!`,
-      stars,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, secondsLeft])
-
   /** Bé đi đúng hết bài → tặng Cúp Vàng. */
   useEffect(() => {
     if (mode === 'learn' || !opening || finished) return
     if (ply !== opening.moves.length) return
     setFinished(true)
-    setRunning(false)
     setAutoPlay(false)
     if (awardedRef.current) return
     awardedRef.current = true
-    const stars = mode === 'speed' ? 10 + speedScore : 6
-    completeActivity(
-      mode === 'speed' ? `openings:${opening.id}:speed` : `openings:${opening.id}:memorize`,
-      stars,
-    )
+    const stars = 6
+    record(reviewKey('opening', opening.id), true)
+    completeActivity(`openings:${opening.id}:memorize`, stars)
     if (soundOn) playWin()
     setConfetti(true)
     setResult({
       emoji: '🏆',
-      title: mode === 'speed' ? 'Vô địch đua tốc độ!' : 'Cúp Vàng thuộc về bé!',
+      title: 'Cúp Vàng thuộc về bé!',
       message: `Bé đã thuộc trọn vẹn ${opening.name} của ${opening.gm}!`,
       stars,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ply, mode, opening, finished, speedScore])
+  }, [ply, mode, opening, finished])
 
   /**
    * Nước đi kế tiếp. `mine` = nước này thuộc về bé (bé cầm quân đi được), dùng
@@ -305,15 +266,10 @@ export function OpeningsPage() {
     )
   }
 
-  // Tới lượt bé thì bé kéo-thả quân của mình (chế độ thi đua chỉ tính khi
-  // đồng hồ đang chạy). Học từng bước cũng cho kéo-thả như hai chế độ kia.
+  // Tới lượt bé thì bé kéo-thả quân của mình. Học từng bước cũng cho kéo-thả
+  // như chế độ Luyện thuộc lòng.
   const kidTurn = isKidPly(ply) && ply < opening.moves.length
-  const interactive =
-    mode === 'memorize' || mode === 'learn'
-      ? kidTurn
-      : mode === 'speed'
-        ? running && kidTurn
-        : false
+  const interactive = kidTurn
 
   const handleDrop = (from: string, to: string): boolean => {
     if (!interactive || !opening) return false
@@ -340,7 +296,6 @@ export function OpeningsPage() {
     }
     // Đi đúng!
     if (soundOn) playMove()
-    if (mode === 'speed') setSpeedScore((value) => value + 1)
     setWrongInfo(null)
     // Chế độ học luôn giữ gợi ý sáng để bé đi tiếp nước sau.
     if (mode === 'learn') {
@@ -351,19 +306,6 @@ export function OpeningsPage() {
     setPly((value) => value + 1)
     return true
   }
-
-  const startSpeedRun = () => {
-    setPly(0)
-    setSpeedScore(0)
-    setSecondsLeft(SPEED_SECONDS)
-    setRunning(true)
-    setFinished(false)
-    setWrongInfo(null)
-    setHintVisible(false)
-    awardedRef.current = false
-  }
-
-  const countdownRatio = secondsLeft / SPEED_SECONDS
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
@@ -404,11 +346,34 @@ export function OpeningsPage() {
       {/* Cột phải: tab chế độ, bản đồ leo cấp, điều khiển, mục tiêu… (tự cuộn) */}
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
-          <SectionTitle
-            icon="🛡️"
-            title="Khai cuộc Đại Kiện Tướng"
-            subtitle={`Đang học: ${opening.name} · ${opening.gm}`}
-          />
+          {/*
+            Mắt Thần nằm CÙNG HÀNG với tiêu đề: tiết kiệm hẳn một hàng so với để
+            nút riêng bên dưới, nhờ vậy cột phải không phải cuộn.
+
+            `min-w-0` là BẮT BUỘC: đây là một ô của lưới Panel, mà ô lưới mặc định
+            có min-width:auto nên sẽ nở rộng bằng cả câu `nowrap` của tiêu đề
+            (đo được 487px trong khung 372px) làm cả trang tràn ngang.
+
+            `sm:flex-nowrap` cũng vậy: chữ `truncate` vẫn tính cả bề rộng vào
+            min-content, nên nếu để flex-wrap thì hai nút tự đẩy nhau xuống hai
+            hàng (đo được 106px thay vì 52px) - và thế là cột phải bị cuộn.
+            Trên điện thoại thì cứ để xuống hàng cho tiêu đề đọc được đầy đủ.
+          */}
+          <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-2 sm:flex-nowrap">
+            <div className="min-w-0 flex-1">
+              <SectionTitle
+                icon="🛡️"
+                title="Khai cuộc Đại Kiện Tướng"
+                subtitle={`Đang học: ${opening.name} · ${opening.gm}`}
+              />
+            </div>
+            <EyeToggle
+              className="shrink-0"
+              on={heatmap}
+              onToggle={toggleHeatmap}
+              checkMode={checkMode}
+            />
+          </div>
           <Segmented
             options={MODES.map((m) => ({
               value: m.value,
@@ -419,9 +384,6 @@ export function OpeningsPage() {
             onChange={setMode}
             size="sm"
           />
-          <div className="relative">
-            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
-          </div>
         </Panel>
 
         <Panel>
@@ -493,12 +455,7 @@ export function OpeningsPage() {
                 >
                   💡 Gợi ý
                 </KidButton>
-                {mode === 'speed' && (
-                  <KidButton variant="grass" onClick={startSpeedRun}>
-                    {running ? '🔁 Đua lại' : '🚀 Bắt đầu 30s'}
-                  </KidButton>
-                )}
-                <KidButton variant="ghost" onClick={() => { replyAfterDropRef.current = false; setPly(0); setHintVisible(false); setWrongInfo(null); setFinished(false); setRunning(false); setSecondsLeft(SPEED_SECONDS); setSpeedScore(0); awardedRef.current = false }}>
+                <KidButton variant="ghost" onClick={() => { replyAfterDropRef.current = false; setPly(0); setHintVisible(false); setWrongInfo(null); setFinished(false); awardedRef.current = false }}>
                   🔄 Chơi lại
                 </KidButton>
               </>
@@ -510,37 +467,29 @@ export function OpeningsPage() {
               🖐️ Kéo quân viền vàng sang viền xanh · ⌨️ hoặc bấm ◀ ▶ ▲ ▼
             </p>
           )}
-
-          {mode === 'speed' && (
-            <div className="rounded-2xl bg-brand-50 p-2.5">
-              <div className="mb-1 flex items-center justify-between text-xs font-extrabold text-brand-700">
-                <span>⏱️ Còn {secondsLeft.toFixed(1)}s</span>
-                <span>
-                  ✅ {speedScore}/{totalKidMoves} nước
-                </span>
-              </div>
-              <div className="h-3 w-full overflow-hidden rounded-full bg-white">
-                <div
-                  className={`h-full rounded-full transition-all duration-100 ${
-                    countdownRatio < 0.3
-                      ? 'bg-gradient-to-r from-coral-500 to-coral-400'
-                      : 'bg-gradient-to-r from-leaf-400 to-info-400'
-                  }`}
-                  style={{ width: `${Math.max(0, countdownRatio) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
         </Panel>
 
-        <HangingWarnings fen={fens[ply]} viewpoint={opening.side} enabled={heatmap} />
+        <HangingWarnings
+          fen={fens[ply]}
+          viewpoint={opening.side}
+          enabled={heatmap && (stage.id === 'nhi' || stage.id === 'thieu-nhi')}
+        />
 
+        {/*
+          Một khối duy nhất cho “bài đang học + các nước cần thuộc”: trước đây là
+          hai Panel, mỗi Panel một SectionTitle 44px - gộp lại là hết cuộn.
+        */}
         <Panel className="grid gap-2">
-          <SectionTitle
-            icon={opening.emoji}
-            title={`${opening.name} · ${opening.englishName}`}
-            subtitle={`${opening.gm} - ${opening.tagline}`}
-          />
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <SectionTitle
+              icon={opening.emoji}
+              title={`${opening.name} · ${opening.englishName}`}
+              subtitle={`${opening.gm} - ${opening.tagline}`}
+            />
+            <span className="rounded-full bg-sand-100 px-2.5 py-0.5 text-[0.7rem] font-extrabold text-brand-600 ring-1 ring-sand-200">
+              🎯 thuộc {totalKidMoves} nước
+            </span>
+          </div>
 
           {opening.side === 'black' && (
             <p className="rounded-xl bg-info-50 px-2.5 py-1.5 text-center text-[0.7rem] font-extrabold text-info-700">
@@ -554,21 +503,8 @@ export function OpeningsPage() {
             notation={notation}
             onJump={mode === 'learn' ? (index) => setPly(index) : undefined}
           />
-        </Panel>
 
-        <Panel>
-          <SectionTitle
-            icon="🎯"
-            title={`Mục tiêu: thuộc ${totalKidMoves} nước`}
-            subtitle={
-              mode === 'learn'
-                ? 'Bấm Tiến để xem từng nước kèm khẩu quyết vè.'
-                : mode === 'speed'
-                  ? 'Xếp đúng càng nhiều nước càng tốt trong 30 giây!'
-                  : 'Bé kéo thả đúng từng nước để nhận Cúp Vàng 🏆.'
-            }
-          />
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {opening.moves
               .map((move, index) => ({ move, index }))
               .filter(({ index }) => isKidPly(index))
@@ -596,6 +532,12 @@ export function OpeningsPage() {
                 )
               })}
           </div>
+
+          <p className="text-[0.7rem] font-bold text-brand-400">
+            {mode === 'learn'
+              ? '🎯 Bấm Tiến để xem từng nước kèm khẩu quyết vè.'
+              : '🎯 Bé kéo thả đúng từng nước để nhận Cúp Vàng 🏆.'}
+          </p>
         </Panel>
       </div>
 
@@ -614,9 +556,6 @@ export function OpeningsPage() {
           setHintVisible(mode === 'learn')
           setWrongInfo(null)
           setAutoPlay(false)
-          setRunning(false)
-          setSecondsLeft(SPEED_SECONDS)
-          setSpeedScore(0)
           awardedRef.current = false
         }}
       />

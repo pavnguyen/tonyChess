@@ -118,7 +118,7 @@ const OG_HTML = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
     <div class="brand">
       <div class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${PAWN()}</svg></div>
       <div>
-        <h1>Học Viện Cờ Vua Nhí</h1>
+        <h1>Nam An - Cờ Vua</h1>
         <p class="sub">Cùng bé 7 tuổi lên Đại Kiện Tướng</p>
       </div>
     </div>

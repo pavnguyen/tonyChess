@@ -128,22 +128,6 @@ export function useChessGame(initialFen: string, playerSide: Side) {
     [game, append],
   )
 
-  /** Đối thủ "ngẫu nhiên" đi một nước hợp lệ bất kỳ. */
-  const autoReply = useCallback((): Move | null => {
-    const probe = new Chess(game.fen())
-    const options = probe.moves()
-    if (options.length === 0) return null
-    const pick = options[Math.floor(Math.random() * options.length)]
-    let move: Move
-    try {
-      move = probe.move(pick)
-    } catch {
-      return null
-    }
-    append(move.san)
-    return move
-  }, [game, append])
-
   const reset = useCallback(() => {
     setState({ key: initialFen, sans: [] })
   }, [initialFen])
@@ -179,7 +163,6 @@ export function useChessGame(initialFen: string, playerSide: Side) {
     playerToMove,
     playMove,
     playSan,
-    autoReply,
     reset,
     undoMoves,
     legalMovesFor,

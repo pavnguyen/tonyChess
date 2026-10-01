@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js'
 import type { Move } from 'chess.js'
 
-export type Difficulty = 'easy' | 'medium' | 'hard'
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'master'
 
 export interface EngineMove {
   san: string
@@ -21,11 +21,12 @@ export interface EngineConfig {
   epsilon: number
 }
 
-/** Ba mức độ dành cho bé 7 tuổi. */
+/** Bốn mức độ: bé mới chơi tới kỳ thủ chuyên nghiệp. */
 export const DIFFICULTY: Record<Difficulty, EngineConfig> = {
   easy: { depth: 1, timeBudget: 200, blunderChance: 0.35, epsilon: 120 },
   medium: { depth: 2, timeBudget: 900, blunderChance: 0.08, epsilon: 35 },
   hard: { depth: 3, timeBudget: 1800, blunderChance: 0, epsilon: 0 },
+  master: { depth: 4, timeBudget: 3000, blunderChance: 0, epsilon: 0 },
 }
 
 const VALUES: Record<string, number> = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 }

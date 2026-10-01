@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NOTATION_OPTIONS } from '../lib/notation'
+import { STAGES } from '../lib/stages'
 import { useKidProgress } from '../store/progress'
 
 /**
@@ -19,6 +20,10 @@ export function HeaderOptions() {
     unlockAll,
     toggleUnlockAll,
     resetProgress,
+    stage,
+    setStageId,
+    birthYear,
+    setBirthYear,
   } = useKidProgress()
 
   return (
@@ -60,6 +65,54 @@ export function HeaderOptions() {
                 ? `Còn ${nextRank.minStars - stars} ⭐ nữa để thành ${nextRank.emoji} ${nextRank.title}`
                 : 'Bé đã đạt danh hiệu cao nhất! 🌟'}
             </p>
+
+            <p className="mt-2.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+              🎚️ Giai đoạn của bé
+            </p>
+            <div className="mt-1 grid grid-cols-2 gap-1">
+              {STAGES.map((item) => {
+                const active = item.id === stage.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setStageId(item.id)}
+                    className={`flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
+                      active
+                        ? 'border-brand-400 bg-brand-50 text-brand-800'
+                        : 'border-brand-100 bg-white text-brand-500 hover:border-brand-300'
+                    }`}
+                  >
+                    <span aria-hidden>{item.emoji}</span>
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              <label htmlFor="kid-birth-year" className="text-xs font-extrabold text-brand-600">
+                🎂 Năm sinh
+              </label>
+              <input
+                id="kid-birth-year"
+                type="number"
+                inputMode="numeric"
+                min={1990}
+                max={2100}
+                placeholder="VD 2019"
+                value={birthYear ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value
+                  setBirthYear(value ? Number(value) : null)
+                }}
+                className="w-24 rounded-xl border-2 border-brand-100 px-2 py-1 text-xs font-extrabold text-brand-800"
+              />
+            </div>
+            <p className="mt-1 text-[0.65rem] font-bold text-brand-600">
+              {stage.emoji} <b>{stage.label}</b> · {stage.focus}
+            </p>
+            <p className="text-[0.65rem] font-bold text-brand-400">🏅 {stage.promotion}</p>
 
             <p className="mt-2.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               ✍️ Cách ghi nước đi

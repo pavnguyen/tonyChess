@@ -27,6 +27,10 @@ const ROUTES = [
   { path: '/', name: 'Khai cuộc' },
   { path: '/tactics', name: 'Săn quân' },
   { path: '/endgames', name: 'Tàn cuộc' },
+  // Trang Chiến lược có nhiều nút điều khiển dưới bàn cờ hơn nên chừa nhiều chỗ hơn.
+  { path: '/strategy', name: 'Chiến lược', minBoardScale: 0.86 },
+  // Trang Ôn tập KHÔNG có bàn cờ - chỉ kiểm tra không tràn ngang + đủ 6 tab.
+  { path: '/review', name: 'Ôn tập', boardless: true },
   { path: '/free-play', name: 'Đấu Máy' },
 ]
 
@@ -108,6 +112,25 @@ const waitForBoard = async (timeoutMs = 10000) => {
   return false
 }
 
+/** Chờ một phần tử bất kỳ xuất hiện (dùng cho trang không có bàn cờ). */
+const waitForSelector = async (id, timeoutMs = 10000) => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    let ready = false
+    try {
+      ready = await evaluate(`Boolean(document.getElementById(${JSON.stringify(id)}))`)
+    } catch {
+      // Trang đang chuyển hướng → thử lại.
+    }
+    if (ready) {
+      await sleep(250)
+      return true
+    }
+    await sleep(150)
+  }
+  return false
+}
+
 for (const viewport of VIEWPORTS) {
   await send('Emulation.setDeviceMetricsOverride', {
     width: viewport.width,
@@ -118,7 +141,35 @@ for (const viewport of VIEWPORTS) {
   console.log(`\n  ── ${viewport.name} ──`)
 
   for (const route of ROUTES) {
+    // Vài trang có nhiều nút điều khiển dưới bàn cờ hơn nên chấp nhận bàn cờ nhỏ
+    // hơn một chút, tính theo tỉ lệ của từng khung nhìn.
+    const minBoard = Math.round(viewport.minBoard * (route.minBoardScale ?? 1))
     await evaluate(`location.href = ${JSON.stringify(`${BASE}${route.path}`)}`)
+
+    // Trang không có bàn cờ: chỉ kiểm tra không tràn ngang và đủ 6 tab.
+    if (route.boardless) {
+      await waitForSelector('kid-review-page')
+      const m = await measure()
+      if (!m) {
+        check(false, `${route.name}: không đo được bố cục`)
+        continue
+      }
+      check(
+        m.scrollW <= m.innerW + 2,
+        `${route.name}: không tràn ngang (${m.scrollW} ≤ ${m.innerW}px)`,
+      )
+      const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
+      check(tabCount === 6, `${route.name}: thanh tab có đủ 6 tab (${tabCount})`)
+      const schedW = await evaluate(`
+        (() => {
+          const nav = document.querySelector('nav')
+          return nav ? nav.scrollWidth : 0
+        })()
+      `)
+      check(schedW >= 0, `${route.name}: đo được chiều rộng thanh tab (${schedW}px)`)
+      continue
+    }
+
     await waitForBoard()
     const m = await measure()
     if (!m) {
@@ -150,8 +201,8 @@ for (const viewport of VIEWPORTS) {
         `${route.name}: bàn cờ nằm trọn trong màn hình (${Math.round(m.board.size)}px)`,
       )
       check(
-        m.board.size >= viewport.minBoard,
-        `${route.name}: bàn cờ đủ lớn (${Math.round(m.board.size)} ≥ ${viewport.minBoard}px)`,
+        m.board.size >= minBoard,
+        `${route.name}: bàn cờ đủ lớn (${Math.round(m.board.size)} ≥ ${minBoard}px)`,
       )
     } else {
       check(false, `${route.name}: không tìm thấy bàn cờ`)

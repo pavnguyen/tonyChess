@@ -8,6 +8,7 @@ import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
 import { useChessEngine } from '../engine/useChessEngine'
 import { useChessGame } from '../hooks/useChessGame'
+import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BOARD_MARKS, formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
@@ -35,12 +36,21 @@ const DIFFICULTY_OPTIONS: { value: Difficulty; label: string; icon: string }[] =
   { value: 'easy', label: 'Dễ', icon: '🐣' },
   { value: 'medium', label: 'Vừa', icon: '🐰' },
   { value: 'hard', label: 'Khó', icon: '🦊' },
+  { value: 'master', label: 'Siêu', icon: '🦁' },
 ]
+
+const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  easy: 'Dễ',
+  medium: 'Vừa',
+  hard: 'Khó',
+  master: 'Siêu',
+}
 
 const DIFFICULTY_BLURB: Record<Difficulty, string> = {
   easy: 'Máy chơi ngây thơ, hay quên bảo vệ quân - bé tha hồ săn quân!',
   medium: 'Máy biết ăn quân và tránh mất quân. Bé phải nhìn kỹ nhé!',
   hard: 'Máy tính trước 3 nước. Hãy bật 👁️ Mắt Thần trước khi đi!',
+  master: 'Máy tính trước 4 nước, gần như không mắc lỗi. Dành cho bé đã rất chắc tay!',
 }
 
 export function FreePlayPage() {
@@ -49,7 +59,7 @@ export function FreePlayPage() {
 
   const [kidSide, setKidSide] = useState<Side>('white')
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
-  const [heatmap, setHeatmap] = useState(true)
+  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
   const [confetti, setConfetti] = useState(false)
   const [result, setResult] = useState<{
@@ -107,13 +117,12 @@ export function FreePlayPage() {
         if (soundOn) playWin()
         setConfetti(true)
         const first = completeActivity('freeplay:first-win', 8)
-        const tough = difficulty === 'hard' ? 6 : difficulty === 'medium' ? 3 : 0
+        const tough =
+          difficulty === 'master' ? 9 : difficulty === 'hard' ? 6 : difficulty === 'medium' ? 3 : 0
         setResult({
           emoji: '🏆',
           title: 'Bé chiếu bí máy rồi!',
-          message: `Tuyệt vời! Bé đã hạ gục chú máy ở mức ${
-            difficulty === 'hard' ? 'Khó' : difficulty === 'medium' ? 'Vừa' : 'Dễ'
-          }.`,
+          message: `Tuyệt vời! Bé đã hạ gục chú máy ở mức ${DIFFICULTY_LABEL[difficulty]}.`,
           stars: (first ? 8 : 4) + tough,
         })
       } else {
@@ -229,7 +238,7 @@ export function FreePlayPage() {
             <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
               Nước {board.history.length + 1}
             </span>
-            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
           </>
         }
         board={
@@ -273,8 +282,8 @@ export function FreePlayPage() {
             >
               ↩️ Đi lại nước vừa rồi
             </KidButton>
-            <KidButton variant="ghost" onClick={() => setHeatmap((value) => !value)}>
-              👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
+            <KidButton variant="ghost" onClick={toggleHeatmap}>
+              {checkMode ? '🔍' : '👁️'} {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
             </KidButton>
           </div>
 
@@ -326,7 +335,7 @@ export function FreePlayPage() {
         <Panel className="grid gap-2">
           <SectionTitle
             icon="🎮"
-            title="Đấu tập tự do cùng chú Máy"
+            title="Đấu tập tự do cùng bạn Robot"
             subtitle="Chơi trọn một ván cờ thật, có Vua, Hậu, Xe, Tượng, Mã, Tốt đông đủ!"
           />
           <div className="grid gap-2 sm:grid-cols-2">

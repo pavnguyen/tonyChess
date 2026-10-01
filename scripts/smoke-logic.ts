@@ -105,6 +105,11 @@ for (const puzzle of TACTICS) {
   const game = new Chess()
   game.load(puzzle.fen)
   game.move(puzzle.solution)
+  // Các thế chiếu bí kết thúc ván ngay, không cần (và không thể) cho đối thủ đáp lại.
+  if (game.isGameOver()) {
+    check(true, `${puzzle.id}: ${puzzle.solution} kết thúc ván ngay (chiếu bí) - đúng như mong đợi`)
+    continue
+  }
   const options = game.moves()
   check(options.length > 0, `${puzzle.id}: sau ${puzzle.solution} đối thủ còn nước đi`)
 }

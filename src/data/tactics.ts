@@ -19,6 +19,26 @@ export const TACTIC_META: Record<
     emoji: '🍢',
     blurb: 'Đâm xuyên qua quân to đứng trước để bắt quân còn to hơn đứng sau.',
   },
+  discovered: {
+    label: 'Đòn mở (Discovered)',
+    emoji: '🔓',
+    blurb: 'Một quân nhảy đi để mở đường cho quân bạn phía sau chiếu Vua, rồi ung dung ăn quân.',
+  },
+  'double-check': {
+    label: 'Chiếu đôi (Double check)',
+    emoji: '⚡',
+    blurb: 'Hai quân cùng chiếu Vua một lúc - đối thủ chỉ còn cách chạy Vua, không đỡ được!',
+  },
+  'back-rank': {
+    label: 'Chiếu bí hàng cuối',
+    emoji: '🧱',
+    blurb: 'Vua bị nhốt sau hàng Tốt của chính mình, Xe hoặc Hậu tràn xuống hàng cuối là hết.',
+  },
+  smothered: {
+    label: 'Chiếu bí ngạt',
+    emoji: '🕸️',
+    blurb: 'Vua bị quân mình bủa vây tới mức không còn ô nào, Mã đáp xuống là bí.',
+  },
 }
 
 export const TACTICS: TacticPuzzle[] = [
@@ -141,6 +161,95 @@ export const TACTICS: TacticPuzzle[] = [
     hint: 'Đưa Xe lên hàng 5 để chiếu Vua theo hàng ngang.',
     explanation: 'Xe lên h5 chiếu Vua d5; Vua né sang là Xe ăn Xe a5 ở đầu hàng.',
     rhyme: 'Xiên ngang lấy Xe',
+  },
+
+  // ── Bốn đòn "hàng hiệu" mà kỳ thủ mạnh nào cũng phải nhận ra ngay ──
+  {
+    id: 'discovered-1',
+    type: 'discovered',
+    title: 'Mã nhảy mở đường cho Xe',
+    fen: '4k3/8/8/4N3/7q/8/8/K3R3 w - - 0 1',
+    solution: 'Ng6+',
+    hint: 'Mã đang đứng chắn trên cột e. Nhảy Mã đi nơi khác và để Xe tự chiếu Vua.',
+    explanation:
+      'Mã rời ô e5 làm Xe ở e1 chiếu thẳng Vua Đen; cùng lúc Mã ở g6 đã chĩa vào Hậu đen ở h4.',
+    rhyme: 'Mã đi, Xe chiếu',
+  },
+  {
+    id: 'discovered-2',
+    type: 'discovered',
+    title: 'Mã tới c5, Xe chiếu, Hậu mất',
+    fen: '4k3/8/8/8/q3N3/8/8/4R2K w - - 0 1',
+    solution: 'Nc5+',
+    hint: 'Mã đang che cột e cho Xe. Vừa nhảy Mã vừa nhằm đúng quân to của đối phương.',
+    explanation:
+      'Mã bỏ ô e4 làm Xe chiếu Vua; ô c5 mà Mã đáp xuống lại đang tấn công Hậu đen ở a4.',
+    rhyme: 'Mở đường bắt Hậu',
+  },
+  {
+    id: 'double-check-1',
+    type: 'double-check',
+    title: 'Xe và Mã cùng chiếu',
+    fen: '4k3/8/8/7N/8/8/8/4R2K w - - 0 1',
+    solution: 'Nf6+',
+    hint: 'Có quân đang chắn cột e. Nhảy Mã mà điểm đến cũng chiếu được Vua đen.',
+    explanation:
+      'Mã tới f6 vừa mở cột e cho Xe chiếu, vừa tự chiếu Vua e8 - hai quân cùng chiếu, Vua bắt buộc phải chạy.',
+    rhyme: 'Hai quân cùng chiếu',
+  },
+  {
+    id: 'double-check-2',
+    type: 'double-check',
+    title: 'Tượng và Mã cùng chiếu',
+    fen: '4k3/3N4/8/1B6/8/8/8/7K w - - 0 1',
+    solution: 'Nf6+',
+    hint: 'Mã đang đứng chắn đường chéo của Tượng. Nhảy Mã tới ô cũng chiếu được Vua.',
+    explanation:
+      'Mã rời d7 mở đường chéo b5-d7 cho Tượng chiếu Vua e8, và chính Mã ở f6 cũng đang chiếu.',
+    rhyme: 'Mở chéo, Mã chiếu',
+  },
+  {
+    id: 'back-rank-1',
+    type: 'back-rank',
+    title: 'Vua kẹt sau hàng Tốt',
+    fen: '6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1',
+    solution: 'Ra8#',
+    hint: 'Vua Đen tự nhốt mình sau ba Tốt. Đưa Xe lên hàng 8 ngay.',
+    explanation:
+      'Ba Tốt f7, g7, h7 chặn hết đường lùi của Vua, Xe tràn xuống a8 chiếu bí trên hàng cuối.',
+    rhyme: 'Hàng cuối là hết',
+  },
+  {
+    id: 'back-rank-2',
+    type: 'back-rank',
+    title: 'Hậu chiếu bí hàng cuối',
+    fen: '6k1/5ppp/8/3Q4/8/8/8/6K1 w - - 0 1',
+    solution: 'Qd8#',
+    hint: 'Không cần ăn gì cả - chỉ cần tràn xuống hàng 8.',
+    explanation: 'Hậu xuống d8 chiếu dọc hàng 8; Vua Đen bị chính Tốt của mình chặn phía sau.',
+    rhyme: 'Hậu tràn hàng cuối',
+  },
+  {
+    id: 'smothered-1',
+    type: 'smothered',
+    title: 'Mã chiếu bí ngạt',
+    fen: '6rk/6pp/8/4N3/8/8/8/4K3 w - - 0 1',
+    solution: 'Nf7#',
+    hint: 'Vua Đen bị Xe và Tốt của mình vây kín. Tìm ô Mã đáp xuống là chiếu bí.',
+    explanation:
+      'Vua Đen ở h8 bị Xe g8 và hai Tốt g7, h7 quây kín; Mã nhảy f7 là chiếu bí, không quân nào đỡ được.',
+    rhyme: 'Vua ngạt vì quân nhà',
+  },
+  {
+    id: 'smothered-2',
+    type: 'smothered',
+    title: 'Mã chiếu bí, Xe giữ ô g7',
+    fen: '6rk/7p/8/6N1/8/8/8/4K1R1 w - - 0 1',
+    solution: 'Nf7#',
+    hint: 'Vua Đen chỉ còn một ô để chạy. Xe trắng đang canh sẵn ô đó rồi.',
+    explanation:
+      'Xe trắng ở g1 canh chặt ô g7, nên khi Mã đáp xuống f7 chiếu, Vua Đen hết sạch đường lui.',
+    rhyme: 'Canh ô, Mã đáp xuống',
   },
 ]
 

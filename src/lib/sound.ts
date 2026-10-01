@@ -93,7 +93,7 @@ export function playPromote() {
   tone({ freq: 880, duration: 0.35, type: 'triangle', gain: 0.1, delay: 0.15 })
 }
 
-/** Tiếng tích tắc cho chế độ đua tốc độ. */
+/** Tiếng "tách" nhỏ khi bắt đầu ván mới. */
 export function playTick() {
   tone({ freq: 900, duration: 0.05, type: 'square', gain: 0.05 })
 }

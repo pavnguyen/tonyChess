@@ -12,6 +12,8 @@ export interface MoveAnnotation {
   reason: string
   /** Khẩu quyết vè 4-6 chữ cho bé nhẩm thuộc. */
   rhyme: string
+  /** Câu nguyên tắc cờ vua thay cho vè ở giai đoạn từ 13 tuổi (không bắt buộc). */
+  principle?: string
 }
 
 export interface OpeningMove {
@@ -34,7 +36,14 @@ export interface Opening {
   moves: OpeningMove[]
 }
 
-export type TacticType = 'fork' | 'pin' | 'skewer'
+export type TacticType =
+  | 'fork'
+  | 'pin'
+  | 'skewer'
+  | 'discovered'
+  | 'double-check'
+  | 'back-rank'
+  | 'smothered'
 
 export interface TacticPuzzle {
   id: string
@@ -64,6 +73,61 @@ export interface EndgameChallenge {
 }
 
 export type RankId = 'seed' | 'apprentice' | 'knight' | 'master'
+
+/** Một nửa nước trong bài giảng GM. Nước của bé có `annotation`; nước đối thủ thì không. */
+export interface GmPly {
+  san: string
+  /** Chỉ có ở những nửa nước thuộc về bé. */
+  annotation?: MoveAnnotation
+  /**
+   * Ô cần tô đỏ để bé thấy rõ ý đồ xấu của đối thủ vừa bị hoá giải
+   * (dùng cho bài “Phòng thủ dự phòng” - ví dụ ô g4).
+   */
+  spotlight?: string[]
+}
+
+export type GmModule = 'lever' | 'prophylaxis' | 'lucena' | 'philidor'
+
+export interface GmLecture {
+  id: string
+  module: GmModule
+  kind: 'middlegame' | 'endgame'
+  title: string
+  /** Đại Kiện Tướng gắn với kỹ thuật này. */
+  gm: string
+  emoji: string
+  /** Câu dẫn 1 dòng cho bé. */
+  tagline: string
+  /** Thế cờ bắt đầu. */
+  fen: string
+  /** Bé cầm quân màu nào (có bài Đen đi trước - Philidor). */
+  playerSide: Side
+  /** Đan xen nước của bé và nước đối thủ. */
+  moves: GmPly[]
+}
+
+/** Kết luận về một thế Tốt: tốt hay xấu cho bé. */
+export type PawnVerdict = 'good' | 'bad'
+
+export interface PawnMarker {
+  square: string
+  tone: 'good' | 'bad'
+}
+
+/** Một dạng cấu trúc Tốt để bé nhận diện bằng màu. */
+export interface PawnStructureLesson {
+  id: string
+  name: string
+  englishName: string
+  verdict: PawnVerdict
+  emoji: string
+  fen: string
+  /** Ô chứa Tốt cần soi, kèm màu xanh (mạnh) hay đỏ (yếu). */
+  markers: PawnMarker[]
+  reason: string
+  /** Khẩu quyết vè 4-6 chữ. */
+  rhyme: string
+}
 
 export interface RankInfo {
   id: RankId

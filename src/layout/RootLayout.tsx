@@ -1,17 +1,21 @@
 import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
 import { HeaderOptions } from '../components/HeaderOptions'
 import { useKidProgress } from '../store/progress'
+import { useReview } from '../store/review'
 
 const TABS = [
   { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Đại Kiện Tướng', icon: '🛡️' },
   { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Mẹo săn quân', icon: '⚔️' },
   { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc - Trạm năng lượng Hậu', icon: '👑' },
-  { to: '/free-play', label: 'Đấu với Máy', full: 'Đấu tập tự do với chú Máy', icon: '🎮' },
+  { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược Đại Kiện Tướng', icon: '🎓' },
+  { to: '/review', label: 'Ôn Tập', full: 'Ôn tập ngắt quãng - gặp lại câu sắp quên', icon: '🔁' },
+  { to: '/free-play', label: 'Đấu với Robot', full: 'Đấu tập tự do với chú Máy', icon: '🎮' },
 ] as const
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
-  const { stars, rank, nextRank } = useKidProgress()
+  const { stars, rank, nextRank, stage } = useKidProgress()
+  const { dueCount } = useReview()
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -19,12 +23,12 @@ export function RootLayout() {
     <div className="flex min-h-dvh flex-col stage:h-dvh stage:overflow-hidden">
       <header className="sticky top-0 z-30 shrink-0 border-b border-brand-900/40 bg-gradient-to-r from-brand-900 via-brand-800 to-brand-700 shadow-[0_6px_18px_-12px_rgba(13,32,24,0.8)] stage:static">
         <div className="mx-auto flex w-full max-w-[1500px] items-center gap-2 px-2 py-1.5 sm:px-3">
-          <Link to="/" className="flex shrink-0 items-center gap-1.5" title="Học Viện Cờ Vua Nhí">
+          <Link to="/" className="flex shrink-0 items-center gap-1.5" title="Nam An - Cờ Vua">
             <span className="grid size-8 place-items-center rounded-xl bg-white text-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)]">
               ♟️
             </span>
             <span className="hidden text-sm font-extrabold leading-tight text-white sm:block">
-              Học Viện Cờ Vua Nhí
+              Nam An - Cờ Vua
             </span>
           </Link>
 
@@ -36,7 +40,7 @@ export function RootLayout() {
                   key={tab.to}
                   to={tab.to}
                   title={tab.full}
-                  className={`flex shrink-0 items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
+                  className={`relative flex shrink-0 items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                     active
                       ? 'bg-white text-brand-800 shadow-[0_2px_6px_rgba(0,0,0,0.25)]'
                       : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white'
@@ -46,6 +50,14 @@ export function RootLayout() {
                     {tab.icon}
                   </span>
                   {tab.label}
+                  {tab.to === '/review' && dueCount > 0 && (
+                    <span
+                      aria-label={`${dueCount} câu cần ôn`}
+                      className="ml-0.5 grid min-w-5 place-items-center rounded-full bg-coral-500 px-1 text-[0.6rem] font-extrabold text-white ring-2 ring-white/70"
+                    >
+                      {dueCount}
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -62,6 +74,13 @@ export function RootLayout() {
             >
               <span aria-hidden>{rank.emoji}</span>
               <span className="text-xs font-extrabold text-gold-200">⭐ {stars}</span>
+            </span>
+            <span
+              className="hidden items-center gap-1 rounded-xl bg-info-400/20 px-2 py-1 ring-1 ring-info-300/40 lg:flex"
+              title={`${stage.tagline} · Cần tập trung: ${stage.focus}`}
+            >
+              <span aria-hidden>{stage.emoji}</span>
+              <span className="text-xs font-extrabold text-info-100">{stage.label}</span>
             </span>
             <HeaderOptions />
           </div>

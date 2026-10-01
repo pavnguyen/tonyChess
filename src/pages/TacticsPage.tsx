@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CelebrationModal } from '../components/CelebrationModal'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
@@ -9,6 +9,7 @@ import { ProgressMap } from '../components/ProgressMap'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useCurriculum } from '../hooks/useCurriculum'
+import { useEyeCheck } from '../hooks/useEyeCheck'
 import { TACTIC_META } from '../data/tactics'
 import { useTacticsQuery } from '../data/queries'
 import { useChessGame } from '../hooks/useChessGame'
@@ -19,8 +20,10 @@ import {
   HINT_TO_STYLE,
   pieceFromSan,
 } from '../lib/notation'
+import { reviewKey } from '../lib/review'
 import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useReview } from '../store/review'
 import type { MoveAnnotation, TacticPuzzle, TacticType } from '../types'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -29,6 +32,10 @@ const TYPE_OPTIONS: { value: TacticType; label: string; icon: string }[] = [
   { value: 'fork', label: 'Bắt đôi', icon: '🍴' },
   { value: 'pin', label: 'Ghim quân', icon: '📌' },
   { value: 'skewer', label: 'Xiên quân', icon: '🍢' },
+  { value: 'discovered', label: 'Đòn mở', icon: '🔓' },
+  { value: 'double-check', label: 'Chiếu đôi', icon: '⚡' },
+  { value: 'back-rank', label: 'Hàng cuối', icon: '🧱' },
+  { value: 'smothered', label: 'Bí ngạt', icon: '🕸️' },
 ]
 
 const listForType = (puzzles: TacticPuzzle[], type: TacticType) =>
@@ -37,13 +44,14 @@ const listForType = (puzzles: TacticPuzzle[], type: TacticType) =>
 export function TacticsPage() {
   const { data: puzzles, isLoading } = useTacticsQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
+  const { record } = useReview()
+  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [type, setType] = useState<TacticType>('fork')
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<'solve' | 'solved'>('solve')
   const [wrongTries, setWrongTries] = useState(0)
   const [hint, setHint] = useState(false)
-  const [heatmap, setHeatmap] = useState(false)
   const [confetti, setConfetti] = useState(false)
   const [result, setResult] = useState<{
     emoji: string
@@ -61,22 +69,13 @@ export function TacticsPage() {
 
   const board = useChessGame(puzzle?.fen ?? START_FEN, 'white')
 
-  // Đổi bài → trả về trạng thái ban đầu.
-  useEffect(() => {
+  // Đổi bài → trả về trạng thái ban đầu. Gọi từ chính sự kiện đổi bài để tránh
+  // setState trong effect (React chỉ khuyến khích effect để đồng bộ hệ thống ngoài).
+  const resetRound = () => {
     setPhase('solve')
     setWrongTries(0)
     setHint(false)
-  }, [puzzle?.id])
-
-  // Sau khi giải xong, cho bé "tung hoành": đối thủ đi ngẫu nhiên.
-  useEffect(() => {
-    if (phase !== 'solved') return
-    if (board.playerToMove) return
-    if (board.game.isGameOver()) return
-    const timer = setTimeout(() => board.autoReply(), 700)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, board.playerToMove, board.sans.length])
+  }
 
   const solved = phase === 'solved'
 
@@ -149,6 +148,7 @@ export function TacticsPage() {
     setType(nextType)
     const nextList = listForType(puzzles ?? [], nextType)
     setIndex(nextPuzzle ? Math.max(0, nextList.findIndex((item) => item.id === nextPuzzle.id)) : 0)
+    resetRound()
   }
 
   /** Sang bài kế tiếp đã được mở khoá (bỏ qua bài còn khoá). */
@@ -158,19 +158,15 @@ export function TacticsPage() {
       const candidate = (safeIndex + step) % curriculum.length
       if (curriculum[candidate]?.unlocked) {
         setIndex(candidate)
+        resetRound()
         return
       }
     }
   }
 
   const handleDrop = (from: string, to: string): boolean => {
-    // Chế độ tự do sau khi đã giải xong.
-    if (!puzzle || phase === 'solved') {
-      const move = board.playMove(from, to)
-      if (!move) return false
-      if (soundOn) playMove()
-      return true
-    }
+    // Giải xong rồi thì dừng ván - bé bấm ➡️ Bài tiếp để sang câu mới.
+    if (!puzzle || phase === 'solved') return false
 
     const probe = new Chess(board.fen)
     let move
@@ -187,6 +183,7 @@ export function TacticsPage() {
       setPhase('solved')
       setConfetti(true)
       if (soundOn) playWin()
+      record(reviewKey('tactic', puzzle.id), true)
       const firstTime = completeActivity(`tactics:${puzzle.id}`, 4)
       setResult({
         emoji: '🎆',
@@ -198,6 +195,7 @@ export function TacticsPage() {
     }
 
     if (soundOn) playError()
+    record(reviewKey('tactic', puzzle.id), false)
     setWrongTries((value) => value + 1)
     setHint(true)
     return false
@@ -227,7 +225,7 @@ export function TacticsPage() {
                 </span>
               )}
             </div>
-            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
           </>
         }
         board={
@@ -238,7 +236,7 @@ export function TacticsPage() {
               fen={board.fen}
               orientation="white"
               playerSide="white"
-              interactive={board.playerToMove && !board.game.isGameOver()}
+              interactive={board.playerToMove && !board.game.isGameOver() && !solved}
               heatmap={heatmap}
               arrows={solutionArrow}
               extraSquareStyles={squareStyles}
@@ -275,7 +273,7 @@ export function TacticsPage() {
             )}
             {solved ? (
               <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
-                🎉 Giải xong rồi! Giờ bé thử bắt thêm quân cho vui - đối thủ sẽ tự đi.
+                🎉 Giải xong rồi! Bé bấm ➡️ Bài tiếp để sang câu mới nhé.
               </p>
             ) : (
               <p className="text-[0.7rem] font-bold text-brand-400">

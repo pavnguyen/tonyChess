@@ -1,5 +1,5 @@
 /**
- * Cấu hình PM2 cho bản production của Học Viện Cờ Vua Nhí.
+ * Cấu hình PM2 cho bản production của Nam An - Cờ Vua.
  *
  * App này là SPA tĩnh: `npm run build` tạo ra `dist/` (HTML + JS + CSS + worker),
  * nên không cần web server riêng - PM2 có sẵn chế độ `serve` để phục vụ thư mục

@@ -7,11 +7,15 @@ import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
+import { pickMove } from '../engine/minimax'
 import { useChessGame } from '../hooks/useChessGame'
+import { useEyeCheck } from '../hooks/useEyeCheck'
 import { findHintMove } from '../lib/hints'
 import { ARROW_COLOR, BOARD_MARKS, HINT_FROM_STYLE, HINT_TO_STYLE } from '../lib/notation'
+import { reviewKey } from '../lib/review'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useReview } from '../store/review'
 import type { EndgameChallenge, MoveAnnotation } from '../types'
 
 const PLAYER_COLOR = 'w' as const
@@ -19,9 +23,10 @@ const PLAYER_COLOR = 'w' as const
 export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
+  const { record } = useReview()
+  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [challengeId, setChallengeId] = useState('promote-easy')
-  const [heatmap, setHeatmap] = useState(false)
   const [hintVisible, setHintVisible] = useState(false)
   const [finished, setFinished] = useState(false)
   const [confetti, setConfetti] = useState(false)
@@ -45,12 +50,17 @@ export function EndgamesPage() {
     setHintVisible(false)
   }, [challengeId])
 
-  // Đối thủ (Vua Đen) đi ngẫu nhiên như một em nhỏ đang tập chơi.
+  // Đối thủ (Vua Đen) đi theo engine mức thấp: nước đáp trả vẫn có ý nghĩa
+  // nhưng vẫn mắc lỗi để bé còn cơ hội thắng.
   useEffect(() => {
     if (finished) return
     if (board.playerToMove) return
     if (board.game.isGameOver()) return
-    const timer = setTimeout(() => board.autoReply(), 750)
+    const fen = board.fen
+    const timer = setTimeout(() => {
+      const move = pickMove(fen, 'easy')
+      if (move) board.playSan(move.san)
+    }, 750)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.sans.length, board.playerToMove, finished])
@@ -65,6 +75,7 @@ export function EndgamesPage() {
       if (game.turn() !== PLAYER_COLOR) {
         if (soundOn) playWin()
         setConfetti(true)
+        record(reviewKey('endgame', challenge.id), true)
         const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
         setResult({
           emoji: '🏁',
@@ -73,6 +84,7 @@ export function EndgamesPage() {
           stars: firstTime ? 5 : 2,
         })
       } else {
+        record(reviewKey('endgame', challenge.id), false)
         setResult({
           emoji: '😅',
           title: 'Bé bị chiếu bí rồi!',
@@ -85,6 +97,7 @@ export function EndgamesPage() {
 
     if (game.isStalemate() || game.isInsufficientMaterial() || game.isDraw()) {
       setFinished(true)
+      record(reviewKey('endgame', challenge.id), false)
       setResult({
         emoji: '🤝',
         title: 'Hòa cờ mất rồi!',
@@ -104,6 +117,7 @@ export function EndgamesPage() {
         playWin()
       }
       setConfetti(true)
+      record(reviewKey('endgame', challenge.id), true)
       const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
       setResult({
         emoji: '👑',
@@ -203,7 +217,7 @@ export function EndgamesPage() {
                 {board.history.length} nước
               </span>
             </div>
-            <EyeToggle on={heatmap} onToggle={() => setHeatmap((value) => !value)} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
           </>
         }
         board={
@@ -259,41 +273,38 @@ export function EndgamesPage() {
         }
       />
 
-      {/* Cột phải: chọn bài, hướng dẫn, băng giải thích, huy chương */}
+      {/*
+        Cột phải được dàn lại cho BỚT CUỘN: 8 thế tàn cuộc gom vào một dải chip gọn
+        trên 1-2 hàng (trước đây là lưới thẻ to 4 hàng), và bảng hướng dẫn gộp
+        thành 3 dòng - khẩu quyết vè đã có sẵn ở băng giải thích bên dưới nên
+        không nhắc lại nữa.
+      */}
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel>
           <SectionTitle
             icon="👑"
             title="Tàn cuộc - Trạm năng lượng Hậu"
-            subtitle={`Bé lái Tốt & Vua của mình · 🏅 ${doneCount}/${endgames?.length ?? 0} bài xong`}
+            subtitle={`Endgame · 🏅 ${doneCount}/${endgames?.length ?? 0} bài xong`}
           />
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {endgames?.map((item) => {
               const active = item.id === challenge?.id
+              const done = isCompleted(`endgame:${item.id}`)
               return (
                 <button
                   key={item.id}
                   onClick={() => setChallengeId(item.id)}
-                  className={`rounded-2xl border-[3px] p-2 text-left transition-all active:translate-y-[2px] ${
+                  aria-pressed={active}
+                  title={item.title}
+                  className={`flex items-center gap-1 rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[2px] ${
                     active
-                      ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
-                      : 'border-brand-100 bg-white hover:border-brand-300'
+                      ? 'border-brand-600 bg-brand-50 text-brand-800 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+                      : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">
-                      {item.goal === 'promote' ? '🛡️' : '🏁'}
-                    </span>
-                    <span className="text-sm font-extrabold text-brand-900">{item.title}</span>
-                    {isCompleted(`endgame:${item.id}`) && (
-                      <span className="ml-auto text-base">🏆</span>
-                    )}
-                  </div>
-                  <div className="mt-0.5 text-[0.7rem] font-bold text-brand-500">
-                    {item.goal === 'promote'
-                      ? 'Mục tiêu: Tốt lên hàng 8 thành Hậu'
-                      : 'Mục tiêu: Chiếu bí Vua Đen'}
-                  </div>
+                  <span aria-hidden>{item.goal === 'promote' ? '🛡️' : '🏁'}</span>
+                  <span className="max-w-[9.5rem] truncate">{item.title}</span>
+                  {done && <span aria-hidden>🏆</span>}
                 </button>
               )
             })}
@@ -301,29 +312,23 @@ export function EndgamesPage() {
         </Panel>
 
         <Panel>
-          <SectionTitle
-            icon="🧭"
-            title={challenge?.title ?? ''}
-            subtitle={challenge?.hint}
-          />
-          <div className="mt-2 grid gap-2">
-            <div className="whitespace-pre-line rounded-2xl bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700 sm:text-sm">
-              {challenge?.goal === 'promote'
-                ? '1️⃣ Vua Trắng đi trước che chở cho Tốt.\n2️⃣ Đẩy Tốt thẳng tiến lên hàng 8.\n3️⃣ Tốt chạm đích là biến thành Hậu ngay!'
-                : '1️⃣ Xe/Hậu canh chặt hàng ngang.\n2️⃣ Đưa quân còn lại chiếu Vua Đen.\n3️⃣ Vua Đen hết đường chạy là chiếu bí!'}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0 truncate text-sm font-extrabold text-brand-900">
+              🧭 {challenge?.title ?? ''}
             </div>
-            <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
-              <div className="text-xs font-extrabold uppercase text-gold-600">
-                🎵 Khẩu quyết vè
-              </div>
-              <div className="text-base font-extrabold text-gold-900">
-                “{challenge?.rhyme}”
-              </div>
-            </div>
-            <p className="text-xs font-bold text-brand-500">
-              🤖 Vua Đen đi ngẫu nhiên như một bạn nhỏ đang tập chơi - bé cứ bình tĩnh dồn Vua nhé.
-            </p>
+            <span className="rounded-full bg-sand-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-brand-600 ring-1 ring-sand-200">
+              {finished ? '✅ Đã xong' : '🎯 Đang luyện'}
+            </span>
           </div>
+          <p className="mt-1 text-xs font-bold text-brand-600">{challenge?.hint}</p>
+          <p className="mt-1 rounded-2xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-700">
+            {challenge?.goal === 'promote'
+              ? '1️⃣ Vua đi trước che Tốt · 2️⃣ Đẩy Tốt thẳng lên hàng 8 · 3️⃣ Chạm đích là thành Hậu!'
+              : '1️⃣ Canh chặt hàng ngang · 2️⃣ Quân còn lại chiếu Vua · 3️⃣ Hết đường chạy là bí!'}
+          </p>
+          <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
+            🤖 Vua Đen đi như một bạn nhỏ đang tập chơi - thỉnh thoảng mắc lỗi, bé cứ bình tĩnh dồn Vua nhé.
+          </p>
         </Panel>
 
         {annotation && (
@@ -334,7 +339,6 @@ export function EndgamesPage() {
             variant={finished ? 'played' : 'hint'}
           />
         )}
-
       </div>
 
       <CelebrationModal
