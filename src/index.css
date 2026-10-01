@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --color-grape: #6d28d9;
+  --color-candy: #ec4899;
+  --color-sky: #0ea5e9;
+  --color-sun: #facc15;
+  --color-grass: #22c55e;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: #3b1e59;
+    background: radial-gradient(circle at 12% 8%, #ffe9b0 0%, transparent 45%),
+      radial-gradient(circle at 88% 4%, #b6e6ff 0%, transparent 42%),
+      radial-gradient(circle at 50% 100%, #ffd6ef 0%, transparent 55%), #fdf7ff;
+    background-attachment: fixed;
+  }
+
+  button {
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@utility card-pop {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 0 rgb(0 0 0 / 0.07), 0 18px 34px -18px rgb(88 28 135 / 0.55);
+}
+
+/* ---------- Animations ---------- */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(250 204 21 / 0.75);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgb(250 204 21 / 0);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 3.4s ease-in-out infinite;
+}
+.animate-pop-in {
+  animation: pop-in 0.32s cubic-bezier(0.22, 1.2, 0.4, 1) both;
+}
+.animate-slide-up {
+  animation: slide-up 0.35s ease-out both;
+}
+.animate-wiggle {
+  animation: wiggle 1.6s ease-in-out infinite;
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .animate-pop-in,
+  .animate-slide-up,
+  .animate-wiggle,
+  .animate-pulse-ring {
+    animation: none;
+  }
+}
