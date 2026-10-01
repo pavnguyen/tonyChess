@@ -6,12 +6,14 @@ import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
+import { preloadStockfish } from '../engine/stockfishLoader'
 import { useChessEngine } from '../engine/useChessEngine'
 import { useChessGame } from '../hooks/useChessGame'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BOARD_MARKS, formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useRating } from '../store/rating'
 import type { Side } from '../types'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -55,10 +57,12 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
 
 export function FreePlayPage() {
   const { notation, completeActivity, soundOn } = useKidProgress()
+  const { botLevel } = useRating()
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy')
+  // Mặc định chọn độ mạnh máy vừa sức với điểm trình độ hiện tại (bé vẫn đổi được).
+  const [difficulty, setDifficulty] = useState<Difficulty>(botLevel)
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
   const [confetti, setConfetti] = useState(false)
@@ -360,7 +364,11 @@ export function FreePlayPage() {
               <Segmented
                 options={DIFFICULTY_OPTIONS}
                 value={difficulty}
-                onChange={setDifficulty}
+                onChange={(value) => {
+                  setDifficulty(value)
+                  // Bé chọn mức Siêu → tải sẵn Stockfish để nước đầu không phải chờ lâu.
+                  if (value === 'master') preloadStockfish()
+                }}
                 size="sm"
               />
             </div>
@@ -406,7 +414,7 @@ export function FreePlayPage() {
         <Panel>
           <SectionTitle
             icon="🧠"
-            title="Bí kíp thắng chú Máy"
+            title="Bí kíp thắng bạn Robot"
             subtitle="Ba điều bé nên nhớ trong mỗi nước đi"
           />
           <ul className="mt-2 grid gap-1.5 text-xs font-bold text-brand-700 sm:text-sm">

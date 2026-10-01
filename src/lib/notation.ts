@@ -104,10 +104,31 @@ export const NOTATION_OPTIONS: {
   label: string
   sample: string
 }[] = [
-  { value: 'figurine', label: 'Hình con cờ', sample: '♘f3' },
+  // Tuýp mặc định cho bé nhỏ: hình quân cờ đi kèm ký hiệu chuẩn quốc tế (♘Nf3)
+  // để bé vừa nhận ra quân, vừa quen dần với ký hiệu thi đấu FIDE.
+  { value: 'figurine', label: 'Hình cờ + quốc tế', sample: '♘Nf3' },
   { value: 'english', label: 'Chuẩn quốc tế', sample: 'Nf3' },
   { value: 'vietnamese', label: 'Tiếng Việt', sample: 'Mf3' },
 ]
+
+/**
+ * Bảng đối chiếu nhanh một quân: **hình cờ = ký hiệu FIDE = ký hiệu Việt**.
+ * Dùng để bé học thuộc ánh xạ (♘ = N = Mã) ngay trong phần cài đặt.
+ * Tốt không có chữ cái (ghi thẳng bằng ô, ví dụ `e4`) nên để trống.
+ */
+export const NOTATION_LEGEND: {
+  piece: PieceCode
+  glyph: string
+  fide: string
+  viet: string
+  name: string
+}[] = (['k', 'q', 'r', 'b', 'n', 'p'] as PieceCode[]).map((piece) => ({
+  piece,
+  glyph: FIGURINE[piece],
+  fide: ENGLISH[piece],
+  viet: VIETNAMESE[piece],
+  name: PIECE_NAME_VI[piece],
+}))
 
 /** Đoán loại quân cờ từ một nước đi SAN. */
 export function pieceFromSan(san: string): PieceCode {
@@ -130,14 +151,16 @@ export function pieceFromSan(san: string): PieceCode {
 }
 
 function letterFor(piece: PieceCode, style: NotationStyle): string {
-  if (style === 'figurine') return FIGURINE[piece]
+  // 'figurine' giờ là HÌNH + KÝ HIỆU QUỐC TẾ (♘N) để bé quen dần với chuẩn FIDE
+  // ngay từ khi còn đọc bằng hình quân cờ.
+  if (style === 'figurine') return FIGURINE[piece] + ENGLISH[piece]
   if (style === 'english') return ENGLISH[piece]
   return VIETNAMESE[piece]
 }
 
 /**
  * Đổi một nước SAN sang ký hiệu theo tuýp chọn của bé.
- * Ví dụ "Nf3" → "♘f3" (hình) | "Nf3" (quốc tế) | "Mf3" (Việt).
+ * Ví dụ "Nf3" → "♘Nf3" (hình + quốc tế) | "Nf3" (quốc tế) | "Mf3" (Việt).
  */
 export function formatSan(san: string, style: NotationStyle): string {
   if (san.startsWith('O-O')) return san

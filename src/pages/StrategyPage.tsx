@@ -26,7 +26,9 @@ import {
   moveLabel,
 } from '../lib/notation'
 import { reviewKey } from '../lib/review'
+import { POSITIONAL, POSITIONAL_META } from '../data/positional'
 import { useKidProgress } from '../store/progress'
+import { useRating } from '../store/rating'
 import { useReview } from '../store/review'
 import type { GmLecture } from '../types'
 import type { CSSProperties } from 'react'
@@ -58,6 +60,7 @@ const REPLY_MS = 450
 export function StrategyPage() {
   const { completeActivity, isCompleted, notation } = useKidProgress()
   const { record } = useReview()
+  const { record: recordRating } = useRating()
 
   const [mode, setMode] = useState<Mode>('lecture')
   const [lectureId, setLectureId] = useState(GM_LECTURES[0].id)
@@ -116,6 +119,7 @@ export function StrategyPage() {
 
   const completeLecture = useCallback(() => {
     record(reviewKey('lecture', lecture.id), true)
+    recordRating('strategy', true)
     const first = completeActivity(`strategy:${lecture.id}`, 4)
     if (first) {
       setConfetti(true)
@@ -124,7 +128,7 @@ export function StrategyPage() {
         message: `“${lecture.title}” - kỹ thuật của ${lecture.gm}.`,
       })
     }
-  }, [completeActivity, lecture, record])
+  }, [completeActivity, lecture, record, recordRating])
 
   /**
    * Một nửa nước nữa vừa được đi xong. Nếu đó là nửa nước cuối của bài giảng
@@ -536,6 +540,7 @@ export function StrategyPage() {
                 variant="grass"
                 onClick={() => {
                   record(reviewKey('structure', structure.id), true)
+                  recordRating('strategy', true)
                   completeActivity(`strategy:structure:${structure.id}`, 2)
                 }}
               >
@@ -544,6 +549,38 @@ export function StrategyPage() {
             </div>
           </Panel>
         )}
+
+        {/* Chiến lược vị trí (§4.3): khi chưa có đòn ăn quân thì nên làm gì. */}
+        <Panel>
+          <SectionTitle
+            icon="🧭"
+            title="Chiến lược vị trí"
+            subtitle="Không có đòn ăn quân vẫn biết đi nước gì"
+          />
+          <div className="mt-2 grid gap-1.5">
+            {POSITIONAL.map((lesson) => (
+              <div
+                key={lesson.id}
+                className="rounded-2xl border-2 border-brand-100 bg-white px-2.5 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="text-base">
+                    {lesson.emoji}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
+                    {POSITIONAL_META[lesson.concept].label} · {lesson.title}
+                  </span>
+                </div>
+                <div className="mt-1 text-[0.7rem] font-extrabold text-gold-700">
+                  👀 {lesson.clue}
+                </div>
+                <div className="mt-1 text-[0.7rem] font-bold leading-snug text-brand-500">
+                  {lesson.explanation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
 
       {celebrate && (

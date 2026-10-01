@@ -1,0 +1,8 @@
+Stockfish.js (WASM) - https://github.com/nmrugg/stockfish.js
+Based on Stockfish - https://github.com/official-stockfish/Stockfish
+
+License: GPL-3.0 (xem LICENSE.txt).
+Bản build: stockfish-19-lite-single (đơn luồng, ~1.8 MB).
+
+LƯU Ý: vì app phân phối kèm Stockfish (GPL-3.0), nếu sau này mở mã nguồn
+hoặc phát hành thì TOÀN BỘ app phải theo GPL-3.0.

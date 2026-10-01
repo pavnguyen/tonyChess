@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NOTATION_OPTIONS } from '../lib/notation'
+import { NOTATION_LEGEND, NOTATION_OPTIONS } from '../lib/notation'
 import { STAGES } from '../lib/stages'
 import { useKidProgress } from '../store/progress'
 
@@ -138,6 +138,32 @@ export function HeaderOptions() {
                   </button>
                 )
               })}
+            </div>
+
+            {/* Bảng đối chiếu để bé học ánh xạ: hình cờ = ký hiệu FIDE = tiếng Việt. */}
+            <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
+              <div className="text-[0.6rem] font-extrabold uppercase tracking-wide text-brand-500">
+                🔤 Bảng đối chiếu ký hiệu
+              </div>
+              {NOTATION_LEGEND.map((row) => (
+                <div
+                  key={row.piece}
+                  className="flex items-center gap-1.5 text-[0.7rem] font-bold text-brand-700"
+                >
+                  <span className="w-4 text-center text-base leading-none" aria-hidden>
+                    {row.glyph}
+                  </span>
+                  <span className="text-brand-300">=</span>
+                  <span className="w-10 text-center font-extrabold text-brand-900">
+                    {row.fide || 'ô cờ'}
+                  </span>
+                  <span className="text-brand-300">=</span>
+                  <span className="min-w-0 truncate">
+                    {row.name}
+                    {row.viet ? ` (${row.viet})` : ''}
+                  </span>
+                </div>
+              ))}
             </div>
 
             <div className="mt-2.5 grid gap-1.5">

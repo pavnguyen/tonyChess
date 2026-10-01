@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { DIFFICULTY, pickMove, toEngineMove } from './minimax'
+import { stockfishThink } from './stockfishLoader'
 import type { Difficulty, EngineMove } from './minimax'
 
 interface EngineResponse {
@@ -72,10 +73,19 @@ export function useChessEngine() {
     }
   }, [])
 
-  /** Nhờ máy tính toán một nước đi cho thế cờ `fen`. */
+  /**
+   * Nhờ máy tính toán một nước đi cho thế cờ `fen`.
+   * Mức `master` ưu tiên **Stockfish WASM** (mạnh thật); nếu không tải được thì
+   * tự động rơi về engine JS dựng sẵn - app không bao giờ vỡ.
+   */
   const think = useCallback(
-    (fen: string, difficulty: Difficulty): Promise<EngineMove | null> =>
-      new Promise((resolve) => {
+    (fen: string, difficulty: Difficulty): Promise<EngineMove | null> => {
+      if (difficulty === 'master') {
+        return stockfishThink(fen, { depth: 18, movetime: 1600 })
+          .then((move) => move ?? computeHere(fen, difficulty))
+          .catch(() => computeHere(fen, difficulty))
+      }
+      return new Promise((resolve) => {
         const worker = workerRef.current
         if (!worker) {
           resolve(computeHere(fen, difficulty))
@@ -91,7 +101,8 @@ export function useChessEngine() {
 
         pendingRef.current.set(id, { fen, difficulty, timer, resolve })
         worker.postMessage({ id, fen, difficulty })
-      }),
+      })
+    },
     [],
   )
 

@@ -7,7 +7,10 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "npm run setup:engine",
     "dev": "vite",
+    "setup:engine": "node scripts/setup-stockfish.mjs",
+    "prebuild": "npm run setup:engine",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -15,13 +18,18 @@
     "check:review": "node scripts/smoke-review.ts",
     "check:stages": "node scripts/smoke-stages.ts",
     "check:engine": "node scripts/smoke-engine.ts",
-    "check": "npm run check:chess && npm run check:review && npm run check:stages && npm run check:engine",
+    "check:rating": "node scripts/smoke-rating.ts",
+    "check:uci": "node scripts/smoke-uci.ts",
+    "verify:endgames": "node scripts/verify-endgames.mjs",
+    "check": "npm run check:chess && npm run check:review && npm run check:stages && npm run check:engine && npm run check:rating && npm run check:uci",
     "check:layout": "node scripts/browser-layout-test.mjs",
     "check:learn": "node scripts/browser-learn-drag-test.mjs",
     "check:theme": "node scripts/browser-theme-test.mjs",
     "check:hints": "node scripts/browser-hint-drag-test.mjs",
+    "check:strategy": "node scripts/browser-strategy-drag-test.mjs",
+    "check:stockfish": "node scripts/browser-stockfish-test.mjs",
     "check:assets": "node scripts/generate-assets.mjs",
-    "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:theme && npm run check:layout"
+    "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:strategy && npm run check:stockfish && npm run check:theme && npm run check:layout"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.0",
@@ -38,6 +46,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "stockfish": "^19.0.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"

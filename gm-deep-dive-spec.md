@@ -3,7 +3,7 @@
 > **Trạng thái**: ĐẶC TẢ ĐÃ CHỐT (chưa viết mã). Soạn sau 8 vòng phỏng vấn với chủ dự án;
 > **toàn bộ câu hỏi mở ở §11 đã được chốt** — không còn điểm mở nào.
 > **Ngày**: 2026-10-01 (chốt câu hỏi mở lần cuối cùng ngày 2026-10-01)
-> **Dự án**: Học Viện Cờ Vua Nhí (`/Users/pavnguyen/Downloads/tonyChess`)
+> **Dự án**: Chơi cờ Vua cùng Nam An (`/Users/pavnguyen/Downloads/tonyChess`)
 > **Đối tượng**: bé trai 7 tuổi (chơi ở nhà, chưa thi đấu giải), app do bố làm.
 
 ---
@@ -214,7 +214,7 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   dữ liệu (xem 3.2).
 - Pháo hoa: `Confetti` chỉ render khi `stage.id === 'nhi' || stage.id === 'thieu-nhi'`.
 
-### 0.5. Câu đố 1 nước quá dễ — CHỐT: phân tầng, KHÔNG xoá hẳn
+### 0.5. Câu đố 1 nước quá dễ — CHỐT: phân tầng, KHÔNG xoá hẳn — ✅ ĐÃ LÀM
 
 **Quyết định đã chốt** (thay cho đề xuất cũ):
 
@@ -224,6 +224,10 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   xoá khỏi `src/data/tactics.ts` — vẫn dùng được cho bé nhỏ và cho huy hiệu ⭐.
 - Trong UI: câu "Khởi động" hiện ở đầu mỗi họ đòn, có huy hiệu nhỏ; các câu khác xếp sau theo
   độ khó. Không có huy hiệu "tính điểm" cho câu Khởi động.
+- ✅ **Đã làm**: thêm cờ `warmup?: boolean` vào `TacticPuzzle` (`src/types.ts`), gắn cho
+  `fork-1, pin-1, skewer-1, discovered-1, double-check-1, back-rank-1, smothered-1`. Tab Trung cuộc
+  hiện huy hiệu **🌱 Khởi động** và **bỏ qua `recordRating`** cho câu này (vẫn ghi lịch ôn tập).
+  `validate-chess.ts` kiểm "mỗi họ đòn đúng 1 câu Khởi động".
 
 ### 0.6. Dọn mã chết & sửa mâu thuẫn
 
@@ -276,30 +280,38 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 
 ---
 
-## 6. GIAI ĐOẠN 2 — ĐIỂM TRÌNH ĐỘ (mini-Elo)
+## 6. GIAI ĐOẠN 2 — ĐIỂM TRÌNH ĐỘ (mini-Elo) — ✅ ĐÃ LÀM
 
 ### 2.1. Mô hình
 
-- `src/lib/rating.ts` (logic thuần, có smoke test riêng):
-  - `RatingBook = { overall: number; byTheme: Record<string, number>; history: {t:number; delta:number}[] }`
+- `src/lib/rating.ts` (logic thuần, `scripts/smoke-rating.ts` 55 kiểm tra):
+  - `RatingBook = { overall: number; byTheme: Record<string, number>; history: {t:number; theme:string; delta:number}[] }`
   - Điểm khởi đầu cho bé mới: **500** (đã chốt — để bé thấy tiến bộ nhanh; không hiện số cho bé).
-  - **Không có nút "Đặt lại điểm"** (đã chốt): điểm chỉ tăng, không bao giờ giảm khi sai, nên
-    không cần reset.
-  - Công thức: Elo rút gọn, K = 24 cho bé nhỏ, 32 từ 13 tuổi.
+  - **Không có nút "Đặt lại điểm"** trên giao diện bé: điểm chỉ tăng, không bao giờ giảm khi sai.
+  - Công thức: Elo rút gọn, K = 24 cho bé nhỏ (`K_YOUNG`), 32 từ 13 tuổi (`K_TEEN`).
     `expected = 1 / (1 + 10^((độ khó câu - điểm)/400))`, cập nhật `điểm += K * (kết quả - expected)`.
-  - **Không trừ điểm khi sai**: kết quả sai tính là 0 nhưng **K bị chặn không cho điểm giảm**
-    (`điểm = max(điểm, điểm_mới)`). Sai chỉ làm **chậm** tiến bộ.
-  - Độ khó câu đố quy đổi từ chính điểm: câu `dễ` = điểm-200, `vừa` = điểm, `khó` = điểm+200.
+  - **Không trừ điểm khi sai**: kết quả sai tính là 0 nhưng điểm bị chặn không cho giảm
+    (`điểm = max(điểm, round(điểm_mới))`). Sai chỉ làm **chậm** tiến bộ.
+  - Độ khó câu đố quy đổi cố định: `DIFFICULTY_RATINGS = { easy: 450, medium: 600, hard: 750 }`
+    (`suggestedDifficulty(rating)` chọn mức gần `rating + 60` nhất để luôn hơi trên sức).
+  - Nhật ký điểm giữ tối đa `HISTORY_LIMIT = 200` lần gần nhất.
 - Hiển thị:
-  - **Bé thấy tên cấp độ** suy từ `overall` (5 mức, đã chốt):
-    **Mầm cờ → Biết đi cờ → Chơi chắc tay → Đánh sắc bén → Cao thủ nhí**.
+  - **Bé thấy tên cấp độ** suy từ `overall` (5 mức, đã chốt, ngưỡng trong `LEVELS`):
+    **Mầm cờ 🌱@0 → Biết đi cờ ♟️@550 → Chơi chắc tay 💪@700 → Đánh sắc bén ⚡@850 → Cao thủ nhí 👑@1000**.
   - **Bố mẹ thấy số Elo** trong khung bố mẹ (§9).
-  - **Điểm từng dạng đòn** hiển thị dạng thanh nhỏ trong tab Trung cuộc (thay cho việc ẩn).
+  - **Điểm từng dạng đòn** hiển thị dạng thanh nhỏ trong tab Trung cuộc, kèm gợi ý dạng yếu nhất
+    (`weakestTheme`) - đã làm trong `TacticsPage`.
+  - Lưu bền trong `localStorage` (`hoc-vien-co-vua-nhi.rating.v1`) qua `src/store/rating.tsx`,
+    nằm trong `RatingProvider` (đọc tuổi từ `KidProgressProvider` để chọn hệ số K).
+  - Ghi điểm ở: Trung cuộc (theme = loại đòn), Tàn cuộc (`endgame`), Khai cuộc (`opening`),
+    Chiến lược (`strategy`).
 
 ### 2.2. Dùng điểm để chọn bài
 
-- Tab Trung cuộc: chọn câu theo điểm từng họ đòn (ưu tiên dạng đòn yếu nhất + câu hơi trên sức).
-- Tab Đấu với Máy: điểm tổng gợi ý mức máy phù hợp.
+- Tab Trung cuộc: hiện thanh điểm từng họ đòn + gợi ý dạng yếu nhất (`weakestTheme`);
+  độ khó câu tự suy từ điểm (`suggestedDifficulty`).
+- Tab Đấu với Máy: `suggestedBotLevel(rating)` chọn mặc định mức máy phù hợp
+  (<550 Dễ, <750 Vừa, <950 Khó, còn lại Siêu) - bé vẫn đổi được.
 - **Giữ thang ⭐ như huy chương sưu tầm** (Không đổi ngưỡng 0/8/20/40 nếu không cần).
 
 ### Tiêu chí nghiệm thu
@@ -310,20 +322,30 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 
 ---
 
-## 7. GIAI ĐOẠN 3 — ENGINE
+## 7. GIAI ĐOẠN 3 — ENGINE — ✅ MỘT PHẦN ĐÃ LÀM
 
-### 3.1. Engine JS hiện có — thêm mức & chế độ "đối thủ biết mắc lỗi"
+### 3.1. Engine JS hiện có — mức & chọn nước (✅ ĐÃ LÀM)
 
-- Bổ sung mức `master` (depth cao hơn `hard`) để hết mâu thuẫn với `stages.ts`.
-- Thêm `humanBlunderRate` vào `EngineConfig`: xác suất **cố tình đi nước không tốt nhất** (chọn
-  nước hạng 2-4 trong danh sách đã sắp xếp), để bé có cơ hội thắng và học cách trừng phạt lỗi.
-  Đây là điều kiện để bé tiến bộ: đấu với thứ không bao giờ sai thì không học được gì.
+- Đã bổ sung mức `master` (depth cao hơn `hard`) để hết mâu thuẫn với `stages.ts`.
+- Chọn nước có "đi bừa" thay vì `humanBlunderRate` tường minh: `blunderChance` (Dễ 0.35, Vừa 0.08)
+  cộng `epsilon` (chọn ngẫu nhiên trong nhóm nước gần bằng điểm nhất) - cùng mục đích: bé có cơ hội
+  thắng và học cách trừng phạt lỗi.
+- ✅ **Tìm kiếm "yên tĩnh" (quiescence)** cho mức Khó/Siêu (`EngineConfig.quiescence`): sau khi hết
+  độ sâu, chỉ xét tiếp các nước ăn quân/ phong cấp cho tới khi thế cờ yên. Nhờ vậy máy **không còn
+  treo quân vì "chân trời"** (horizon effect). Dễ/Vừa cố tình TẮT để vẫn mắc lỗi.
+  Kiểm bằng `scripts/smoke-engine.ts` (bẫy "Tốt độc": máy Khó/Siêu từ chối `Qxd5`).
 
-### 3.2. Stockfish WASM — tải theo nhu cầu (lazy)
+### 3.2. Stockfish WASM — tải theo nhu cầu (lazy) — ✅ ĐÃ LÀM
 
-- Chỉ tải khi bé mở **phân tích ván** hoặc **xem lại ván**; tuyệt đối không nằm trong bundle chính.
-- Cấu hình: `new Worker(new URL('...'), { type: 'module' })` hoặc `stockfish.js` nạp động trong
-  `src/engine/stockfishLoader.ts`, cache lại sau lần đầu.
+- **Đã nối vào mức "Siêu" của tab Đấu tập tự do** (không chỉ phân tích/xem lại).
+- Bản dùng: **`stockfish-19-lite-single`** (~1.8 MB). Vì sao: bản đầy đủ 99 MB tải quá lâu, bản
+  lite-single **không cần header COOP/COEP** (chạy được trên hosting tĩnh như Vercel), và vẫn mạnh
+  hơn người chơi rất nhiều.
+- Tệp tĩnh ở `public/stockfish/`, chép bằng `npm run setup:engine` (tự chạy ở `predev`/`prebuild`).
+- Nạp động trong `src/engine/stockfishLoader.ts`: `new Worker(...)` chỉ tạo ở lần dùng đầu, giữ lại
+  sau đó (cache), và **nối tiếp** các yêu cầu để hai lệnh `go` không chồng nhau.
+- Có nhánh dự phòng: Stockfish không tải được / quá hạn / worker chết → tự động dùng engine JS
+  (`pickMove`) - app không bao giờ vỡ.
 - ⚠️ **Giấy phép — ĐÃ CHỐT: chấp nhận GPL-3.0**. App hiện là riêng tư nên dùng bình thường;
   **nếu sau này mở mã nguồn hoặc phát hành**, toàn bộ app phải theo GPL-3 → **ghi chú rõ hệ quả
   này trong README** và giữ đúng phần ghi nguồn/giấy phép của Stockfish.
@@ -332,9 +354,11 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 
 ### Tiêu chí nghiệm thu
 
-- Bundle chính **không tăng quá 5 kB**; chunk Stockfish chỉ xuất hiện trong `dist/` và chỉ được tải
-  khi bấm phân tích (kiểm tra bằng CDP: theo dõi request).
-- Chơi được khi chặn mạng hoàn toàn (offline fallback).
+- Bundle chính **không tăng quá 5 kB**; tham chiếu Stockfish chỉ nằm trong chunk lười
+  `FreePlayPage` và tệp `dist/stockfish/*` (kiểm bằng `grep` + `scripts/browser-stockfish-test.mjs`).
+- ✅ `scripts/browser-stockfish-test.mjs` mở Worker thật trong Chrome, chạy `uci → go depth 12`,
+  xác nhận trả `bestmove` hợp lệ kèm dòng `info`.
+- Chơi được khi chặn mạng hoàn toàn (fallback về engine JS).
 
 ---
 
@@ -361,20 +385,33 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   theo MẪU** (ví dụ: *"Đòn đôi: Mã vừa ăn quân, lại tấn công Vua."*) + chuỗi nước đi, luôn gắn nhãn
   **"bài luyện thêm"** để phân biệt với **"bài giảng"** viết tay có vè riêng.
 
-### 4.2. Thư viện thế chiếu bí
+### 4.2. Thư viện thế chiếu bí — ✅ ĐÃ LÀM
 
 - `src/data/mates.ts`: các mẫu chiếu bí cơ bản theo bậc khó: `Q+K`, `R+K`, `2 R` (thang Xe),
   bí hàng cuối, bí ngạt, bí đôi Tượng, Mã+Tượng, Hậu hi sinh rồi Mã bí ngạt (mẫu kinh điển).
 - Mỗi mẫu: FEN + chuỗi nước tối ưu ngắn + lời giải thích + vè (vè tắt ở giai đoạn lớn).
 - Có thể kết hợp Stockfish để **kiểm tra chuỗi nước đúng là bí nhanh nhất** (test tự động).
+- ✅ **Đã làm**: `src/data/mates.ts` gồm **7 thẻ** (Q+K, R+K, thang Xe, hàng cuối ×2, bí ngạt,
+  bí kiểu Ả Rập). Mỗi chuỗi nước được kiểm trong `validate-chess.ts` (hợp lệ, kết thúc đúng bằng
+  chiếu bí, độ dài khớp `mateIn`, và nước đầu không được đã là bí nếu `mateIn > 1`). Hiển thị ở
+  tab Tàn cuộc dưới dạng panel **"📚 Thư viện chiếu bí"**.
+- ⏳ **Tạm hoãn**: Tượng đôi & Mã+Tượng là kỹ thuật **dài hơi** (bí sau hàng chục nước), không kiểm
+  chứng tự động rẻ tiền được nên chưa đưa vào; sẽ bổ sung khi có bước kiểm riêng.
+  Các thế bí đôi Tượng/bí ngạt *dễ* vẫn có sẵn dưới dạng bài chơi được trong `ENDGAMES`.
 
-### 4.3. Chiến lược vị trí
+### 4.3. Chiến lược vị trí — ✅ ĐÃ LÀM
 
 - `src/data/positional.ts`: mỗi bài một khái niệm, dạy bằng **cùng một thế cờ nhưng hai bên đi khác
   nhau** để bé thấy khác biệt:
   - Ô yếu / lỗ hổng, tiền đồn (outpost), cột mở, đường chéo mạnh, cặp Tượng, Tốt yếu (mở rộng 3 thế
     trong `pawnStructures.ts`), đổi quân đúng lúc (simplification), hàng 7.
 - Mỗi bài: FEN + nhiệm vụ + "dấu hiệu nhận biết" + lời giải thích.
+- ✅ **Đã làm**: `src/data/positional.ts` gồm **4 bài**: **tiền đồn** (Mã d5), **cột mở** (cột c),
+  **cặp Tượng**, **Xe hàng 7**. Mỗi khái niệm được **chứng minh bằng quân cờ thật** trong
+  `validate-chess.ts` (ví dụ tiền đồn: ô đó phải có Mã của bé, được Tốt che, và **không** Tốt địch
+  nào đá được). Hiển thị ở tab Chiến lược dưới dạng panel **"🧭 Chiến lược vị trí"**.
+- ⏳ Các khái niệm còn lại (đường chéo mạnh, đổi quân đúng lúc) sẽ bổ sung sau; dạy "hai bên đi khác
+  nhau" cần thêm dạng bài có biến, chưa làm ở vòng này.
 
 ### 4.4. Cây khai cuộc phân nhánh + kế hoạch trung cuộc
 
@@ -384,11 +421,18 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 - Dữ liệu tham khảo có thể đối chiếu với kho khai cuộc mở (Lichess/`chess-openings`), nhưng **nước đi
   là dữ kiện** nên viết tay được.
 
-### 4.5. Tàn cuộc lý thuyết Xe+Tốt
+### 4.5. Tàn cuộc lý thuyết Xe+Tốt — ✅ ĐÃ LÀM (một phần)
 
 - Bổ sung: Lucena (đã có), Philidor (đã có), **pháo đài (fortress)**, **hòa bằng chiếu liên tục**,
   **Vancura**, **tàn cuộc hai Tốt chống một**, và bài **"đếm nước tối ưu"** (bí trong N nước).
 - Mỗi thế cần chứng minh bằng máy: thắng/hòa thật sự, không chỉ "có nước đi hợp lệ".
+- ✅ **Đã làm**: `src/data/rookEndgames.ts` gồm **4 thế**: **Lucena** (thắng), **Philidor** (hòa),
+  **Vancura** (hòa), **Chặn Tốt sắp thành Hậu** (thắng). Kết quả được **Stockfish chứng minh** trong
+  `scripts/verify-endgames.mjs` (`npm run verify:endgames`): `win` phải ≥ +1.5 hoặc có mate,
+  `draw` phải |cp| ≤ 0.6. Hiển thị ở tab Tàn cuộc dạng panel **"🏰 Tàn cuộc Xe + Tốt"**.
+- ⏳ **Tạm hoãn**: **pháo đài (fortress)**, **hòa bằng chiếu liên tục**, **hai Tốt chống một**,
+  và bài **"đếm nước tối ưu (bí trong N nước)"** — cần thế cờ đã được kiểm chứng kỹ (tránh gán sai
+  tên kỹ thuật); sẽ bổ sung sau.
 
 ### 4.6. Học ván của kỳ thủ hiện đại ("đoán nước tiếp theo")
 

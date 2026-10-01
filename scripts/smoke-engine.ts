@@ -71,6 +71,23 @@ console.log('\n▶ Máy biết ăn Hậu bị treo')
   check(move?.san === 'exd5', `máy đi "${move?.san}" (mong đợi exd5 để ăn Hậu)`)
 }
 
+console.log('\n▶ Quiescence: máy Khó không sa vào bẫy "Tốt độc"')
+{
+  // Hậu Trắng có thể ăn Tốt d5, nhưng Mã f6 đen sẽ ăn lại Hậu. Không có quiescence
+  // thì máy độ sâu 3 vẫn thấy "được một Tốt" và lao vào; có quiescence thì thấy rõ
+  // chuỗi ăn-quân-lại và từ chối.
+  const fen = '4k3/8/5n2/3p4/8/8/8/3QK3 w - - 0 1'
+  const move = pickMove(fen, 'hard')
+  check(move?.san !== 'Qxd5', `máy Khó từ chối Qxd5 (đi "${move?.san}")`)
+  const master = pickMove(fen, 'master')
+  check(master?.san !== 'Qxd5', `máy Siêu cũng từ chối Qxd5 (đi "${master?.san}")`)
+
+  // Nhưng khi ăn quân THẬT SỰ có lợi thì quiescence vẫn phải ăn.
+  const free = '4k3/8/8/4q3/3P4/8/8/4K3 w - - 0 1'
+  const grab = pickMove(free, 'hard')
+  check(grab?.to === 'e5', `quiescence vẫn ăn quân treo (đi "${grab?.san}")`)
+}
+
 console.log('\n▶ Máy luôn trả về nước hợp lệ trên mọi thế cờ của app')
 {
   const fens: string[] = []

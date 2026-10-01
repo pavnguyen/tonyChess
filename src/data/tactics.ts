@@ -45,6 +45,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'fork-1',
     type: 'fork',
+    warmup: true,
     title: 'Mã bắt đôi Vua & Hậu',
     fen: 'q3k3/8/8/1N6/8/8/8/4K3 w - - 0 1',
     solution: 'Nc7+',
@@ -85,6 +86,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'pin-1',
     type: 'pin',
+    warmup: true,
     title: 'Tượng ghim Mã vào Vua',
     fen: '4k3/8/2n5/8/2B5/8/8/4K3 w - - 0 1',
     solution: 'Bb5',
@@ -125,6 +127,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'skewer-1',
     type: 'skewer',
+    warmup: true,
     title: 'Xe xiên Vua lấy Hậu',
     fen: '4q3/8/8/4k3/8/8/8/3R2K1 w - - 0 1',
     solution: 'Re1+',
@@ -167,6 +170,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'discovered-1',
     type: 'discovered',
+    warmup: true,
     title: 'Mã nhảy mở đường cho Xe',
     fen: '4k3/8/8/4N3/7q/8/8/K3R3 w - - 0 1',
     solution: 'Ng6+',
@@ -189,6 +193,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'double-check-1',
     type: 'double-check',
+    warmup: true,
     title: 'Xe và Mã cùng chiếu',
     fen: '4k3/8/8/7N/8/8/8/4R2K w - - 0 1',
     solution: 'Nf6+',
@@ -211,6 +216,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'back-rank-1',
     type: 'back-rank',
+    warmup: true,
     title: 'Vua kẹt sau hàng Tốt',
     fen: '6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1',
     solution: 'Ra8#',
@@ -232,6 +238,7 @@ export const TACTICS: TacticPuzzle[] = [
   {
     id: 'smothered-1',
     type: 'smothered',
+    warmup: true,
     title: 'Mã chiếu bí ngạt',
     fen: '6rk/6pp/8/4N3/8/8/8/4K3 w - - 0 1',
     solution: 'Nf7#',

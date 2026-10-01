@@ -14,7 +14,10 @@ import { findHintMove } from '../lib/hints'
 import { ARROW_COLOR, BOARD_MARKS, HINT_FROM_STYLE, HINT_TO_STYLE } from '../lib/notation'
 import { reviewKey } from '../lib/review'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
+import { MATES } from '../data/mates'
+import { ROOK_ENDGAMES } from '../data/rookEndgames'
 import { useKidProgress } from '../store/progress'
+import { useRating } from '../store/rating'
 import { useReview } from '../store/review'
 import type { EndgameChallenge, MoveAnnotation } from '../types'
 
@@ -24,6 +27,7 @@ export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
   const { record } = useReview()
+  const { record: recordRating } = useRating()
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [challengeId, setChallengeId] = useState('promote-easy')
@@ -76,6 +80,7 @@ export function EndgamesPage() {
         if (soundOn) playWin()
         setConfetti(true)
         record(reviewKey('endgame', challenge.id), true)
+        recordRating('endgame', true)
         const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
         setResult({
           emoji: '🏁',
@@ -85,6 +90,7 @@ export function EndgamesPage() {
         })
       } else {
         record(reviewKey('endgame', challenge.id), false)
+        recordRating('endgame', false)
         setResult({
           emoji: '😅',
           title: 'Bé bị chiếu bí rồi!',
@@ -98,6 +104,7 @@ export function EndgamesPage() {
     if (game.isStalemate() || game.isInsufficientMaterial() || game.isDraw()) {
       setFinished(true)
       record(reviewKey('endgame', challenge.id), false)
+      recordRating('endgame', false)
       setResult({
         emoji: '🤝',
         title: 'Hòa cờ mất rồi!',
@@ -118,6 +125,7 @@ export function EndgamesPage() {
       }
       setConfetti(true)
       record(reviewKey('endgame', challenge.id), true)
+      recordRating('endgame', true)
       const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
       setResult({
         emoji: '👑',
@@ -339,6 +347,82 @@ export function EndgamesPage() {
             variant={finished ? 'played' : 'hint'}
           />
         )}
+
+        {/* Thư viện thế chiếu bí (§4.2): mẫu bí kinh điển + chuỗi nước đã kiểm chứng. */}
+        <Panel>
+          <SectionTitle
+            icon="📚"
+            title="Thư viện chiếu bí"
+            subtitle="Mẫu bí kinh điển - nhìn là nhớ"
+          />
+          <div className="mt-2 grid gap-1.5">
+            {MATES.map((pattern) => (
+              <div
+                key={pattern.id}
+                className="rounded-2xl border-2 border-brand-100 bg-white px-2.5 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="text-base">
+                    {pattern.emoji}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
+                    {pattern.title}
+                  </span>
+                  <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.65rem] font-extrabold text-gold-700">
+                    bí sau {pattern.mateIn} nước
+                  </span>
+                </div>
+                <div className="mt-1 font-mono text-[0.7rem] font-bold text-brand-600">
+                  {pattern.line.join(' · ')}
+                </div>
+                <div className="mt-1 text-[0.7rem] font-bold leading-snug text-brand-500">
+                  {pattern.explanation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        {/* Tàn cuộc Xe + Tốt (§4.5): kết quả thắng/hòa đã được Stockfish chứng minh. */}
+        <Panel>
+          <SectionTitle
+            icon="🏰"
+            title="Tàn cuộc Xe + Tốt"
+            subtitle="Thắng hay hòa - đã được máy chứng minh"
+          />
+          <div className="mt-2 grid gap-1.5">
+            {ROOK_ENDGAMES.map((lesson) => (
+              <div
+                key={lesson.id}
+                className="rounded-2xl border-2 border-brand-100 bg-white px-2.5 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span aria-hidden className="text-base">
+                    {lesson.emoji}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
+                    {lesson.title}
+                  </span>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold ${
+                      lesson.result === 'win'
+                        ? 'bg-leaf-100 text-leaf-700'
+                        : 'bg-info-100 text-info-900'
+                    }`}
+                  >
+                    {lesson.result === 'win' ? 'thắng' : 'hòa'}
+                  </span>
+                </div>
+                <div className="mt-1 text-[0.7rem] font-bold leading-snug text-brand-500">
+                  {lesson.idea}
+                </div>
+                <div className="mt-1 text-[0.7rem] font-extrabold text-gold-700">
+                  🎵 “{lesson.rhyme}”
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
 
       <CelebrationModal

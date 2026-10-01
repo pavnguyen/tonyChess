@@ -25,6 +25,7 @@ import {
 import { reviewKey } from '../lib/review'
 import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useRating } from '../store/rating'
 import { useReview } from '../store/review'
 import type { CSSProperties } from 'react'
 import type { MoveAnnotation, Opening } from '../types'
@@ -42,6 +43,7 @@ export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
   const { notation, completeActivity, soundOn, stage } = useKidProgress()
   const { record } = useReview()
+  const { record: recordRating } = useRating()
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [openingId, setOpeningId] = useState('london')
@@ -143,6 +145,7 @@ export function OpeningsPage() {
     awardedRef.current = true
     const stars = 6
     record(reviewKey('opening', opening.id), true)
+    recordRating('opening', true)
     completeActivity(`openings:${opening.id}:memorize`, stars)
     if (soundOn) playWin()
     setConfetti(true)

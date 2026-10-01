@@ -26,11 +26,17 @@ const check = (condition: boolean, label: string) => {
 }
 
 console.log('\n▶ Ký hiệu nước đi')
-check(formatSan('Nf3', 'figurine') === '♘f3', 'figurine: Nf3 → ♘f3')
+check(formatSan('Nf3', 'figurine') === '♘Nf3', 'figurine: Nf3 → ♘Nf3 (hình + chuẩn quốc tế)')
 check(formatSan('Nf3', 'english') === 'Nf3', 'english: Nf3 → Nf3')
 check(formatSan('Nf3', 'vietnamese') === 'Mf3', 'vietnamese: Nf3 → Mf3')
+check(formatSan('e4', 'figurine') === 'e4', 'Tốt giữ nguyên: e4')
 check(formatSan('e4', 'vietnamese') === 'e4', 'Tốt giữ nguyên: e4')
 check(formatSan('O-O', 'figurine') === 'O-O', 'Nhập thành giữ nguyên: O-O')
+check(formatSan('Bc4', 'figurine') === '♗Bc4', 'figurine giữ cả ký hiệu Tượng: Bc4 → ♗Bc4')
+check(
+  formatSan('Nf3', 'figurine').includes('♘') && formatSan('Nf3', 'figurine').includes('N'),
+  'tuýp hình cờ có ĐỦ cả hình lẫn ký hiệu FIDE',
+)
 check(pieceFromSan('Qh5#') === 'q' && pieceFromSan('d4') === 'p', 'đoán quân từ SAN')
 check(moveLabel(0, 'd4', 'english') === '1. d4', 'số nước Trắng: 1. d4')
 check(moveLabel(1, 'd5', 'english') === '1... d5', 'số nước Đen: 1... d5')

@@ -19,14 +19,21 @@ export interface EngineConfig {
   blunderChance: number
   /** Chênh lệch điểm tối đa giữa các nước được coi là "ngang nhau". */
   epsilon: number
+  /**
+   * Bật tìm kiếm "yên tĩnh" (quiescence): khi hết độ sâu, chỉ xét tiếp các nước
+   * ăn quân/ phong cấp cho tới khi thế cờ yên. Nhờ vậy máy không bị hớ khi tính
+   * không hết chuỗi ăn-quân-lại ("treo quân vì chân trời"). Tắt ở mức Dễ/Vừa để
+   * máy vẫn còn mắc lỗi cho bé có cơ hội thắng.
+   */
+  quiescence: boolean
 }
 
 /** Bốn mức độ: bé mới chơi tới kỳ thủ chuyên nghiệp. */
 export const DIFFICULTY: Record<Difficulty, EngineConfig> = {
-  easy: { depth: 1, timeBudget: 200, blunderChance: 0.35, epsilon: 120 },
-  medium: { depth: 2, timeBudget: 900, blunderChance: 0.08, epsilon: 35 },
-  hard: { depth: 3, timeBudget: 1800, blunderChance: 0, epsilon: 0 },
-  master: { depth: 4, timeBudget: 3000, blunderChance: 0, epsilon: 0 },
+  easy: { depth: 1, timeBudget: 200, blunderChance: 0.35, epsilon: 120, quiescence: false },
+  medium: { depth: 2, timeBudget: 900, blunderChance: 0.08, epsilon: 35, quiescence: false },
+  hard: { depth: 3, timeBudget: 1800, blunderChance: 0, epsilon: 0, quiescence: true },
+  master: { depth: 4, timeBudget: 3000, blunderChance: 0, epsilon: 0, quiescence: true },
 }
 
 const VALUES: Record<string, number> = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 }
@@ -97,6 +104,37 @@ function orderMoves(moves: Move[]): Move[] {
   )
 }
 
+/** Nước đáng xét trong tìm kiếm yên tĩnh: ăn quân hoặc phong cấp. */
+function isNoisy(move: Move): boolean {
+  return Boolean(move.captured) || Boolean(move.promotion)
+}
+
+/**
+ * Tìm kiếm "yên tĩnh" (quiescence search): sau khi hết độ sâu chính, chỉ đi tiếp
+ * các nước ăn quân/ phong cấp cho tới khi thế cờ yên, để không đánh giá oan một
+ * thế cờ đang dở dang chuỗi ăn-quân-lại.
+ */
+function quiesce(game: Chess, alpha: number, beta: number, deadline: number, ply: number): number {
+  if (game.isCheckmate()) return -MATE + ply
+  if (game.isDraw() || game.isStalemate() || game.isInsufficientMaterial()) return 0
+  if (Date.now() > deadline) throw new Error(TIMEOUT)
+
+  // "Đứng yên" (stand pat): điểm nếu bên đang đi chẳng làm gì thêm.
+  const standPat = (game.turn() === 'w' ? 1 : -1) * evaluateWhite(game)
+  if (standPat >= beta) return beta
+  if (standPat > alpha) alpha = standPat
+
+  const noisy = orderMoves(game.moves({ verbose: true }).filter(isNoisy))
+  for (const move of noisy) {
+    game.move({ from: move.from, to: move.to, promotion: move.promotion ?? 'q' })
+    const score = -quiesce(game, -beta, -alpha, deadline, ply + 1)
+    game.undo()
+    if (score >= beta) return beta
+    if (score > alpha) alpha = score
+  }
+  return alpha
+}
+
 function negamax(
   game: Chess,
   depth: number,
@@ -104,10 +142,12 @@ function negamax(
   beta: number,
   deadline: number,
   ply: number,
+  quiescence: boolean,
 ): number {
   if (game.isCheckmate()) return -MATE + ply
   if (game.isDraw() || game.isStalemate() || game.isInsufficientMaterial()) return 0
   if (depth <= 0) {
+    if (quiescence) return quiesce(game, alpha, beta, deadline, ply)
     return (game.turn() === 'w' ? 1 : -1) * evaluateWhite(game)
   }
   if (Date.now() > deadline) throw new Error(TIMEOUT)
@@ -116,7 +156,7 @@ function negamax(
   let a = alpha
   for (const move of orderMoves(game.moves({ verbose: true }))) {
     game.move({ from: move.from, to: move.to, promotion: move.promotion ?? 'q' })
-    const score = -negamax(game, depth - 1, -beta, -a, deadline, ply + 1)
+    const score = -negamax(game, depth - 1, -beta, -a, deadline, ply + 1, quiescence)
     game.undo()
     if (score > best) best = score
     if (best > a) a = best
@@ -162,7 +202,15 @@ export function pickMove(fen: string, difficulty: Difficulty = 'medium'): Move |
         if (Date.now() > deadline) throw new Error(TIMEOUT)
         game.move({ from: move.from, to: move.to, promotion: move.promotion ?? 'q' })
         // Cửa sổ đầy đủ để mọi nước gốc đều có điểm chính xác (phục vụ chọn ngẫu nhiên).
-        const score = -negamax(game, depth - 1, -Infinity, Infinity, deadline, 1)
+        const score = -negamax(
+          game,
+          depth - 1,
+          -Infinity,
+          Infinity,
+          deadline,
+          1,
+          config.quiescence,
+        )
         game.undo()
         scored.push({ move, score })
       }

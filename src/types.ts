@@ -49,6 +49,11 @@ export interface TacticPuzzle {
   id: string
   type: TacticType
   title: string
+  /**
+   * Câu "Khởi động": câu dễ nhất của mỗi họ đòn, dành cho bé mới học.
+   * **Không tính điểm vào mini-Elo** (vẫn ghi vào lịch ôn tập).
+   */
+  warmup?: boolean
   fen: string
   /** Nước đi đúng (SAN). */
   solution: string

@@ -23,6 +23,7 @@ import {
 import { reviewKey } from '../lib/review'
 import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { useRating } from '../store/rating'
 import { useReview } from '../store/review'
 import type { MoveAnnotation, TacticPuzzle, TacticType } from '../types'
 
@@ -45,6 +46,7 @@ export function TacticsPage() {
   const { data: puzzles, isLoading } = useTacticsQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
   const { record } = useReview()
+  const { record: recordRating, level, nextLevel, progress, percentOf, weakestOf } = useRating()
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [type, setType] = useState<TacticType>('fork')
@@ -184,6 +186,8 @@ export function TacticsPage() {
       setConfetti(true)
       if (soundOn) playWin()
       record(reviewKey('tactic', puzzle.id), true)
+      // Câu "Khởi động" không tính điểm vào mini-Elo (bé mới học vẫn được khen).
+      if (!puzzle.warmup) recordRating(puzzle.type, true)
       const firstTime = completeActivity(`tactics:${puzzle.id}`, 4)
       setResult({
         emoji: '🎆',
@@ -196,6 +200,7 @@ export function TacticsPage() {
 
     if (soundOn) playError()
     record(reviewKey('tactic', puzzle.id), false)
+    if (!puzzle.warmup) recordRating(puzzle.type, false)
     setWrongTries((value) => value + 1)
     setHint(true)
     return false
@@ -219,6 +224,11 @@ export function TacticsPage() {
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
+              {puzzle?.warmup && (
+                <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-700">
+                  🌱 Khởi động
+                </span>
+              )}
               {puzzle && isCompleted(`tactics:${puzzle.id}`) && (
                 <span className="rounded-full bg-leaf-100 px-3 py-1 text-xs font-extrabold text-leaf-700">
                   🏅 Đã giải
@@ -304,9 +314,14 @@ export function TacticsPage() {
           {puzzle && (
             <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
               <div className="text-xs font-extrabold uppercase text-gold-600">
-                🎯 Nhiệm vụ của bé
+                🎯 Nhiệm vụ của bé{puzzle.warmup ? ' · 🌱 Khởi động' : ''}
               </div>
               <div className="text-base font-extrabold text-gold-900">{puzzle.title}</div>
+              {puzzle.warmup && (
+                <div className="mt-1 text-xs font-bold text-gold-700">
+                  Bài làm quen cho bé mới - không tính điểm, cứ thoải mái thử nhé!
+                </div>
+              )}
               {wrongTries > 0 && (
                 <div className="mt-1 text-xs font-bold text-gold-700">💡 {puzzle.hint}</div>
               )}
@@ -343,6 +358,59 @@ export function TacticsPage() {
             unitLabel="thế cờ"
             allDoneMessage="Bé đã giải hết các thế cờ loại này - sang loại đòn khác thôi! 🏆"
           />
+        </Panel>
+
+        {/* Điểm trình độ: bé thấy TÊN CẤP ĐỘ, bố mẹ đọc được con số. Sai không bị trừ điểm. */}
+        <Panel className="grid gap-2">
+          <SectionTitle
+            icon="🏅"
+            title="Cấp độ của bé"
+            subtitle={
+              nextLevel
+                ? `Thêm chút nữa là lên ${nextLevel.emoji} ${nextLevel.name}`
+                : 'Bé đang ở nấc cao nhất rồi!'
+            }
+          />
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{level.emoji}</span>
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-extrabold text-brand-800">{level.name}</div>
+              <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-brand-100">
+                <div
+                  className="h-full rounded-full bg-gold-400 transition-[width] duration-500"
+                  style={{ width: `${Math.round(progress * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <div className="text-xs font-extrabold uppercase text-brand-500">
+              Điểm từng dạng đòn
+            </div>
+            {TYPE_OPTIONS.map((option) => (
+              <div key={option.value} className="flex items-center gap-2">
+                <span className="w-24 shrink-0 truncate text-xs font-bold text-brand-700">
+                  {option.icon} {option.label}
+                </span>
+                <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-brand-100">
+                  <span
+                    className="block h-full rounded-full bg-leaf-500 transition-[width] duration-500"
+                    style={{ width: `${Math.round(percentOf(option.value) * 100)}%` }}
+                  />
+                </span>
+              </div>
+            ))}
+          </div>
+          {(() => {
+            const weak = weakestOf(TYPE_OPTIONS.map((option) => option.value)) as TacticType | null
+            if (!weak) return null
+            const meta = TACTIC_META[weak]
+            return (
+              <p className="rounded-2xl bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700">
+                🎯 Gợi ý: bé luyện thêm <b>{meta.emoji} {meta.label}</b> nhé - dạng này bé còn yếu nhất.
+              </p>
+            )
+          })()}
         </Panel>
       </div>
 
