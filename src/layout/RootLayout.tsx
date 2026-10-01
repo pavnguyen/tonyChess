@@ -1,21 +1,20 @@
 import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
 import { HeaderOptions } from '../components/HeaderOptions'
+import { InfoButton } from '../components/InfoPopover'
+import { ParentTips } from '../components/ParentTips'
 import { useKidProgress } from '../store/progress'
-import { useReview } from '../store/review'
 
 const TABS = [
-  { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Đại Kiện Tướng', icon: '🛡️' },
+  { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Grand Master', icon: '🛡️' },
   { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Mẹo săn quân', icon: '⚔️' },
   { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc - Trạm năng lượng Hậu', icon: '👑' },
-  { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược Đại Kiện Tướng', icon: '🎓' },
-  { to: '/review', label: 'Ôn Tập', full: 'Ôn tập ngắt quãng - gặp lại câu sắp quên', icon: '🔁' },
+  { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược Grand Master', icon: '🎓' },
   { to: '/free-play', label: 'Đấu với Robot', full: 'Đấu tập tự do với chú Máy', icon: '🎮' },
 ] as const
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
   const { stars, rank, nextRank, stage } = useKidProgress()
-  const { dueCount } = useReview()
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -50,14 +49,6 @@ export function RootLayout() {
                     {tab.icon}
                   </span>
                   {tab.label}
-                  {tab.to === '/review' && dueCount > 0 && (
-                    <span
-                      aria-label={`${dueCount} câu cần ôn`}
-                      className="ml-0.5 grid min-w-5 place-items-center rounded-full bg-coral-500 px-1 text-[0.6rem] font-extrabold text-white ring-2 ring-white/70"
-                    >
-                      {dueCount}
-                    </span>
-                  )}
                 </Link>
               )
             })}
@@ -82,14 +73,22 @@ export function RootLayout() {
               <span aria-hidden>{stage.emoji}</span>
               <span className="text-xs font-extrabold text-info-100">{stage.label}</span>
             </span>
+            <InfoButton topic="app" tone="onDark" />
             <HeaderOptions />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-2 py-2 sm:px-3">
+      {/* Trên điện thoại chỉ chừa lề 6px để bàn cờ rộng gần hết màn hình. */}
+      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-1.5 py-1.5 sm:px-3 sm:py-2">
         <Outlet />
       </main>
+
+      {/*
+        Khung “Gợi ý cho ba mẹ” (§10) - nằm NGOÀI luồng bố cục (`position: fixed`)
+        nên hiện ở mọi tab mà không làm trang phải cuộn thêm.
+      */}
+      <ParentTips />
     </div>
   )
 }

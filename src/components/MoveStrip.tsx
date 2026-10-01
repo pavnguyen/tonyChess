@@ -1,8 +1,11 @@
 import { moveLabel } from '../lib/notation'
-import type { NotationStyle, Opening } from '../types'
+import type { NotationStyle, OpeningMove, Side } from '../types'
 
 interface Props {
-  opening: Opening
+  /** Nước đi đang hiển thị - với cây khai cuộc là đường đi bé đã chọn + dòng chính phía trước. */
+  moves: OpeningMove[]
+  /** Màu quân của bé (để đánh dấu 🐣 vào nước của bé). */
+  side: Side
   /** Số ply đã đi xong (ô có index = ply-1 là nước vừa đi). */
   ply: number
   notation: NotationStyle
@@ -10,14 +13,13 @@ interface Props {
   className?: string
 }
 
-export function MoveStrip({ opening, ply, notation, onJump, className = '' }: Props) {
+export function MoveStrip({ moves, side, ply, notation, onJump, className = '' }: Props) {
   return (
     <div className={`flex gap-1.5 overflow-x-auto pb-1 ${className}`}>
-      {opening.moves.map((move, index) => {
+      {moves.map((move, index) => {
         const done = index < ply
         const isNext = index === ply
-        const isKid =
-          opening.side === 'white' ? index % 2 === 0 : index % 2 === 1
+        const isKid = side === 'white' ? index % 2 === 0 : index % 2 === 1
         return (
           <button
             key={`${index}-${move.san}`}

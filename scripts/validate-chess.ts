@@ -4,6 +4,8 @@
  */
 import { Chess } from 'chess.js'
 import { OPENINGS } from '../src/data/openings.ts'
+import { mainLine } from '../src/lib/openingTree.ts'
+import type { OpeningNode } from '../src/types.ts'
 import { TACTICS } from '../src/data/tactics.ts'
 import { ENDGAMES } from '../src/data/endgames.ts'
 import { GM_LECTURES } from '../src/data/gmLectures.ts'
@@ -46,6 +48,109 @@ for (const opening of OPENINGS) {
     bad = true
   }
   if (!bad) ok(`${opening.id} - ${opening.moves.length} ply hợp lệ`)
+}
+
+console.log('\n▶ Cây khai cuộc phân nhánh')
+{
+  let totalNodes = 0
+  let totalForks = 0
+  let totalBranchMoves = 0
+
+  for (const opening of OPENINGS) {
+    let bad = false
+
+    // 1. Nhánh chính của cây phải ĐÚNG BẰNG `moves` (một nguồn sự thật duy nhất).
+    const main = mainLine(opening.tree)
+    if (
+      main.length !== opening.moves.length ||
+      main.some((move, index) => move.san !== opening.moves[index].san)
+    ) {
+      fail(`${opening.id}: nhánh chính của cây KHÁC với opening.moves`)
+      bad = true
+    }
+
+    // 2. Duyệt MỌI đường đi trong cây - mỗi nước phải hợp lệ ở đúng thế cờ đó,
+    //    và lời giảng chỉ được nằm ở nước của BÉ.
+    let nodes = 0
+    let forks = 0
+    const walk = (level: OpeningNode[], game: Chess, ply: number, trail: string[]) => {
+      if (level.length === 0) return
+      if (level.length > 1) forks += 1
+      const seen = new Set<string>()
+      level.forEach((node, index) => {
+        nodes += 1
+        const where = trail.length > 0 ? `nhánh ${trail.join(' ')} → ` : ''
+        if (seen.has(node.san)) {
+          fail(`${opening.id}: ${where}hai nhánh cùng đi "${node.san}" ở ply ${ply + 1}`)
+          bad = true
+        }
+        seen.add(node.san)
+
+        const probe = new Chess(game.fen())
+        let played
+        try {
+          played = probe.move(node.san)
+        } catch {
+          fail(`${opening.id}: ${where}nước "${node.san}" KHÔNG hợp lệ ở ply ${ply + 1}`)
+          bad = true
+          return
+        }
+        if (node.annotation && node.annotation.san !== played.san) {
+          fail(
+            `${opening.id}: ${where}annotation.san "${node.annotation.san}" ≠ SAN thật "${played.san}"`,
+          )
+          bad = true
+        }
+        const isKid = opening.side === 'white' ? ply % 2 === 0 : ply % 2 === 1
+        if (isKid && !node.annotation) {
+          fail(`${opening.id}: ${where}nước CỦA BÉ ở ply ${ply + 1} (${node.san}) thiếu lời giảng`)
+          bad = true
+        }
+        if (!isKid && node.annotation) {
+          fail(`${opening.id}: ${where}nước của ĐỐI THỦ ở ply ${ply + 1} (${node.san}) lại có lời giảng`)
+          bad = true
+        }
+        if (index > 0 && (!node.note || node.note.length < 10)) {
+          fail(`${opening.id}: ${where}nhánh phụ "${node.san}" ở ply ${ply + 1} thiếu câu giải thích vì sao`)
+          bad = true
+        }
+        walk(node.replies ?? [], probe, ply + 1, [...trail, node.san])
+      })
+    }
+    walk(opening.tree, new Chess(), 0, [])
+
+    // 3. Dòng chính phải đủ dài để "kế hoạch tiếp theo" có nghĩa.
+    if (opening.moves.length < 10) {
+      fail(
+        `${opening.id}: nhánh chính chỉ ${opening.moves.length} ply - cần ≥ 10 để dạy kế hoạch trung cuộc`,
+      )
+      bad = true
+    }
+
+    // 4. Kế hoạch trung cuộc phải cụ thể.
+    if (opening.plan.points.length < 3 || opening.plan.points.some((p) => p.length < 20)) {
+      fail(`${opening.id}: kế hoạch trung cuộc cần ≥ 3 việc, mỗi việc ≥ 20 ký tự`)
+      bad = true
+    }
+
+    if (forks === 0) {
+      fail(`${opening.id}: chưa có ngã ba nào - cây phải phân nhánh`)
+      bad = true
+    }
+
+    totalNodes += nodes
+    totalForks += forks
+    totalBranchMoves += nodes - opening.moves.length
+    if (!bad) {
+      ok(
+        `${opening.id} - ${nodes} nút, ${forks} ngã ba, nhánh chính ${opening.moves.length} ply (${opening.plan.title})`,
+      )
+    }
+  }
+
+  ok(
+    `tổng: ${totalNodes} nút, ${totalForks} ngã ba, ${totalBranchMoves} nước ở nhánh phụ`,
+  )
 }
 
 console.log('\n▶ Trung cuộc (đòn chiến thuật)')

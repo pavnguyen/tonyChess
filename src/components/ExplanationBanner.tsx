@@ -1,6 +1,7 @@
 import {
   describeMove,
   formatSan,
+  formatSanLetters,
   moveLabel,
   pieceFromSan,
   PIECE_GLYPH,
@@ -62,9 +63,20 @@ export function ExplanationBanner({
   const style = VARIANT_STYLE[variant]
   const piece = annotation.piece ?? pieceFromSan(annotation.san)
   const info = describeMove(annotation.san, notation)
-  const shownNotation = annotation.san.startsWith('O-O')
+  const isCastle = annotation.san.startsWith('O-O')
+  /**
+   * Chữ TO bên cạnh hình quân: với tuýp `figurine` (♘Nf3) thì BỎ hình quân đi -
+   * hình quân đã được vẽ to ngay bên trái rồi, để nguyên sẽ thành "♗ ♗Bf4" (lặp
+   * hình hai lần). Tuýp "Tiếng Việt" không kèm hình nên giữ nguyên `Mf3`.
+   *
+   * Nhãn nhỏ phía trên (`moveLabel`) vẫn hiện ĐÚNG tuýp bé đã chọn, để bé còn
+   * thấy được cả cách viết "Hình cờ + quốc tế".
+   */
+  const shownNotation = isCastle
     ? 'O-O'
-    : formatSan(annotation.san, notation)
+    : notation === 'figurine'
+      ? formatSanLetters(annotation.san)
+      : formatSan(annotation.san, notation)
 
   return (
     <section

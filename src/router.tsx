@@ -34,12 +34,6 @@ const strategyRoute = createRoute({
   component: lazyRouteComponent(() => import('./pages/StrategyPage'), 'StrategyPage'),
 })
 
-const reviewRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/review',
-  component: lazyRouteComponent(() => import('./pages/ReviewPage'), 'ReviewPage'),
-})
-
 const freePlayRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/free-play',
@@ -51,7 +45,6 @@ const routeTree = rootRoute.addChildren([
   tacticsRoute,
   endgamesRoute,
   strategyRoute,
-  reviewRoute,
   freePlayRoute,
 ])
 

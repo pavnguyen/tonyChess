@@ -6,7 +6,7 @@
  * "Thiếu niên". Vì vậy mô hình này tách hẳn hai thứ:
  *
  *  - `stage`  - giai đoạn ĐANG HỌC (bố mẹ chọn, mặc định suy ra từ năm sinh), quyết định
- *               nội dung, độ khó máy, lịch ôn tập, những tính năng đã mở khoá.
+ *               nội dung, độ khó máy, những tính năng đã mở khoá.
  *  - `density` - độ "lớn" của giao diện (Nhí = to, hoạt hình, ít chữ; Chuyên nghiệp = dày,
  *               nhiều số liệu, không emoji). Bố mẹ có thể kéo ô này lên/xuống riêng, để một bé
  *               9 tuổi thích "người lớn" vẫn dùng được, và một bé 15 tuổi mới học vẫn thấy dễ đọc.
@@ -48,10 +48,6 @@ export type Stage = {
   confetti: boolean
   hintPolicy: HintPolicy
   botLevel: BotLevel
-  /** Số câu mỗi buổi ôn - vừa sức tập trung theo lứa tuổi. */
-  sessionSize: number
-  /** Số nấc ôn tập ngắt quãng được dùng (2..5). Bé càng lớn lịch càng giãn ra. */
-  reviewSteps: number
   /** Nhãn ô bàn cờ: bé nhỏ cần thấy toạ độ to rõ. */
   boardNotation: boolean
 }
@@ -78,8 +74,6 @@ export const STAGES: readonly Stage[] = [
     confetti: true,
     hintPolicy: 'auto-after-wrong',
     botLevel: 'easy',
-    sessionSize: 6,
-    reviewSteps: 3,
     boardNotation: false,
   },
   {
@@ -91,20 +85,18 @@ export const STAGES: readonly Stage[] = [
     focus: 'Đòn phối hợp 2 nước, cấu trúc tốt, nhập thành, tàn cuộc Vua + Tốt.',
     promotion: 'Tự tìm được đòn 2 nước, thắng máy mức trung bình không cần gợi ý.',
     unlocks: [
-      'Ghi ký hiệu cờ chuẩn quốc tế (K, Q, R, B, N)',
-      'Ôn tập ngắt quãng đầy đủ (1 → 3 → 7 → 21 ngày)',
+      'Đọc trọn biên bản cờ: nhập thành, chiếu, chiếu bí, phong cấp',
       'Chọn câu đố theo chủ đề thay vì học lẫn lộn',
       'Xuất ván đấu ra file PGN',
+      'Câu hỏi “đố con” cho ba mẹ theo đúng bài đang học',
     ],
-    notation: 'english',
+    notation: 'figurine',
     showRhyme: true,
     showCoachBanner: true,
     showEmoji: true,
     confetti: true,
     hintPolicy: 'on-request',
     botLevel: 'medium',
-    sessionSize: 8,
-    reviewSteps: 4,
     boardNotation: true,
   },
   {
@@ -121,15 +113,13 @@ export const STAGES: readonly Stage[] = [
       'Cây khai cuộc có phân nhánh (học phản ứng, không học vẹt)',
       'Đấu có đồng hồ: 5|0, 10|0, 15|10',
     ],
-    notation: 'english',
+    notation: 'figurine',
     showRhyme: false,
     showCoachBanner: true,
     showEmoji: true,
     confetti: false,
     hintPolicy: 'on-request',
     botLevel: 'hard',
-    sessionSize: 12,
-    reviewSteps: 5,
     boardNotation: true,
   },
   {
@@ -146,15 +136,13 @@ export const STAGES: readonly Stage[] = [
       'Nhập PGN từ Lichess/chess.com để phân tích lại',
       'Chế độ thi đấu nhiều ván và bảng điểm dài hạn',
     ],
-    notation: 'english',
+    notation: 'figurine',
     showRhyme: false,
     showCoachBanner: false,
     showEmoji: false,
     confetti: false,
     hintPolicy: 'off',
     botLevel: 'master',
-    sessionSize: 20,
-    reviewSteps: 5,
     boardNotation: true,
   },
 ] as const
@@ -200,14 +188,6 @@ export function nextStageOf(id: StageId): Stage | null {
 /** Mật độ giao diện đi kèm mặc định, nhưng bố mẹ kéo lên/xuống được độc lập với nội dung. */
 export function defaultDensityFor(stage: Stage): Density {
   return stage.id
-}
-
-/**
- * Lịch ôn tập cắt ngắn theo `reviewSteps`: bé mới học chỉ đi 3 nấc (ngay → 1 → 3 ngày)
- * để câu nào cũng được gặp lại sớm; bé lớn đi đủ 5 nấc mới nhớ dai.
- */
-export function reviewStepsFor(stage: Stage): number {
-  return Math.min(Math.max(stage.reviewSteps, 2), 5)
 }
 
 /**

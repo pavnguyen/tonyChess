@@ -6,6 +6,7 @@ import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import type { BannerVariant } from '../components/ExplanationBanner'
+import { InfoButton } from '../components/InfoPopover'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import {
   getGmLecture,
@@ -25,11 +26,9 @@ import {
   HINT_TO_STYLE,
   moveLabel,
 } from '../lib/notation'
-import { reviewKey } from '../lib/review'
 import { POSITIONAL, POSITIONAL_META } from '../data/positional'
+import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
-import { useRating } from '../store/rating'
-import { useReview } from '../store/review'
 import type { GmLecture } from '../types'
 import type { CSSProperties } from 'react'
 import type { Arrow } from 'react-chessboard'
@@ -59,8 +58,6 @@ const REPLY_MS = 450
 
 export function StrategyPage() {
   const { completeActivity, isCompleted, notation } = useKidProgress()
-  const { record } = useReview()
-  const { record: recordRating } = useRating()
 
   const [mode, setMode] = useState<Mode>('lecture')
   const [lectureId, setLectureId] = useState(GM_LECTURES[0].id)
@@ -71,6 +68,9 @@ export function StrategyPage() {
     () => PAWN_STRUCTURES.find((item) => item.id === structureId) ?? PAWN_STRUCTURES[0],
     [structureId],
   )
+
+  // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang mở bài giảng nào.
+  useReportLesson(mode === 'lecture' ? `lecture:${lecture.id}` : null)
 
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
   const [guide, setGuide] = useState(true)
@@ -118,9 +118,7 @@ export function StrategyPage() {
   }, [])
 
   const completeLecture = useCallback(() => {
-    record(reviewKey('lecture', lecture.id), true)
-    recordRating('strategy', true)
-    const first = completeActivity(`strategy:${lecture.id}`, 4)
+        const first = completeActivity(`strategy:${lecture.id}`, 4)
     if (first) {
       setConfetti(true)
       setCelebrate({
@@ -128,7 +126,7 @@ export function StrategyPage() {
         message: `“${lecture.title}” - kỹ thuật của ${lecture.gm}.`,
       })
     }
-  }, [completeActivity, lecture, record, recordRating])
+  }, [completeActivity, lecture])
 
   /**
    * Một nửa nước nữa vừa được đi xong. Nếu đó là nửa nước cuối của bài giảng
@@ -175,7 +173,7 @@ export function StrategyPage() {
       }
       if (san !== expected.san) {
         setWrongMove(
-          `Nước ${formatSan(san, notation)} chưa đúng ý của Đại Kiện Tướng. Bé đọc lại khẩu quyết “${expected.annotation?.rhyme ?? ''}” nhé!`,
+          `Nước ${formatSan(san, notation)} chưa đúng ý của Grand Master. Bé đọc lại khẩu quyết “${expected.annotation?.rhyme ?? ''}” nhé!`,
         )
         return false
       }
@@ -207,7 +205,7 @@ export function StrategyPage() {
     [kidSteps, ply, board],
   )
 
-  /** Mũi tên vàng + hai ô viền màu cho nước đi kế tiếp của Đại Kiện Tướng. */
+  /** Mũi tên vàng + hai ô viền màu cho nước đi kế tiếp của Grand Master. */
   const guideMove = useMemo(() => {
     if (mode !== 'lecture' || !guide || finished || walking) return null
     if (!isKidPly(lecture, ply)) return null
@@ -396,8 +394,9 @@ export function StrategyPage() {
         <Panel>
           <SectionTitle
             icon="🎓"
-            title="Chiến lược Đại Kiện Tướng"
+            title="Chiến lược Grand Master"
             subtitle="Đòn bẩy Tốt · Phòng thủ dự phòng · Lucena · Philidor"
+            info={mode === 'lecture' ? `lecture:${lectureId}` : undefined}
           />
           <div className="mt-2 grid gap-2">
             <Segmented
@@ -440,7 +439,7 @@ export function StrategyPage() {
             <Panel>
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-extrabold text-brand-900">
-                  🪜 Các bước của Đại Kiện Tướng
+                  🪜 Các bước của Grand Master
                 </div>
                 <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-extrabold text-brand-700">
                   {doneSteps}/{totalSteps}
@@ -539,9 +538,7 @@ export function StrategyPage() {
               <KidButton
                 variant="grass"
                 onClick={() => {
-                  record(reviewKey('structure', structure.id), true)
-                  recordRating('strategy', true)
-                  completeActivity(`strategy:structure:${structure.id}`, 2)
+                                    completeActivity(`strategy:structure:${structure.id}`, 2)
                 }}
               >
                 ✅ Bé đã hiểu thế Tốt này
@@ -570,6 +567,7 @@ export function StrategyPage() {
                   <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
                     {POSITIONAL_META[lesson.concept].label} · {lesson.title}
                   </span>
+                  <InfoButton topic={`positional:${lesson.concept}`} />
                 </div>
                 <div className="mt-1 text-[0.7rem] font-extrabold text-gold-700">
                   👀 {lesson.clue}

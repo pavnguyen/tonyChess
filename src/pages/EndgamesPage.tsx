@@ -4,6 +4,7 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
+import { InfoButton } from '../components/InfoPopover'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
@@ -12,22 +13,24 @@ import { useChessGame } from '../hooks/useChessGame'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { findHintMove } from '../lib/hints'
 import { ARROW_COLOR, BOARD_MARKS, HINT_FROM_STYLE, HINT_TO_STYLE } from '../lib/notation'
-import { reviewKey } from '../lib/review'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
 import { MATES } from '../data/mates'
 import { ROOK_ENDGAMES } from '../data/rookEndgames'
 import { useKidProgress } from '../store/progress'
-import { useRating } from '../store/rating'
-import { useReview } from '../store/review'
 import type { EndgameChallenge, MoveAnnotation } from '../types'
+
+/** Vài mẫu bí trong thư viện ứng đúng một “họ đòn” đã có giải thích ⓘ. */
+const MATE_INFO: Record<string, string> = {
+  'mate-back-rank-rook': 'tactic:back-rank',
+  'mate-back-rank-queen': 'tactic:back-rank',
+  'mate-smothered': 'tactic:smothered',
+}
 
 const PLAYER_COLOR = 'w' as const
 
 export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
-  const { record } = useReview()
-  const { record: recordRating } = useRating()
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [challengeId, setChallengeId] = useState('promote-easy')
@@ -79,9 +82,7 @@ export function EndgamesPage() {
       if (game.turn() !== PLAYER_COLOR) {
         if (soundOn) playWin()
         setConfetti(true)
-        record(reviewKey('endgame', challenge.id), true)
-        recordRating('endgame', true)
-        const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
+                const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
         setResult({
           emoji: '🏁',
           title: 'Chiếu bí tuyệt vời!',
@@ -89,9 +90,7 @@ export function EndgamesPage() {
           stars: firstTime ? 5 : 2,
         })
       } else {
-        record(reviewKey('endgame', challenge.id), false)
-        recordRating('endgame', false)
-        setResult({
+                setResult({
           emoji: '😅',
           title: 'Bé bị chiếu bí rồi!',
           message: 'Lần sau bé nhớ giữ Vua tránh xa nhé. Thử lại nào!',
@@ -103,9 +102,7 @@ export function EndgamesPage() {
 
     if (game.isStalemate() || game.isInsufficientMaterial() || game.isDraw()) {
       setFinished(true)
-      record(reviewKey('endgame', challenge.id), false)
-      recordRating('endgame', false)
-      setResult({
+            setResult({
         emoji: '🤝',
         title: 'Hòa cờ mất rồi!',
         message: 'Gần thắng lắm rồi, bé thử lại nhé!',
@@ -124,9 +121,7 @@ export function EndgamesPage() {
         playWin()
       }
       setConfetti(true)
-      record(reviewKey('endgame', challenge.id), true)
-      recordRating('endgame', true)
-      const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
+            const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
       setResult({
         emoji: '👑',
         title: 'Tốt hóa thành Hậu!',
@@ -368,6 +363,7 @@ export function EndgamesPage() {
                   <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
                     {pattern.title}
                   </span>
+                  <InfoButton topic={MATE_INFO[pattern.id]} />
                   <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.65rem] font-extrabold text-gold-700">
                     bí sau {pattern.mateIn} nước
                   </span>
@@ -403,6 +399,7 @@ export function EndgamesPage() {
                   <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
                     {lesson.title}
                   </span>
+                  <InfoButton topic={`endgame:${lesson.id}`} />
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold ${
                       lesson.result === 'win'

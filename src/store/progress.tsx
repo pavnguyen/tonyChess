@@ -70,7 +70,9 @@ function load(): Persisted {
     return {
       stars: typeof parsed.stars === 'number' ? parsed.stars : 0,
       completed: Array.isArray(parsed.completed) ? parsed.completed : [],
-      notation: parsed.notation ?? 'figurine',
+      // Bản cũ từng cho bé chọn tuýp "chuẩn quốc tế thuần" (Nf3) - nay đã bỏ, nên
+      // dữ liệu đã lưu cần quy về "hình cờ + quốc tế" cho khớp bảng tuỳ chọn.
+      notation: parsed.notation === 'vietnamese' ? 'vietnamese' : 'figurine',
       soundOn: parsed.soundOn ?? true,
       unlockAll: parsed.unlockAll ?? false,
       stageId: parsed.stageId ?? DEFAULT_STAGE_ID,

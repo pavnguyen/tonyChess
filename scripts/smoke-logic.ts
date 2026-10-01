@@ -6,8 +6,19 @@ import { Chess } from 'chess.js'
 import { ENDGAMES } from '../src/data/endgames.ts'
 import { OPENINGS } from '../src/data/openings.ts'
 import { TACTICS } from '../src/data/tactics.ts'
+import { GM_LECTURES } from '../src/data/gmLectures.ts'
+import { coordinateLabels, splitSquare } from '../src/lib/coordinates.ts'
 import { findHintMove } from '../src/lib/hints.ts'
-import { formatSan, moveLabel, pieceFromSan } from '../src/lib/notation.ts'
+import { tabKeyForPath, TIPS_BY_LESSON, TIPS_BY_TAB, tipsFor } from '../src/lib/parentTips.ts'
+import {
+  formatSan,
+  formatSanLetters,
+  moveLabel,
+  NOTATION_LEGEND,
+  NOTATION_OPTIONS,
+  NOTATION_SYMBOLS,
+  pieceFromSan,
+} from '../src/lib/notation.ts'
 import {
   computeHeatmap,
   findHangingPieces,
@@ -27,8 +38,15 @@ const check = (condition: boolean, label: string) => {
 
 console.log('\n▶ Ký hiệu nước đi')
 check(formatSan('Nf3', 'figurine') === '♘Nf3', 'figurine: Nf3 → ♘Nf3 (hình + chuẩn quốc tế)')
-check(formatSan('Nf3', 'english') === 'Nf3', 'english: Nf3 → Nf3')
 check(formatSan('Nf3', 'vietnamese') === 'Mf3', 'vietnamese: Nf3 → Mf3')
+check(formatSanLetters('Nf3') === 'Nf3', 'quốc tế thuần (bỏ hình): Nf3 → Nf3')
+// Bảng chọn chỉ còn 2 tuýp: "Hình cờ + quốc tế" ĐÃ chứa ký hiệu quốc tế, nên
+// lựa chọn "Chuẩn quốc tế" riêng là thừa và đã bị bỏ.
+check(
+  NOTATION_OPTIONS.length === 2 &&
+    NOTATION_OPTIONS.map((option) => option.value).join() === 'figurine,vietnamese',
+  'bảng chọn chỉ còn "Hình cờ + quốc tế" và "Tiếng Việt" (không có tuýp thuần quốc tế)',
+)
 check(formatSan('e4', 'figurine') === 'e4', 'Tốt giữ nguyên: e4')
 check(formatSan('e4', 'vietnamese') === 'e4', 'Tốt giữ nguyên: e4')
 check(formatSan('O-O', 'figurine') === 'O-O', 'Nhập thành giữ nguyên: O-O')
@@ -38,8 +56,47 @@ check(
   'tuýp hình cờ có ĐỦ cả hình lẫn ký hiệu FIDE',
 )
 check(pieceFromSan('Qh5#') === 'q' && pieceFromSan('d4') === 'p', 'đoán quân từ SAN')
-check(moveLabel(0, 'd4', 'english') === '1. d4', 'số nước Trắng: 1. d4')
-check(moveLabel(1, 'd5', 'english') === '1... d5', 'số nước Đen: 1... d5')
+check(moveLabel(0, 'd4', 'figurine') === '1. d4', 'số nước Trắng: 1. d4')
+check(moveLabel(1, 'd5', 'figurine') === '1... d5', 'số nước Đen: 1... d5')
+
+console.log('\n▶ Bảng đối chiếu ký hiệu (đủ để đọc trọn một biên bản cờ)')
+const legendPieces = NOTATION_LEGEND.map((row) => row.piece)
+check(
+  legendPieces.join('') === 'kqrbnp',
+  `bảng đối chiếu có đủ 6 quân (${legendPieces.join('')})`,
+)
+check(
+  NOTATION_LEGEND.every((row) => row.glyph && row.fide !== undefined && row.viet !== undefined && row.name),
+  'mỗi quân đều có hình cờ + ký hiệu FIDE + ký hiệu Việt + tên',
+)
+const symbols = NOTATION_SYMBOLS.map((row) => row.glyph)
+const requiredSymbols = ['O-O', 'O-O-O', '+', '#', 'x', '=', 'e.p.', '!', '?', '1-0', '0-1', '½-½']
+check(
+  requiredSymbols.every((glyph) => symbols.includes(glyph)),
+  `có đủ ký hiệu đặc biệt: nhập thành, chiếu, chiếu bí, ăn quân, phong cấp, qua đường, hay/dở, kết quả (${symbols.length})`,
+)
+check(
+  new Set(symbols).size === symbols.length &&
+    NOTATION_SYMBOLS.every((row) => row.meaning.length > 4 && row.sample.length > 0),
+  'không ký hiệu nào trùng nhau và ký hiệu nào cũng có nghĩa + nước ví dụ',
+)
+// Nước ví dụ phải THẬT SỰ dùng đúng ký hiệu đó (bắt lỗi gõ nhầm, ví dụ "#" thành "+").
+const symbolSamplesOk = NOTATION_SYMBOLS.filter((row) => row.sample !== row.glyph).every((row) => {
+  if (row.glyph === 'e.p.') return row.sample.includes('e.p.')
+  return row.sample.includes(row.glyph)
+})
+check(symbolSamplesOk, 'nước ví dụ của mỗi ký hiệu đều chứa đúng ký hiệu đó')
+// Đối chiếu với nước cờ thật của app: chiếu bí phải kết thúc bằng "#".
+const matePuzzles = TACTICS.filter((puzzle) => puzzle.solution.includes('#'))
+check(
+  matePuzzles.length > 0 &&
+    matePuzzles.every((puzzle) => {
+      const probe = new Chess()
+      probe.load(puzzle.fen)
+      return probe.move(puzzle.solution) && probe.isCheckmate()
+    }),
+  `mọi câu giải có dấu "#" đều thật sự chiếu bí (${matePuzzles.length} câu)`,
+)
 
 console.log('\n▶ Mắt Thần Cờ Vua (heatmap)')
 for (const opening of OPENINGS) {
@@ -119,6 +176,76 @@ for (const puzzle of TACTICS) {
   const options = game.moves()
   check(options.length > 0, `${puzzle.id}: sau ${puzzle.solution} đối thủ còn nước đi`)
 }
+
+console.log('\n▶ Gợi ý cho ba mẹ (§10)')
+check(tabKeyForPath('/') === '/', 'tab gốc: Khai cuộc')
+check(tabKeyForPath('/tactics') === '/tactics', 'khớp đúng tab Trung cuộc')
+check(tabKeyForPath('/free-play') === '/free-play', 'khớp tab Đấu với Robot')
+check(tabKeyForPath('/khong-ton-tai') === '/', 'đường dẫn lạ → quay về mẫu của tab gốc')
+
+for (const [route, tip] of Object.entries(TIPS_BY_TAB)) {
+  check(
+    tip.questions.length >= 1 && tip.questions.length <= 2,
+    `${route}: có 1-2 câu hỏi (${tip.questions.length})`,
+  )
+  check(
+    tip.questions.every((question) => question.trim().length >= 20),
+    `${route}: câu hỏi đủ rõ để ba mẹ hỏi ngay`,
+  )
+}
+
+// Mỗi bài học đang dạy phải có câu hỏi RIÊNG, không rơi về mẫu chung.
+for (const opening of OPENINGS) {
+  const key = `opening:${opening.id}`
+  check(Boolean(TIPS_BY_LESSON[key]?.length), `${key}: có câu hỏi riêng`)
+}
+for (const lecture of GM_LECTURES) {
+  const key = `lecture:${lecture.id}`
+  check(Boolean(TIPS_BY_LESSON[key]?.length), `${key}: có câu hỏi riêng`)
+}
+
+const lessonTip = tipsFor('/strategy', 'lecture:lucena')
+const tabTip = tipsFor('/strategy', null)
+check(
+  lessonTip.questions[0] === TIPS_BY_LESSON['lecture:lucena'][0],
+  'đang mở bài giảng → hiện đúng câu hỏi của bài đó',
+)
+check(
+  tabTip.questions[0] === TIPS_BY_TAB['/strategy'].questions[0],
+  'không rõ bài → rơi về câu hỏi chung của tab',
+)
+check(tipsFor('/endgames', 'opening:london').questions.length > 0, 'bài lạ trong tab khác vẫn có câu hỏi')
+
+console.log('\n▶ Toạ độ bàn cờ (cột a-h, hàng 1-8)')
+const whiteLabels = coordinateLabels('white')
+const blackLabels = coordinateLabels('black')
+check(
+  whiteLabels.files.join('') === 'abcdefgh',
+  `bàn Trắng: cột trái→phải là a…h (“${whiteLabels.files.join('')}”)`,
+)
+check(
+  whiteLabels.ranks.join('') === '87654321',
+  `bàn Trắng: hàng trên→dưới là 8…1 (“${whiteLabels.ranks.join('')}”)`,
+)
+check(
+  blackLabels.files.join('') === 'hgfedcba',
+  `bàn Đen (xoay 180°): cột đảo thành h…a (“${blackLabels.files.join('')}”)`,
+)
+check(
+  blackLabels.ranks.join('') === '12345678',
+  `bàn Đen: hàng đảo thành 1…8 (“${blackLabels.ranks.join('')}”)`,
+)
+// Bàn Đen phải là bản ĐẢO của bàn Trắng, không phải một danh sách viết tay dễ lệch.
+check(
+  blackLabels.files.join('') === [...whiteLabels.files].reverse().join('') &&
+    blackLabels.ranks.join('') === [...whiteLabels.ranks].reverse().join(''),
+  'hai hướng là ảnh đảo của nhau (không thể lệch nhau)',
+)
+check(
+  splitSquare('e4')?.file === 'e' && splitSquare('e4')?.rank === '4',
+  'tách ô “e4” thành cột e, hàng 4',
+)
+check(splitSquare('z9') === null && splitSquare('') === null, 'ô không hợp lệ → trả null')
 
 console.log(
   failures === 0 ? '\n✅ SMOKE TEST LOGIC PASS!\n' : `\n❌ ${failures} LỖI LOGIC\n`,

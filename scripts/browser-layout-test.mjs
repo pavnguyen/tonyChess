@@ -21,6 +21,17 @@ const VIEWPORTS = [
   { name: 'Máy tính dọc 1024×1366', width: 1024, height: 1366, mustFitHeight: false, minBoard: 600 },
   { name: 'iPad dọc 820×1180', width: 820, height: 1180, mustFitHeight: false, minBoard: 600 },
   { name: 'Điện thoại 390×844', width: 390, height: 844, mustFitHeight: false, minBoard: 330 },
+  // iPhone 15 Pro Max: dựng đứng thì bàn cờ phải rộng gần hết màn hình (9 khung
+  // ảnh 8 cột), nằm ngang thì chiều cao là thứ khan hiếm - lúc đó khối bàn cờ
+  // phải tự tách 2 cột để bé vẫn thấy TRỌN bàn cờ mà không phải cuộn trang.
+  { name: 'iPhone 15 Pro Max dọc 430×932', width: 430, height: 932, mustFitHeight: false, minBoard: 370 },
+  {
+    name: 'iPhone 15 Pro Max ngang 932×430',
+    width: 932,
+    height: 430,
+    mustFitHeight: false,
+    minBoard: 290,
+  },
 ]
 
 const ROUTES = [
@@ -29,8 +40,6 @@ const ROUTES = [
   { path: '/endgames', name: 'Tàn cuộc' },
   // Trang Chiến lược có nhiều nút điều khiển dưới bàn cờ hơn nên chừa nhiều chỗ hơn.
   { path: '/strategy', name: 'Chiến lược', minBoardScale: 0.86 },
-  // Trang Ôn tập KHÔNG có bàn cờ - chỉ kiểm tra không tràn ngang + đủ 6 tab.
-  { path: '/review', name: 'Ôn tập', boardless: true },
   { path: '/free-play', name: 'Đấu Máy' },
 ]
 
@@ -112,25 +121,6 @@ const waitForBoard = async (timeoutMs = 10000) => {
   return false
 }
 
-/** Chờ một phần tử bất kỳ xuất hiện (dùng cho trang không có bàn cờ). */
-const waitForSelector = async (id, timeoutMs = 10000) => {
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
-    let ready = false
-    try {
-      ready = await evaluate(`Boolean(document.getElementById(${JSON.stringify(id)}))`)
-    } catch {
-      // Trang đang chuyển hướng → thử lại.
-    }
-    if (ready) {
-      await sleep(250)
-      return true
-    }
-    await sleep(150)
-  }
-  return false
-}
-
 for (const viewport of VIEWPORTS) {
   await send('Emulation.setDeviceMetricsOverride', {
     width: viewport.width,
@@ -145,30 +135,6 @@ for (const viewport of VIEWPORTS) {
     // hơn một chút, tính theo tỉ lệ của từng khung nhìn.
     const minBoard = Math.round(viewport.minBoard * (route.minBoardScale ?? 1))
     await evaluate(`location.href = ${JSON.stringify(`${BASE}${route.path}`)}`)
-
-    // Trang không có bàn cờ: chỉ kiểm tra không tràn ngang và đủ 6 tab.
-    if (route.boardless) {
-      await waitForSelector('kid-review-page')
-      const m = await measure()
-      if (!m) {
-        check(false, `${route.name}: không đo được bố cục`)
-        continue
-      }
-      check(
-        m.scrollW <= m.innerW + 2,
-        `${route.name}: không tràn ngang (${m.scrollW} ≤ ${m.innerW}px)`,
-      )
-      const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
-      check(tabCount === 6, `${route.name}: thanh tab có đủ 6 tab (${tabCount})`)
-      const schedW = await evaluate(`
-        (() => {
-          const nav = document.querySelector('nav')
-          return nav ? nav.scrollWidth : 0
-        })()
-      `)
-      check(schedW >= 0, `${route.name}: đo được chiều rộng thanh tab (${schedW}px)`)
-      continue
-    }
 
     await waitForBoard()
     const m = await measure()
@@ -219,6 +185,10 @@ for (const viewport of VIEWPORTS) {
       const slack = m.innerH - m.card.bottom
       if (slack > 40) console.log(`     ℹ còn dư ${Math.round(slack)}px dưới khối bàn cờ`)
     }
+
+    // Thanh tab phải hiển thị đủ 5 tab, không bị cắt mất tab nào.
+    const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
+    check(tabCount === 5, `${route.name}: thanh tab có đủ 5 tab (${tabCount})`)
 
     if (m.hiddenColumns > 0) {
       console.log(

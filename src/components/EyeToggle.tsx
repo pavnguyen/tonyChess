@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { HEATMAP_COLORS } from '../lib/threats'
+import { InfoButton } from './InfoPopover'
 
 interface Props {
   on: boolean
@@ -57,9 +58,10 @@ export function EyeToggle({ on, onToggle, checkMode = false, className = '' }: P
 
       {showLegend && (
         <div className="animate-pop-in absolute right-0 top-full z-30 mt-2 w-72 rounded-2xl border-[3px] border-white bg-white p-3 text-left shadow-2xl">
-          <p className="mb-2 text-sm font-extrabold text-brand-900">
+          <div className="mb-2 flex items-center gap-1.5 text-sm font-extrabold text-brand-900">
             👁️ Mắt Thần đọc bàn cờ thế nào?
-          </p>
+            <InfoButton topic="eye" />
+          </div>
           <ul className="space-y-1.5 text-xs font-bold text-brand-700">
             <li className="flex items-center gap-2">
               <span

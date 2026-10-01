@@ -5,7 +5,7 @@ export const RANKS: RankInfo[] = [
   { id: 'seed', title: 'Kỳ thủ Nhí', emoji: '🌱', minStars: 0 },
   { id: 'apprentice', title: 'Tập sự Cờ vua', emoji: '🐣', minStars: 8 },
   { id: 'knight', title: 'Kiện tướng Nhí', emoji: '🥉', minStars: 20 },
-  { id: 'master', title: 'Đại Kiện tướng Nhí', emoji: '👑', minStars: 40 },
+  { id: 'master', title: 'Grand Master Nhí', emoji: '👑', minStars: 40 },
 ]
 
 /** Danh hiệu hiện tại của bé theo số sao. */

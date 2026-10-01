@@ -1,6 +1,14 @@
 export type PieceCode = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
 export type Side = 'white' | 'black'
-export type NotationStyle = 'figurine' | 'english' | 'vietnamese'
+/**
+ * Tuýp ghi nước đi cho bé.
+ *
+ * Chỉ còn HAI tuýp: `figurine` (hình cờ + ký hiệu quốc tế, ví dụ `♘Nf3`) và
+ * `vietnamese` (`Mf3`). Tuýp thuần quốc tế (`Nf3`, không có hình quân) đã bỏ -
+ * `figurine` vốn đã chứa sẵn ký hiệu quốc tế nên không cần thêm một lựa chọn
+ * riêng nữa, bé nào cũng đọc được ký hiệu thi đấu.
+ */
+export type NotationStyle = 'figurine' | 'vietnamese'
 
 /** Một nước cờ có gắn lời giải thích dành cho bé. */
 export interface MoveAnnotation {
@@ -23,17 +31,51 @@ export interface OpeningMove {
   annotation?: MoveAnnotation
 }
 
+/**
+ * Một nút trong **cây khai cuộc**: một nước đi, kèm các nhánh đi tiếp.
+ *
+ * Quy ước quan trọng: **phần tử ĐẦU TIÊN của `replies` là nhánh chính** - đúng
+ * dòng lý thuyết mà app dạy. Nhờ vậy đọc cây ra được "dòng chính" bằng cách luôn
+ * đi theo `replies[0]`, còn các nhánh sau là những cách đáp khác mà đối thủ (hoặc
+ * bé) có thể chọn - học phản ứng thay vì học vẹt.
+ */
+export interface OpeningNode {
+  /** Nước đi SAN của nút này. */
+  san: string
+  /** Lời giảng, chỉ gắn ở nước của bé. */
+  annotation?: MoveAnnotation
+  /**
+   * Một câu ngắn vì sao nên chọn nước này - chỉ có ở nước MỞ ĐẦU một nhánh phụ,
+   * hiện làm gợi ý cho bé khi tới ngã ba.
+   */
+  note?: string
+  /** Nhánh đi tiếp. Không có / rỗng = hết bài. */
+  replies?: OpeningNode[]
+}
+
+/** "Kế hoạch tiếp theo": việc bé cần làm sau khi hết phần khai cuộc đã học. */
+export interface OpeningPlan {
+  /** Tiêu đề ngắn, ví dụ "Kế hoạch trung cuộc của Trắng". */
+  title: string
+  /** Từng việc cụ thể, mỗi việc một câu ngắn cho bé. */
+  points: string[]
+}
+
 export interface Opening {
   id: string
   name: string
   englishName: string
-  /** Đại Kiện Tướng nổi tiếng gắn với khai cuộc này. */
+  /** Grand Master nổi tiếng gắn với khai cuộc này. */
   gm: string
   side: Side
   emoji: string
   tagline: string
-  /** Danh sách ply (nửa nước) đầy đủ cho cả hai bên. */
+  /** Danh sách ply (nửa nước) của NHÁNH CHÍNH, đủ cho cả hai bên. */
   moves: OpeningMove[]
+  /** Cây nước đi đầy đủ (nhánh chính = phần tử đầu của `replies`). */
+  tree: OpeningNode[]
+  /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */
+  plan: OpeningPlan
 }
 
 export type TacticType =
@@ -98,7 +140,7 @@ export interface GmLecture {
   module: GmModule
   kind: 'middlegame' | 'endgame'
   title: string
-  /** Đại Kiện Tướng gắn với kỹ thuật này. */
+  /** Grand Master gắn với kỹ thuật này. */
   gm: string
   emoji: string
   /** Câu dẫn 1 dòng cho bé. */

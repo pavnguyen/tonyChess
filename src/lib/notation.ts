@@ -104,10 +104,10 @@ export const NOTATION_OPTIONS: {
   label: string
   sample: string
 }[] = [
-  // Tuýp mặc định cho bé nhỏ: hình quân cờ đi kèm ký hiệu chuẩn quốc tế (♘Nf3)
-  // để bé vừa nhận ra quân, vừa quen dần với ký hiệu thi đấu FIDE.
+  // Tuýp mặc định cho MỌI lứa tuổi: hình quân cờ đi kèm ký hiệu chuẩn quốc tế
+  // (♘Nf3) để bé vừa nhận ra quân, vừa đọc được ký hiệu thi đấu FIDE. Bản
+  // "chuẩn quốc tế thuần" (Nf3) đã bỏ vì nó chỉ là tuýp này thiếu hình quân.
   { value: 'figurine', label: 'Hình cờ + quốc tế', sample: '♘Nf3' },
-  { value: 'english', label: 'Chuẩn quốc tế', sample: 'Nf3' },
   { value: 'vietnamese', label: 'Tiếng Việt', sample: 'Mf3' },
 ]
 
@@ -129,6 +129,33 @@ export const NOTATION_LEGEND: {
   viet: VIETNAMESE[piece],
   name: PIECE_NAME_VI[piece],
 }))
+
+/**
+ * Các ký hiệu ĐẶC BIỆT trên biên bản cờ - phần còn lại mà bé cần để đọc trọn một
+ * ván đấu: nhập thành, chiếu, chiếu bí, ăn quân, phong cấp, bắt Tốt qua đường,
+ * nước hay/nước dở và kết quả ván.
+ *
+ * Mỗi dòng kèm **một nước thật** (`sample`) để bé thấy ký hiệu đó nằm ở đâu trong
+ * nước đi, ví dụ `Qf7#` - dấu `#` luôn đứng CUỐI nước.
+ */
+export const NOTATION_SYMBOLS: {
+  glyph: string
+  meaning: string
+  sample: string
+}[] = [
+  { glyph: 'O-O', meaning: 'Nhập thành gần (cánh Vua)', sample: 'O-O' },
+  { glyph: 'O-O-O', meaning: 'Nhập thành xa (cánh Hậu)', sample: 'O-O-O' },
+  { glyph: '+', meaning: 'Chiếu Vua', sample: 'Qf4+' },
+  { glyph: '#', meaning: 'Chiếu bí - hết cờ', sample: 'Qf7#' },
+  { glyph: 'x', meaning: 'Ăn quân', sample: 'Nxe5' },
+  { glyph: '=', meaning: 'Tốt phong cấp', sample: 'e8=Q' },
+  { glyph: 'e.p.', meaning: 'Bắt Tốt qua đường', sample: 'exd6 e.p.' },
+  { glyph: '!', meaning: 'Nước hay, đáng khen', sample: 'Bxg6!' },
+  { glyph: '?', meaning: 'Nước dở, đáng tiếc', sample: 'Ne4?' },
+  { glyph: '1-0', meaning: 'Trắng thắng (bên Đen xin thua)', sample: '1-0' },
+  { glyph: '0-1', meaning: 'Đen thắng', sample: '0-1' },
+  { glyph: '½-½', meaning: 'Hai bên hoà', sample: '½-½' },
+]
 
 /** Đoán loại quân cờ từ một nước đi SAN. */
 export function pieceFromSan(san: string): PieceCode {
@@ -154,13 +181,26 @@ function letterFor(piece: PieceCode, style: NotationStyle): string {
   // 'figurine' giờ là HÌNH + KÝ HIỆU QUỐC TẾ (♘N) để bé quen dần với chuẩn FIDE
   // ngay từ khi còn đọc bằng hình quân cờ.
   if (style === 'figurine') return FIGURINE[piece] + ENGLISH[piece]
-  if (style === 'english') return ENGLISH[piece]
   return VIETNAMESE[piece]
 }
 
 /**
+ * Ghi nước đi bằng KÝ HIỆU QUỐC TẾ THUẦN (không kèm hình quân cờ): `Nf3`.
+ *
+ * Dùng cho chỗ đã có sẵn hình quân cờ to bên cạnh (banner giải thích) - nếu vẫn
+ * ghép hình vào sẽ thành "♗ ♗Bf4" (lặp hình hai lần). Không phải một tuýp cho bé
+ * chọn, chỉ là hàm tiện ích của giao diện.
+ */
+export function formatSanLetters(san: string): string {
+  if (san.startsWith('O-O')) return san
+  const piece = pieceFromSan(san)
+  if (piece === 'p') return san
+  return ENGLISH[piece] + san.slice(1)
+}
+
+/**
  * Đổi một nước SAN sang ký hiệu theo tuýp chọn của bé.
- * Ví dụ "Nf3" → "♘Nf3" (hình + quốc tế) | "Nf3" (quốc tế) | "Mf3" (Việt).
+ * Ví dụ "Nf3" → "♘Nf3" (hình + quốc tế) | "Mf3" (Việt).
  */
 export function formatSan(san: string, style: NotationStyle): string {
   if (san.startsWith('O-O')) return san

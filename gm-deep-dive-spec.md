@@ -33,7 +33,7 @@
 | Tàn cuộc | 8 thế | 2 phong Hậu + 6 chiếu bí cơ bản |
 | Bài giảng GM | 4 | Đòn bẩy Carlsbad, Phòng thủ dự phòng, Lucena, Philidor |
 | Cấu trúc Tốt | 3 | Tốt Thông, Tốt Chồng, Tốt Cô lập |
-| Cấp bậc ⭐ | 4 mức | Kỳ thủ Nhí @0 → Tập sự Cờ vua @8 → Kiện tướng Nhí @20 → Đại Kiện tướng Nhí @40 |
+| Cấp bậc ⭐ | 4 mức | Kỳ thủ Nhí @0 → Tập sự Cờ vua @8 → Kiện tướng Nhí @20 → Grand Master Nhí @40 |
 
 ### Tab hiện có (5)
 
@@ -60,7 +60,8 @@
 
 - `npm run check`: dữ liệu cờ (validate-chess, có chứng minh bản chất từng đòn) + logic +
   review + stages + engine → **195 ✓**.
-- `npm run check:browser`: 6 bộ (ENGINE · ARROW · LEARN-DRAG · HINT-DRAG · THEME · LAYOUT).
+- `npm run check:browser`: **11 bộ** (ENGINE · ARROW · LEARN-DRAG · HINT-DRAG · STRATEGY-DRAG ·
+  STOCKFISH · GM-GAMES · OPENING-TREE · PARENT-TIPS · THEME · LAYOUT).
 - LAYOUT quét **5 route × 8 khung nhìn** (1440×900 → 390×844), kiểm tra: không tràn ngang,
   không cuộn dọc, thấy trọn khối bàn cờ, bàn cờ đủ lớn.
 
@@ -69,8 +70,14 @@
 - Banner **3 phần bắt buộc** dưới bàn cờ ở mọi nước: `[tên nước + tên quân] + [lý do 1 câu] + [vè]`.
 - Bố cục "bàn làm việc": bàn cờ luôn lớn, không phải cuộn; biến thể `stage` cho màn hình rộng.
 - Bảng màu "Sồi & Ngọc" (xanh rừng + ngà + vàng đồng), bàn cờ `#2f6b4f` / `#ffffff`.
-- Đổi ký hiệu 3 kiểu (hình quân cờ / chuẩn quốc tế / Việt M,T,X,H,V); tự xoay bàn cờ cho bài Đen.
-- Mọi thay đổi phải giữ `tsc` 0 lỗi, `oxlint` **0 warning**, 195 ✓ dữ liệu/logic, 6/6 bộ test trình duyệt.
+- Đổi ký hiệu **2 kiểu** (hình cờ + quốc tế `♘Nf3` / Việt `Mf3`, M,T,X,H,V); tự xoay bàn cờ cho
+  bài Đen. Tuýp "chuẩn quốc tế thuần" (`Nf3`) đã bỏ - `♘Nf3` đã chứa sẵn ký hiệu đó.
+- Bảng đối chiếu ký hiệu trong ⚙️ phải đủ để đọc trọn biên bản: tên 6 quân **và** ký hiệu đặc biệt
+  (`O-O`, `O-O-O`, `+`, `#`, `x`, `=`, `e.p.`, `!`, `?`, `1-0`, `0-1`, `½-½`).
+- Khung **“Gợi ý cho ba mẹ”** phải có mặt ở **mọi tab**, thu gọn được (nhớ trạng thái), và **không
+  được** phá bố cục không-cuộn (`npm run check:tips` + LAYOUT).
+- Mọi thay đổi phải giữ `tsc` 0 lỗi, `oxlint` **0 warning**, `npm run check` xanh (dữ liệu/logic),
+  **11/11** bộ test trình duyệt xanh.
 
 ---
 
@@ -364,7 +371,7 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 
 ## 8. GIAI ĐOẠN 4 — NỘI DUNG MỚI
 
-### 4.1. Kho câu đố ~1.000 câu từ Lichess CC0
+### 4.1. Kho câu đố ~1.000 câu từ Lichess CC0 — ✅ ĐÃ LÀM (pipeline + UI; dữ liệu chờ chạy 1 lần có mạng)
 
 - **Dữ kiện đã kiểm chứng**: kho câu đố Lichess phát hành theo **CC0 (public domain)** — hơn 6 triệu
   câu, có sẵn **điểm số và nhãn chủ đề**, tải dạng CSV. Nguồn: `database.lichess.org` và bản CSV
@@ -384,6 +391,27 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   nhãn tiếng Việt, không khả thi viết tay 1.000 câu → bài tập luyện thêm dùng **lời giải thích ngắn
   theo MẪU** (ví dụ: *"Đòn đôi: Mã vừa ăn quân, lại tấn công Vua."*) + chuỗi nước đi, luôn gắn nhãn
   **"bài luyện thêm"** để phân biệt với **"bài giảng"** viết tay có vè riêng.
+- ✅ **Đã làm**:
+  - `scripts/build-puzzles.mjs`: tải `.cache/` (đã gitignore) → giải nén **theo luồng** bằng
+    `node:zlib` `createZstdDecompress` → lọc điểm 600-1800, lời giải 2-4 nửa nước, Popularity ≥ 70,
+    NbPlays ≥ 200, đủ 7 họ đòn (ánh xạ nhãn Lichess → loại đòn của app, có thứ tự ưu tiên) → **kiểm
+    từng câu bằng chess.js** → chọn **cách quãng theo từng khung 100 điểm** (không dồn vào mấy câu
+    đầu) → ghi `src/data/puzzlePacks/<theme>.json` (chỉ dữ kiện: FEN, chuỗi nước SAN, điểm,
+    `mateIn`). Có tuỳ chọn `--from` / `--out` / `--limit` / `--no-download` để chạy offline.
+  - `src/data/puzzlePacks/index.ts`: nạp gói bằng **`import()` động** (Vite tách chunk riêng, không
+    làm nặng trang Trung cuộc), **sinh lời giải thích + khẩu quyết theo MẪU** cho từng loại đòn,
+    `randomPuzzleFromPack` ưu tiên câu quanh mức điểm của bé và tránh lặp câu vừa làm.
+  - Panel **"🏋️ Bài luyện thêm"** trong tab Trung cuộc: nhãn "bài luyện thêm", câu luyện **không
+    cộng sao** nhưng vẫn ghi vào **điểm trình độ** và **sổ ôn tập**; gói trống thì báo đúng câu lệnh
+    cần chạy.
+  - `scripts/smoke-puzzles.mjs` (`npm run check:puzzles`): chạy pipeline trên một CSV nhỏ tự soạn để
+    chứng minh bộ lọc loại đúng câu hỏng (FEN sai, nước sai, điểm ngoài khoảng, câu 1 nước) và đọc
+    đúng `mateInN`; đồng thời **soi lại toàn bộ gói đã commit**.
+  - `npm run verify:gm` độc lập với phần này.
+- ⏳ **Việc còn lại (cần mạng, chạy một lần trên máy bố/mẹ)**: `npm run build:puzzles` rồi **commit**
+  `src/data/puzzlePacks/*.json`. Môi trường soạn code này **không có kết nối trực tiếp tới
+  database.lichess.org** (chỉ có lớp tìm kiếm/đọc web), nên 7 gói hiện là **file rỗng có sẵn khung**
+  để build vẫn xanh; khi bố/mẹ chạy script, panel luyện thêm sẽ tự có ~1.000 câu.
 
 ### 4.2. Thư viện thế chiếu bí — ✅ ĐÃ LÀM
 
@@ -413,13 +441,33 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 - ⏳ Các khái niệm còn lại (đường chéo mạnh, đổi quân đúng lúc) sẽ bổ sung sau; dạy "hai bên đi khác
   nhau" cần thêm dạng bài có biến, chưa làm ở vòng này.
 
-### 4.4. Cây khai cuộc phân nhánh + kế hoạch trung cuộc
+### 4.4. Cây khai cuộc phân nhánh + kế hoạch trung cuộc — ✅ ĐÃ LÀM
 
 - Mở rộng `src/data/openings.ts` thành **cây**: mỗi nút là một nước, có nhiều nhánh phản ứng của đối
   thủ; bé chọn nước → app trả nước lý thuyết của đối thủ.
 - Sau ~8-10 nước: hiện **"Kế hoạch tiếp theo"** (ví dụ Sicilian: tấn công cánh Hậu; Pháp: chọc e5).
 - Dữ liệu tham khảo có thể đối chiếu với kho khai cuộc mở (Lichess/`chess-openings`), nhưng **nước đi
   là dữ kiện** nên viết tay được.
+- ✅ **Đã làm**:
+  - `src/lib/openingTree.ts`: mô hình cây + `buildOpeningTree(main, branches)` - viết dữ liệu dạng
+    **dòng chính + danh sách nhánh** cho dễ đọc/soi lỗi, rồi ghép thành cây thật. Quy ước: **phần tử
+    đầu tiên của `replies` là nhánh chính**, nên dòng chính rút ra chỉ bằng cách đi theo `replies[0]`.
+  - `src/data/openingTrees.ts`: cây cho **cả 8 khai cuộc** - **229 nút, 15 ngã ba, 125 nước ở nhánh
+    phụ**. `src/data/openings.ts` giờ chỉ còn phần giới thiệu, `moves` được **rút thẳng từ cây** nên
+    không thể lệch với cây.
+  - Bé đi tới **ngã ba của đối thủ** thì app **dừng lại** (không tự đoán thay bé): hiện khung chọn
+    nhánh ngay dưới bàn cờ, nhánh chính gắn ⭐, mỗi nhánh kèm một câu giải thích; nút “Tiến” bị khoá
+    cho tới khi bé chọn. Ở nút của bé, **mọi nước lý thuyết đều được chấp nhận** (không chỉ nhánh chính).
+  - Khung **🌳 Cây khai cuộc** liệt kê mọi ngã ba để bé xem trước và **bấm nhảy thẳng** sang nhánh khác.
+  - Khung **🧭 Kế hoạch trung cuộc**: 3 việc cụ thể cho bé, hiện đầy đủ từ nước thứ 6 trở đi.
+  - `validate-chess.ts` duyệt **mọi đường đi** của cả 8 cây: từng nước phải hợp lệ bằng chess.js ở
+    đúng thế cờ đó, lời giảng **chỉ** được nằm ở nước của bé, mỗi nhánh phụ phải có câu giải thích,
+    dòng chính phải ≥ 10 ply, kế hoạch phải ≥ 3 việc.
+  - `scripts/browser-opening-tree-test.mjs` (`npm run check:tree`): 25 phép kiểm trong Chrome thật -
+    có khung cây + kế hoạch, tới ngã ba thì app dừng và khoá nút “Tiến”, chọn nhánh khác thì **bàn cờ
+    đi đúng nhánh đó**, bấm trong khung cây thì **nhảy tới nhánh ấy**.
+  - Lưu ý kỹ thuật: `openings.ts`/`openingTrees.ts` phải ghi rõ đuôi `.ts` khi import, vì Node (chạy
+    `scripts/validate-chess.ts`) **không tự thêm đuôi** cho import lúc chạy; Vite vẫn hiểu bình thường.
 
 ### 4.5. Tàn cuộc lý thuyết Xe+Tốt — ✅ ĐÃ LÀM (một phần)
 
@@ -434,7 +482,7 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   và bài **"đếm nước tối ưu (bí trong N nước)"** — cần thế cờ đã được kiểm chứng kỹ (tránh gán sai
   tên kỹ thuật); sẽ bổ sung sau.
 
-### 4.6. Học ván của kỳ thủ hiện đại ("đoán nước tiếp theo")
+### 4.6. Học ván của kỳ thủ hiện đại ("đoán nước tiếp theo") — ✅ ĐÃ LÀM
 
 - `src/data/gmGames.ts`: một số ván **hiện đại** (Carlsen, Kasparov, Nakamura) gắn với các khai cuộc
   app đang dạy.
@@ -444,6 +492,22 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   - nước khác: không điểm, nhưng hiện lời giải thích ngắn.
 - ⚠️ **Bản quyền**: chuỗi nước đi là dữ kiện, **không** bảo hộ; nhưng lời bình của người khác thì có →
   toàn bộ lời bình phải **tự viết**.
+- ✅ **Đã làm**:
+  - `src/data/gmGames.ts`: **3 ván thật** - Carlsen - Tomashevsky (Wijk aan Zee 2016, hệ thống
+    London, khớp bài khai cuộc `london`), Kasparov - Topalov (Wijk aan Zee 1999, ván "bất hủ",
+    Phòng thủ Pirc), Ding Liren - Nepomniachtchi (chung kết Thế giới 2023 ván 6, hệ thống London).
+    Tổng **22 câu hỏi** (7 / 8 / 7), mỗi câu có lời giải thích **tự viết** + vè 4-6 chữ.
+  - Luật điểm: nước kỳ thủ đã đi = **1 điểm**; nước MÁY mạnh hơn = **2 điểm** (kiểm nước kỳ thủ
+    TRƯỚC để hai nước trùng nhau vẫn ra 1 điểm); nước khác = 0 điểm nhưng vẫn hiện lời giải thích.
+  - Trang riêng `/gm-games` (mở từ thẻ mời trong tab Khai cuộc) - **không thêm tab** nên vẫn đủ 6
+    tab trên điện thoại. Bàn cờ tự chạy ván, tới câu hỏi thì dừng chờ bé kéo-thả; vừa trả lời xong
+    băng giải thích giữ **1.8 giây** cho bé đọc phần "Vì sao?" và câu vè.
+  - `npm run verify:gm` (**Stockfish MultiPV**, độ sâu 18): mọi nửa nước của cả 3 ván hợp lệ, nước
+    ghi là "nước máy mạnh hơn" **đúng là nước máy chọn** và **hơn nước kỳ thủ ≥ 40 centipawn**;
+    3 câu đủ điều kiện (hơn 44-54 cp) đã được ghi vào dữ liệu, 19 câu còn lại thì máy cũng chọn
+    đúng nước của kỳ thủ.
+  - `scripts/browser-gm-test.mjs` (`npm run check:gm`): bấm-chọn-đi thật để đoán đúng nước kỳ thủ
+    (1 điểm) và tìm ra nước máy mạnh hơn ở câu cuối (2 điểm), phiếu điểm phải cộng đúng 3/8.
 
 ---
 
@@ -483,17 +547,26 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
 
 ---
 
-## 10. GIAI ĐOẠN 6 — KHUNG "GỢI Ý CHO BA MẸ" (yêu cầu đã xếp hàng trước đó)
+## 10. GIAI ĐOẠN 6 — KHUNG "GỢI Ý CHO BA MẸ" (yêu cầu đã xếp hàng trước đó) — ✅ ĐÃ LÀM
 
+- Hiện thực: `src/components/ParentTips.tsx` (khung) · `src/lib/parentTips.ts` (câu hỏi) ·
+  `src/store/lesson.tsx` (`LessonProvider` + `useReportLesson`), gắn trong `RootLayout` nên có mặt ở
+  **cả 7 đường dẫn**.
 - Vị trí: **góc dưới bên phải, hiện ở MỌI tab, thu gọn được** (nút ▸/▾), trạng thái thu/mở nhớ trong
-  `localStorage`.
+  `localStorage` (`hoc-vien-co-vua-nhi.parent-tips.v1`). Mặc định **MỞ** để ba mẹ thấy ngay lần đầu.
+  ✅ Khi thu gọn chỉ còn một nút nhỏ (đo thật: 132×33px).
 - Nội dung theo ngữ cảnh: với bài giảng/ván đang học, hiện **1-2 câu hỏi gợi ý để bố mẹ hỏi bé**, ví
   dụ: *"Đố con: vì sao Carlsen đưa Tượng ra f4 trước khi đẩy Tốt e3?"*.
-- Nguồn câu hỏi: viết tay cho từng bài giảng (4 bài hiện có) + mẫu chung cho các tab khác.
-- Trong khung này cũng hiện (ẩn với bé): **số Elo**, điểm từng dạng đòn, và nút chọn giai đoạn tuổi.
+- Nguồn câu hỏi: viết tay cho **8 khai cuộc + 4 bài giảng** (`TIPS_BY_LESSON`, khoá
+  `opening:<id>` / `lecture:<id>`) + mẫu chung cho các tab khác (`TIPS_BY_TAB`). Trang tự báo bài
+  đang mở qua `useReportLesson` nên câu hỏi đổi **ngay khi bé đổi bài**, không cần tải lại trang.
+- Trong khung này cũng hiện (ẩn với bé): **số Elo**, điểm từng dạng đòn (10 dòng, cùng nguồn với
+  tab Trung cuộc), và nút chọn giai đoạn tuổi + ô năm sinh.
 - Không có báo cáo tuần, không có giới hạn thời gian (chủ dự án không chọn).
 - Điều kiện: khung **không được** làm hỏng bố cục không-cuộn — kiểm tra bằng LAYOUT test; khi thu gọn
-  chỉ còn một nút nhỏ.
+  chỉ còn một nút nhỏ. ✅ Khung là khối `position: fixed`, bề rộng/chiều cao chặn theo màn hình và
+  thân tự cuộn bên trong; **LAYOUT 11/11 xanh**, `npm run check:tips` đo riêng ở 1440×900 và 390×844
+  (không tràn ngang, không làm trang cao thêm).
 
 ---
 
@@ -542,7 +615,7 @@ Cả 8 câu hỏi đã được chủ dự án chốt qua **Vòng A + Vòng B**.
 | **6** | Khung Gợi ý cho Ba mẹ | Nhỏ, độc lập, làm cuối để gom hết số liệu hiển thị |
 
 Mỗi giai đoạn phải kết thúc bằng: `tsc` 0 lỗi · `oxlint` 0 warning · `npm run check` xanh ·
-`npm run check:browser` 6/6 xanh · LAYOUT 8 khung nhìn không cuộn/không tràn · cập nhật README ·
+`npm run check:browser` 11/11 xanh · LAYOUT 10 khung nhìn không cuộn/không tràn · cập nhật README ·
 thêm test cho tính năng mới.
 
 ---

@@ -13,7 +13,6 @@ import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BOARD_MARKS, formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
-import { useRating } from '../store/rating'
 import type { Side } from '../types'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -56,13 +55,13 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
 }
 
 export function FreePlayPage() {
-  const { notation, completeActivity, soundOn } = useKidProgress()
-  const { botLevel } = useRating()
+  const { notation, completeActivity, soundOn, stage } = useKidProgress()
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
-  // Mặc định chọn độ mạnh máy vừa sức với điểm trình độ hiện tại (bé vẫn đổi được).
-  const [difficulty, setDifficulty] = useState<Difficulty>(botLevel)
+  // Mặc định chọn độ mạnh máy theo LỨA TUỔI của bé (bé vẫn đổi được). Đây là app học cờ,
+  // không phải bảng xếp hạng: không chấm điểm, không so hơn thua.
+  const [difficulty, setDifficulty] = useState<Difficulty>(stage.botLevel)
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
   const [confetti, setConfetti] = useState(false)
@@ -341,6 +340,7 @@ export function FreePlayPage() {
             icon="🎮"
             title="Đấu tập tự do cùng bạn Robot"
             subtitle="Chơi trọn một ván cờ thật, có Vua, Hậu, Xe, Tượng, Mã, Tốt đông đủ!"
+            info="machine"
           />
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
@@ -383,6 +383,7 @@ export function FreePlayPage() {
             icon="📜"
             title="Sách ghi ván cờ"
             subtitle="Bé tập đọc lại ván đấu của mình như một kỳ thủ nhí!"
+            info="notation"
           />
           <div className="mt-2 max-h-56 overflow-y-auto rounded-2xl bg-brand-50 p-2">
             {moveRows.length === 0 ? (
@@ -416,6 +417,7 @@ export function FreePlayPage() {
             icon="🧠"
             title="Bí kíp thắng bạn Robot"
             subtitle="Ba điều bé nên nhớ trong mỗi nước đi"
+            info="machine"
           />
           <ul className="mt-2 grid gap-1.5 text-xs font-bold text-brand-700 sm:text-sm">
             <li className="rounded-xl bg-brand-50 px-2.5 py-1.5">

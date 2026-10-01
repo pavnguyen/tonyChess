@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { NOTATION_LEGEND, NOTATION_OPTIONS } from '../lib/notation'
+import { NOTATION_LEGEND, NOTATION_OPTIONS, NOTATION_SYMBOLS } from '../lib/notation'
+import { InfoButton } from './InfoPopover'
 import { STAGES } from '../lib/stages'
 import { useKidProgress } from '../store/progress'
 
@@ -53,9 +54,17 @@ export function HeaderOptions() {
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-40 cursor-default"
           />
-          <div className="animate-pop-in absolute right-0 top-full z-50 mt-2 w-[18.5rem] rounded-2xl border-[3px] border-white bg-white p-3 text-left shadow-2xl">
+          {/*
+            Bảng tuỳ chọn nay dài hơn (thêm bảng đối chiếu ký hiệu đầy đủ) nên phải
+            tự cuộn trong khung: trước đây để cao tự nhiên sẽ tràn khỏi màn hình
+            điện thoại, bé không với tới nút cuối.
+          */}
+          <div className="animate-pop-in absolute right-0 top-full z-50 mt-2 max-h-[80dvh] w-[18.5rem] overflow-y-auto rounded-2xl border-[3px] border-white bg-white p-3 text-left shadow-2xl">
             <div className="flex flex-wrap items-center justify-between gap-1">
-              <p className="text-sm font-extrabold text-brand-900">🎛️ Tùy chọn của bé</p>
+              <div className="flex items-center gap-1.5 text-sm font-extrabold text-brand-900">
+                🎛️ Tùy chọn của bé
+                <InfoButton topic="stars" />
+              </div>
               <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-gold-800">
                 {rank.emoji} ⭐ {stars}
               </span>
@@ -66,9 +75,10 @@ export function HeaderOptions() {
                 : 'Bé đã đạt danh hiệu cao nhất! 🌟'}
             </p>
 
-            <p className="mt-2.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               🎚️ Giai đoạn của bé
-            </p>
+              <InfoButton topic="stages" />
+            </div>
             <div className="mt-1 grid grid-cols-2 gap-1">
               {STAGES.map((item) => {
                 const active = item.id === stage.id
@@ -114,9 +124,10 @@ export function HeaderOptions() {
             </p>
             <p className="text-[0.65rem] font-bold text-brand-400">🏅 {stage.promotion}</p>
 
-            <p className="mt-2.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               ✍️ Cách ghi nước đi
-            </p>
+              <InfoButton topic="notation" />
+            </div>
             <div className="mt-1 grid gap-1">
               {NOTATION_OPTIONS.map((option) => {
                 const active = option.value === notation
@@ -162,6 +173,30 @@ export function HeaderOptions() {
                     {row.name}
                     {row.viet ? ` (${row.viet})` : ''}
                   </span>
+                </div>
+              ))}
+            </div>
+
+            {/*
+              Phần thứ hai của bảng đối chiếu: ký hiệu ĐẶC BIỆT (nhập thành, chiếu,
+              chiếu bí, ăn quân, phong cấp, bắt Tốt qua đường, nước hay/dở, kết quả
+              ván) - nhờ vậy bé đọc được trọn một biên bản cờ chứ không chỉ tên quân.
+            */}
+            <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
+              <div className="text-[0.6rem] font-extrabold uppercase tracking-wide text-brand-500">
+                ✍️ Ký hiệu đặc biệt trên biên bản
+              </div>
+              {NOTATION_SYMBOLS.map((row) => (
+                <div
+                  key={row.glyph}
+                  className="flex items-center gap-1.5 text-[0.7rem] font-bold text-brand-700"
+                >
+                  <span className="w-10 shrink-0 text-center text-xs leading-none font-extrabold text-brand-900">
+                    {row.glyph}
+                  </span>
+                  <span className="text-brand-300">=</span>
+                  <span className="min-w-0 flex-1 truncate">{row.meaning}</span>
+                  <span className="shrink-0 font-bold text-brand-400">{row.sample}</span>
                 </div>
               ))}
             </div>

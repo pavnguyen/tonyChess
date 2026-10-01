@@ -4,9 +4,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { router } from './router'
+import { LessonProvider } from './store/lesson'
 import { KidProgressProvider } from './store/progress'
-import { RatingProvider } from './store/rating'
-import { ReviewProvider } from './store/review'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,11 +20,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <KidProgressProvider>
-        <RatingProvider>
-          <ReviewProvider>
+          {/* Khung “Gợi ý cho ba mẹ” nằm ngoài mọi trang nên cần một chỗ để
+              trang bài học “báo lên” bài đang mở (§10). */}
+          <LessonProvider>
             <RouterProvider router={router} />
-          </ReviewProvider>
-        </RatingProvider>
+          </LessonProvider>
       </KidProgressProvider>
     </QueryClientProvider>
   </StrictMode>,

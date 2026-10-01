@@ -7,7 +7,6 @@ import {
   DEFAULT_STAGE_ID,
   MAX_TRACKED_AGE,
   nextStageOf,
-  reviewStepsFor,
   shouldAutoHint,
   STAGES,
   stageById,
@@ -82,13 +81,8 @@ check(
   'độ mạnh của máy tăng đều qua 4 giai đoạn',
 )
 check(
-  STAGES.every((stage, i) => i === 0 || stage.sessionSize > STAGES[i - 1].sessionSize),
-  'buổi ôn dài dần theo tuổi (6 → 8 → 12 → 20 câu)',
-)
-check(STAGES[0].notation === 'figurine', 'bé nhỏ đọc ký hiệu hình quân cờ')
-check(
-  STAGES.slice(1).every((stage) => stage.notation === 'english'),
-  'từ 10 tuổi trở lên dùng ký hiệu chuẩn quốc tế',
+  STAGES.every((stage) => stage.notation === 'figurine'),
+  'mọi giai đoạn đều dùng "Hình cờ + quốc tế" (đã bỏ tuýp thuần quốc tế)',
 )
 check(
   STAGES[0].showRhyme && STAGES[1].showRhyme && !STAGES[2].showRhyme && !STAGES[3].showRhyme,
@@ -101,11 +95,7 @@ check(
 )
 check(STAGES[0].boardNotation === false && STAGES[3].boardNotation === true, 'toạ độ ô hiện từ 10 tuổi')
 
-console.log('\n▶ Gợi ý & lịch ôn theo giai đoạn')
-check(reviewStepsFor(STAGES[0]) === 3, 'bé Nhí chỉ ôn 3 nấc cho mau gặp lại')
-check(reviewStepsFor(STAGES[3]) === 5, 'kỳ thủ lớn ôn đủ 5 nấc')
-check(reviewStepsFor({ ...STAGES[0], reviewSteps: 99 }) === 5, 'số nấc bị kẹp ở 5')
-check(reviewStepsFor({ ...STAGES[0], reviewSteps: 0 }) === 2, 'số nấc bị kẹp dưới ở 2')
+console.log('\n▶ Gợi ý theo giai đoạn')
 check(shouldAutoHint(STAGES[0], 0) === false, 'bé Nhí: chưa sai thì chưa gợi ý')
 check(shouldAutoHint(STAGES[0], 1) === true, 'bé Nhí: sai một lần là tự hiện gợi ý')
 check(shouldAutoHint(STAGES[1], 3) === false, 'từ 10 tuổi: gợi ý chỉ hiện khi bé bấm xin')

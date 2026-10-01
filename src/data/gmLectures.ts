@@ -1,7 +1,7 @@
 import type { GmLecture } from '../types'
 
 /**
- * Bốn bài giảng cấp Đại Kiện Tướng.
+ * Bốn bài giảng cấp Grand Master.
  *
  * Mỗi bài là một DÒNG NƯỚC ĐI có kịch bản: nước của bé có `annotation` (đúng 3 phần
  * mà banner Siêu Ngắn bắt buộc phải có - tên nước + lý do + khẩu quyết vè), nước của

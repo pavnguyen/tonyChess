@@ -1,3 +1,5 @@
+import { InfoButton } from './InfoPopover'
+
 export interface ProgressNode {
   id: string
   level: number
@@ -17,6 +19,8 @@ interface Props {
   allDoneMessage: string
   /** Nhãn hiện dưới ô đang chọn, ví dụ "Cấp 3 · Phòng thủ King's Indian". */
   levelLabel?: string
+  /** Khoá nội dung cho nút ⓘ cạnh tiêu đề bản đồ (xem `src/lib/info.ts`). */
+  info?: string
 }
 
 /**
@@ -31,6 +35,7 @@ export function ProgressMap({
   unitLabel,
   allDoneMessage,
   levelLabel = 'Cấp',
+  info,
 }: Props) {
   const done = nodes.filter((node) => node.completed).length
   const unlocked = nodes.filter((node) => node.unlocked).length
@@ -44,6 +49,7 @@ export function ProgressMap({
           <p className="shrink-0 text-[0.7rem] font-extrabold uppercase tracking-wide text-brand-500">
             🗺️ {title}
           </p>
+          <InfoButton topic={info} />
           <div className="h-1.5 min-w-8 flex-1 overflow-hidden rounded-full bg-sand-200">
             <div
               className="h-full rounded-full bg-gradient-to-r from-brand-600 to-leaf-400 transition-all duration-500"

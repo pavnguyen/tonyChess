@@ -14,6 +14,20 @@
 @custom-variant stage (@media (min-width: 60rem) and (min-aspect-ratio: 1/1));
 
 /**
+ * Biến thể `shallow` dành cho cửa sổ THẤP mà RỘNG (điện thoại nằm ngang, cửa sổ
+ * trình duyệt bị thu thấp) - những khung nhìn chưa đủ rộng để bật bố cục 2 cột
+ * `stage`, nhưng chiều cao lại là thứ khan hiếm.
+ *
+ * Lúc này khối bàn cờ tự tách thành 2 cột ngay BÊN TRONG thẻ: bàn cờ bên trái
+ * cao hết cỡ, phần chữ / nút bên phải tự cuộn. Nhờ vậy trên điện thoại nằm ngang
+ * bé vẫn thấy **trọn bàn cờ** mà không phải cuộn trang.
+ *
+ * Biên trên `max-width` được chọn đúng bằng ngưỡng của `stage` trừ đi một chút,
+ * nên hai biến thể không bao giờ chồng nhau.
+ */
+@custom-variant shallow (@media (min-width: 40rem) and (max-width: 59.9375rem) and (max-height: 34rem));
+
+/**
  * Bảng màu "Sồi & Ngọc": xanh rừng sâu là màu chủ đạo (trùng với bàn cờ), nền
  * giấy ngà ấm, điểm nhấn vàng đồng cho sao/cúp, và hai màu chức năng dịu mắt
  * (đất nung cho lỗi, xanh thép cho thông tin) - không còn tím.

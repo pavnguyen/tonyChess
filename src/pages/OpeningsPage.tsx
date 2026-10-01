@@ -8,6 +8,7 @@ import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
 import { HangingWarnings } from '../components/HangingWarnings'
 import { ProgressMap } from '../components/ProgressMap'
+import { InfoButton } from '../components/InfoPopover'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
@@ -19,16 +20,27 @@ import {
   BOARD_MARKS,
   HINT_FROM_STYLE,
   HINT_TO_STYLE,
+  formatSan,
   opponentAnnotation,
   pieceFromSan,
 } from '../lib/notation'
-import { reviewKey } from '../lib/review'
+import { buildLivePlan } from '../lib/livePlan'
+import type { LivePlan, LivePlanItem } from '../lib/livePlan'
+import {
+  forksOf,
+  mainLine,
+  mainNodes,
+  pathToMoves,
+  plyLabel,
+  repliesOf,
+  treeDepth,
+} from '../lib/openingTree'
+import type { TreeFork } from '../lib/openingTree'
 import { playError, playMove, playWin } from '../lib/sound'
+import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
-import { useRating } from '../store/rating'
-import { useReview } from '../store/review'
 import type { CSSProperties } from 'react'
-import type { MoveAnnotation, Opening } from '../types'
+import type { MoveAnnotation, Opening, OpeningNode } from '../types'
 
 type Mode = 'learn' | 'memorize'
 
@@ -37,18 +49,33 @@ const MODES: { value: Mode; label: string; icon: string }[] = [
   { value: 'memorize', label: 'Luyện thuộc lòng', icon: '🧠' },
 ]
 
+/** Sau chừng này ply (≈ 5 nước) là hết khai cuộc - tới lúc dùng kế hoạch trung cuộc. */
+const PLAN_PLY = 10
+
+/** Màu cho từng loại việc trong “Kế hoạch theo thế cờ hiện tại”. */
+const LIVE_PLAN_STYLE: Record<LivePlanItem['kind'], string> = {
+  danger: 'bg-coral-50 text-coral-700',
+  chance: 'bg-gold-50 text-gold-900',
+  goal: 'bg-info-50 text-info-700',
+  engine: 'bg-brand-50 text-brand-700',
+  note: 'bg-sand-100 text-brand-600',
+}
+
 const NO_OPENINGS: Opening[] = []
 
 export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
   const { notation, completeActivity, soundOn, stage } = useKidProgress()
-  const { record } = useReview()
-  const { record: recordRating } = useRating()
   const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
 
   const [openingId, setOpeningId] = useState('london')
   const [mode, setMode] = useState<Mode>('learn')
-  const [ply, setPly] = useState(0)
+  /**
+   * Đường đi bé đã chọn trong CÂY khai cuộc. Dùng đường đi thay cho "số ply" vì
+   * cùng một ply có thể là nhiều nhánh khác nhau - chỉ đường đi mới biết bé đang
+   * ở nhánh nào.
+   */
+  const [path, setPath] = useState<OpeningNode[]>([])
   const [autoPlay, setAutoPlay] = useState(false)
   const [hintVisible, setHintVisible] = useState(true)
   const [confetti, setConfetti] = useState(false)
@@ -71,21 +98,33 @@ export function OpeningsPage() {
     [openingList, openingId],
   )
 
+  // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học khai cuộc nào.
+  useReportLesson(opening ? `opening:${opening.id}` : null)
+
   // Bản đồ leo cấp: bài sau mở khi bé đã thuộc bài trước.
   const curriculum = useCurriculum(openingList, 'openings', ':memorize')
+
+  const ply = path.length
+
+  /** Các nước có thể đi tiếp ở thế hiện tại. Phần tử đầu là nhánh chính. */
+  const replies = useMemo(() => (opening ? repliesOf(opening.tree, path) : []), [opening, path])
+  const mainNode: OpeningNode | undefined = replies[0]
+  const atLeaf = replies.length === 0
 
   /** FEN sau mỗi ply: fens[i] = thế cờ khi đã đi i nửa nước. */
   const fens = useMemo(() => {
     const game = new Chess()
     const list = [game.fen()]
-    if (opening) {
-      for (const move of opening.moves) {
-        game.move(move.san)
-        list.push(game.fen())
+    for (const node of path) {
+      try {
+        game.move(node.san)
+      } catch {
+        break
       }
+      list.push(game.fen())
     }
     return list
-  }, [opening])
+  }, [path])
 
   const isKidPly = (index: number) =>
     opening ? (opening.side === 'white' ? index % 2 === 0 : index % 2 === 1) : false
@@ -94,9 +133,12 @@ export function OpeningsPage() {
     ? opening.moves.filter((_, index) => isKidPly(index)).length
     : 0
 
+  /** Mọi ngã ba của cây - để bé xem trước và nhảy nhanh sang nhánh khác. */
+  const forks = useMemo(() => (opening ? forksOf(opening.tree) : []), [opening])
+
   // Đổi bài hoặc đổi chế độ → chơi lại từ đầu.
   useEffect(() => {
-    setPly(0)
+    setPath([])
     setHintVisible(mode === 'learn')
     setWrongInfo(null)
     setFinished(false)
@@ -109,43 +151,49 @@ export function OpeningsPage() {
   /** Bé vừa kéo đúng ở chế độ học → cho đối thủ đáp trả ngay một nước. */
   const replyAfterDropRef = useRef(false)
 
-  // Đối thủ tự đi trong 2 chế độ luyện. Ở chế độ "Học từng bước" đối thủ chỉ
-  // đáp trả sau khi bé vừa kéo quân của mình, còn lúc bé bấm ◀ ▶ thì vẫn đi
-  // từng nước để bé kịp nhìn.
+  /**
+   * Đối thủ tự đi trong 2 chế độ luyện. Ở chế độ "Học từng bước" đối thủ chỉ
+   * đáp trả sau khi bé vừa kéo quân của mình, còn lúc bé bấm ◀ ▶ thì vẫn đi
+   * từng nước để bé kịp nhìn.
+   *
+   * Khác biệt của cây khai cuộc: khi đối thủ có NHIỀU nước lý thuyết (ngã ba) thì
+   * app DỪNG LẠI chờ bé chọn nhánh - không tự đoán thay bé.
+   */
   useEffect(() => {
     if (!opening || autoPlay) return
-    if (ply >= opening.moves.length || isKidPly(ply)) return
+    if (atLeaf) return
+    if (isKidPly(ply)) return
+    if (replies.length > 1) return
     if (mode === 'learn' && !replyAfterDropRef.current) return
     const timer = setTimeout(() => {
       replyAfterDropRef.current = false
-      setPly((value) => value + 1)
+      setPath((current) => [...current, replies[0]])
     }, 600)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, autoPlay, ply, opening])
+  }, [mode, autoPlay, ply, opening, replies, atLeaf])
 
-  // Tự động chạy trong chế độ học.
+  // Tự động chạy trong chế độ học (luôn đi theo nhánh chính).
   useEffect(() => {
     if (mode !== 'learn' || !autoPlay || !opening) return
-    if (ply >= opening.moves.length) {
+    if (atLeaf) {
       setAutoPlay(false)
       return
     }
-    const timer = setTimeout(() => setPly((value) => value + 1), 1300)
+    const timer = setTimeout(() => setPath((current) => [...current, replies[0]]), 1300)
     return () => clearTimeout(timer)
-  }, [mode, autoPlay, ply, opening])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, autoPlay, ply, opening, replies, atLeaf])
 
   /** Bé đi đúng hết bài → tặng Cúp Vàng. */
   useEffect(() => {
-    if (mode === 'learn' || !opening || finished) return
-    if (ply !== opening.moves.length) return
+    if (mode === 'learn' || !opening || finished || ply === 0) return
+    if (!atLeaf) return
     setFinished(true)
     setAutoPlay(false)
     if (awardedRef.current) return
     awardedRef.current = true
     const stars = 6
-    record(reviewKey('opening', opening.id), true)
-    recordRating('opening', true)
     completeActivity(`openings:${opening.id}:memorize`, stars)
     if (soundOn) playWin()
     setConfetti(true)
@@ -156,24 +204,24 @@ export function OpeningsPage() {
       stars,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ply, mode, opening, finished])
+  }, [ply, mode, opening, finished, atLeaf])
 
   /**
-   * Nước đi kế tiếp. `mine` = nước này thuộc về bé (bé cầm quân đi được), dùng
-   * để tô sáng quân cần đi cho bé dễ kéo.
+   * Nước đi kế tiếp theo nhánh chính. `mine` = nước này thuộc về bé (bé cầm quân
+   * đi được), dùng để tô sáng quân cần đi cho bé dễ kéo.
    */
   const hintMove = useMemo(() => {
-    if (!opening || ply >= opening.moves.length) return null
+    if (!mainNode) return null
     if (mode !== 'learn' && !isKidPly(ply)) return null
     try {
       const probe = new Chess(fens[ply])
-      const move = probe.move(opening.moves[ply].san)
+      const move = probe.move(mainNode.san)
       return { from: move.from, to: move.to, mine: isKidPly(ply) }
     } catch {
       return null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opening, ply, mode, fens])
+  }, [mainNode, ply, mode, fens])
 
   const arrow = useMemo(
     () =>
@@ -184,10 +232,10 @@ export function OpeningsPage() {
   )
 
   const lastMoveSquares = useMemo(() => {
-    if (!opening || ply === 0) return undefined
+    if (ply === 0) return undefined
     try {
       const probe = new Chess(fens[ply - 1])
-      const move = probe.move(opening.moves[ply - 1].san)
+      const move = probe.move(path[ply - 1].san)
       return {
         [move.from]: { boxShadow: BOARD_MARKS.lastMoveFrom },
         [move.to]: { boxShadow: BOARD_MARKS.lastMoveTo },
@@ -195,8 +243,7 @@ export function OpeningsPage() {
     } catch {
       return undefined
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opening, ply, fens])
+  }, [ply, path, fens])
 
   /**
    * Tô sáng quân bé cần đi (viền vàng) và ô đích (viền xanh) - chỉ khi tới lượt
@@ -222,23 +269,48 @@ export function OpeningsPage() {
       return { ...wrongInfo, variant: 'wrong' as const }
     }
     if (mode === 'learn') {
-      const index = Math.min(ply, opening.moves.length - 1)
-      const move = opening.moves[index]
+      const node = mainNode ?? path[ply - 1]
+      if (!node) return null
+      const index = mainNode ? ply : ply - 1
       return {
-        annotation: move.annotation ?? opponentAnnotation(move.san, notation),
+        annotation: node.annotation ?? opponentAnnotation(node.san, notation),
         plyIndex: index,
         variant: 'hint' as const,
       }
     }
     if (ply === 0) return null
-    const index = ply - 1
-    const move = opening.moves[index]
+    const node = path[ply - 1]
     return {
-      annotation: move.annotation ?? opponentAnnotation(move.san, notation),
-      plyIndex: index,
-      variant: move.annotation ? ('played' as const) : ('opponent' as const),
+      annotation: node.annotation ?? opponentAnnotation(node.san, notation),
+      plyIndex: ply - 1,
+      variant: node.annotation ? ('played' as const) : ('opponent' as const),
     }
-  }, [opening, wrongInfo, mode, ply, notation])
+  }, [opening, wrongInfo, mode, ply, notation, mainNode, path])
+
+  /** Bé đang đứng ở ngã ba của ĐỐI THỦ → chờ bé chọn nhánh, chưa tự đi. */
+  const forkOpen = mode === 'learn' && !autoPlay && !atLeaf && !isKidPly(ply) && replies.length > 1
+
+  /** Bé thấy được cả đường đã đi lẫn dòng chính phía trước. */
+  const stripMoves = useMemo(() => [...pathToMoves(path), ...mainLine(replies)], [path, replies])
+
+  const chooseBranch = useCallback((node: OpeningNode) => {
+    // Bé tự chọn nhánh → không để effect "đối thủ tự đáp" ghi đè thêm một nước.
+    replyAfterDropRef.current = false
+    setWrongInfo(null)
+    setPath((current) => [...current, node])
+  }, [])
+
+  /** Nhảy thẳng tới một ngã ba trong cây (đi theo nhánh chính rồi rẽ). */
+  const jumpToBranch = useCallback(
+    (fork: TreeFork, index: number) => {
+      if (!opening) return
+      replyAfterDropRef.current = false
+      setAutoPlay(false)
+      setWrongInfo(null)
+      setPath([...mainNodes(opening.tree).slice(0, fork.at), fork.options[index]])
+    },
+    [opening],
+  )
 
   /** Tiến / Lùi một nước - dùng chung cho nút bấm và phím mũi tên. */
   const goStep = useCallback(
@@ -249,7 +321,11 @@ export function OpeningsPage() {
       replyAfterDropRef.current = false
       // Đi lại từ đầu bằng nút ◀ ▶ thì bỏ luôn lời nhắc "nước chưa đúng".
       setWrongInfo(null)
-      setPly((value) => Math.min(Math.max(0, value + delta), opening.moves.length))
+      setPath((current) => {
+        if (delta < 0) return current.slice(0, Math.max(0, current.length + delta))
+        const next = repliesOf(opening.tree, current)[0]
+        return next ? [...current, next] : current
+      })
     },
     [opening],
   )
@@ -259,6 +335,37 @@ export function OpeningsPage() {
 
   // ◀ ▼ lùi, ▶ ▲ tiến - chỉ trong chế độ “Học từng bước”.
   useArrowKeys({ enabled: mode === 'learn', onPrev: goBack, onNext: goForward })
+
+  /** Hết phần khai cuộc (≈ 5 nước) là tới lúc dùng kế hoạch trung cuộc. */
+  const playing = ply >= PLAN_PLY
+
+  /**
+   * Kế hoạch SINH TỰ ĐỘNG cho đúng thế cờ đang đứng (§4.4 mức 3).
+   *
+   * Hết phần khai cuộc mới hiện, vì lúc đó mới có việc để bàn. Việc tính được đẩy ra
+   * khỏi đường render (hẹn giờ 0ms) để một phép tìm kiếm của engine không làm khựng
+   * hiệu ứng quân cờ; đổi nước là huỷ kết quả cũ ngay.
+   */
+  const [livePlan, setLivePlan] = useState<LivePlan | null>(null)
+  const [livePlanBusy, setLivePlanBusy] = useState(false)
+  useEffect(() => {
+    if (!opening || !playing) {
+      setLivePlan(null)
+      setLivePlanBusy(false)
+      return
+    }
+    let cancelled = false
+    setLivePlanBusy(true)
+    const timer = setTimeout(() => {
+      if (cancelled) return
+      setLivePlan(buildLivePlan(fens[ply], opening.side))
+      setLivePlanBusy(false)
+    }, 0)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [opening, playing, fens, ply])
 
   if (isLoading || !opening) {
     return (
@@ -271,12 +378,12 @@ export function OpeningsPage() {
 
   // Tới lượt bé thì bé kéo-thả quân của mình. Học từng bước cũng cho kéo-thả
   // như chế độ Luyện thuộc lòng.
-  const kidTurn = isKidPly(ply) && ply < opening.moves.length
+  const kidTurn = isKidPly(ply) && !atLeaf
   const interactive = kidTurn
 
   const handleDrop = (from: string, to: string): boolean => {
     if (!interactive || !opening) return false
-    const expected = opening.moves[ply]
+    const expected = replies[0]
     const probe = new Chess(fens[ply])
     let move
     try {
@@ -285,7 +392,10 @@ export function OpeningsPage() {
       if (soundOn) playError()
       return false
     }
-    if (move.san !== expected.san) {
+    // Chấp nhận MỌI nước lý thuyết ở nút này, không chỉ nhánh chính - nhờ vậy bé
+    // được thử các cách đáp khác nhau mà vẫn được coi là đi đúng.
+    const chosen = replies.find((node) => node.san === move.san)
+    if (!chosen) {
       if (soundOn) playError()
       setHintVisible(true)
       const annotation: MoveAnnotation = {
@@ -306,7 +416,7 @@ export function OpeningsPage() {
     } else {
       setHintVisible(false)
     }
-    setPly((value) => value + 1)
+    setPath((current) => [...current, chosen])
     return true
   }
 
@@ -330,19 +440,64 @@ export function OpeningsPage() {
           />
         }
         under={
-          /* Banner Giải Thích Siêu Ngắn luôn nằm NGAY DƯỚI bàn cờ. */
-          bannerState ? (
-            <ExplanationBanner
-              annotation={bannerState.annotation}
-              plyIndex={bannerState.plyIndex}
-              notation={notation}
-              variant={bannerState.variant}
-            />
-          ) : (
-            <div className="rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
-              🐣 Bé hãy kéo quân để bắt đầu bài học nhé!
-            </div>
-          )
+          <div className="grid gap-2">
+            {/*
+              Ngã ba: đối thủ có nhiều nước lý thuyết. App DỪNG LẠI để bé tự chọn
+              muốn tập nhánh nào - đúng tinh thần "học phản ứng, không học vẹt".
+            */}
+            {forkOpen && (
+              <section
+                id="kid-opening-fork"
+                className="animate-pop-in card-pop grid gap-1.5 border-[3px] border-info-300 p-2.5"
+              >
+                <p className="text-[0.65rem] font-extrabold uppercase tracking-wide text-info-600">
+                  🔀 Ngã ba · đối thủ có {replies.length} cách đáp
+                </p>
+                <p className="text-xs font-bold text-brand-600">
+                  Bé muốn tập nhánh nào? (⭐ là dòng chính)
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {replies.map((node, index) => (
+                    <button
+                      key={node.san}
+                      type="button"
+                      onClick={() => chooseBranch(node)}
+                      title={node.note ?? 'Nước lý thuyết'}
+                      className={`rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-all active:translate-y-[2px] ${
+                        index === 0
+                          ? 'border-gold-400 bg-gold-100 text-gold-900'
+                          : 'border-brand-200 bg-white text-brand-600 hover:border-brand-300'
+                      }`}
+                    >
+                      {index === 0 && <span aria-hidden>⭐ </span>}
+                      {formatSan(node.san, notation)}
+                    </button>
+                  ))}
+                </div>
+                {replies[1]?.note && (
+                  <p className="text-[0.65rem] font-bold text-brand-400">
+                    💬 {replies[1].note}
+                  </p>
+                )}
+              </section>
+            )}
+
+            {/* Banner Giải Thích Siêu Ngắn luôn nằm NGAY DƯỚI bàn cờ. */}
+            {bannerState ? (
+              <ExplanationBanner
+                annotation={bannerState.annotation}
+                plyIndex={bannerState.plyIndex}
+                notation={notation}
+                variant={bannerState.variant}
+              />
+            ) : (
+              !forkOpen && (
+                <div className="rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
+                  🐣 Bé hãy kéo quân để bắt đầu bài học nhé!
+                </div>
+              )
+            )}
+          </div>
         }
       />
 
@@ -366,8 +521,9 @@ export function OpeningsPage() {
             <div className="min-w-0 flex-1">
               <SectionTitle
                 icon="🛡️"
-                title="Khai cuộc Đại Kiện Tướng"
+                title="Khai cuộc Grand Master"
                 subtitle={`Đang học: ${opening.name} · ${opening.gm}`}
+                info={`opening:${opening.id}`}
               />
             </div>
             <EyeToggle
@@ -406,11 +562,21 @@ export function OpeningsPage() {
             onSelect={setOpeningId}
             title="Bản đồ chinh phục khai cuộc"
             unitLabel="bài"
-            allDoneMessage="Bé đã phá đảo toàn bộ khai cuộc Đại Kiện Tướng! 🏆"
+            allDoneMessage="Bé đã phá đảo toàn bộ khai cuộc Grand Master! 🏆"
+            info="cup"
           />
         </Panel>
 
         <Panel className="grid gap-2">
+          {/*
+            Ngã ba cũng chặn nút "Tiến" để bé không vô tình nhảy qua mất phần chọn
+            nhánh - muốn đi tiếp thì bấm vào một nhánh ở khung ngay dưới bàn cờ.
+          */}
+          {forkOpen && (
+            <p className="rounded-xl bg-info-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-info-700">
+              🔀 Đang chờ bé chọn nhánh ở khung ngay dưới bàn cờ.
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             {mode === 'learn' ? (
               <>
@@ -426,7 +592,7 @@ export function OpeningsPage() {
                 <KidButton
                   variant="sun"
                   onClick={goForward}
-                  disabled={ply >= opening.moves.length}
+                  disabled={ply >= treeDepth(opening.tree) || forkOpen}
                   title="Tiến một nước (hoặc bấm phím ▶ / ▲)"
                   aria-keyshortcuts="ArrowRight ArrowUp"
                 >
@@ -443,7 +609,7 @@ export function OpeningsPage() {
                   onClick={() => {
                     replyAfterDropRef.current = false
                     setAutoPlay(false)
-                    setPly(0)
+                    setPath([])
                   }}
                 >
                   🔄 Đầu
@@ -454,11 +620,11 @@ export function OpeningsPage() {
                 <KidButton
                   variant="sky"
                   onClick={() => setHintVisible(true)}
-                  disabled={hintVisible || ply >= opening.moves.length}
+                  disabled={hintVisible || atLeaf}
                 >
                   💡 Gợi ý
                 </KidButton>
-                <KidButton variant="ghost" onClick={() => { replyAfterDropRef.current = false; setPly(0); setHintVisible(false); setWrongInfo(null); setFinished(false); awardedRef.current = false }}>
+                <KidButton variant="ghost" onClick={() => { replyAfterDropRef.current = false; setPath([]); setHintVisible(false); setWrongInfo(null); setFinished(false); awardedRef.current = false }}>
                   🔄 Chơi lại
                 </KidButton>
               </>
@@ -466,11 +632,124 @@ export function OpeningsPage() {
           </div>
 
           {mode === 'learn' && (
-            <p className="text-[0.7rem] font-bold text-brand-400">
+            <div className="flex items-center gap-1.5 text-[0.7rem] font-bold text-brand-400">
               🖐️ Kéo quân viền vàng sang viền xanh · ⌨️ hoặc bấm ◀ ▶ ▲ ▼
-            </p>
+              <InfoButton topic="board" />
+            </div>
           )}
         </Panel>
+
+        {/* Cây khai cuộc: bé thấy trước các cách đáp khác của đối thủ và nhảy sang nhánh đó. */}
+        {forks.length > 0 && (
+          <Panel id="kid-opening-tree" className="grid gap-2">
+            <SectionTitle
+              icon="🌳"
+              title="Cây khai cuộc"
+              subtitle={`${forks.length} ngã ba - bé thử nhiều cách đáp của đối thủ`}
+              info="tree"
+            />
+            <div className="grid gap-1.5">
+              {forks.map((fork) => (
+                <div
+                  key={fork.at}
+                  className="rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2 py-1.5"
+                >
+                  <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+                    {plyLabel(fork.at)} {isKidPly(fork.at) ? 'bé chọn' : 'đối thủ đáp'} ·{' '}
+                    {fork.options.length} cách
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {fork.options.map((node, index) => (
+                      <button
+                        key={node.san}
+                        type="button"
+                        onClick={() => jumpToBranch(fork, index)}
+                        title={node.note ?? 'Nước lý thuyết'}
+                        className={`rounded-lg border-2 px-2 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                          index === 0
+                            ? 'border-gold-300 bg-gold-50 text-gold-800'
+                            : 'border-brand-200 bg-white text-brand-600 hover:border-brand-300'
+                        }`}
+                      >
+                        {index === 0 && <span aria-hidden>⭐ </span>}
+                        {formatSan(node.san, notation)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
+
+        {/* Kế hoạch tiếp theo: việc bé cần làm sau khi hết phần khai cuộc đã học. */}
+        {opening.plan.points.length > 0 && (
+          <Panel id="kid-opening-plan" className="grid gap-2">
+            <SectionTitle
+              icon="🧭"
+              title={opening.plan.title}
+              subtitle={playing ? 'Đã tới lúc áp dụng!' : 'Học hết phần khai cuộc là dùng được ngay'}
+              info="plan"
+            />
+            <ul className="grid gap-1">
+              {opening.plan.points.map((point) => (
+                <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
+                  <span aria-hidden className="text-gold-500">
+                    ◆
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        )}
+
+        {/*
+          Kế hoạch SINH TỰ ĐỘNG theo đúng thế cờ đang đứng (§4.4 mức 3): engine đọc
+          thế cờ rồi nói ra việc cần làm ngay - khác hẳn 3 câu viết tay ở trên.
+        */}
+        {playing && (
+          <Panel id="kid-live-plan" className="grid gap-2">
+            <SectionTitle
+              icon="🔎"
+              title="Kế hoạch theo thế cờ hiện tại"
+              subtitle={
+                livePlan ? `Máy đọc thế cờ: ${livePlan.evalText}` : 'Máy đang đọc thế cờ…'
+              }
+              info="plan"
+            />
+            {livePlanBusy && !livePlan && (
+              <p className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold text-brand-500">
+                ⏳ Máy đang tính nước tốt nhất cho thế cờ này…
+              </p>
+            )}
+            {livePlan && (
+              <ul id="kid-live-plan-items" className="grid gap-1">
+                {livePlan.items.map((item) => (
+                  <li
+                    key={item.text}
+                    data-kind={item.kind}
+                    className={`flex gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold ${LIVE_PLAN_STYLE[item.kind]}`}
+                  >
+                    <span aria-hidden>{item.icon}</span>
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {livePlan?.engineSan && (
+              <p className="text-[0.7rem] font-bold text-brand-400">
+                🤖 Nước máy đề xuất:{' '}
+                <b className="text-brand-700">{livePlan.engineSan}</b> ·{' '}
+                {livePlan.mood === 'better'
+                  ? 'bé đang hơn'
+                  : livePlan.mood === 'worse'
+                    ? 'bé đang kém'
+                    : 'thế cân bằng'}
+              </p>
+            )}
+          </Panel>
+        )}
 
         <HangingWarnings
           fen={fens[ply]}
@@ -501,10 +780,22 @@ export function OpeningsPage() {
           )}
 
           <MoveStrip
-            opening={opening}
+            moves={stripMoves}
+            side={opening.side}
             ply={ply}
             notation={notation}
-            onJump={mode === 'learn' ? (index) => setPly(index) : undefined}
+            onJump={
+              mode === 'learn'
+                ? (index) => {
+                    // Trong cây chỉ lùi được về thế đã đi qua, không "nhảy tới" một nhánh chưa chọn.
+                    if (index >= ply) return
+                    replyAfterDropRef.current = false
+                    setAutoPlay(false)
+                    setWrongInfo(null)
+                    setPath((current) => current.slice(0, index))
+                  }
+                : undefined
+            }
           />
 
           <div className="flex flex-wrap gap-1.5">
@@ -554,7 +845,7 @@ export function OpeningsPage() {
         onRetry={() => {
           setResult(null)
           replyAfterDropRef.current = false
-          setPly(0)
+          setPath([])
           setFinished(false)
           setHintVisible(mode === 'learn')
           setWrongInfo(null)

@@ -119,17 +119,17 @@ const OG_HTML = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
       <div class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${PAWN()}</svg></div>
       <div>
         <h1>Nam An - Cờ Vua</h1>
-        <p class="sub">Cùng bé 7 tuổi lên Đại Kiện Tướng</p>
+        <p class="sub">Cùng bé lên Grand Master</p>
       </div>
     </div>
-    <p class="tagline">Học Khai cuộc Đại Kiện Tướng, mẹo săn quân Trung cuộc và Tàn cuộc - mỗi nước đi đều có lời giải thích dễ hiểu cho bé.</p>
+    <p class="tagline">Học Khai cuộc Grand Master, mẹo săn quân Trung cuộc và Tàn cuộc - mỗi nước đi đều có lời giải thích dễ hiểu cho bé.</p>
     <div class="chips">
       <span class="chip">🛡️ Khai cuộc GM</span>
       <span class="chip">⚔️ Săn quân</span>
       <span class="chip">👑 Tàn cuộc</span>
       <span class="chip">🎮 Đấu tập với chú Máy</span>
     </div>
-    <p class="foot">👁️ Mắt Thần Cờ Vua · ⭐ Kỳ thủ Nhí → Đại Kiện Tướng Nhí</p>
+    <p class="foot">👁️ Mắt Thần Cờ Vua · ⭐ Kỳ thủ Nhí → Grand Master Nhí</p>
   </div>
   <div class="right">
     <div class="frame"><div class="board">${boardCells}</div></div>

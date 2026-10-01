@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { InfoButton } from './InfoPopover'
 
 type Variant = 'primary' | 'sun' | 'grass' | 'rose' | 'sky' | 'ghost'
 
@@ -104,21 +105,34 @@ export function Segmented<T extends string>({
 export function Panel({
   children,
   className = '',
+  id,
 }: {
   children: ReactNode
   className?: string
+  /** Định danh để bài kiểm tra trình duyệt bám vào (ví dụ khung cây khai cuộc). */
+  id?: string
 }) {
-  return <div className={`card-pop p-2.5 sm:p-3 ${className}`}>{children}</div>
+  return (
+    <div id={id} className={`card-pop p-2.5 sm:p-3 ${className}`}>
+      {children}
+    </div>
+  )
 }
 
 export function SectionTitle({
   icon,
   title,
   subtitle,
+  info,
 }: {
   icon: string
   title: string
   subtitle?: string
+  /**
+   * Khoá nội dung cho nút ⓘ (xem `src/lib/info.ts`). Bỏ trống thì không hiện nút -
+   * nên chỉ cần gắn ở những khung đã có sẵn giải thích, không phải sửa mọi nơi.
+   */
+  info?: string
 }) {
   return (
     // `min-w-0` rất quan trọng: tiêu đề dùng `truncate` (nowrap) nên nếu đặt
@@ -131,6 +145,7 @@ export function SectionTitle({
         <h2 className="truncate text-lg font-extrabold text-brand-900 sm:text-xl">{title}</h2>
         {subtitle && <p className="truncate text-xs font-bold text-brand-500 sm:text-sm">{subtitle}</p>}
       </div>
+      <InfoButton topic={info} />
     </div>
   )
 }
