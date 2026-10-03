@@ -4,7 +4,7 @@
  *   2. Đổi bài (khai cuộc / bài giảng) thì câu hỏi đổi theo - không phải câu chung.
  *   3. Thu gọn được: khi thu chỉ còn MỘT nút nhỏ, trạng thái nhớ trong `localStorage`
  *      và sống qua lần tải lại trang.
- *   4. Khối 🔒 của ba mẹ có nút chọn lứa tuổi + ô năm sinh (và KHÔNG có điểm số).
+ *   4. Khung KHÔNG có điểm số/Elo, và không còn chọn lứa tuổi / năm sinh (đã gỡ).
  *   5. Khung KHÔNG phá bố cục “không cuộn”: không tràn ngang ở điện thoại 390px và
  *      không làm trang cao thêm ở màn hình máy tính.
  *
@@ -14,8 +14,6 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.parent-tips.v1'
-/** Số giai đoạn tuổi (`STAGES`). */
-const STAGE_COUNT = 4
 
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
   `${APP_URL}#parent-tips`,
@@ -179,11 +177,11 @@ check(
   !(await exists('kid-parent-tips-elo')),
   'không còn ô Elo trong khung ba mẹ',
 )
-const stageButtons = await evaluate(
-  `document.querySelectorAll('#kid-parent-tips-body [aria-pressed]').length`,
+check(
+  (await evaluate(`document.querySelectorAll('#kid-parent-tips-body [aria-pressed]').length`)) === 0,
+  'khung ba mẹ không còn nút chọn giai đoạn tuổi',
 )
-check(stageButtons === STAGE_COUNT, `có đủ ${STAGE_COUNT} nút chọn giai đoạn tuổi (${stageButtons})`)
-check(await exists('kid-parent-birth-year'), 'có ô nhập năm sinh của bé')
+check(!(await exists('kid-parent-birth-year')), 'không còn ô nhập năm sinh của bé')
 
 // --- 3. Thu gọn → chỉ còn một nút nhỏ, trạng thái nhớ lại.
 await clickId('kid-parent-tips-toggle')
@@ -258,9 +256,9 @@ if (phone.body) {
 // không phải câu chung của tab - đó chính là điều cần kiểm.
 const ROUTES = [
   { path: '/', name: 'Khai cuộc', keyword: 'Tượng ra f4', notKeyword: 'Kim tự tháp Tốt' },
-  { path: '/tactics', name: 'Trung cuộc', keyword: 'Ghim quân' },
+  { path: '/tactics', name: 'Trung cuộc', keyword: 'mạnh nhất' },
   { path: '/endgames', name: 'Tàn cuộc', keyword: 'Vua phải đi' },
-  { path: '/strategy', name: 'Chiến lược', keyword: 'b4-b5', notKeyword: 'đổi Tượng lấy Mã' },
+  { path: '/strategy', name: 'Chiến lược', keyword: 'bốn nguyên tắc vàng' },
   { path: '/free-play', name: 'Đấu với Robot', keyword: 'Đối thủ vừa đi để làm gì' },
 ]
 
@@ -285,22 +283,22 @@ for (const route of ROUTES) {
   }
 }
 
-// --- 6. Đổi bài giảng thì câu hỏi đổi theo ngay (không cần tải lại trang).
+// --- 6. Mở một thẻ nguyên tắc vàng thì câu hỏi đổi theo ngay (không tải lại trang).
 await navigate('/strategy')
 check(
-  await waitForText('b4-b5'),
-  'bài giảng mặc định (Đòn bẩy cấu trúc Tốt): hiện câu hỏi của bài đó',
+  await waitForText('bốn nguyên tắc vàng'),
+  'tab Chiến lược: hiện câu hỏi chung của tab',
 )
-const clicked = await clickButtonWithText('Lucena')
-check(clicked !== 'not-found', `bấm được bài giảng “Kỹ thuật bắc cầu Lucena”`)
+const clicked = await clickButtonWithText('Đưa Xe vào cột mở')
+check(clicked !== 'not-found', `bấm được thẻ “Đưa Xe vào cột mở”`)
 check(
-  await waitForText('hàng 4 trước khi Vua tiến lên'),
-  'đổi bài giảng → khung đổi câu hỏi của bài mới (không tải lại trang)',
+  await waitForText('cột nào đang hết Tốt'),
+  'mở thẻ nguyên tắc → khung đổi câu hỏi của nguyên tắc đó (không tải lại trang)',
 )
 const afterSwitch = String(await bodyText())
 check(
-  !afterSwitch.includes('b4-b5'),
-  'câu hỏi của bài cũ đã được thay hẳn',
+  !afterSwitch.includes('bốn nguyên tắc vàng đầu tiên là gì'),
+  'câu hỏi chung của tab đã được thay hẳn',
 )
 
 close()

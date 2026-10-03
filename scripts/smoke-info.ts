@@ -12,10 +12,7 @@
  *     bài giảng) đều có giải thích - để nút ⓘ không biến mất ở đúng chỗ quan trọng.
  */
 import { OPENINGS } from '../src/data/openings.ts'
-import { TACTIC_META, TACTICS } from '../src/data/tactics.ts'
-import { ROOK_ENDGAMES } from '../src/data/rookEndgames.ts'
-import { POSITIONAL } from '../src/data/positional.ts'
-import { GM_LECTURES } from '../src/data/gmLectures.ts'
+import { BEST_MOVES, BEST_MOVE_THEMES } from '../src/data/bestMoves.ts'
 import { INFO, INFO_TAGS, REQUIRED_INFO_IDS, infoById } from '../src/lib/info.ts'
 
 let failures = 0
@@ -69,10 +66,8 @@ check(orphans.length === 0, `không có mục mồ côi${orphans.length ? ` (${o
 // --- 3. Mọi thứ app CÓ THỂ gọi tới đều phải có nội dung, nếu không nút ⓘ sẽ biến mất.
 const wanted: string[] = [
   ...OPENINGS.map((opening) => `opening:${opening.id}`),
-  ...Object.keys(TACTIC_META).map((type) => `tactic:${type}`),
-  ...ROOK_ENDGAMES.map((lesson) => `endgame:${lesson.id}`),
-  ...POSITIONAL.map((lesson) => `positional:${lesson.concept}`),
-  ...GM_LECTURES.map((lecture) => `lecture:${lecture.id}`),
+  ...Object.keys(BEST_MOVE_THEMES).map((theme) => `theme:${theme}`),
+  ...['outpost', 'open-file', 'bishop-pair', 'seventh-rank'].map((id) => `positional:${id}`),
 ]
 const missingWanted = wanted.filter((id) => !infoById(id))
 check(
@@ -81,7 +76,7 @@ check(
     missingWanted.length ? ` - thiếu: ${missingWanted.join(', ')}` : ''
   }`,
 )
-check(TACTICS.length > 0, 'dữ liệu đòn chiến thuật tải được (để đối chiếu khoá)')
+check(BEST_MOVES.length > 0, 'dữ liệu thế cờ trung cuộc tải được (để đối chiếu khoá)')
 
 console.log(
   failures === 0 ? '\n✅ NỘI DUNG NÚT ⓘ PASS!\n' : `\n❌ NỘI DUNG NÚT ⓘ: ${failures} lỗi\n`,

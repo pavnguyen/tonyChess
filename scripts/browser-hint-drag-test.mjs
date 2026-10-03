@@ -164,6 +164,12 @@ const pieceAt = (square) =>
 
 check(await goto('/tactics'), 'mở được tab Trung cuộc')
 
+// “Mắt Thần Cờ Vua” phải TẮT sẵn: bàn cờ mặc định sạch, bé/ba mẹ tự bật khi cần.
+const eyePressed = await evaluate(
+  `document.getElementById('kid-eye-toggle')?.getAttribute('aria-pressed')`,
+)
+check(eyePressed === 'false', `Mắt Thần Cờ Vua tắt sẵn khi mới mở tab (aria-pressed=${eyePressed})`)
+
 const before = await readMarks()
 check(before.gold.length === 0, `chưa bấm Gợi ý thì KHÔNG lộ quân cần đi (${before.gold.length} ô vàng)`)
 check(before.arrows === 0, `chưa bấm Gợi ý thì chưa vẽ mũi tên (${before.arrows} mũi tên)`)

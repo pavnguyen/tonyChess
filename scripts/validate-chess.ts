@@ -3,16 +3,11 @@
  * Chạy: node scripts/validate-chess.ts
  */
 import { Chess } from 'chess.js'
+import type { Square } from 'chess.js'
 import { OPENINGS } from '../src/data/openings.ts'
-import { mainLine } from '../src/lib/openingTree.ts'
-import type { OpeningNode } from '../src/types.ts'
-import { TACTICS } from '../src/data/tactics.ts'
+import { BEST_MOVES } from '../src/data/bestMoves.ts'
 import { ENDGAMES } from '../src/data/endgames.ts'
-import { GM_LECTURES } from '../src/data/gmLectures.ts'
-import { PAWN_STRUCTURES } from '../src/data/pawnStructures.ts'
-import { MATES } from '../src/data/mates.ts'
-import { POSITIONAL } from '../src/data/positional.ts'
-import { ROOK_ENDGAMES } from '../src/data/rookEndgames.ts'
+import { GOLD_PRINCIPLES } from '../src/data/goldPrinciples.ts'
 
 let failures = 0
 const fail = (msg: string) => {
@@ -50,111 +45,82 @@ for (const opening of OPENINGS) {
   if (!bad) ok(`${opening.id} - ${opening.moves.length} ply hợp lệ`)
 }
 
-console.log('\n▶ Cây khai cuộc phân nhánh')
+console.log('\n▶ Khai cuộc - dòng chính & kế hoạch trung cuộc')
+for (const opening of OPENINGS) {
+  let bad = false
+
+  // 1. Dòng chính phải đủ dài để "kế hoạch tiếp theo" có nghĩa.
+  if (opening.moves.length < 10) {
+    fail(
+      `${opening.id}: dòng chính chỉ ${opening.moves.length} ply - cần ≥ 10 để dạy kế hoạch trung cuộc`,
+    )
+    bad = true
+  }
+
+  // 2. Kế hoạch trung cuộc phải cụ thể.
+  if (opening.plan.points.length < 3 || opening.plan.points.some((p) => p.length < 20)) {
+    fail(`${opening.id}: kế hoạch trung cuộc cần ≥ 3 việc, mỗi việc ≥ 20 ký tự`)
+    bad = true
+  }
+
+  if (!bad) {
+    ok(`${opening.id} - dòng chính ${opening.moves.length} ply (${opening.plan.title})`)
+  }
+}
+
+console.log('\n▶ Kế hoạch trung cuộc - quân được nhắc phải đứng đúng ô')
 {
-  let totalNodes = 0
-  let totalForks = 0
-  let totalBranchMoves = 0
+  /*
+   * Mẫu “Đưa <quân> <ô>” luôn nói về QUÂN ĐANG Ở ô đó (điểm xuất phát), nên ô đó
+   * phải thật sự có đúng loại quân ấy trong thế cờ cuối của dòng chính.
+   *
+   * Bài kiểm này bắt được đúng loại lỗi đã từng có: “Đưa Mã b1 lên d2” trong khi
+   * Mã đã sang d2 từ lâu, hay “đe doạ Tốt e4 của Trắng” khi Trắng không còn Tốt ở e4.
+   */
+  const PIECE_WORD: Record<string, string> = {
+    'Mã': 'n',
+    'Tượng': 'b',
+    'Xe': 'r',
+    'Hậu': 'q',
+    'Vua': 'k',
+    'Tốt': 'p',
+  }
+  const SOURCE_RE = /(?:Đưa|đưa)\s+(Mã|Tượng|Xe|Hậu|Vua|Tốt)\s+([a-h][1-8])/g
+  let bad = false
+  let checked = 0
 
   for (const opening of OPENINGS) {
-    let bad = false
-
-    // 1. Nhánh chính của cây phải ĐÚNG BẰNG `moves` (một nguồn sự thật duy nhất).
-    const main = mainLine(opening.tree)
-    if (
-      main.length !== opening.moves.length ||
-      main.some((move, index) => move.san !== opening.moves[index].san)
-    ) {
-      fail(`${opening.id}: nhánh chính của cây KHÁC với opening.moves`)
-      bad = true
+    const game = new Chess()
+    for (const move of opening.moves) {
+      try {
+        game.move(move.san)
+      } catch {
+        /* dòng chính lỗi đã được báo ở phần trên */
+      }
     }
-
-    // 2. Duyệt MỌI đường đi trong cây - mỗi nước phải hợp lệ ở đúng thế cờ đó,
-    //    và lời giảng chỉ được nằm ở nước của BÉ.
-    let nodes = 0
-    let forks = 0
-    const walk = (level: OpeningNode[], game: Chess, ply: number, trail: string[]) => {
-      if (level.length === 0) return
-      if (level.length > 1) forks += 1
-      const seen = new Set<string>()
-      level.forEach((node, index) => {
-        nodes += 1
-        const where = trail.length > 0 ? `nhánh ${trail.join(' ')} → ` : ''
-        if (seen.has(node.san)) {
-          fail(`${opening.id}: ${where}hai nhánh cùng đi "${node.san}" ở ply ${ply + 1}`)
-          bad = true
-        }
-        seen.add(node.san)
-
-        const probe = new Chess(game.fen())
-        let played
-        try {
-          played = probe.move(node.san)
-        } catch {
-          fail(`${opening.id}: ${where}nước "${node.san}" KHÔNG hợp lệ ở ply ${ply + 1}`)
-          bad = true
-          return
-        }
-        if (node.annotation && node.annotation.san !== played.san) {
+    for (const point of opening.plan.points) {
+      for (const match of point.matchAll(SOURCE_RE)) {
+        const word = match[1]
+        const square = match[2]
+        checked += 1
+        const cell = game.get(square as Square)
+        if (!cell || cell.type !== PIECE_WORD[word]) {
           fail(
-            `${opening.id}: ${where}annotation.san "${node.annotation.san}" ≠ SAN thật "${played.san}"`,
+            `${opening.id}: kế hoạch nói “${word} ${square}” nhưng thế cờ cuối ${
+              cell ? `có quân “${cell.type}”` : 'không có quân nào'
+            } ở ô đó → “${point}”`,
           )
           bad = true
         }
-        const isKid = opening.side === 'white' ? ply % 2 === 0 : ply % 2 === 1
-        if (isKid && !node.annotation) {
-          fail(`${opening.id}: ${where}nước CỦA BÉ ở ply ${ply + 1} (${node.san}) thiếu lời giảng`)
-          bad = true
-        }
-        if (!isKid && node.annotation) {
-          fail(`${opening.id}: ${where}nước của ĐỐI THỦ ở ply ${ply + 1} (${node.san}) lại có lời giảng`)
-          bad = true
-        }
-        if (index > 0 && (!node.note || node.note.length < 10)) {
-          fail(`${opening.id}: ${where}nhánh phụ "${node.san}" ở ply ${ply + 1} thiếu câu giải thích vì sao`)
-          bad = true
-        }
-        walk(node.replies ?? [], probe, ply + 1, [...trail, node.san])
-      })
-    }
-    walk(opening.tree, new Chess(), 0, [])
-
-    // 3. Dòng chính phải đủ dài để "kế hoạch tiếp theo" có nghĩa.
-    if (opening.moves.length < 10) {
-      fail(
-        `${opening.id}: nhánh chính chỉ ${opening.moves.length} ply - cần ≥ 10 để dạy kế hoạch trung cuộc`,
-      )
-      bad = true
-    }
-
-    // 4. Kế hoạch trung cuộc phải cụ thể.
-    if (opening.plan.points.length < 3 || opening.plan.points.some((p) => p.length < 20)) {
-      fail(`${opening.id}: kế hoạch trung cuộc cần ≥ 3 việc, mỗi việc ≥ 20 ký tự`)
-      bad = true
-    }
-
-    if (forks === 0) {
-      fail(`${opening.id}: chưa có ngã ba nào - cây phải phân nhánh`)
-      bad = true
-    }
-
-    totalNodes += nodes
-    totalForks += forks
-    totalBranchMoves += nodes - opening.moves.length
-    if (!bad) {
-      ok(
-        `${opening.id} - ${nodes} nút, ${forks} ngã ba, nhánh chính ${opening.moves.length} ply (${opening.plan.title})`,
-      )
+      }
     }
   }
 
-  ok(
-    `tổng: ${totalNodes} nút, ${totalForks} ngã ba, ${totalBranchMoves} nước ở nhánh phụ`,
-  )
+  if (!bad) ok(`${checked} chỗ “Đưa <quân> <ô>” trong kế hoạch đều khớp thế cờ thật`)
 }
 
-console.log('\n▶ Trung cuộc (đòn chiến thuật)')
-for (const puzzle of TACTICS) {
+console.log('\n▶ Trung cuộc (tìm nước hay nhất)')
+for (const puzzle of BEST_MOVES) {
   const game = new Chess()
   try {
     game.load(puzzle.fen)
@@ -162,99 +128,54 @@ for (const puzzle of TACTICS) {
     fail(`${puzzle.id}: FEN không hợp lệ - ${String(error)}`)
     continue
   }
-  let move
-  try {
-    move = game.move(puzzle.solution)
-  } catch {
-    fail(`${puzzle.id}: nước giải "${puzzle.solution}" KHÔNG hợp lệ trên FEN`)
+  if (game.turn() !== puzzle.side[0]) {
+    fail(`${puzzle.id}: lượt đi là "${game.turn()}" nhưng side="${puzzle.side}"`)
     continue
   }
-  const givesCheck = game.isCheck()
-  const capturedValue = move.captured ? 1 : 0
-
-  // Đếm số quân địch mà CHÍNH quân vừa đi đang tấn công (dùng attackers của chess.js).
-  const foe = move.color === 'w' ? 'b' : 'w'
-  let hits = 0
-  const hitSquares: string[] = []
-  for (const row of game.board()) {
-    for (const cell of row) {
-      if (!cell || cell.color !== foe) continue
-      if (game.attackers(cell.square, move.color).includes(move.to)) {
-        hits += 1
-        hitSquares.push(cell.square)
-      }
-    }
-  }
-
-  ok(
-    `${puzzle.id} - ${puzzle.solution} hợp lệ${givesCheck ? ', chiếu Vua' : ''}${
-      capturedValue ? ', ăn quân' : ''
-    }, tấn công ${hits} quân (${hitSquares.join(', ')})`,
-  )
-
-  // Kiểm tra đúng bản chất từng loại đòn.
-  if (puzzle.type === 'fork' && hits < 2) {
-    fail(`${puzzle.id}: đòn BẮT ĐÔI nhưng chỉ tấn công ${hits} quân`)
-  }
-  if (puzzle.type === 'pin' && hits < 1) {
-    fail(`${puzzle.id}: đòn GHIM nhưng Tượng/Xe không tấn công quân nào`)
-  }
-  if (puzzle.type === 'skewer') {
-    if (!givesCheck) fail(`${puzzle.id}: đòn XIÊN nhưng nước giải không chiếu Vua`)
-    if (hits < 1) fail(`${puzzle.id}: đòn XIÊN nhưng không tấn công quân nào`)
-  }
-
-  // ── Bốn đòn "hàng hiệu" ──
-  const kingSquare = game
-    .board()
-    .flat()
-    .find((cell) => cell && cell.type === 'k' && cell.color === foe)?.square
-
-  if (puzzle.type === 'discovered') {
-    if (!givesCheck) fail(`${puzzle.id}: ĐÒN MỞ phải chiếu Vua bằng quân ở phía sau`)
-    if (kingSquare && game.attackers(kingSquare, move.color).includes(move.to)) {
-      fail(`${puzzle.id}: ĐÒN MỞ nhưng chính quân vừa đi cũng chiếu Vua (đó là chiếu đôi)`)
-    }
-  }
-  if (puzzle.type === 'double-check') {
-    const attackers = kingSquare ? game.attackers(kingSquare, move.color) : []
-    if (attackers.length < 2) {
-      fail(`${puzzle.id}: CHIẾU ĐÔI nhưng chỉ có ${attackers.length} quân chiếu Vua`)
-    }
-    if (!attackers.includes(move.to)) {
-      fail(`${puzzle.id}: CHIẾU ĐÔI nhưng quân vừa đi không chiếu Vua`)
-    }
-  }
-  if (puzzle.type === 'back-rank') {
-    if (!game.isCheckmate()) fail(`${puzzle.id}: CHIẾU BÍ HÀNG CUỐI nhưng nước giải không phải chiếu bí`)
-    const mateRank = kingSquare ? Number(kingSquare[1]) : 0
-    if (mateRank !== 1 && mateRank !== 8) {
-      fail(`${puzzle.id}: CHIẾU BÍ HÀNG CUỐI nhưng Vua bị bí ở hàng ${mateRank}`)
-    }
-  }
-  if (puzzle.type === 'smothered') {
-    if (!game.isCheckmate()) fail(`${puzzle.id}: CHIẾU BÍ NGẠT nhưng nước giải không phải chiếu bí`)
-    if (move.piece !== 'n') fail(`${puzzle.id}: CHIẾU BÍ NGẠT phải do Mã chiếu, không phải "${move.piece}"`)
-  }
-}
-
-console.log('\n▶ Câu "Khởi động" (§0.5: mỗi họ đòn đúng 1 câu, không tính điểm)')
-{
-  const types = [...new Set(TACTICS.map((puzzle) => puzzle.type))]
-  const warmups = TACTICS.filter((puzzle) => puzzle.warmup)
+  const legal = game.moves()
   let bad = false
-  for (const type of types) {
-    const count = warmups.filter((puzzle) => puzzle.type === type).length
-    if (count !== 1) {
-      fail(`họ ${type} có ${count} câu "Khởi động" (phải đúng 1)`)
+  if (!puzzle.goodMoves.includes(puzzle.bestSan)) {
+    fail(`${puzzle.id}: goodMoves phải chứa nước hay nhất "${puzzle.bestSan}"`)
+    bad = true
+  }
+  for (const san of puzzle.goodMoves) {
+    if (!legal.includes(san)) {
+      fail(`${puzzle.id}: nước được chấp nhận "${san}" KHÔNG hợp lệ trên FEN`)
       bad = true
     }
   }
-  if (warmups.length !== types.length) {
-    fail(`tổng câu "Khởi động" là ${warmups.length} nhưng có ${types.length} họ đòn`)
+  if (!legal.includes(puzzle.bestSan)) {
+    fail(`${puzzle.id}: nước hay nhất "${puzzle.bestSan}" KHÔNG hợp lệ trên FEN`)
     bad = true
   }
-  if (!bad) ok(`${types.length} họ đòn, mỗi họ đúng 1 câu "Khởi động" (không tính vào mini-Elo)`)
+  const words = puzzle.rhyme.trim().split(/\s+/).length
+  if (words < 4 || words > 6) {
+    fail(`${puzzle.id}: khẩu quyết "${puzzle.rhyme}" có ${words} chữ, phải 4-6 chữ`)
+    bad = true
+  }
+  if (puzzle.explanation.trim().length < 20) {
+    fail(`${puzzle.id}: lời giải thích quá ngắn`)
+    bad = true
+  }
+  if (puzzle.hint.trim().length < 10) {
+    fail(`${puzzle.id}: gợi ý quá ngắn`)
+    bad = true
+  }
+  if (!bad) ok(`${puzzle.id} - nước hay nhất ${puzzle.bestSan} (${puzzle.title})`)
+}
+
+console.log('\n▶ Trung cuộc - mỗi chủ đề có ít nhất 2 thế cờ')
+{
+  const themes = [...new Set(BEST_MOVES.map((puzzle) => puzzle.theme))]
+  let bad = false
+  for (const theme of themes) {
+    const count = BEST_MOVES.filter((puzzle) => puzzle.theme === theme).length
+    if (count < 2) {
+      fail(`chủ đề ${theme} chỉ có ${count} thế (cần ≥ 2)`)
+      bad = true
+    }
+  }
+  if (!bad) ok(`${themes.length} chủ đề, mỗi chủ đề ≥ 2 thế cờ`)
 }
 
 console.log('\n▶ Tàn cuộc')
@@ -291,399 +212,84 @@ for (const challenge of ENDGAMES) {
   }
 }
 
-console.log('\n▶ Thư viện thế chiếu bí (§4.2)')
-for (const pattern of MATES) {
-  const game = new Chess()
-  try {
-    game.load(pattern.fen)
-  } catch (error) {
-    fail(`${pattern.id}: FEN không hợp lệ - ${String(error)}`)
-    continue
-  }
-  if (game.turn() !== pattern.playerSide[0]) {
-    fail(`${pattern.id}: lượt đi là "${game.turn()}" nhưng playerSide="${pattern.playerSide}"`)
-    continue
-  }
-  const expectedPlies = 2 * pattern.mateIn - 1
-  if (pattern.line.length !== expectedPlies) {
-    fail(
-      `${pattern.id}: mateIn=${pattern.mateIn} cần ${expectedPlies} nửa nước nhưng chuỗi có ${pattern.line.length}`,
-    )
-    continue
-  }
-
+console.log('\n▶ 10 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh hoạ mỗi thẻ)')
+{
   let bad = false
-  let firstPlyMate = false
-  pattern.line.forEach((san, index) => {
-    if (index === 0) {
-      const probe = new Chess(game.fen())
+  if (GOLD_PRINCIPLES.length !== 10) {
+    fail(`cần đúng 10 nguyên tắc nhưng có ${GOLD_PRINCIPLES.length}`)
+    bad = true
+  }
+  const SQUARE_RE = /^[a-h][1-8]$/
+  GOLD_PRINCIPLES.forEach((principle, index) => {
+    if (principle.order !== index + 1) {
+      fail(`${principle.id}: số thứ tự ${principle.order} không khớp vị trí ${index + 1}`)
+      bad = true
+    }
+    const words = principle.rhyme.trim().split(/\s+/).length
+    if (words < 4 || words > 6) {
+      fail(`${principle.id}: khẩu quyết "${principle.rhyme}" có ${words} chữ, phải 4-6 chữ`)
+      bad = true
+    }
+    if (principle.ask.trim().length < 15 || principle.why.trim().length < 30) {
+      fail(`${principle.id}: câu hỏi tự vấn hoặc lời giải thích quá ngắn`)
+      bad = true
+    }
+
+    // Mỗi nguyên tắc phải có một thế "NÊN" (xanh) và một thế "KHÔNG NÊN" (đỏ),
+    // đều là thế cờ thật, lượt Trắng, không đang bị chiếu.
+    for (const [side, board] of [
+      ['NÊN', principle.good],
+      ['KHÔNG NÊN', principle.bad],
+    ] as const) {
+      const game = new Chess()
       try {
-        probe.move(san)
-      } catch {
-        fail(`${pattern.id}: nửa nước 1 "${san}" KHÔNG hợp lệ`)
-        bad = true
-        return
-      }
-      firstPlyMate = probe.isCheckmate()
-    }
-    let played
-    try {
-      played = game.move(san)
-    } catch {
-      fail(`${pattern.id}: nửa nước ${index + 1} "${san}" KHÔNG hợp lệ`)
-      bad = true
-      return
-    }
-    // Nước cuối phải ghi dấu # đúng như kết quả thật.
-    if (index === pattern.line.length - 1 && !game.isCheckmate()) {
-      fail(`${pattern.id}: nửa nước cuối "${played.san}" KHÔNG phải chiếu bí`)
-      bad = true
-    }
-  })
-
-  if (pattern.mateIn > 1 && firstPlyMate) {
-    fail(`${pattern.id}: mateIn=${pattern.mateIn} nhưng nước đầu đã chiếu bí (thực ra mate in 1)`)
-    bad = true
-  }
-  const words = pattern.rhyme.trim().split(/\s+/).length
-  if (words < 4 || words > 6) {
-    fail(`${pattern.id}: khẩu quyết "${pattern.rhyme}" có ${words} chữ, phải 4-6 chữ`)
-    bad = true
-  }
-  if (pattern.explanation.trim().length < 15) {
-    fail(`${pattern.id}: lời giải thích quá ngắn`)
-    bad = true
-  }
-
-  if (!bad) {
-    ok(`${pattern.id} - mate in ${pattern.mateIn}: ${pattern.line.join(' ')}`)
-  }
-}
-
-console.log('\n▶ Chiến lược vị trí (§4.3)')
-for (const lesson of POSITIONAL) {
-  const game = new Chess()
-  try {
-    game.load(lesson.fen)
-  } catch (error) {
-    fail(`${lesson.id}: FEN không hợp lệ - ${String(error)}`)
-    continue
-  }
-  if (game.isCheck()) {
-    fail(`${lesson.id}: thế cờ đang có chiếu, không phải hình minh hoạ vị trí`)
-    continue
-  }
-  if (game.turn() !== lesson.playerSide[0]) {
-    fail(`${lesson.id}: lượt đi là "${game.turn()}" nhưng playerSide="${lesson.playerSide}"`)
-    continue
-  }
-
-  const foe: 'w' | 'b' = lesson.playerSide === 'white' ? 'b' : 'w'
-  const cells = game
-    .board()
-    .flat()
-    .filter((cell): cell is NonNullable<typeof cell> => Boolean(cell))
-  const pawns = cells.filter((cell) => cell.type === 'p')
-  const pawnFiles = new Set(pawns.map((pawn) => pawn.square[0]))
-  let bad = false
-
-  if (lesson.markers.length === 0) {
-    fail(`${lesson.id}: không có ô nào để minh hoạ khái niệm`)
-    bad = true
-  }
-
-  for (const marker of lesson.markers) {
-    if (marker.tone !== 'good') {
-      fail(`${lesson.id}: bài vị trí chỉ tô ô "good", không tô "${marker.tone}"`)
-      bad = true
-    }
-    const piece = game.get(marker.square)
-    const mine = piece && piece.color === lesson.playerSide[0]
-
-    if (lesson.concept === 'outpost') {
-      if (!mine || piece!.type !== 'n') {
-        fail(`${lesson.id}: ô ${marker.square} phải có Mã của bé`)
+        game.load(board.fen)
+      } catch (error) {
+        fail(`${principle.id} (${side}): FEN không hợp lệ - ${String(error)}`)
         bad = true
         continue
       }
-      const defenders = game
-        .attackers(marker.square, lesson.playerSide[0])
-        .filter((square) => game.get(square)?.type === 'p')
-      if (defenders.length === 0) {
-        fail(`${lesson.id}: Mã ${marker.square} chưa được Tốt của bé che`)
+      if (game.isCheck()) {
+        fail(`${principle.id} (${side}): thế minh hoạ đang có chiếu`)
         bad = true
       }
-      const kickers = game
-        .attackers(marker.square, foe)
-        .filter((square) => game.get(square)?.type === 'p')
-      if (kickers.length > 0) {
-        fail(`${lesson.id}: vẫn có Tốt địch đá được Mã ở ${marker.square}`)
+      if (game.turn() !== 'w') {
+        fail(`${principle.id} (${side}): thế minh hoạ phải là lượt Trắng`)
         bad = true
       }
-    } else if (lesson.concept === 'open-file') {
-      if (pawnFiles.has(marker.square[0])) {
-        fail(`${lesson.id}: cột ${marker.square[0]} còn Tốt nên chưa phải cột mở`)
+      const kings = game.board().flat().filter((cell) => cell && cell.type === 'k').length
+      if (kings !== 2) {
+        fail(`${principle.id} (${side}): phải có đủ hai Vua`)
         bad = true
       }
-    } else if (lesson.concept === 'bishop-pair') {
-      const mineBishops = cells.filter((cell) => cell.type === 'b' && cell.color === lesson.playerSide[0])
-      const theirBishops = cells.filter((cell) => cell.type === 'b' && cell.color === foe)
-      if (mineBishops.length < 2) {
-        fail(`${lesson.id}: bé phải còn đủ 2 Tượng`)
+      if (board.note.trim().length < 20) {
+        fail(`${principle.id} (${side}): lời chú thích quá ngắn`)
         bad = true
       }
-      if (theirBishops.length >= 2) {
-        fail(`${lesson.id}: đối thủ cũng đủ cặp Tượng, không còn là lợi thế`)
+      if (board.marks.length === 0) {
+        fail(`${principle.id} (${side}): chưa tô ô nào để minh hoạ`)
         bad = true
       }
-    } else if (lesson.concept === 'seventh-rank') {
-      const targetRank = lesson.playerSide === 'white' ? 7 : 2
-      if (Number(marker.square[1]) !== targetRank) {
-        fail(`${lesson.id}: ô ${marker.square} không nằm ở hàng ${targetRank}`)
-        bad = true
-        continue
-      }
-      if (!mine || (piece!.type !== 'r' && piece!.type !== 'q')) {
-        fail(`${lesson.id}: ô ${marker.square} phải có Xe/Hậu của bé`)
-        bad = true
-        continue
-      }
-      const hitsPawn = pawns.some(
-        (pawn) =>
-          pawn.color === foe &&
-          game.attackers(pawn.square, lesson.playerSide[0]).includes(marker.square),
-      )
-      if (!hitsPawn) {
-        fail(`${lesson.id}: quân ở ${marker.square} không tấn công Tốt địch nào`)
-        bad = true
-      }
-    }
-  }
-
-  const words = lesson.rhyme.trim().split(/\s+/).length
-  if (words < 4 || words > 6) {
-    fail(`${lesson.id}: khẩu quyết "${lesson.rhyme}" có ${words} chữ, phải 4-6 chữ`)
-    bad = true
-  }
-  if (lesson.explanation.trim().length < 15) {
-    fail(`${lesson.id}: lời giải thích quá ngắn`)
-    bad = true
-  }
-
-  if (!bad) ok(`${lesson.id} - ${lesson.title} (${lesson.markers.length} ô chứng minh khái niệm)`)
-}
-
-console.log('\n▶ Tàn cuộc Xe + Tốt (§4.5)')
-for (const lesson of ROOK_ENDGAMES) {
-  const game = new Chess()
-  try {
-    game.load(lesson.fen)
-  } catch (error) {
-    fail(`${lesson.id}: FEN không hợp lệ - ${String(error)}`)
-    continue
-  }
-  const kings = game
-    .board()
-    .flat()
-    .filter((cell) => cell && cell.type === 'k').length
-  if (kings !== 2) {
-    fail(`${lesson.id}: phải có đủ hai Vua`)
-    continue
-  }
-  if (game.isCheck()) {
-    fail(`${lesson.id}: thế cờ đang có chiếu`)
-    continue
-  }
-  if (game.turn() !== lesson.playerSide[0]) {
-    fail(`${lesson.id}: lượt đi là "${game.turn()}" nhưng playerSide="${lesson.playerSide}"`)
-    continue
-  }
-  if (lesson.result !== 'win' && lesson.result !== 'draw') {
-    fail(`${lesson.id}: result phải là "win" hoặc "draw"`)
-    continue
-  }
-  let bad = false
-  if (lesson.rhyme.trim().split(/\s+/).length < 4 || lesson.rhyme.trim().split(/\s+/).length > 6) {
-    fail(`${lesson.id}: khẩu quyết "${lesson.rhyme}" phải 4-6 chữ`)
-    bad = true
-  }
-  if (lesson.idea.trim().length < 15) {
-    fail(`${lesson.id}: lời giải thích quá ngắn`)
-    bad = true
-  }
-  // Có Xe + ít nhất một Tốt trên bàn (đúng chủ đề Xe + Tốt).
-  const cells = game.board().flat().filter((cell) => cell)
-  const hasRook = cells.some((cell) => cell && cell.type === 'r')
-  const hasPawn = cells.some((cell) => cell && cell.type === 'p')
-  if (!hasRook || !hasPawn) {
-    fail(`${lesson.id}: chủ đề Xe + Tốt nhưng thiếu Xe hoặc Tốt`)
-    bad = true
-  }
-  if (!bad) ok(`${lesson.id} - ${lesson.result === 'win' ? 'thắng' : 'hòa'} (${lesson.title})`)
-}
-
-console.log('\n▶ Chiến lược GM (bài giảng có kịch bản)')
-for (const lecture of GM_LECTURES) {
-  const game = new Chess()
-  try {
-    game.load(lecture.fen)
-  } catch (error) {
-    fail(`${lecture.id}: FEN không hợp lệ - ${String(error)}`)
-    continue
-  }
-  const playerChar = lecture.playerSide[0]
-  // Bài có thể bắt đầu bằng nước của ĐEN (thế Philidor), nên phải suy từ FEN.
-  const kidParity = game.turn() === playerChar ? 0 : 1
-  let bad = false
-  let kidSteps = 0
-  let opponentSteps = 0
-
-  lecture.moves.forEach((ply, index) => {
-    const isKid = index % 2 === kidParity
-
-    if (isKid && !ply.annotation) {
-      fail(`${lecture.id}: nửa nước ${index + 1} là của BÉ nhưng thiếu lời giải thích`)
-      bad = true
-    }
-    if (!isKid && ply.annotation) {
-      fail(`${lecture.id}: nửa nước ${index + 1} là của ĐỐI THỦ nhưng lại có lời giải thích`)
-      bad = true
-    }
-
-    if (ply.annotation) {
-      const words = ply.annotation.rhyme.trim().split(/\s+/).length
-      if (words < 4 || words > 6) {
-        fail(`${lecture.id}: khẩu quyết "${ply.annotation.rhyme}" có ${words} chữ, phải 4-6 chữ`)
-        bad = true
-      }
-      if (ply.annotation.reason.trim().length < 15) {
-        fail(`${lecture.id}: lời giải thích cho ${ply.san} quá ngắn, bé sẽ không hiểu`)
-        bad = true
-      }
-    }
-
-    let played
-    try {
-      played = game.move(ply.san)
-    } catch {
-      fail(`${lecture.id}: nước ${index + 1} "${ply.san}" KHÔNG hợp lệ trên thế cờ`)
-      bad = true
-      return
-    }
-    if (ply.annotation && ply.annotation.san !== played.san) {
-      fail(`${lecture.id}: annotation.san "${ply.annotation.san}" ≠ SAN thật "${played.san}"`)
-      bad = true
-    }
-    if (isKid) kidSteps += 1
-    else opponentSteps += 1
-
-    // Ô được tô đỏ phải thật sự nằm trong tầm kiểm soát của bé sau nước đó.
-    for (const square of ply.spotlight ?? []) {
-      if (game.attackers(square, played.color).length === 0) {
-        fail(`${lecture.id}: ô ${square} được tô là nguy hiểm nhưng quân của bé không kiểm soát nó`)
-        bad = true
+      const expectedTone = side === 'NÊN' ? 'good' : 'bad'
+      for (const mark of board.marks) {
+        if (!SQUARE_RE.test(mark.square)) {
+          fail(`${principle.id} (${side}): ô "${mark.square}" không hợp lệ`)
+          bad = true
+        }
+        if (mark.tone !== expectedTone) {
+          fail(
+            `${principle.id} (${side}): ô ${mark.square} tô "${mark.tone}" nhưng thế "${side}" chỉ nên tô "${expectedTone}"`,
+          )
+          bad = true
+        }
+        if (mark.label.trim().length < 3) {
+          fail(`${principle.id} (${side}): nhãn ô ${mark.square} quá ngắn`)
+          bad = true
+        }
       }
     }
   })
-
-  if (!bad) {
-    const checks = lecture.moves.filter((ply) => ply.san.includes('+')).map((ply) => ply.san)
-    ok(
-      `${lecture.id} - ${lecture.moves.length} nửa nước hợp lệ (${kidSteps} nước của bé, ${opponentSteps} nước đối thủ)${
-        checks.length ? `, có chiếu: ${checks.join(', ')}` : ''
-      }`,
-    )
-  }
-}
-
-console.log('\n▶ Cấu trúc Tốt')
-const squareFile = (square: string) => square[0]
-const squareRank = (square: string) => Number(square[1])
-// Hai cột cạnh nhau trong bàn cờ: c và e là hai bên của cột d.
-const NEIGHBOURS = ['a:b', 'b:ac', 'c:bd', 'd:ce', 'e:df', 'f:eg', 'g:fh', 'h:g']
-const neighbourFiles = (file: string) =>
-  (NEIGHBOURS.find((pair) => pair.startsWith(`${file}:`))?.split(':')[1] ?? '').split('')
-
-for (const structure of PAWN_STRUCTURES) {
-  const game = new Chess()
-  try {
-    game.load(structure.fen)
-  } catch (error) {
-    fail(`${structure.id}: FEN không hợp lệ - ${String(error)}`)
-    continue
-  }
-  if (game.isCheck()) {
-    fail(`${structure.id}: thế cờ đang có chiếu, không phải hình minh hoạ cấu trúc Tốt`)
-    continue
-  }
-
-  const pawns: { square: string; color: 'w' | 'b' }[] = []
-  for (const row of game.board()) {
-    for (const cell of row) {
-      if (cell && cell.type === 'p') pawns.push({ square: cell.square, color: cell.color })
-    }
-  }
-
-  let bad = false
-  for (const marker of structure.markers) {
-    const pawn = pawns.find((item) => item.square === marker.square)
-    if (!pawn) {
-      fail(`${structure.id}: ô ${marker.square} được tô màu nhưng ở đó không có Tốt nào`)
-      bad = true
-      continue
-    }
-    // Màu tô phải khớp kết luận: Tốt xấu tô đỏ, Tốt khoẻ tô xanh.
-    const expected = structure.verdict === 'bad' ? 'bad' : 'good'
-    if (marker.tone !== expected) {
-      fail(`${structure.id}: ô ${marker.square} tô "${marker.tone}" nhưng kết luận cả thế là "${expected}"`)
-      bad = true
-    }
-  }
-
-  const marked = structure.markers[0]?.square
-  const focal = marked ? pawns.find((item) => item.square === marked) : undefined
-  if (focal) {
-    const foe = focal.color === 'w' ? 'b' : 'w'
-    const file = squareFile(focal.square)
-    const rank = squareRank(focal.square)
-    const ahead = focal.color === 'w' ? (r: number) => r > rank : (r: number) => r < rank
-
-    if (structure.id === 'passed-pawn') {
-      const blockers = pawns.filter((item) => {
-        if (item.color !== foe) return false
-        const sameOrNextTo = squareFile(item.square) === file || neighbourFiles(file).includes(squareFile(item.square))
-        return sameOrNextTo && ahead(squareRank(item.square))
-      })
-      if (blockers.length > 0) {
-        fail(
-          `${structure.id}: gọi là TỐT THÔNG nhưng vẫn còn Tốt địch cản: ${blockers.map((b) => b.square).join(', ')}`,
-        )
-        bad = true
-      }
-    }
-    if (structure.id === 'doubled-pawns') {
-      const sameFile = pawns.filter((item) => item.color === focal.color && squareFile(item.square) === file)
-      if (sameFile.length < 2) {
-        fail(`${structure.id}: gọi là TỐT CHỒNG nhưng cột ${file} chỉ có ${sameFile.length} Tốt`)
-        bad = true
-      }
-    }
-    if (structure.id === 'isolated-pawn') {
-      const friends = pawns.filter(
-        (item) => item.color === focal.color && neighbourFiles(file).includes(squareFile(item.square)),
-      )
-      if (friends.length > 0) {
-        fail(
-          `${structure.id}: gọi là TỐT CÔ LẬP nhưng vẫn có Tốt bạn bên cạnh: ${friends.map((f) => f.square).join(', ')}`,
-        )
-        bad = true
-      }
-    }
-  }
-
-  if (!bad) {
-    ok(`${structure.id} - ${structure.name}: ${pawns.length} Tốt, ${structure.markers.length} ô được tô đúng bản chất`)
-  }
+  if (!bad) ok(`10 nguyên tắc vàng - đủ 10 thẻ, mỗi thẻ 2 thế cờ minh hoạ hợp lệ`)
 }
 
 console.log(

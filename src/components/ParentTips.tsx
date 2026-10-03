@@ -1,9 +1,7 @@
 import { useLocation } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
 import { tipsFor } from '../lib/parentTips'
-import { STAGES } from '../lib/stages'
 import { useActiveLesson } from '../store/lesson'
-import { useKidProgress } from '../store/progress'
 
 /** Trạng thái thu/mở được nhớ giữa các lần mở app (§10). */
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.parent-tips.v1'
@@ -23,8 +21,7 @@ function loadOpen(): boolean {
  * Hai phần:
  *  1. Câu hỏi “đố con” đúng với bài bé đang học (ba mẹ ngồi cạnh không phải nghĩ
  *     xem hỏi gì);
- *  2. Khối 🔒 riêng cho ba mẹ: số Elo mini, điểm từng dạng đòn, và nút chọn giai
- *     đoạn tuổi của bé.
+ *  2. Khối 🔒 riêng cho ba mẹ (hiện chỉ còn phần hướng dẫn, không có cài đặt riêng).
  *
  * Vì là khối `position: fixed` nên nó KHÔNG tham gia vào luồng bố cục - đây là
  * điều kiện bắt buộc để không phá vỡ bố cục “không cuộn”. Bề rộng/chiều cao đều
@@ -35,8 +32,6 @@ export function ParentTips() {
   const { pathname } = useLocation()
   const lessonId = useActiveLesson()
   const tip = tipsFor(pathname, lessonId)
-
-  const { stage, setStageId, birthYear, setBirthYear } = useKidProgress()
 
   const [open, setOpen] = useState(loadOpen)
 
@@ -66,72 +61,27 @@ export function ParentTips() {
           <p className="mt-0.5 text-xs font-extrabold text-brand-900">{tip.title}</p>
 
           <ul className="mt-1 grid gap-1">
-            {tip.questions.map((question) => (
+            {tip.questions.map((item) => (
               <li
-                key={question}
-                className="flex gap-1.5 rounded-xl bg-brand-50 px-2 py-1.5 text-[0.7rem] font-bold text-brand-700"
+                key={item.q}
+                className="rounded-xl bg-brand-50 px-2 py-1.5 text-[0.7rem] font-bold text-brand-700"
               >
-                <span aria-hidden className="text-gold-500">
-                  ❓
-                </span>
-                <span>{question}</span>
+                <div className="flex gap-1.5">
+                  <span aria-hidden className="text-gold-500">
+                    ❓
+                  </span>
+                  <span>{item.q}</span>
+                </div>
+                <div className="mt-1 flex gap-1.5 pl-4 text-[0.65rem] font-bold text-brand-500">
+                  <span aria-hidden className="text-leaf-500">
+                    ✔️
+                  </span>
+                  <span>{item.a}</span>
+                </div>
               </li>
             ))}
           </ul>
 
-          {/*
-            Khối riêng cho ba mẹ. KHÔNG có điểm số/so hơn thua: app này để HỌC CỜ, nên chỗ
-            này chỉ còn đúng việc ba mẹ cần - chỉnh lứa tuổi cho khớp với bé.
-          */}
-          <div className="mt-2 grid gap-1.5 rounded-xl border-2 border-dashed border-gold-300 bg-gold-50/70 p-2">
-            <p className="text-[0.6rem] font-extrabold uppercase tracking-wide text-gold-800">
-              🔒 Phần của ba mẹ
-            </p>
-            <p className="text-[0.6rem] font-extrabold uppercase tracking-wide text-gold-800">
-              🎚️ Giai đoạn của bé
-            </p>
-            <div className="grid grid-cols-2 gap-1">
-              {STAGES.map((item) => {
-                const active = item.id === stage.id
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setStageId(item.id)}
-                    className={`flex items-center gap-1 rounded-lg border-2 px-1.5 py-1 text-[0.65rem] font-extrabold transition-all active:translate-y-[1px] ${
-                      active
-                        ? 'border-brand-400 bg-white text-brand-800'
-                        : 'border-brand-100 bg-white/70 text-brand-500 hover:border-brand-300'
-                    }`}
-                  >
-                    <span aria-hidden>{item.emoji}</span>
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-            <label
-              htmlFor="kid-parent-birth-year"
-              className="flex items-center gap-1.5 text-[0.65rem] font-extrabold text-brand-600"
-            >
-              🎂 Năm sinh
-              <input
-                id="kid-parent-birth-year"
-                type="number"
-                inputMode="numeric"
-                min={1990}
-                max={2100}
-                placeholder="VD 2019"
-                value={birthYear ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value
-                  setBirthYear(value ? Number(value) : null)
-                }}
-                className="w-20 rounded-lg border-2 border-brand-100 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-800"
-              />
-            </label>
-          </div>
         </div>
       )}
 

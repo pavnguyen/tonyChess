@@ -44,15 +44,6 @@ export const INFO: Record<string, InfoEntry> = {
       'Bàn cờ tự xoay 180° khi bé cầm quân Đen, để hàng 7-8 luôn nằm gần bé.',
     ],
   },
-  stages: {
-    title: 'Giai đoạn của bé (7 → 18 tuổi)',
-    tag: '⚙️ Về app',
-    body: [
-      'App có bốn lứa tuổi: **Nhí Tò Mò (7-9)**, **Thiếu Nhi Tập Sự (10-12)**, **Thiếu Niên Chiến Lược (13-15)**, **Kỳ Thủ Trưởng Thành (16-18)**.',
-      'Tuổi **chỉ là gợi ý** - trình độ mới là quyết định. Một bé 13 tuổi mới chơi cờ lần đầu vẫn nên dùng giao diện của "Thiếu nhi".',
-      'Đổi lứa tuổi sẽ đổi: có hiện khẩu quyết vè hay không, mức mạnh của máy, và có tự nhắc gợi ý khi bé đi sai hay không.',
-    ],
-  },
   stars: {
     title: 'Sao ⭐ và danh hiệu',
     tag: '🎮 Cách chơi',
@@ -98,14 +89,13 @@ export const INFO: Record<string, InfoEntry> = {
       'Đọc trọn một biên bản cờ là kỹ năng bé dùng cả đời - kể cả khi chơi với người thật.',
     ],
   },
-  tree: {
-    title: 'Cây khai cuộc 🌳',
+  principles: {
+    title: '10 nguyên tắc vàng 🏅',
     tag: '🧠 Ý tưởng',
     body: [
-      'Một khai cuộc **không phải một dòng duy nhất**. Ở vài nước, đối thủ có nhiều cách đáp hợp lý - chỗ rẽ đó gọi là **ngã ba**.',
-      'Khung cây liệt kê mọi ngã ba, ghi rõ `3.` (nước của Trắng) hay `3...` (nước đáp của Đen), và **ngã ba này là lượt ai**.',
-      'Nút có ⭐ là **dòng chính** - nước mà bài giảng đang dạy. Bấm một nút khác thì app nhảy thẳng bàn cờ tới nhánh đó để bé thử.',
-      'Mục đích: học **phản ứng** ("Đen có thể đáp thế này hoặc thế kia") thay vì học vẹt một dòng.',
+      'Mười thói quen dưới đây áp dụng được ở **mọi ván, mọi thế cờ** - không phải học thuộc lòng một dòng biến nào.',
+      'Người chơi cờ giỏi không thắng vì nhớ nhiều biến khai cuộc, mà vì mỗi nước đều tự hỏi: *trung tâm đã chắc chưa, quân đã ra hết chưa, Vua đã an toàn chưa, quân mình có bị treo không?*',
+      'Bé cứ mở từng thẻ đọc câu hỏi tự vấn rồi nhẩm khẩu quyết - chỉ cần nhớ và làm đúng bốn nguyên tắc đầu là đã hơn hẳn bạn cùng tuổi.',
     ],
   },
   plan: {
@@ -192,6 +182,26 @@ export const INFO: Record<string, InfoEntry> = {
     ],
   },
 
+  // ── 2 khai cuộc bổ sung giữ lại (5 Trắng / 5 Đen) ───────────────────────
+  'opening:nimzo-indian': {
+    title: 'Phòng thủ Nimzo-Indian',
+    tag: '👤 Tác giả',
+    body: [
+      'Mang tên **Aron Nimzowitsch** - người đề ra trường phái "kiểm soát trung tâm bằng quân" thay vì chiếm bằng Tốt.',
+      'Nước then chốt **...Bb4 ghim Mã c3**: vừa khoá không cho Trắng đẩy e4, vừa dọa đổi Tượng lấy Mã để làm lệch cấu trúc Tốt.',
+      'Đây là một trong những phòng thủ **phổ biến nhất ở mọi trình độ** - chơi được trước gần như mọi thứ Trắng làm.',
+    ],
+  },
+  'opening:english': {
+    title: 'Khai cuộc Anh (English Opening)',
+    tag: '📜 Lịch sử',
+    body: [
+      'Một trong những khai cuộc **phổ biến nhất ở mọi cấp độ**, được các kỳ thủ Anh đưa lên bản đồ thế giới - nổi nhất là **Howard Staunton** và sau này **Tony Miles**.',
+      'Ý tưởng độc đáo: Trắng **không vội chiếm trung tâm bằng Tốt** mà kiểm soát ô d5 từ xa bằng Tốt cánh, rồi mới chọn hướng.',
+      'Vì thế nó rất linh hoạt: có thể chuyển sang hệ thống kiểu London, hoặc dựng "lều Tượng" g2 rồi tấn công cánh Hậu.',
+    ],
+  },
+
   // ── 8 tác giả (Đại kiện tướng gắn với từng khai cuộc) ──────────────────────
   'gm:carlsen': {
     title: 'Magnus Carlsen (sinh 1990)',
@@ -260,106 +270,41 @@ export const INFO: Record<string, InfoEntry> = {
     ],
   },
 
-  // ── 7 họ đòn chiến thuật ───────────────────────────────────────────────────
-  'tactic:fork': {
-    title: 'Bắt đôi (Fork) 🍴',
+  // ── 4 chủ đề "Tìm nước hay nhất" ───────────────────────────────────────────────────
+  'theme:attack': {
+    title: 'Tấn công Vua 👑',
     tag: '♟️ Thế cờ',
     body: [
-      'Một quân **tấn công hai quân cùng lúc**. Đối thủ chỉ cứu được một - thế là mất quân kia.',
-      'Bắt đôi bằng **Mã** là đáng sợ nhất, vì Mã không bị quân nào cản đường và nước tấn công có thể tới từ ô rất bất ngờ.',
-      'Mẹo nghĩ: trước khi nhảy Mã, bé nhìn xem quân này **đang đồng thời nhắm những ô nào**.',
+      'Khi Vua địch đã **lộ liễu hoặc bị nhốt sau quân của chính nó**, cả ván cờ có thể kết thúc chỉ trong một nước.',
+      'Việc của bé là soi xem Vua địch còn **ô nào để chạy** - nếu hết ô, chỉ cần đưa quân tới chiếu theo đúng hàng/cột là xong.',
+      'Cách nhớ: **Vua hết cửa, quân giáng đòn**.',
     ],
   },
-  'tactic:pin': {
-    title: 'Ghim quân (Pin) 📌',
+  'theme:win-material': {
+    title: 'Trừng phạt quân treo 🎯',
     tag: '♟️ Thế cờ',
     body: [
-      'Một quân bị **giữ chân** vì phía sau nó là quân giá trị hơn hoặc là Vua. Nó không dám đi, hoặc đi là mất quân sau lưng.',
-      'Ghim vào **Vua** gọi là ghim tuyệt đối - quân bị ghim **không được phép đi** vì nước đó là bỏ Vua bị chiếu.',
-      'Vì sao quan trọng: quân bị ghim coi như **đã bị vô hiệu hoá** - ta có thể tấn công chỗ khác trong khi nó không làm gì được.',
+      'Quân **không được ai che** là quân dễ mất nhất. Đối thủ để hai quân cùng nằm trong tầm một quân của bé thì chỉ cứu được một.',
+      'Nước hay nhất thường là **bắt đôi**: một quân vừa tấn công quân này vừa chĩa vào quân kia.',
+      'Cách nhớ: **Quân treo là quân mất**.',
     ],
   },
-  'tactic:skewer': {
-    title: 'Xiên quân (Skewer) 🪝',
+  'theme:win-queen': {
+    title: 'Đòn hiểm ăn Hậu 👸',
     tag: '♟️ Thế cờ',
     body: [
-      'Ngược lại với ghim: quân **giá trị cao đứng trước**, quân nhỏ hơn đứng sau. Ta tấn công quân to, nó buộc phải chạy, và ta ăn quân phía sau.',
-      'Cách dễ dùng nhất là **chiếu Vua rồi ăn quân sau lưng Vua** - Vua buộc phải tránh, và quân đứng sau mất.',
-      'Nhớ cặp bài trùng: **Ghim = nhỏ trước, to sau. Xiên = to trước, nhỏ sau.**',
+      'Hậu là quân **to nhất bàn cờ**, nên bất kỳ sơ hở nào với Hậu cũng đắt giá nhất.',
+      'Hai đòn hay dùng: **ăn Hậu lộ liễu** (Hậu đứng không ai che) và **xiên Hậu sau Vua** (chiếu Vua để nó chạy, rồi ăn Hậu phía sau).',
+      'Cách nhớ: **Hậu rời tay, ván đổi chiều**.',
     ],
   },
-  'tactic:discovered': {
-    title: 'Đòn mở (Discovered Attack) 🎭',
+  'theme:passed-pawn': {
+    title: 'Tốt thông tiến ♟️',
     tag: '♟️ Thế cờ',
     body: [
-      'Một quân **bước ra khỏi đường tấn công** để mở đường cho quân phía sau. Quân vừa đi thì "vô can", nhưng quân sau lưng mới là kẻ ra đòn.',
-      'Nếu quân phía sau chiếu Vua thì gọi là **chiếu mở** - đối thủ buộc phải chống đỡ, còn quân vừa đi thì được tự do làm việc gì cũng được.',
-      'Đây là mẹo **tạo đòn mà không cần quân tấn công phải di chuyển tới sát**.',
-    ],
-  },
-  'tactic:double-check': {
-    title: 'Chiếu đôi (Double Check) ⚡',
-    tag: '♟️ Thế cờ',
-    body: [
-      '**Hai quân cùng chiếu Vua một lúc.** Đối thủ không thể vừa chặn vừa bắt - chỉ còn đúng một cách: **di chuyển Vua**.',
-      'Vì không thể cản nổi, chiếu đôi thường là bước mở màn cho **chiếu bí liên tiếp** (chiếu bí nối tiếp bằng Mã và Hậu là ví dụ kinh điển).',
-      'Cách tạo: dùng **đòn mở** - quân vừa đi vừa chiếu, quân phía sau cũng chiếu.',
-    ],
-  },
-  'tactic:back-rank': {
-    title: 'Chiếu bí hàng cuối (Back-rank) 🚧',
-    tag: '♟️ Thế cờ',
-    body: [
-      'Vua đã **nhập thành nhưng hàng cuối chỉ còn Tốt che**, và Tốt ấy bị quân khác chắn - thế là Xe/Hậu Đối phương vào hàng cuối là hết đường.',
-      'Đây là lý do vì sao người ta hay nhắc: **nhập thành rồi phải mở một "cửa thoát" cho Vua** bằng cách đẩy một Tốt.',
-      'Với bé mới học, đây là đòn chiếu bí dễ thấy và dễ nhớ nhất.',
-    ],
-  },
-  'tactic:smothered': {
-    title: 'Chiếu bí ngạt (Smothered Mate) 🕸️',
-    tag: '♟️ Thế cờ',
-    body: [
-      'Vua bị **chính quân của mình vây kín** tới mức không còn ô nào để đi; chỉ còn **Mã** mới chiếu được vào cái khe đó.',
-      'Vẻ đẹp của nó: Vua đang được bảo vệ rất nhiều quân, mà càng đông quân thì càng bí.',
-      'Vì Mã nhảy không theo hàng/cột, nó là quân duy nhất có thể chui vào khe hẹp đó để chiếu.',
-    ],
-  },
-
-  // ── 4 thế tàn cuộc Xe + Tốt ────────────────────────────────────────────────
-  'endgame:lucena': {
-    title: 'Thế Lucena (thắng)',
-    tag: '📜 Lịch sử',
-    body: [
-      'Đây là thế tàn cuộc **Xe + Tốt chống Xe** nổi tiếng nhất: một bên có Tốt ở hàng 7 và Vua đã tới cạnh, bên kia có Xe quấy phá.',
-      'Tên gọi lấy từ cuốn sách cờ **xuất bản năm 1497** của Luis Ramírez de Lucena - một trong những cuốn sách cờ in sớm nhất còn lại.',
-      'Kỹ thuật quyết định gọi là **"bắc cầu"**: dùng Xe của mình chắn các nước chiếu của Xe đối phương, rồi đưa Vua lên và phong Hậu.',
-    ],
-  },
-  'endgame:philidor': {
-    title: 'Thế Philidor (hòa)',
-    tag: '📜 Lịch sử',
-    body: [
-      'Cách **cầm hòa** khi bị kém một Tốt ở hàng 6 và Xe đối phương tấn công Tốt của mình.',
-      'Tên gọi lấy từ **François-André Danican Philidor** - kỳ thủ Pháp thế kỷ 18, tác giả cuốn *L\'Analyse des échecs* (1749) và là người đầu tiên nói câu bất hủ: *"Tốt là linh hồn của cờ vua"*.',
-      'Ý tưởng: Xe lùi về **hàng 3** để vừa che các nước chiếu, vừa giữ Tốt. Khi Vua đối phương tiến lên thì Xe chiếu liên tục từ phía sau.',
-    ],
-  },
-  'endgame:vancura': {
-    title: 'Thế Vancura (hòa)',
-    tag: '📜 Lịch sử',
-    body: [
-      'Một thế hòa tinh tế khác của tàn cuộc **Xe + Tốt cánh** (Tốt ở cột a/b/g/h) chống Xe.',
-      'Tên gọi mang tên một **danh thủ Tiệp Khắc** đã phân tích nó: Václav Vancura.',
-      'Ý tưởng: Xe yếu **tấn công Tốt từ hông** (chứ không đứng trước Tốt), kết hợp dọa chiếu Vua liên tục - Trắng không có cách nào tiến Tốt mà vẫn che được Vua.',
-    ],
-  },
-  'endgame:stop-pawn': {
-    title: 'Chặn Tốt sắp thành Hậu',
-    tag: '♟️ Thế cờ',
-    body: [
-      'Thế "khẩn cấp": Tốt của đối thủ sắp chạy tới hàng cuối, ta phải **dùng Xe chặn từ phía sau** rồi đưa Vua tới giúp.',
-      'Nguyên tắc vàng: **Xe luôn đứng sau Tốt** - vừa chặn, vừa có thể chiếu Vua khi cần.',
-      'Đây là bài học "cứu một nước đã": khi đếm thấy Tốt đối phương chạy nhanh hơn, ta biết ngay phải kéo Xe về chặn chứ không phải đuổi theo ăn.',
+      '**Tốt thông** là Tốt không còn Tốt đối phương nào chặn trên cùng cột - nó có thể tiến thẳng tới phong Hậu.',
+      'Nước hay nhất nhiều khi rất đơn giản: **cứ đẩy Tốt thông lên**, càng gần hàng 8 càng buộc địch phải lo.',
+      'Cách nhớ: **Tốt thông, cứ tiến**.',
     ],
   },
 
@@ -400,44 +345,6 @@ export const INFO: Record<string, InfoEntry> = {
       'Bốn ô ở hàng 7 tạo thành "hàng bất khả xâm phạm": nếu để hai Xe của đối thủ cùng vào đó thì gần như hết cách chống.',
     ],
   },
-
-  // ── 4 bài giảng Đại kiện tướng ────────────────────────────────────────────
-  'lecture:minority-attack': {
-    title: 'Đòn bẩy cấu trúc Tốt (Minority Attack)',
-    tag: '🧠 Ý tưởng',
-    body: [
-      'Khi Đen có ba Tốt cánh Hậu (a7-b7-c7... kiểu này) và Trắng chỉ có hai, Trắng **dùng chính hai Tốt ít hơn** để tấn công.',
-      'Đẩy b4-b5 (hoặc tương tự) buộc Đen phải đổi Tốt, từ đó Trắng **tạo ra một Tốt yếu** cho đối thủ - rồi Xe sẽ nhắm vào Tốt yếu đó suốt ván.',
-      'Đây là ví dụ đẹp nhất của tư duy chiến lược: **không cần đòn ngay, chỉ cần tạo một điểm yếu vĩnh viễn**.',
-    ],
-  },
-  'lecture:prophylaxis': {
-    title: 'Phòng thủ dự phòng (Prophylaxis)',
-    tag: '🧠 Ý tưởng',
-    body: [
-      'Trước khi làm việc của mình, hãy **đoán việc đối thủ muốn làm** và chặn trước một nước - gọi là "nước rào đón".',
-      'Nghe thì tốn một nước, nhưng nó **vô hiệu hoá cả kế hoạch** của đối phương. Các nhà vô địch thế giới - nhất là Petrosian - chơi kiểu này cực giỏi.',
-      'Luyện tập lại rất cụ thể: mỗi nước, tự hỏi *"Đối thủ vừa đi để làm gì?"* trước khi nghĩ tới nước của mình.',
-    ],
-  },
-  'lecture:lucena': {
-    title: 'Kỹ thuật bắc cầu Lucena',
-    tag: '📜 Lịch sử',
-    body: [
-      'Kết thúc của thế Lucena (xem nút ⓘ ở khung "Tàn cuộc Xe + Tốt"): Trắng phải **đưa Vua ra khỏi các nước chiếu** của Xe Đen để phong Hậu.',
-      'Cách giải: đặt Xe của mình lên **hàng 4**, rồi khi Xe Đen chiếu thì Xe Trắng **làm cầu** - bước sang chắn nước chiếu, buộc Xe Đen phải đi chỗ khác.',
-      'Sau "cây cầu" đó, Vua Trắng tiến lên tự do và Tốt thành Hậu. Đây là kỹ thuật mà bất cứ bé nào học tàn cuộc cũng phải thuộc.',
-    ],
-  },
-  'lecture:philidor': {
-    title: 'Bức tường hàng 6 Philidor',
-    tag: '📜 Lịch sử',
-    body: [
-      'Khi đối phương đã có **Tốt ở hàng 6** và Xe của họ đang tấn công Tốt của ta, ta cầm hòa bằng cách giữ **Xe ở hàng 3**.',
-      'Ba việc cùng lúc của Xe hàng 3: **che các nước chiếu**, **giữ Tốt** của mình, và **dọa chiếu** Vua đối phương khi họ tiến lên.',
-      'Đó là lý do thế này mang tên Philidor - người đã hệ thống hoá nó trong sách năm 1749, và tới nay vẫn là kiến thức bắt buộc.',
-    ],
-  },
 }
 
 /**
@@ -466,13 +373,12 @@ export function infoById(topic: string): InfoEntry | undefined {
 export const REQUIRED_INFO_IDS: readonly string[] = [
   'app',
   'board',
-  'stages',
   'stars',
   'cup',
   'eye',
   'machine',
   'notation',
-  'tree',
+  'principles',
   'plan',
   ...[
     'london',
@@ -483,14 +389,12 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
     'queens-gambit',
     'french',
     'caro-kann',
+    'english',
+    'nimzo-indian',
   ].map((id) => `opening:${id}`),
   ...['carlsen', 'so', 'nakamura', 'kasparov', 'fischer', 'polgar', 'botvinnik', 'petrosian'].map(
     (id) => `gm:${id}`,
   ),
-  ...['fork', 'pin', 'skewer', 'discovered', 'double-check', 'back-rank', 'smothered'].map(
-    (id) => `tactic:${id}`,
-  ),
-  ...['lucena', 'philidor', 'vancura', 'stop-pawn'].map((id) => `endgame:${id}`),
+  ...['attack', 'win-material', 'win-queen', 'passed-pawn'].map((id) => `theme:${id}`),
   ...['outpost', 'open-file', 'bishop-pair', 'seventh-rank'].map((id) => `positional:${id}`),
-  ...['minority-attack', 'prophylaxis', 'lucena', 'philidor'].map((id) => `lecture:${id}`),
 ]

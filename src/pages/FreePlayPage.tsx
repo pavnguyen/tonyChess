@@ -55,14 +55,14 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
 }
 
 export function FreePlayPage() {
-  const { notation, completeActivity, soundOn, stage } = useKidProgress()
+  const { notation, completeActivity, soundOn } = useKidProgress()
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
-  // Mặc định chọn độ mạnh máy theo LỨA TUỔI của bé (bé vẫn đổi được). Đây là app học cờ,
-  // không phải bảng xếp hạng: không chấm điểm, không so hơn thua.
-  const [difficulty, setDifficulty] = useState<Difficulty>(stage.botLevel)
-  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
+  // Mặc định mức Dễ cho bé mới tập (bé vẫn đổi được). Đây là app học cờ, không phải
+  // bảng xếp hạng: không chấm điểm, không so hơn thua.
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy')
+  const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
   const [confetti, setConfetti] = useState(false)
   const [result, setResult] = useState<{
@@ -241,7 +241,7 @@ export function FreePlayPage() {
             <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
               Nước {board.history.length + 1}
             </span>
-            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
           </>
         }
         board={
@@ -286,7 +286,7 @@ export function FreePlayPage() {
               ↩️ Đi lại nước vừa rồi
             </KidButton>
             <KidButton variant="ghost" onClick={toggleHeatmap}>
-              {checkMode ? '🔍' : '👁️'} {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
+              👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
             </KidButton>
           </div>
 

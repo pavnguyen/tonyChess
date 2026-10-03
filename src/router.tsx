@@ -19,6 +19,11 @@ const openingsRoute = createRoute({
 const tacticsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/tactics',
+  // Mở sẵn đúng chủ đề qua đường dẫn `/tactics?theme=win-material`.
+  // Tab Trung cuộc tự kiểm lại giá trị này trước khi dùng.
+  validateSearch: (search: Record<string, unknown>): { theme?: string } => ({
+    theme: typeof search.theme === 'string' ? search.theme : undefined,
+  }),
   component: lazyRouteComponent(() => import('./pages/TacticsPage'), 'TacticsPage'),
 })
 

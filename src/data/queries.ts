@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ENDGAMES } from './endgames'
 import { OPENINGS } from './openings'
-import { TACTICS } from './tactics'
+import { BEST_MOVES } from './bestMoves'
 
 const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -22,10 +22,10 @@ export function useOpeningsQuery() {
 
 export function useTacticsQuery() {
   return useQuery({
-    queryKey: ['tactics'],
+    queryKey: ['best-moves'],
     queryFn: async () => {
       await pause(60)
-      return TACTICS
+      return BEST_MOVES
     },
     staleTime: Number.POSITIVE_INFINITY,
   })

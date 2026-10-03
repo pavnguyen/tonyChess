@@ -36,7 +36,7 @@ const VIEWPORTS = [
 
 const ROUTES = [
   { path: '/', name: 'Khai cuộc' },
-  { path: '/tactics', name: 'Săn quân' },
+  { path: '/tactics', name: 'Nước hay nhất' },
   { path: '/endgames', name: 'Tàn cuộc' },
   // Trang Chiến lược có nhiều nút điều khiển dưới bàn cờ hơn nên chừa nhiều chỗ hơn.
   { path: '/strategy', name: 'Chiến lược', minBoardScale: 0.86 },

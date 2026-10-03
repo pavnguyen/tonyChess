@@ -1,10 +1,35 @@
 # Đặc tả: Deep dive GM — còn thiếu gì, cần bỏ gì, cần thêm gì
 
-> **Trạng thái**: ĐẶC TẢ ĐÃ CHỐT (chưa viết mã). Soạn sau 8 vòng phỏng vấn với chủ dự án;
+> **Trạng thái**: ĐẶC TẢ ĐÃ CHỐT. Soạn sau 8 vòng phỏng vấn với chủ dự án;
 > **toàn bộ câu hỏi mở ở §11 đã được chốt** — không còn điểm mở nào.
-> **Ngày**: 2026-10-01 (chốt câu hỏi mở lần cuối cùng ngày 2026-10-01)
+> **Ngày**: 2026-10-01 · **Cập nhật trạng thái**: 2026-10-03
 > **Dự án**: Chơi cờ Vua cùng Nam An (`/Users/pavnguyen/Downloads/tonyChess`)
 > **Đối tượng**: bé trai 7 tuổi (chơi ở nhà, chưa thi đấu giải), app do bố làm.
+
+> ### ⚠️ TÀI LIỆU LỊCH SỬ — ĐỌC TRƯỚC KHI DÙNG
+>
+> Đây là **đặc tả thiết kế** (kế hoạch), **không phải mô tả app hiện tại**. Trong quá trình
+> "dọn dẹp trước khi thêm mới", nhiều phần đã bị cắt hoặc thay đổi. Mô tả **đúng** app hiện tại
+> nằm ở [`README.md`](./README.md).
+>
+> **Đối chiếu nhanh spec ↔ thực tế:**
+>
+> | Spec dự kiến | Thực tế hiện tại |
+> | --- | --- |
+> | Kho câu đố Lichess (~1.000 câu) | **Đã bỏ** - Trung cuộc chỉ còn 8 thế tay viết |
+> | Tab Ôn tập (`/review`, sổ Leitner) | **Đã bỏ** - chỉ còn 5 tab |
+> | Điểm trình độ mini-Elo (`src/lib/rating.ts`) | **Đã bỏ** |
+> | Ván kỳ thủ hiện đại (`/gm-games`) | **Đã bỏ** |
+> | Cây khai cuộc phân nhánh (`src/lib/openingTree.ts`) | **Đã bỏ** - `src/data/openingTrees.ts` giờ chỉ giữ **một dòng chính** mỗi khai cuộc |
+> | 8 khai cuộc | **10 khai cuộc** |
+> | Bài giảng GM + Cấu trúc Tốt | **Đã bỏ** (thay bằng 10 nguyên tắc vàng ở `/strategy`) |
+> | 20 câu đố / 7 họ đòn | **8 thế / 4 chủ đề** ("Tìm nước hay nhất") |
+> | 6 tab | **5 tab** |
+> | `autoReply` trong `useChessGame.ts` | **Đã xoá** |
+> | Mã chết `review.ts` / `stages.ts` | `review.ts` **đã xoá**; `stages.ts` **đã nối** vào giao diện |
+> | Tàn cuộc: Thư viện chiếu bí + Xe + Tốt + Nguyên tắc | **Đã gỡ** - `/endgames` giờ chỉ còn **12 thế luyện** “Tàn cuộc cơ bản” |
+> | Lộ trình 4 giai đoạn tuổi (`src/lib/stages.ts`) | **Đã gỡ hẳn** - app dùng một giao diện thống nhất cho mọi lứa tuổi |
+> | Bản đồ leo cấp: trạm 🔒 bị chặn | **Nâng cấp** - ở tab Khai cuộc, bấm trạm nào (kể cả 🔒) cũng xem trước được **thế cờ mẫu hình cuối dòng chính** |
 
 ---
 
@@ -24,27 +49,29 @@
 
 ## 1. Kiểm kê hiện trạng (số liệu đo thật, 2026-10-01)
 
-### Nội dung đang có
+### Nội dung đang có *(số liệu cập nhật 2026-10-03)*
 
 | Loại | Số lượng | Ghi chú |
 | --- | --- | --- |
-| Khai cuộc | 8 dòng | London (Carlsen), Ý (Wesley So), King's Indian (Nakamura), Sicilian (Kasparov), Ruy López (Fischer), Gambit Hậu (Polgár), Pháp (Botvinnik), Caro-Kann (Petrosian) |
-| Trung cuộc | 20 câu đố / 7 họ đòn | fork 4, pin 4, skewer 4, discovered 2, double-check 2, back-rank 2, smothered 2 |
-| Tàn cuộc | 8 thế | 2 phong Hậu + 6 chiếu bí cơ bản |
-| Bài giảng GM | 4 | Đòn bẩy Carlsbad, Phòng thủ dự phòng, Lucena, Philidor |
-| Cấu trúc Tốt | 3 | Tốt Thông, Tốt Chồng, Tốt Cô lập |
+| Khai cuộc | 10 dòng | 5 bài bé cầm Trắng (London – Carlsen, Ý – Wesley So, Tây Ban Nha – Fischer, Gambit Hậu – Polgár, Anh – Tony Miles) + 5 bài bé cầm Đen (King's Indian – Nakamura, Sicilian – Kasparov, Pháp – Botvinnik, Caro-Kann – Petrosian, Nimzo-Indian – Nimzowitsch) |
+| Trung cuộc | 8 thế / 4 chủ đề | Tấn công Vua · Trừng phạt quân treo · Đòn hiểm ăn Hậu · Tốt thông tiến |
+| Tàn cuộc | 12 thế luyện | Chỉ còn các thế luyện cơ bản; Thư viện chiếu bí, Tàn cuộc Xe+Tốt và Nguyên tắc tàn cuộc đã gỡ |
+| Chiến lược | 10 nguyên tắc vàng | Mỗi nguyên tắc có 2 bàn cờ đối chiếu tốt/chưa tốt |
 | Cấp bậc ⭐ | 4 mức | Kỳ thủ Nhí @0 → Tập sự Cờ vua @8 → Kiện tướng Nhí @20 → Grand Master Nhí @40 |
 
 ### Tab hiện có (5)
 
-`/` Khai cuộc · `/tactics` Trung cuộc · `/endgames` Tàn cuộc · `/strategy` Chiến lược GM · `/free-play` Đấu với Máy
+`/` Khai cuộc · `/tactics` Trung cuộc - Tìm nước hay nhất · `/endgames` Tàn cuộc · `/strategy` Chiến lược - 10 nguyên tắc vàng · `/free-play` Đấu với Robot
 
-### Mã đã viết nhưng **CHƯA nối vào giao diện**
+### Mã đã viết nhưng **CHƯA nối vào giao diện** *(tại thời điểm viết spec)*
 
-| File | Dòng | Test | Tình trạng |
+> Cập nhật 2026-10-03: `src/lib/review.ts` (và tab Ôn tập) **đã xoá hẳn**; `src/lib/stages.ts`
+> **đã nối vào giao diện** (chọn giai đoạn + năm sinh trong ⚙️ Tùy chọn của bé).
+
+| File | Dòng | Test | Tình trạng lúc viết spec |
 | --- | --- | --- | --- |
-| `src/lib/review.ts` | 125 | `smoke-review.ts` (17 kiểm tra ✓) | **Chết**: chỉ được import bởi chính test của nó |
-| `src/lib/stages.ts` | 221 | `smoke-stages.ts` (43 kiểm tra ✓) | **Chết**: chỉ được import bởi chính test của nó |
+| `src/lib/review.ts` | 125 | `smoke-review.ts` (17 kiểm tra ✓) | **Chết** → **đã xoá** cùng tab Ôn tập |
+| `src/lib/stages.ts` | 221 | `smoke-stages.ts` (43 kiểm tra ✓) | **Chết** → **đã nối** vào `HeaderOptions` + `progress.tsx` |
 
 ### Hạ tầng engine & kỹ thuật
 
@@ -56,14 +83,15 @@
 - Bundle hiện tại: `index` 16.55 kB · `vendor-react` 206.83 · `vendor-chess` 119.51 ·
   `vendor-tanstack` 107.88 · các trang 6-19 kB (lazy-load theo tab).
 
-### Kiểm tra tự động đang có
+### Kiểm tra tự động đang có *(cập nhật 2026-10-03)*
 
-- `npm run check`: dữ liệu cờ (validate-chess, có chứng minh bản chất từng đòn) + logic +
-  review + stages + engine → **195 ✓**.
-- `npm run check:browser`: **11 bộ** (ENGINE · ARROW · LEARN-DRAG · HINT-DRAG · STRATEGY-DRAG ·
-  STOCKFISH · GM-GAMES · OPENING-TREE · PARENT-TIPS · THEME · LAYOUT).
-- LAYOUT quét **5 route × 8 khung nhìn** (1440×900 → 390×844), kiểm tra: không tràn ngang,
-  không cuộn dọc, thấy trọn khối bàn cờ, bàn cờ đủ lớn.
+- `npm run check`: dữ liệu cờ (`validate-chess`) + `verify-bestmove` (máy chấm mọi nước Trung
+  cuộc) + logic + plan + info + **stages** + engine + uci.
+- `npm run check:browser`: **14 bộ** (ENGINE · ARROW · LEARN-DRAG · HINT-DRAG · STRATEGY-DRAG ·
+  STOCKFISH · PARENT-TIPS · INFO-UI · COORDS · TACTICS · ENDGAME-PREVIEW · OPENINGS-PATTERNS ·
+  THEME · LAYOUT).
+- LAYOUT quét **5 route × 10 khung nhìn**, kiểm tra: không tràn ngang, không cuộn dọc, thấy trọn
+  khối bàn cờ, bàn cờ đủ lớn.
 
 ### Ràng buộc đã thiết lập, KHÔNG được phá
 
@@ -77,7 +105,7 @@
 - Khung **“Gợi ý cho ba mẹ”** phải có mặt ở **mọi tab**, thu gọn được (nhớ trạng thái), và **không
   được** phá bố cục không-cuộn (`npm run check:tips` + LAYOUT).
 - Mọi thay đổi phải giữ `tsc` 0 lỗi, `oxlint` **0 warning**, `npm run check` xanh (dữ liệu/logic),
-  **11/11** bộ test trình duyệt xanh.
+  **14/14** bộ test trình duyệt xanh.
 
 ---
 
@@ -413,13 +441,16 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   database.lichess.org** (chỉ có lớp tìm kiếm/đọc web), nên 7 gói hiện là **file rỗng có sẵn khung**
   để build vẫn xanh; khi bố/mẹ chạy script, panel luyện thêm sẽ tự có ~1.000 câu.
 
-### 4.2. Thư viện thế chiếu bí — ✅ ĐÃ LÀM
+### 4.2. Thư viện thế chiếu bí — ❌ ĐÃ GỠ (10/2026)
 
-- `src/data/mates.ts`: các mẫu chiếu bí cơ bản theo bậc khó: `Q+K`, `R+K`, `2 R` (thang Xe),
+- ❌ **Đã gỡ khỏi app**: bố của Nam An nhận xét thư viện này trùng gần hết với 8 thẻ luyện
+  ở trên và không rõ liên quan, nên đã xoá panel + `src/data/mates.ts` + `src/lib/endgamePreview.ts`
+  để app tinh gọn. Phần mô tả dưới đây chỉ còn giá trị **lịch sử**.
+- `src/data/mates.ts` (đã xoá): các mẫu chiếu bí cơ bản theo bậc khó: `Q+K`, `R+K`, `2 R` (thang Xe),
   bí hàng cuối, bí ngạt, bí đôi Tượng, Mã+Tượng, Hậu hi sinh rồi Mã bí ngạt (mẫu kinh điển).
 - Mỗi mẫu: FEN + chuỗi nước tối ưu ngắn + lời giải thích + vè (vè tắt ở giai đoạn lớn).
 - Có thể kết hợp Stockfish để **kiểm tra chuỗi nước đúng là bí nhanh nhất** (test tự động).
-- ✅ **Đã làm**: `src/data/mates.ts` gồm **7 thẻ** (Q+K, R+K, thang Xe, hàng cuối ×2, bí ngạt,
+- 📜 **Trước đây**: `src/data/mates.ts` gồm **7 thẻ** (Q+K, R+K, thang Xe, hàng cuối ×2, bí ngạt,
   bí kiểu Ả Rập). Mỗi chuỗi nước được kiểm trong `validate-chess.ts` (hợp lệ, kết thúc đúng bằng
   chiếu bí, độ dài khớp `mateIn`, và nước đầu không được đã là bí nếu `mateIn > 1`). Hiển thị ở
   tab Tàn cuộc dưới dạng panel **"📚 Thư viện chiếu bí"**.
@@ -469,15 +500,16 @@ Dùng `stages.ts` (sau khi đã nối — hoặc dùng mặc định `nhi` nếu
   - Lưu ý kỹ thuật: `openings.ts`/`openingTrees.ts` phải ghi rõ đuôi `.ts` khi import, vì Node (chạy
     `scripts/validate-chess.ts`) **không tự thêm đuôi** cho import lúc chạy; Vite vẫn hiểu bình thường.
 
-### 4.5. Tàn cuộc lý thuyết Xe+Tốt — ✅ ĐÃ LÀM (một phần)
+### 4.5. Tàn cuộc lý thuyết Xe+Tốt — ❌ ĐÃ GỠ (10/2026)
 
 - Bổ sung: Lucena (đã có), Philidor (đã có), **pháo đài (fortress)**, **hòa bằng chiếu liên tục**,
   **Vancura**, **tàn cuộc hai Tốt chống một**, và bài **"đếm nước tối ưu"** (bí trong N nước).
 - Mỗi thế cần chứng minh bằng máy: thắng/hòa thật sự, không chỉ "có nước đi hợp lệ".
-- ✅ **Đã làm**: `src/data/rookEndgames.ts` gồm **4 thế**: **Lucena** (thắng), **Philidor** (hòa),
-  **Vancura** (hòa), **Chặn Tốt sắp thành Hậu** (thắng). Kết quả được **Stockfish chứng minh** trong
-  `scripts/verify-endgames.mjs` (`npm run verify:endgames`): `win` phải ≥ +1.5 hoặc có mate,
-  `draw` phải |cp| ≤ 0.6. Hiển thị ở tab Tàn cuộc dạng panel **"🏰 Tàn cuộc Xe + Tốt"**.
+- ❌ **Đã gỡ khỏi app**: `src/data/rookEndgames.ts`, panel **"🏰 Tàn cuộc Xe + Tốt"**, panel
+  **"🎯 Nguyên tắc tàn cuộc"** (`src/data/endgamePrinciples.ts`) và `scripts/verify-endgames.mjs`
+  (`npm run verify:endgames`) đều đã bị xoá - bố của Nam An thấy chúng rời rạc với các bài luyện
+  phía trên. Phần mô tả dưới đây chỉ còn giá trị **lịch sử**.
+- 📜 **Trước đây**: 4 thế Lucena/Philidor/Vancura/Chặn Tốt, kết quả được Stockfish chứng minh.
 - ⏳ **Tạm hoãn**: **pháo đài (fortress)**, **hòa bằng chiếu liên tục**, **hai Tốt chống một**,
   và bài **"đếm nước tối ưu (bí trong N nước)"** — cần thế cờ đã được kiểm chứng kỹ (tránh gán sai
   tên kỹ thuật); sẽ bổ sung sau.

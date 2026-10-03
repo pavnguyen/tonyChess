@@ -1,16 +1,14 @@
-import type { Opening, OpeningNode } from '../types'
+import type { Opening } from '../types'
 // Ghi rõ đuôi `.ts`: các bài kiểm chứng chạy bằng `node scripts/*.ts` (Node tự
 // bỏ kiểu) nên chuỗi import lúc chạy PHẢI có đuôi, không như các file chỉ chạy
 // qua Vite. Vite vẫn hiểu đuôi `.ts` bình thường.
 import { OPENING_TREES } from './openingTrees.ts'
-import { mainLine } from '../lib/openingTree.ts'
 
 /**
  * Khai cuộc chuẩn Grand Master.
  *
- * Nước đi nằm ở `openingTrees.ts` dưới dạng **cây phân nhánh**; ở đây chỉ giữ
- * phần giới thiệu (tên, Grand Master, màu quân của bé) rồi rút **nhánh chính**
- * ra thành `moves` - đúng dòng mà chế độ "Luyện thuộc lòng" yêu cầu bé đi.
+ * Nước đi nằm ở `openingTrees.ts` dưới dạng **một dòng chính**; ở đây chỉ giữ phần
+ * giới thiệu (tên, Grand Master, màu quân của bé) rồi ghép lại thành bài học.
  */
 interface OpeningMeta {
   id: string
@@ -95,22 +93,39 @@ const META: OpeningMeta[] = [
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
   },
+
+  // ── Hai khai cuộc giữ lại từ bộ bổ sung (5 Trắng / 5 Đen) ────────────────
+  {
+    id: 'english',
+    name: 'Khai cuộc Anh',
+    englishName: 'English Opening',
+    gm: 'GM Tony Miles',
+    side: 'white',
+    emoji: '🏝️',
+    tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
+  },
+  {
+    id: 'nimzo-indian',
+    name: 'Phòng thủ Nimzo-Indian',
+    englishName: 'Nimzo-Indian Defense',
+    gm: 'GM Aron Nimzowitsch',
+    side: 'black',
+    emoji: '⛓️',
+    tagline: 'Tượng ra ghim Mã c3, khoá chặt không cho Trắng đẩy Tốt e4.',
+  },
 ]
 
-/** Nếu ai đó quên viết cây cho một khai cuộc, bài đó vẫn hiện ra (chỉ là rỗng). */
-const EMPTY_TREE: OpeningNode[] = []
+/** Nếu ai đó quên viết dòng nước cho một khai cuộc, bài đó vẫn hiện ra (rỗng). */
+const EMPTY: Opening['moves'] = []
 
 export const OPENINGS: Opening[] = META.map((meta) => {
   const entry = OPENING_TREES[meta.id]
-  const tree = entry?.tree ?? EMPTY_TREE
   if (!entry) {
-    console.warn(`Khai cuộc "${meta.id}" chưa có cây nước đi trong openingTrees.ts`)
+    console.warn(`Khai cuộc "${meta.id}" chưa có dòng nước đi trong openingTrees.ts`)
   }
   return {
     ...meta,
-    tree,
-    // `moves` luôn là NHÁNH CHÍNH rút từ cây, nên không thể lệch với cây.
-    moves: mainLine(tree),
+    moves: entry?.main ?? EMPTY,
     plan: entry?.plan ?? { title: 'Kế hoạch tiếp theo', points: [] },
   }
 })

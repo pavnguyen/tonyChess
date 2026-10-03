@@ -6,6 +6,17 @@
 > §2.1 (M3 — khai cuộc thực chiến)
 > Tên việc ngắn: **post-opening-development**
 
+> ### ⚠️ TÀI LIỆU LỊCH SỬ — TÍNH NĂNG NÀY **CHƯA ĐƯỢC TRIỂN KHAI**
+>
+> Đây là **kế hoạch** cho một buổi luyện "Triển khai quân sau khai cuộc" (chế độ `develop`). App
+> hiện tại **không có** tính năng này: tab Khai cuộc chỉ có `learn` và `memorize`, và tab Đấu với
+> Robot vẫn bắt đầu từ thế cờ ban đầu. Mô tả **đúng** app hiện tại nằm ở [`README.md`](./README.md).
+>
+> **Các số liệu trong §1 là bản chụp ngày 2026-10-01 và đã lạc hậu**: khi đó app còn **8 khai cuộc**
+> và **cây khai cuộc phân nhánh (271 nút / 24 ngã ba)** - cả hai nay đã thay bằng **10 khai cuộc,
+> mỗi bài một dòng chính** (không còn nhánh). Các mục nhắc tới mini-Elo, tab Ôn tập, kho câu đố
+> Lichess và ván kỳ thủ `/gm-games` cũng **không còn đúng** với app hiện tại.
+
 ---
 
 ## 0. Tóm tắt một đoạn
@@ -338,9 +349,9 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 - ✅ **§10 khung “Gợi ý cho ba mẹ”**: đã làm (`src/components/ParentTips.tsx`, `src/lib/parentTips.ts`,
   `src/store/lesson.tsx`, test `check:tips`).
 - ✅ **§4.4 mức 3 — kế hoạch sinh từ engine**: đã làm (`src/lib/livePlan.ts` + khung `#kid-live-plan`,
-  `scripts/smoke-plan.ts`, phần mới trong `browser-opening-tree-test.mjs`) — **nhưng lượt chạy kiểm cuối
-  cùng của `browser-opening-tree-test.mjs` sau khi thêm phần này CHƯA được xác nhận** (phiên làm việc
-  kết thúc giữa lúc đó) → **việc đầu tiên khi viết mã là chạy lại `npm run check:tree`**.
-- ✅ Đã bỏ tính năng: kho câu đố Lichess · ván kỳ thủ hiện đại (`/gm-games`) · tab Ôn tập (`/review`)
-  → **README và `gm-deep-dive-spec.md` CHƯA cập nhật theo** (vẫn còn mô tả 3 tính năng đã xoá).
+  `scripts/smoke-plan.ts`, phần tương ứng trong `browser-arrow-test.mjs`). Nay đã xác nhận xanh -
+  `browser-opening-tree-test.mjs` và `check:tree` đã bị xoá cùng cây khai cuộc phân nhánh.
+- ✅ Đã bỏ tính năng: kho câu đố Lichess · ván kỳ thủ hiện đại (`/gm-games`) · tab Ôn tập (`/review`),
+  cùng mini-Elo, cây khai cuộc phân nhánh và bài giảng GM → **README và `gm-deep-dive-spec.md` đã
+  được cập nhật theo (2026-10-03)**.
 - ➡️ Vì vậy buổi luyện mới sẽ là **nội dung trung cuộc đầu tiên** của app sau khi dọn bớt.

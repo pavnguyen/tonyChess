@@ -6,15 +6,15 @@ import { useKidProgress } from '../store/progress'
 
 const TABS = [
   { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Grand Master', icon: '🛡️' },
-  { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Mẹo săn quân', icon: '⚔️' },
-  { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc - Trạm năng lượng Hậu', icon: '👑' },
-  { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược Grand Master', icon: '🎓' },
+  { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Tìm nước hay nhất', icon: '⚔️' },
+  { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc cơ bản', icon: '👑' },
+  { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược - 10 nguyên tắc vàng', icon: '🏅' },
   { to: '/free-play', label: 'Đấu với Robot', full: 'Đấu tập tự do với chú Máy', icon: '🎮' },
 ] as const
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
-  const { stars, rank, nextRank, stage } = useKidProgress()
+  const { stars, rank, nextRank } = useKidProgress()
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -65,13 +65,6 @@ export function RootLayout() {
             >
               <span aria-hidden>{rank.emoji}</span>
               <span className="text-xs font-extrabold text-gold-200">⭐ {stars}</span>
-            </span>
-            <span
-              className="hidden items-center gap-1 rounded-xl bg-info-400/20 px-2 py-1 ring-1 ring-info-300/40 lg:flex"
-              title={`${stage.tagline} · Cần tập trung: ${stage.focus}`}
-            >
-              <span aria-hidden>{stage.emoji}</span>
-              <span className="text-xs font-extrabold text-info-100">{stage.label}</span>
             </span>
             <InfoButton topic="app" tone="onDark" />
             <HeaderOptions />

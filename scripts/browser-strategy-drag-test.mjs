@@ -1,10 +1,9 @@
 /**
- * Kiểm tra tab Chiến lược: bé kéo-thả nước đi của mình THẬT thì bàn cờ phải
- * cập nhật theo thế cờ sống (không được bật ngược về FEN gốc), và một nước
- * ĂN QUÂN phải ăn được - quân bị ăn biến mất khỏi bàn.
- *
- * Bài giảng mặc định là “Đòn bẩy cấu trúc Tốt” (minority-attack):
- *   bé:  Rb1 → b4 → b5 → bxc6   ·   đối thủ tự đáp: h6 → Rfe8 → Nd7 → bxc6
+ * Kiểm tra tab Chiến lược sau khi gộp về một module “10 nguyên tắc vàng”:
+ *   1. Hiện đủ 10 thẻ nguyên tắc, mở/đóng được.
+ *   2. Mỗi nguyên tắc có HAI thế cờ minh hoạ; bấm thẻ là soi lên bàn cờ lớn.
+ *   3. Công tắc “Nên / Không nên” đổi thế cờ trên bàn (xanh NÊN, đỏ KHÔNG NÊN).
+ *   4. Không còn dấu vết bài giảng GM cũ.
  *
  * Chạy: node scripts/browser-strategy-drag-test.mjs
  */
@@ -12,13 +11,13 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
-const { skipped, failedToConnect, evaluate, send, close } = await openPage(
-  `${APP_URL}/strategy`,
-  { port: 9353, windowSize: '1440,900' },
-)
+const { skipped, failedToConnect, evaluate, close } = await openPage(`${APP_URL}/strategy`, {
+  port: 9353,
+  windowSize: '1440,900',
+})
 
 if (skipped) {
-  console.log('⚠️  Không tìm thấy Chrome - bỏ qua bài kiểm tra kéo-thả Chiến lược.')
+  console.log('⚠️  Không tìm thấy Chrome - bỏ qua bài kiểm tra tab Chiến lược.')
   console.log('   Đặt biến môi trường CHROME_PATH để chạy bài này.')
   process.exit(0)
 }
@@ -29,79 +28,93 @@ if (failedToConnect) {
 
 const { check, finish } = makeChecker()
 
-await sleep(2500)
-
-const hasPiece = (pieceId) =>
-  evaluate(`Boolean(document.getElementById('kid-board-piece-${pieceId}'))`)
-
 const bodyText = () => evaluate(`document.body.innerText`)
 
-const rectOf = (square) =>
+/** Chờ một đoạn chữ xuất hiện (trang tải lười). */
+const waitForText = async (needle, timeoutMs = 8000) => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const text = String(await bodyText())
+    if (text.includes(needle)) return true
+    await sleep(120)
+  }
+  return false
+}
+
+const hasPiece = (piece, square) =>
+  evaluate(`Boolean(document.getElementById('kid-board-piece-${piece}-${square}'))`)
+
+const clickByText = (needle) =>
   evaluate(`
     (() => {
-      const el = document.getElementById('kid-board-square-${square}')
-      if (!el) return null
-      const r = el.getBoundingClientRect()
-      return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 }
+      const el = [...document.querySelectorAll('button')].find((b) =>
+        b.innerText.includes(${JSON.stringify(needle)}),
+      )
+      if (!el) return false
+      el.click()
+      return true
     })()
   `)
 
-const mouse = (type, x, y, extra = {}) =>
-  send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1, ...extra })
+await sleep(2500)
 
-const dragPiece = async (from, to) => {
-  const a = await rectOf(from)
-  const b = await rectOf(to)
-  if (!a || !b) return false
-  await mouse('mousePressed', a.x, a.y, { buttons: 1 })
-  await sleep(80)
-  for (let step = 1; step <= 6; step += 1) {
-    await mouse('mouseMoved', a.x + ((b.x - a.x) * step) / 6, a.y + ((b.y - a.y) * step) / 6, {
-      buttons: 1,
-    })
-    await sleep(60)
-  }
-  await mouse('mouseReleased', b.x, b.y, { buttons: 0 })
-  return true
-}
+console.log('\n▶ Chiến lược: một module “10 nguyên tắc vàng” có thế cờ minh hoạ')
 
-console.log('\n▶ Chiến lược: nước đi của bé phải cập nhật bàn cờ sống')
+check(await waitForText('10 nguyên tắc vàng'), 'khung “10 nguyên tắc vàng” đã hiện')
 
-check(await hasPiece('wR-a1'), 'mở bài: Xe Trắng còn ở a1 (đúng FEN gốc)')
+// Mỗi thẻ là một nút bấm mở ra nội dung - đếm theo thuộc tính aria-expanded.
+const cardCount = await evaluate(`
+  [...document.querySelectorAll('button[aria-expanded]')].filter((b) =>
+    /^\\s*\\d+\\s*$/.test(b.querySelector('span')?.textContent ?? ''),
+  ).length
+`)
+check(cardCount === 10, `có đủ 10 thẻ nguyên tắc (đếm được ${cardCount})`)
 
-// 1. Rb1 - nước đầu tiên của bé.
-await dragPiece('a1', 'b1')
-await sleep(1500)
-check(await hasPiece('wR-b1'), 'sau khi bé kéo Rb1, Xe nằm ở b1 (bàn cờ không bật về thế gốc)')
-check(!(await hasPiece('wR-a1')), 'ô a1 đã trống (quân thật sự được di chuyển)')
-check(await hasPiece('bP-h6'), 'đối thủ tự đáp h6 sau nước của bé')
-
-// 2. b4
-await dragPiece('b2', 'b4')
-await sleep(1500)
-check(await hasPiece('wP-b4'), 'bé đẩy Tốt b4 (nước 2)')
-check(await hasPiece('bR-e8'), 'đối thủ đáp Rfe8')
-
-// 3. b5
-await dragPiece('b4', 'b5')
-await sleep(1500)
-check(await hasPiece('wP-b5'), 'bé đẩy Tốt b5 (nước 3)')
-check(await hasPiece('bN-d7'), 'đối thủ đáp Nd7')
-
-// 4. bxc6 - NƯỚC ĂN QUÂN. Kiểm tra ngay trong lúc Tốt Trắng còn đứng c6.
-await dragPiece('b5', 'c6')
-await sleep(150)
-check(await hasPiece('wP-c6'), 'bé ĂN Tốt Đen ở c6: Tốt Trắng đứng được ở c6')
-check(!(await hasPiece('bP-c6')), 'Tốt Đen ở c6 đã biến mất (quân bị ăn thật sự bị bỏ khỏi bàn)')
-
-// Đối thủ lấy lại bằng Tốt b7.
-await sleep(1400)
-check(await hasPiece('bP-c6'), 'Đối thủ lấy lại c6 bằng Tốt b7')
-check(!(await hasPiece('wP-b5')), 'Tốt Trắng ở b5 đã đi mất (nước ăn quân không bị bật lại)')
+// Mặc định bàn cờ soi thế “NÊN” của nguyên tắc đầu tiên (Tốt d4/e4 giữ trung tâm).
 check(
-  !(await bodyText()).includes('chưa đúng'),
-  'không có lời nhắc “nước chưa đúng” cho chuỗi nước đúng',
+  (await hasPiece('wP', 'd4')) && (await hasPiece('wP', 'e4')),
+  'bàn cờ mặc định soi thế minh hoạ của nguyên tắc đầu tiên',
 )
 
+// Bấm thẻ đầu tiên → phải lộ câu hỏi tự vấn + cả hai thế + khẩu quyết.
+const opened = await evaluate(`
+  (() => {
+    const button = document.querySelector('[data-principle-id="center"]')
+    if (!button) return false
+    button.click()
+    return true
+  })()
+`)
+check(opened, 'bấm được thẻ “Làm chủ trung tâm”')
+await sleep(300)
+const afterOpen = String(await bodyText())
+check(afterOpen.includes('trung tâm'), 'thẻ mở ra có nội dung về trung tâm')
+check(
+  afterOpen.includes('Nên:') && afterOpen.includes('Không nên:'),
+  'thẻ mở ra có cả hai thế cờ “Nên” và “Không nên”',
+)
+check(afterOpen.includes('Khẩu quyết'), 'thẻ mở ra có khẩu quyết vè')
+
+// Gạt công tắc sang “Không nên” → bàn cờ đổi sang thế cờ đỏ.
+check(await clickByText('Không nên'), 'bấm công tắc “Không nên”')
+await sleep(400)
+check(await hasPiece('wP', 'a3'), 'bàn cờ đổi sang thế “không nên” (Tốt đi hoang ra a3)')
+check(!(await hasPiece('wP', 'd4')), 'thế “nên” cũ đã được thay bằng thế “không nên”')
+
+// Không còn dấu vết bài giảng GM.
+const stale = ['Bài giảng GM', 'Grand Master', 'minority', 'Phòng thủ dự phòng', 'Đòn bẩy']
+const finalText = String(await bodyText())
+const leftovers = stale.filter((needle) => finalText.includes(needle))
+check(
+  leftovers.length === 0,
+  `không còn nội dung bài giảng GM${leftovers.length ? ` (còn: ${leftovers.join(', ')})` : ''}`,
+)
+
+// Bàn cờ có quân.
+const pieceCount = await evaluate(`
+  document.querySelectorAll('[id^="kid-board-piece-"]').length
+`)
+check(Number(pieceCount) > 0, `bàn cờ có quân (${pieceCount} quân)`)
+
 close()
-finish('BROWSER STRATEGY-DRAG')
+finish('BROWSER STRATEGY')

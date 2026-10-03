@@ -87,6 +87,52 @@ export const ENDGAMES: EndgameChallenge[] = [
       'Mã nhảy f7 chiếu bí: Vua Đen ở h8 không còn ô nào vì Xe g8, Tốt g7 và h7 đều là quân nhà. Đây là thế “chiếu bí ngạt” nổi tiếng.',
     rhyme: 'Ngạt vì quân nhà',
   },
+
+  // ── Bốn thế luyện thêm: Xe/Hậu chiếu bí ở mép & hàng cuối, và Tốt bàn mở ──
+  {
+    id: 'mate-rook-edge',
+    title: 'Xe + Vua chiếu bí ở mép',
+    goal: 'checkmate',
+    fen: '7k/8/6K1/8/8/8/8/R7 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Vua Trắng ở g6 đã khóa g7 và h7. Chỉ cần đưa Xe lên hàng 8 chiếu từ xa.',
+    explanation:
+      'Xe chiếu dọc cả hàng 8, Vua Trắng canh g7 và h7 - Vua Đen ở mép hết đường chạy. Chỉ Xe + Vua là đủ kết thúc ván đấu.',
+    rhyme: 'Vua khóa Xe chiếu xa',
+  },
+  {
+    id: 'mate-queen-corner',
+    title: 'Hậu + Vua chiếu bí ở góc',
+    goal: 'checkmate',
+    fen: '7k/8/6K1/8/8/8/1Q6/8 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Vua Trắng ở g6 đã khóa g7, h7. Hậu lên hàng 8 hoặc áp sát g7 đều chiếu bí.',
+    explanation:
+      'Hậu tràn xuống hàng 8 chiếu, Vua Trắng giữ g7 và h7 - Vua Đen ở góc bị nhốt kín, hết nước đi.',
+    rhyme: 'Hậu chặn hàng bí ngay',
+  },
+  {
+    id: 'mate-queen-back-rank',
+    title: 'Chiếu bí hàng cuối bằng Hậu',
+    goal: 'checkmate',
+    fen: '6k1/5ppp/8/8/8/8/8/3Q2K1 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Ba Tốt f7, g7, h7 của Đen tự nhốt Vua. Hậu chỉ cần tràn xuống hàng 8.',
+    explanation:
+      'Bẫy hàng cuối: Vua Đen tự chặn sau hàng Tốt của mình, nên Hậu xuống d8 là chiếu bí ngay. Nhớ để mắt tới hàng cuối!',
+    rhyme: 'Hàng cuối Hậu tràn',
+  },
+  {
+    id: 'promote-open',
+    title: 'Vua & Tốt đua biến Hậu (bàn mở)',
+    goal: 'promote',
+    fen: '8/5k2/8/3K4/4P3/8/8/8 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Vua Trắng đi trước làm lá chắn, Tốt cột e cứ tiến thẳng lên hàng 8.',
+    explanation:
+      'Vua che Tốt trên đường tiến, Tốt cứ bước từng ô tới tận cùng là phong Hậu. Chậm mà chắc.',
+    rhyme: 'Vua dẫn Tốt lên',
+  },
 ]
 
 export function getEndgame(id: string): EndgameChallenge | undefined {

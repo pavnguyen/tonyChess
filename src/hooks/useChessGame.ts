@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js'
 import type { Move, Square } from 'chess.js'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { speakMove } from '../lib/speech'
 import type { Side } from '../types'
 
 export interface LastMove {
@@ -82,6 +83,15 @@ export function useChessGame(initialFen: string, playerSide: Side) {
       promotion: last.promotion,
     }
   }, [history])
+
+  /**
+   * “Bàn cờ biết nói”: đọc to **mọi nước vừa đi** bằng giọng Mỹ - cả nước của bé
+   * lẫn nước của máy/đối thủ - để bé quen tai với cách đọc cờ quốc tế (`Nf3` →
+   * "Knight F 3"). `speak()` tự im khi bé tắt 🔊 hoặc trình duyệt không có giọng đọc.
+   */
+  useEffect(() => {
+    if (lastMove?.san) speakMove(lastMove.san)
+  }, [lastMove])
 
   const append = useCallback(
     (san: string) => {

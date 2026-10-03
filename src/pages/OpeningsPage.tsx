@@ -20,33 +20,30 @@ import {
   BOARD_MARKS,
   HINT_FROM_STYLE,
   HINT_TO_STYLE,
-  formatSan,
-  opponentAnnotation,
+  PLAN_FOCUS_STYLE,
   pieceFromSan,
 } from '../lib/notation'
 import { buildLivePlan } from '../lib/livePlan'
+import { isSideMoveLegal, parsePlanFocus } from '../lib/planFocus'
 import type { LivePlan, LivePlanItem } from '../lib/livePlan'
-import {
-  forksOf,
-  mainLine,
-  mainNodes,
-  pathToMoves,
-  plyLabel,
-  repliesOf,
-  treeDepth,
-} from '../lib/openingTree'
-import type { TreeFork } from '../lib/openingTree'
 import { playError, playMove, playWin } from '../lib/sound'
+import { speakOpening } from '../lib/speech'
 import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
-import type { MoveAnnotation, Opening, OpeningNode } from '../types'
+import type { MoveAnnotation, Opening, Side } from '../types'
 
 type Mode = 'learn' | 'memorize'
 
 const MODES: { value: Mode; label: string; icon: string }[] = [
   { value: 'learn', label: 'Học từng bước', icon: '📖' },
   { value: 'memorize', label: 'Luyện thuộc lòng', icon: '🧠' },
+]
+
+/** Hai cột khai cuộc: bé cầm Trắng hay cầm Đen. */
+const SIDE_OPTIONS: { value: Side; label: string; icon: string }[] = [
+  { value: 'white', label: 'Bé cầm Trắng', icon: '⬜' },
+  { value: 'black', label: 'Bé cầm Đen', icon: '⬛' },
 ]
 
 /** Sau chừng này ply (≈ 5 nước) là hết khai cuộc - tới lúc dùng kế hoạch trung cuộc. */
@@ -65,17 +62,15 @@ const NO_OPENINGS: Opening[] = []
 
 export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
-  const { notation, completeActivity, soundOn, stage } = useKidProgress()
-  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
+  const { notation, completeActivity, soundOn } = useKidProgress()
+  const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
   const [openingId, setOpeningId] = useState('london')
   const [mode, setMode] = useState<Mode>('learn')
-  /**
-   * Đường đi bé đã chọn trong CÂY khai cuộc. Dùng đường đi thay cho "số ply" vì
-   * cùng một ply có thể là nhiều nhánh khác nhau - chỉ đường đi mới biết bé đang
-   * ở nhánh nào.
-   */
-  const [path, setPath] = useState<OpeningNode[]>([])
+  /** Cột khai cuộc đang xem: quân Trắng hay quân Đen. */
+  const [side, setSide] = useState<Side>('white')
+  /** Số nửa nước (ply) bé đã đi. Mỗi khai cuộc chỉ có MỘT dòng chính. */
+  const [ply, setPly] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
   const [hintVisible, setHintVisible] = useState(true)
   const [confetti, setConfetti] = useState(false)
@@ -84,13 +79,25 @@ export function OpeningsPage() {
     plyIndex: number
   } | null>(null)
   const [finished, setFinished] = useState(false)
+  /** Câu kế hoạch trung cuộc bé vừa bấm để soi ô cờ trên bàn (null = không soi). */
+  const [planFocusIdx, setPlanFocusIdx] = useState<number | null>(null)
+  /**
+   * Bé vừa bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng
+   * chính** của khai cuộc đó để nhìn trước, rồi bấm “▶ Bắt đầu học” mới vào bài.
+   */
+  const [openingPreview, setOpeningPreview] = useState(false)
   const [result, setResult] = useState<{
     emoji: string
     title: string
     message: string
     stars: number
   } | null>(null)
+  /** Modal “Ôn mẫu hình cuối khai cuộc”: xem thế cờ cuối của BẤT KỲ khai cuộc nào. */
+  const [patternOpen, setPatternOpen] = useState(false)
+  const [patternSide, setPatternSide] = useState<Side>('white')
+  const [patternId, setPatternId] = useState('london')
   const awardedRef = useRef(false)
+  const replyAfterDropRef = useRef(false)
 
   const openingList = openings ?? NO_OPENINGS
   const opening: Opening | undefined = useMemo(
@@ -101,89 +108,117 @@ export function OpeningsPage() {
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học khai cuộc nào.
   useReportLesson(opening ? `opening:${opening.id}` : null)
 
-  // Bản đồ leo cấp: bài sau mở khi bé đã thuộc bài trước.
-  const curriculum = useCurriculum(openingList, 'openings', ':memorize')
+  /** Chỉ những khai cuộc của phe đang xem - chia rõ Trắng / Đen cho dễ chọn. */
+  const sideOpenings = useMemo(
+    () => openingList.filter((item) => item.side === side),
+    [openingList, side],
+  )
 
-  const ply = path.length
+  // Bản đồ leo cấp: mỗi phe có chuỗi mở khoá riêng, bài sau mở khi thuộc bài trước.
+  const curriculum = useCurriculum(sideOpenings, 'openings', ':memorize')
 
-  /** Các nước có thể đi tiếp ở thế hiện tại. Phần tử đầu là nhánh chính. */
-  const replies = useMemo(() => (opening ? repliesOf(opening.tree, path) : []), [opening, path])
-  const mainNode: OpeningNode | undefined = replies[0]
-  const atLeaf = replies.length === 0
+  /** Đổi phe: nhảy luôn sang bài đầu tiên của phe đó. */
+  const changeSide = (next: Side) => {
+    setSide(next)
+    setOpeningPreview(false)
+    const first = openingList.find((item) => item.side === next)
+    if (first) setOpeningId(first.id)
+  }
+
+  /**
+   * Bấm một khai cuộc trên bản đồ: chọn bài đó VÀ cho bàn cờ hiện ngay thế cờ mẫu
+   * hình (cuối dòng chính) để bé/ba mẹ nhìn trước - chưa tính là đã học. Kèm đọc
+   * to TÊN khai cuộc bằng giọng Mỹ để bé quen tên quốc tế.
+   */
+  const selectOpening = useCallback(
+    (id: string) => {
+      const target = openingList.find((item) => item.id === id)
+      setOpeningId(id)
+      setOpeningPreview(true)
+      if (target) speakOpening(target.englishName, target.gm)
+    },
+    [openingList],
+  )
+
+  /** Rời chế độ xem trước để bắt đầu bài từ nước đầu. */
+  const startLearning = useCallback(() => {
+    setOpeningPreview(false)
+    setPly(0)
+    setHintVisible(true)
+    setWrongInfo(null)
+    setFinished(false)
+  }, [])
+
+  const moves = useMemo(() => opening?.moves ?? [], [opening])
+  const totalPlies = moves.length
+  const atLeaf = ply >= totalPlies
+
+  const isKidPly = useCallback(
+    (index: number) => (opening ? (opening.side === 'white' ? index % 2 === 0 : index % 2 === 1) : false),
+    [opening],
+  )
+
+  const totalKidMoves = moves.filter((_, index) => isKidPly(index)).length
 
   /** FEN sau mỗi ply: fens[i] = thế cờ khi đã đi i nửa nước. */
   const fens = useMemo(() => {
     const game = new Chess()
     const list = [game.fen()]
-    for (const node of path) {
+    for (let index = 0; index < ply && index < totalPlies; index += 1) {
       try {
-        game.move(node.san)
+        game.move(moves[index].san)
       } catch {
         break
       }
       list.push(game.fen())
     }
     return list
-  }, [path])
-
-  const isKidPly = (index: number) =>
-    opening ? (opening.side === 'white' ? index % 2 === 0 : index % 2 === 1) : false
-
-  const totalKidMoves = opening
-    ? opening.moves.filter((_, index) => isKidPly(index)).length
-    : 0
-
-  /** Mọi ngã ba của cây - để bé xem trước và nhảy nhanh sang nhánh khác. */
-  const forks = useMemo(() => (opening ? forksOf(opening.tree) : []), [opening])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moves, ply, totalPlies])
 
   // Đổi bài hoặc đổi chế độ → chơi lại từ đầu.
   useEffect(() => {
-    setPath([])
+    setPly(0)
     setHintVisible(mode === 'learn')
     setWrongInfo(null)
     setFinished(false)
     setAutoPlay(false)
+    setPlanFocusIdx(null)
     awardedRef.current = false
     replyAfterDropRef.current = false
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openingId, mode])
 
-  /** Bé vừa kéo đúng ở chế độ học → cho đối thủ đáp trả ngay một nước. */
-  const replyAfterDropRef = useRef(false)
+  // Đi tới/lui nước nào thì tự thoát chế độ soi kế hoạch, để bé quay về đúng bài.
+  useEffect(() => {
+    setPlanFocusIdx(null)
+  }, [ply])
 
   /**
-   * Đối thủ tự đi trong 2 chế độ luyện. Ở chế độ "Học từng bước" đối thủ chỉ
-   * đáp trả sau khi bé vừa kéo quân của mình, còn lúc bé bấm ◀ ▶ thì vẫn đi
-   * từng nước để bé kịp nhìn.
-   *
-   * Khác biệt của cây khai cuộc: khi đối thủ có NHIỀU nước lý thuyết (ngã ba) thì
-   * app DỪNG LẠI chờ bé chọn nhánh - không tự đoán thay bé.
+   * Đối thủ tự đi trong 2 chế độ luyện. Ở chế độ "Học từng bước" đối thủ chỉ đáp
+   * trả sau khi bé vừa kéo quân của mình, còn lúc bé bấm ◀ ▶ thì vẫn đi từng nước
+   * để bé kịp nhìn.
    */
   useEffect(() => {
-    if (!opening || autoPlay) return
-    if (atLeaf) return
+    if (!opening || openingPreview || autoPlay || atLeaf) return
     if (isKidPly(ply)) return
-    if (replies.length > 1) return
     if (mode === 'learn' && !replyAfterDropRef.current) return
     const timer = setTimeout(() => {
       replyAfterDropRef.current = false
-      setPath((current) => [...current, replies[0]])
+      setPly((current) => current + 1)
     }, 600)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, autoPlay, ply, opening, replies, atLeaf])
+  }, [mode, autoPlay, ply, opening, atLeaf, isKidPly, openingPreview])
 
-  // Tự động chạy trong chế độ học (luôn đi theo nhánh chính).
+  // Tự động chạy trong chế độ học.
   useEffect(() => {
     if (mode !== 'learn' || !autoPlay || !opening) return
     if (atLeaf) {
       setAutoPlay(false)
       return
     }
-    const timer = setTimeout(() => setPath((current) => [...current, replies[0]]), 1300)
+    const timer = setTimeout(() => setPly((current) => current + 1), 1300)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, autoPlay, ply, opening, replies, atLeaf])
+  }, [mode, autoPlay, ply, opening, atLeaf])
 
   /** Bé đi đúng hết bài → tặng Cúp Vàng. */
   useEffect(() => {
@@ -207,35 +242,132 @@ export function OpeningsPage() {
   }, [ply, mode, opening, finished, atLeaf])
 
   /**
-   * Nước đi kế tiếp theo nhánh chính. `mine` = nước này thuộc về bé (bé cầm quân
-   * đi được), dùng để tô sáng quân cần đi cho bé dễ kéo.
+   * Nước đi kế tiếp theo dòng chính. `mine` = nước này thuộc về bé (bé cầm quân đi
+   * được), dùng để tô sáng quân cần đi cho bé dễ kéo.
    */
   const hintMove = useMemo(() => {
-    if (!mainNode) return null
+    if (atLeaf) return null
     if (mode !== 'learn' && !isKidPly(ply)) return null
     try {
       const probe = new Chess(fens[ply])
-      const move = probe.move(mainNode.san)
+      const move = probe.move(moves[ply].san)
       return { from: move.from, to: move.to, mine: isKidPly(ply) }
     } catch {
       return null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mainNode, ply, mode, fens])
+  }, [atLeaf, moves, ply, mode, fens, isKidPly])
 
-  const arrow = useMemo(
-    () =>
-      hintVisible && hintMove
-        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
-        : [],
-    [hintVisible, hintMove],
+  /**
+   * Thế cờ CUỐI dòng chính - đúng chỗ "kế hoạch trung cuộc" bắt đầu có nghĩa.
+   * Tính sẵn từ dòng chính nên không phụ thuộc bé đang đứng ở nước thứ mấy.
+   */
+  const finalFen = useMemo(() => {
+    const game = new Chess()
+    for (const move of moves) {
+      try {
+        game.move(move.san)
+      } catch {
+        break
+      }
+    }
+    return game.fen()
+  }, [moves])
+
+  /** Khai cuộc đang chọn trong modal ôn mẫu hình (độc lập với bài đang học). */
+  const patternOpening = useMemo(
+    () => openingList.find((item) => item.id === patternId) ?? openingList[0],
+    [openingList, patternId],
   )
+
+  /** Thế cờ CUỐI của một dòng chính bất kỳ - dùng cho modal ôn mẫu hình. */
+  const fenAfterMoves = useCallback((list: readonly { san: string }[]) => {
+    const game = new Chess()
+    for (const move of list) {
+      try {
+        game.move(move.san)
+      } catch {
+        break
+      }
+    }
+    return game.fen()
+  }, [])
+
+  const patternFen = useMemo(
+    () => (patternOpening ? fenAfterMoves(patternOpening.moves) : null),
+    [patternOpening, fenAfterMoves],
+  )
+
+  const openPatterns = () => {
+    setPatternSide(side)
+    setPatternId(opening?.id ?? sideOpenings[0]?.id ?? 'london')
+    setPatternOpen(true)
+  }
+
+  // Đóng modal bằng phím Esc cho tiện (ba mẹ không phải với tay bấm ✕).
+  useEffect(() => {
+    if (!patternOpen) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPatternOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [patternOpen])
+
+  /**
+   * Ô cờ + mũi tên của từng câu kế hoạch - đọc thẳng từ chính câu viết tay nên
+   * không có dữ liệu trùng lặp nào phải bảo trì thêm.
+   */
+  const planFocusList = useMemo(
+    () => (opening?.plan.points ?? []).map((point) => parsePlanFocus(point)),
+    [opening],
+  )
+
+  /**
+   * Bé đang **soi một câu kế hoạch**: bàn cờ tạm chuyển sang thế cờ cuối khai cuộc
+   * để câu kế hoạch nói về đúng thế cờ bé đang nhìn (không phải thế cờ ban đầu).
+   */
+  const planPreview = planFocusIdx !== null ? (planFocusList[planFocusIdx] ?? null) : null
+  /** Đang xem thế cờ CUỐI khai cuộc: hoặc do soi câu kế hoạch, hoặc do vừa bấm khai cuộc. */
+  const previewing = planPreview !== null || openingPreview
+  const boardFen = previewing ? finalFen : fens[ply]
+
+  /** Bôi tím những ô mà câu kế hoạch đang chọn nhắc tới. */
+  const planSquareStyles = useMemo(() => {
+    if (!planPreview || planPreview.squares.length === 0) return undefined
+    const styles: Record<string, CSSProperties> = {}
+    for (const square of planPreview.squares) styles[square] = PLAN_FOCUS_STYLE
+    return styles
+  }, [planPreview])
+
+  /**
+   * Mũi tên "từ ô này sang ô kia" của câu kế hoạch. Chỉ vẽ khi nước đó **đi được
+   * thật** trên thế cờ cuối, nên dữ liệu sai cũng không thể vẽ ra mũi tên bịa.
+   */
+  const planArrow = useMemo(() => {
+    const arrow = planPreview?.arrow
+    if (!arrow || !opening) return null
+    return isSideMoveLegal(finalFen, opening.side, arrow.from, arrow.to) ? arrow : null
+  }, [planPreview, finalFen, opening])
+
+  const arrow = useMemo(() => {
+    // Đang soi kế hoạch: bàn cờ đang ở thế cờ KHÁC, nên mũi tên gợi ý của bài phải
+    // nhường chỗ cho mũi tên của câu kế hoạch.
+    if (previewing) {
+      return planArrow
+        ? [{ startSquare: planArrow.from, endSquare: planArrow.to, color: ARROW_COLOR }]
+        : []
+    }
+    return hintVisible && hintMove
+      ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
+      : []
+  }, [previewing, planArrow, hintVisible, hintMove])
 
   const lastMoveSquares = useMemo(() => {
     if (ply === 0) return undefined
     try {
       const probe = new Chess(fens[ply - 1])
-      const move = probe.move(path[ply - 1].san)
+      const move = probe.move(moves[ply - 1].san)
       return {
         [move.from]: { boxShadow: BOARD_MARKS.lastMoveFrom },
         [move.to]: { boxShadow: BOARD_MARKS.lastMoveTo },
@@ -243,7 +375,7 @@ export function OpeningsPage() {
     } catch {
       return undefined
     }
-  }, [ply, path, fens])
+  }, [ply, moves, fens])
 
   /**
    * Tô sáng quân bé cần đi (viền vàng) và ô đích (viền xanh) - chỉ khi tới lượt
@@ -257,77 +389,82 @@ export function OpeningsPage() {
     } satisfies Record<string, CSSProperties>
   }, [hintVisible, hintMove])
 
-  /** Vệt vàng của nước vừa đi + vệt gợi ý quân cần đi. */
+  /**
+   * Nước đi VỪA HIỆN trên bàn, để **bàn cờ đọc to**: `Ne3` → "Knight E 3".
+   * Đọc MỌI nước khi dòng khai cuộc tiến lên (nước của bé lẫn nước đối thủ tự đi),
+   * để bé quen tai với cách đọc cờ quốc tế. Khi đang soi kế hoạch thì bàn cờ ở thế
+   * cờ khác nên không đọc.
+   */
+  const announceSan = !previewing && ply > 0 ? (moves[ply - 1]?.san ?? null) : null
+
+  /** Vệt vàng của nước vừa đi + vệt gợi ý quân cần đi, hoặc vệt tím của câu kế hoạch. */
   const squareStyles = useMemo(
-    () => (hintSquares ? { ...lastMoveSquares, ...hintSquares } : lastMoveSquares),
-    [lastMoveSquares, hintSquares],
+    () =>
+      previewing ? (planSquareStyles ?? {}) : { ...lastMoveSquares, ...hintSquares },
+    [previewing, planSquareStyles, lastMoveSquares, hintSquares],
   )
 
   const bannerState = useMemo(() => {
-    if (!opening) return null
+    if (!opening || atLeaf) {
+      if (wrongInfo) return { ...wrongInfo, variant: 'wrong' as const }
+      if (ply === 0 || !opening) return null
+      const node = moves[ply - 1]
+      return {
+        annotation: node.annotation ?? {
+          san: node.san,
+          piece: pieceFromSan(node.san),
+          reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
+          rhyme: 'Đối thủ vừa đi',
+        },
+        plyIndex: ply - 1,
+        variant: 'opponent' as const,
+      }
+    }
     if (wrongInfo) {
       return { ...wrongInfo, variant: 'wrong' as const }
     }
     if (mode === 'learn') {
-      const node = mainNode ?? path[ply - 1]
-      if (!node) return null
-      const index = mainNode ? ply : ply - 1
+      const node = moves[ply]
       return {
-        annotation: node.annotation ?? opponentAnnotation(node.san, notation),
-        plyIndex: index,
+        annotation: node.annotation ?? {
+          san: node.san,
+          piece: pieceFromSan(node.san),
+          reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
+          rhyme: 'Đối thủ vừa đi',
+        },
+        plyIndex: ply,
         variant: 'hint' as const,
       }
     }
     if (ply === 0) return null
-    const node = path[ply - 1]
+    const node = moves[ply - 1]
     return {
-      annotation: node.annotation ?? opponentAnnotation(node.san, notation),
+      annotation: node.annotation ?? {
+        san: node.san,
+        piece: pieceFromSan(node.san),
+        reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
+        rhyme: 'Đối thủ vừa đi',
+      },
       plyIndex: ply - 1,
       variant: node.annotation ? ('played' as const) : ('opponent' as const),
     }
-  }, [opening, wrongInfo, mode, ply, notation, mainNode, path])
-
-  /** Bé đang đứng ở ngã ba của ĐỐI THỦ → chờ bé chọn nhánh, chưa tự đi. */
-  const forkOpen = mode === 'learn' && !autoPlay && !atLeaf && !isKidPly(ply) && replies.length > 1
-
-  /** Bé thấy được cả đường đã đi lẫn dòng chính phía trước. */
-  const stripMoves = useMemo(() => [...pathToMoves(path), ...mainLine(replies)], [path, replies])
-
-  const chooseBranch = useCallback((node: OpeningNode) => {
-    // Bé tự chọn nhánh → không để effect "đối thủ tự đáp" ghi đè thêm một nước.
-    replyAfterDropRef.current = false
-    setWrongInfo(null)
-    setPath((current) => [...current, node])
-  }, [])
-
-  /** Nhảy thẳng tới một ngã ba trong cây (đi theo nhánh chính rồi rẽ). */
-  const jumpToBranch = useCallback(
-    (fork: TreeFork, index: number) => {
-      if (!opening) return
-      replyAfterDropRef.current = false
-      setAutoPlay(false)
-      setWrongInfo(null)
-      setPath([...mainNodes(opening.tree).slice(0, fork.at), fork.options[index]])
-    },
-    [opening],
-  )
+  }, [opening, wrongInfo, mode, ply, moves, atLeaf])
 
   /** Tiến / Lùi một nước - dùng chung cho nút bấm và phím mũi tên. */
   const goStep = useCallback(
     (delta: number) => {
-      if (!opening) return
-      // Bé tự bấm tức là bé muốn tự điều khiển → dừng chế độ tự chạy.
       setAutoPlay(false)
+      setOpeningPreview(false)
       replyAfterDropRef.current = false
-      // Đi lại từ đầu bằng nút ◀ ▶ thì bỏ luôn lời nhắc "nước chưa đúng".
       setWrongInfo(null)
-      setPath((current) => {
-        if (delta < 0) return current.slice(0, Math.max(0, current.length + delta))
-        const next = repliesOf(opening.tree, current)[0]
-        return next ? [...current, next] : current
+      setPly((current) => {
+        const next = current + delta
+        if (next < 0) return 0
+        if (next > totalPlies) return totalPlies
+        return next
       })
     },
-    [opening],
+    [totalPlies],
   )
 
   const goBack = useCallback(() => goStep(-1), [goStep])
@@ -379,11 +516,12 @@ export function OpeningsPage() {
   // Tới lượt bé thì bé kéo-thả quân của mình. Học từng bước cũng cho kéo-thả
   // như chế độ Luyện thuộc lòng.
   const kidTurn = isKidPly(ply) && !atLeaf
-  const interactive = kidTurn
+  // Đang soi kế hoạch thì bàn cờ chỉ để XEM - bé kéo quân lúc này là lạc đường.
+  const interactive = kidTurn && !previewing
 
   const handleDrop = (from: string, to: string): boolean => {
     if (!interactive || !opening) return false
-    const expected = replies[0]
+    const expected = moves[ply]
     const probe = new Chess(fens[ply])
     let move
     try {
@@ -392,10 +530,7 @@ export function OpeningsPage() {
       if (soundOn) playError()
       return false
     }
-    // Chấp nhận MỌI nước lý thuyết ở nút này, không chỉ nhánh chính - nhờ vậy bé
-    // được thử các cách đáp khác nhau mà vẫn được coi là đi đúng.
-    const chosen = replies.find((node) => node.san === move.san)
-    if (!chosen) {
+    if (move.san !== expected.san) {
       if (soundOn) playError()
       setHintVisible(true)
       const annotation: MoveAnnotation = {
@@ -410,13 +545,12 @@ export function OpeningsPage() {
     // Đi đúng!
     if (soundOn) playMove()
     setWrongInfo(null)
-    // Chế độ học luôn giữ gợi ý sáng để bé đi tiếp nước sau.
     if (mode === 'learn') {
       replyAfterDropRef.current = true
     } else {
       setHintVisible(false)
     }
-    setPath((current) => [...current, chosen])
+    setPly((current) => current + 1)
     return true
   }
 
@@ -429,61 +563,50 @@ export function OpeningsPage() {
         reserve={268}
         board={
           <ChessBoardPanel
-            fen={fens[ply]}
+            fen={boardFen}
             orientation={opening.side}
             playerSide={opening.side}
             interactive={interactive}
             heatmap={heatmap}
             arrows={arrow}
             extraSquareStyles={squareStyles}
+            announce={announceSan}
             onDrop={handleDrop}
           />
         }
         under={
           <div className="grid gap-2">
-            {/*
-              Ngã ba: đối thủ có nhiều nước lý thuyết. App DỪNG LẠI để bé tự chọn
-              muốn tập nhánh nào - đúng tinh thần "học phản ứng, không học vẹt".
-            */}
-            {forkOpen && (
-              <section
-                id="kid-opening-fork"
-                className="animate-pop-in card-pop grid gap-1.5 border-[3px] border-info-300 p-2.5"
-              >
-                <p className="text-[0.65rem] font-extrabold uppercase tracking-wide text-info-600">
-                  🔀 Ngã ba · đối thủ có {replies.length} cách đáp
-                </p>
-                <p className="text-xs font-bold text-brand-600">
-                  Bé muốn tập nhánh nào? (⭐ là dòng chính)
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {replies.map((node, index) => (
-                    <button
-                      key={node.san}
-                      type="button"
-                      onClick={() => chooseBranch(node)}
-                      title={node.note ?? 'Nước lý thuyết'}
-                      className={`rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-all active:translate-y-[2px] ${
-                        index === 0
-                          ? 'border-gold-400 bg-gold-100 text-gold-900'
-                          : 'border-brand-200 bg-white text-brand-600 hover:border-brand-300'
-                      }`}
-                    >
-                      {index === 0 && <span aria-hidden>⭐ </span>}
-                      {formatSan(node.san, notation)}
-                    </button>
-                  ))}
-                </div>
-                {replies[1]?.note && (
-                  <p className="text-[0.65rem] font-bold text-brand-400">
-                    💬 {replies[1].note}
-                  </p>
-                )}
-              </section>
-            )}
-
             {/* Banner Giải Thích Siêu Ngắn luôn nằm NGAY DƯỚI bàn cờ. */}
-            {bannerState ? (
+            {planPreview ? (
+              <div
+                id="kid-plan-preview-note"
+                className="rounded-2xl border-2 border-dashed border-[#6d5bc7] bg-[rgba(126,106,209,0.10)] p-2.5 text-center text-sm font-bold text-brand-800"
+              >
+                📍 Bé đang xem thế cờ CUỐI khai cuộc — ô tím là việc của câu vừa bấm
+              </div>
+            ) : openingPreview ? (
+              <div
+                id="kid-opening-preview"
+                className="grid gap-2 rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 p-2.5 text-center"
+              >
+                <p className="text-sm font-extrabold text-brand-800">
+                  {opening.emoji} {opening.name} · thế cờ mẫu hình của {opening.gm}
+                </p>
+                <p className="text-[0.7rem] font-bold text-brand-500">
+                  Đây là thế cờ cuối dòng chính — bé nhìn cho quen rồi bắt đầu học từ nước đầu nhé.
+                </p>
+                <div className="flex justify-center">
+                  <KidButton
+                    id="kid-opening-preview-start"
+                    variant="primary"
+                    size="sm"
+                    onClick={startLearning}
+                  >
+                    ▶ Bắt đầu học từ đầu
+                  </KidButton>
+                </div>
+              </div>
+            ) : bannerState ? (
               <ExplanationBanner
                 annotation={bannerState.annotation}
                 plyIndex={bannerState.plyIndex}
@@ -491,11 +614,9 @@ export function OpeningsPage() {
                 variant={bannerState.variant}
               />
             ) : (
-              !forkOpen && (
-                <div className="rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
-                  🐣 Bé hãy kéo quân để bắt đầu bài học nhé!
-                </div>
-              )
+              <div className="rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
+                🐣 Bé hãy kéo quân để bắt đầu bài học nhé!
+              </div>
             )}
           </div>
         }
@@ -505,17 +626,9 @@ export function OpeningsPage() {
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           {/*
-            Mắt Thần nằm CÙNG HÀNG với tiêu đề: tiết kiệm hẳn một hàng so với để
-            nút riêng bên dưới, nhờ vậy cột phải không phải cuộn.
-
             `min-w-0` là BẮT BUỘC: đây là một ô của lưới Panel, mà ô lưới mặc định
-            có min-width:auto nên sẽ nở rộng bằng cả câu `nowrap` của tiêu đề
-            (đo được 487px trong khung 372px) làm cả trang tràn ngang.
-
-            `sm:flex-nowrap` cũng vậy: chữ `truncate` vẫn tính cả bề rộng vào
-            min-content, nên nếu để flex-wrap thì hai nút tự đẩy nhau xuống hai
-            hàng (đo được 106px thay vì 52px) - và thế là cột phải bị cuộn.
-            Trên điện thoại thì cứ để xuống hàng cho tiêu đề đọc được đầy đủ.
+            có min-width:auto nên sẽ nở rộng bằng cả câu `nowrap` của tiêu đề làm cả
+            trang tràn ngang.
           */}
           <div className="relative flex min-w-0 flex-wrap items-center justify-between gap-2 sm:flex-nowrap">
             <div className="min-w-0 flex-1">
@@ -530,7 +643,6 @@ export function OpeningsPage() {
               className="shrink-0"
               on={heatmap}
               onToggle={toggleHeatmap}
-              checkMode={checkMode}
             />
           </div>
           <Segmented
@@ -540,12 +652,21 @@ export function OpeningsPage() {
               icon: m.icon,
             }))}
             value={mode}
-            onChange={setMode}
+            onChange={(next) => {
+              setOpeningPreview(false)
+              setMode(next)
+            }}
             size="sm"
           />
         </Panel>
 
-        <Panel>
+        <Panel className="grid gap-2">
+          <Segmented
+            options={SIDE_OPTIONS}
+            value={side}
+            onChange={changeSide}
+            size="sm"
+          />
           <ProgressMap
             nodes={curriculum.map((entry) => ({
               id: entry.item.id,
@@ -559,24 +680,28 @@ export function OpeningsPage() {
               unlocked: entry.unlocked,
             }))}
             activeId={opening.id}
-            onSelect={setOpeningId}
-            title="Bản đồ chinh phục khai cuộc"
+            onSelect={selectOpening}
+            allowLockedPreview
+            title={side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
             unitLabel="bài"
-            allDoneMessage="Bé đã phá đảo toàn bộ khai cuộc Grand Master! 🏆"
+            allDoneMessage={
+              side === 'white'
+                ? 'Bé đã phá đảo toàn bộ khai cuộc Trắng! 🏆'
+                : 'Bé đã phá đảo toàn bộ khai cuộc Đen! 🏆'
+            }
             info="cup"
           />
+          <KidButton
+            id="kid-openings-patterns"
+            variant="sky"
+            size="sm"
+            onClick={openPatterns}
+          >
+            🧩 Ôn mẫu hình cuối khai cuộc
+          </KidButton>
         </Panel>
 
         <Panel className="grid gap-2">
-          {/*
-            Ngã ba cũng chặn nút "Tiến" để bé không vô tình nhảy qua mất phần chọn
-            nhánh - muốn đi tiếp thì bấm vào một nhánh ở khung ngay dưới bàn cờ.
-          */}
-          {forkOpen && (
-            <p className="rounded-xl bg-info-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-info-700">
-              🔀 Đang chờ bé chọn nhánh ở khung ngay dưới bàn cờ.
-            </p>
-          )}
           <div className="flex flex-wrap items-center gap-2">
             {mode === 'learn' ? (
               <>
@@ -592,7 +717,7 @@ export function OpeningsPage() {
                 <KidButton
                   variant="sun"
                   onClick={goForward}
-                  disabled={ply >= treeDepth(opening.tree) || forkOpen}
+                  disabled={atLeaf}
                   title="Tiến một nước (hoặc bấm phím ▶ / ▲)"
                   aria-keyshortcuts="ArrowRight ArrowUp"
                 >
@@ -609,7 +734,7 @@ export function OpeningsPage() {
                   onClick={() => {
                     replyAfterDropRef.current = false
                     setAutoPlay(false)
-                    setPath([])
+                    setPly(0)
                   }}
                 >
                   🔄 Đầu
@@ -624,7 +749,17 @@ export function OpeningsPage() {
                 >
                   💡 Gợi ý
                 </KidButton>
-                <KidButton variant="ghost" onClick={() => { replyAfterDropRef.current = false; setPath([]); setHintVisible(false); setWrongInfo(null); setFinished(false); awardedRef.current = false }}>
+                <KidButton
+                  variant="ghost"
+                  onClick={() => {
+                    replyAfterDropRef.current = false
+                    setPly(0)
+                    setHintVisible(false)
+                    setWrongInfo(null)
+                    setFinished(false)
+                    awardedRef.current = false
+                  }}
+                >
                   🔄 Chơi lại
                 </KidButton>
               </>
@@ -639,68 +774,90 @@ export function OpeningsPage() {
           )}
         </Panel>
 
-        {/* Cây khai cuộc: bé thấy trước các cách đáp khác của đối thủ và nhảy sang nhánh đó. */}
-        {forks.length > 0 && (
-          <Panel id="kid-opening-tree" className="grid gap-2">
-            <SectionTitle
-              icon="🌳"
-              title="Cây khai cuộc"
-              subtitle={`${forks.length} ngã ba - bé thử nhiều cách đáp của đối thủ`}
-              info="tree"
-            />
-            <div className="grid gap-1.5">
-              {forks.map((fork) => (
-                <div
-                  key={fork.at}
-                  className="rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2 py-1.5"
-                >
-                  <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-                    {plyLabel(fork.at)} {isKidPly(fork.at) ? 'bé chọn' : 'đối thủ đáp'} ·{' '}
-                    {fork.options.length} cách
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {fork.options.map((node, index) => (
-                      <button
-                        key={node.san}
-                        type="button"
-                        onClick={() => jumpToBranch(fork, index)}
-                        title={node.note ?? 'Nước lý thuyết'}
-                        className={`rounded-lg border-2 px-2 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
-                          index === 0
-                            ? 'border-gold-300 bg-gold-50 text-gold-800'
-                            : 'border-brand-200 bg-white text-brand-600 hover:border-brand-300'
-                        }`}
-                      >
-                        {index === 0 && <span aria-hidden>⭐ </span>}
-                        {formatSan(node.san, notation)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        )}
-
         {/* Kế hoạch tiếp theo: việc bé cần làm sau khi hết phần khai cuộc đã học. */}
         {opening.plan.points.length > 0 && (
           <Panel id="kid-opening-plan" className="grid gap-2">
             <SectionTitle
               icon="🧭"
               title={opening.plan.title}
-              subtitle={playing ? 'Đã tới lúc áp dụng!' : 'Học hết phần khai cuộc là dùng được ngay'}
+              subtitle={
+                previewing
+                  ? 'Đang xem thế cờ CUỐI khai cuộc'
+                  : playing
+                    ? 'Đã tới lúc áp dụng!'
+                    : 'Bấm một việc để xem thế cờ cuối khai cuộc'
+              }
               info="plan"
             />
             <ul className="grid gap-1">
-              {opening.plan.points.map((point) => (
-                <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
-                  <span aria-hidden className="text-gold-500">
-                    ◆
-                  </span>
-                  <span>{point}</span>
-                </li>
-              ))}
+              {opening.plan.points.map((point, index) => {
+                const focus = planFocusList[index]
+                const active = planFocusIdx === index
+                // Câu không nhắc ô nào thì để nguyên dạng chữ, không bấm được.
+                if (!focus || focus.squares.length === 0) {
+                  return (
+                    <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
+                      <span aria-hidden className="text-gold-500">
+                        ◆
+                      </span>
+                      <span>{point}</span>
+                    </li>
+                  )
+                }
+                return (
+                  <li key={point}>
+                    <button
+                      type="button"
+                      data-plan-point={index}
+                      aria-pressed={active}
+                      onClick={() => setPlanFocusIdx(active ? null : index)}
+                      title="Bấm để xem thế cờ cuối khai cuộc và soi ô của việc này"
+                      className={`flex w-full items-start gap-1.5 rounded-xl px-2 py-1 text-left text-xs font-bold transition-all active:translate-y-[1px] ${
+                        active
+                          ? 'border-2 border-[#6d5bc7] bg-[rgba(126,106,209,0.14)] text-brand-900'
+                          : 'border-2 border-transparent text-brand-700 hover:bg-brand-50'
+                      }`}
+                    >
+                      {/* Số thứ tự việc: bé nhớ “việc 1, việc 2…” dễ hơn nhớ cả câu. */}
+                      <span
+                        aria-hidden
+                        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[0.65rem] font-extrabold ${
+                          active ? 'bg-[#6d5bc7] text-white' : 'bg-brand-100 text-brand-600'
+                        }`}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">
+                        {point}
+                        {/* Nước “từ ô này sang ô kia” - chỉ hiện khi nước đó đi được thật. */}
+                        {active && planArrow && (
+                          <b className="ml-1 inline-block rounded-md bg-[rgba(126,106,209,0.18)] px-1 py-0.5 text-[0.65rem] font-extrabold text-brand-700">
+                            {planArrow.from} → {planArrow.to}
+                          </b>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
+            {planFocusList.some((focus) => focus.squares.length > 0) && (
+              <p className="flex flex-wrap items-center gap-1.5 text-[0.7rem] font-bold text-brand-400">
+                {previewing
+                  ? '📍 Bàn cờ đang xem thế cờ cuối khai cuộc - ô tím là việc của câu này'
+                  : '👆 Bấm một việc để xem thế cờ cuối khai cuộc và soi ô trên bàn'}
+                {previewing && (
+                  <button
+                    type="button"
+                    id="kid-plan-preview-off"
+                    onClick={() => setPlanFocusIdx(null)}
+                    className="rounded-full border-2 border-brand-100 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-500 hover:border-brand-300"
+                  >
+                    Quay lại bài học
+                  </button>
+                )}
+              </p>
+            )}
           </Panel>
         )}
 
@@ -754,7 +911,7 @@ export function OpeningsPage() {
         <HangingWarnings
           fen={fens[ply]}
           viewpoint={opening.side}
-          enabled={heatmap && (stage.id === 'nhi' || stage.id === 'thieu-nhi')}
+          enabled={heatmap}
         />
 
         {/*
@@ -780,26 +937,25 @@ export function OpeningsPage() {
           )}
 
           <MoveStrip
-            moves={stripMoves}
+            moves={moves}
             side={opening.side}
             ply={ply}
             notation={notation}
             onJump={
               mode === 'learn'
                 ? (index) => {
-                    // Trong cây chỉ lùi được về thế đã đi qua, không "nhảy tới" một nhánh chưa chọn.
                     if (index >= ply) return
                     replyAfterDropRef.current = false
                     setAutoPlay(false)
                     setWrongInfo(null)
-                    setPath((current) => current.slice(0, index))
+                    setPly(index)
                   }
                 : undefined
             }
           />
 
           <div className="flex flex-wrap gap-1.5">
-            {opening.moves
+            {moves
               .map((move, index) => ({ move, index }))
               .filter(({ index }) => isKidPly(index))
               .map(({ move, index }, order) => {
@@ -835,6 +991,122 @@ export function OpeningsPage() {
         </Panel>
       </div>
 
+      {/*
+        Modal “Ôn mẫu hình”: xem thế cờ CUỐI của từng khai cuộc mà KHÔNG phải đi lại
+        từng nước - bé mở ra liếc một cái là nhớ lại mẫu hình quân đứng ở đâu.
+      */}
+      {patternOpen && patternOpening && patternFen && (
+        <div
+          id="kid-patterns-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ôn mẫu hình cuối khai cuộc"
+          className="fixed inset-0 z-40 grid place-items-center overflow-y-auto bg-brand-950/55 p-3 backdrop-blur-sm"
+          onClick={() => setPatternOpen(false)}
+        >
+          <div
+            className="animate-pop-in my-auto grid w-full max-w-3xl gap-3 rounded-[1.6rem] border-[5px] border-white bg-white p-3 shadow-2xl sm:p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="min-w-0 text-base font-extrabold text-brand-900 sm:text-xl">
+                🧩 Mẫu hình cuối khai cuộc
+              </h3>
+              <KidButton
+                id="kid-patterns-close"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPatternOpen(false)}
+              >
+                ✕ Đóng
+              </KidButton>
+            </div>
+
+            <p className="text-xs font-bold text-brand-500">
+              👆 Bấm một khai cuộc để xem thế cờ CUỐI của nó - ôn lại mẫu hình mà không
+              phải đi lại từng nước.
+            </p>
+
+            <Segmented
+              options={SIDE_OPTIONS}
+              value={patternSide}
+              onChange={(next) => {
+                setPatternSide(next)
+                const first = openingList.find((item) => item.side === next)
+                if (first) setPatternId(first.id)
+              }}
+              size="sm"
+            />
+
+            <div id="kid-patterns-list" className="flex flex-wrap gap-1.5">
+              {openingList
+                .filter((item) => item.side === patternSide)
+                .map((item) => {
+                  const active = item.id === patternId
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      data-pattern-id={item.id}
+                      aria-pressed={active}
+                      onClick={() => setPatternId(item.id)}
+                      className={`flex items-center gap-1 rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[2px] ${
+                        active
+                          ? 'border-brand-600 bg-brand-50 text-brand-800 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+                          : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
+                      }`}
+                    >
+                      <span aria-hidden>{item.emoji}</span>
+                      <span className="max-w-[11rem] truncate">{item.name}</span>
+                    </button>
+                  )
+                })}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-start">
+              <div className="mx-auto w-full max-w-[24rem]">
+                <ChessBoardPanel
+                  fen={patternFen}
+                  orientation={patternOpening.side}
+                  playerSide={patternOpening.side}
+                  interactive={false}
+                  boardId="kid-board-pattern"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <div className="text-sm font-extrabold text-brand-900">
+                  {patternOpening.emoji} {patternOpening.name}
+                </div>
+                <div className="text-xs font-bold text-brand-500">
+                  {patternOpening.gm}
+                  {patternOpening.side === 'white' ? ' · ⬜ Bé cầm Trắng' : ' · ⬛ Bé cầm Đen'}
+                </div>
+                <div
+                  id="kid-pattern-line"
+                  className="rounded-2xl bg-brand-50 px-2.5 py-1.5 font-mono text-[0.7rem] font-bold leading-relaxed text-brand-700"
+                >
+                  {patternOpening.moves.map((move) => move.san).join(' ')}
+                </div>
+                <div className="rounded-2xl border-2 border-dashed border-brand-100 px-2.5 py-1.5 text-xs font-bold text-brand-600">
+                  <b className="text-brand-800">{patternOpening.plan.title}</b>
+                  <ul className="mt-1 grid gap-0.5">
+                    {patternOpening.plan.points.map((point) => (
+                      <li key={point} className="flex gap-1.5 text-[0.7rem]">
+                        <span aria-hidden className="text-gold-500">
+                          ◆
+                        </span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CelebrationModal
         open={Boolean(result)}
         emoji={result?.emoji ?? '🏆'}
@@ -845,7 +1117,7 @@ export function OpeningsPage() {
         onRetry={() => {
           setResult(null)
           replyAfterDropRef.current = false
-          setPath([])
+          setPly(0)
           setFinished(false)
           setHintVisible(mode === 'learn')
           setWrongInfo(null)

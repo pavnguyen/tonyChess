@@ -5,7 +5,7 @@
 import { Chess } from 'chess.js'
 import { ENDGAMES } from '../src/data/endgames.ts'
 import { OPENINGS } from '../src/data/openings.ts'
-import { TACTICS } from '../src/data/tactics.ts'
+import { BEST_MOVES } from '../src/data/bestMoves.ts'
 import { pickMove } from '../src/engine/minimax.ts'
 import type { Difficulty } from '../src/engine/minimax.ts'
 
@@ -99,7 +99,7 @@ console.log('\n▶ Máy luôn trả về nước hợp lệ trên mọi thế c�
       fens.push(game.fen())
     }
   }
-  for (const puzzle of TACTICS) fens.push(puzzle.fen)
+  for (const puzzle of BEST_MOVES) fens.push(puzzle.fen)
   for (const challenge of ENDGAMES) fens.push(challenge.fen)
 
   let bad = 0

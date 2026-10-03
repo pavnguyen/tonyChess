@@ -1,5 +1,6 @@
+import { useSearch } from '@tanstack/react-router'
 import { Chess } from 'chess.js'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CelebrationModal } from '../components/CelebrationModal'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
@@ -10,7 +11,7 @@ import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useCurriculum } from '../hooks/useCurriculum'
 import { useEyeCheck } from '../hooks/useEyeCheck'
-import { TACTIC_META } from '../data/tactics'
+import { BEST_MOVE_THEMES } from '../data/bestMoves'
 import { useTacticsQuery } from '../data/queries'
 import { useChessGame } from '../hooks/useChessGame'
 import {
@@ -22,34 +23,42 @@ import {
 } from '../lib/notation'
 import { playError, playMove, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
-import type { MoveAnnotation, TacticPuzzle, TacticType } from '../types'
+import type { BestMoveTheme, BestMovePuzzle, MoveAnnotation } from '../types'
 
-const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+const TYPE_OPTIONS: { value: BestMoveTheme; label: string; icon: string }[] = (
+  Object.keys(BEST_MOVE_THEMES) as BestMoveTheme[]
+).map((theme) => ({
+  value: theme,
+  label: BEST_MOVE_THEMES[theme].label,
+  icon: BEST_MOVE_THEMES[theme].emoji,
+}))
 
-const TYPE_OPTIONS: { value: TacticType; label: string; icon: string }[] = [
-  { value: 'fork', label: 'Bắt đôi', icon: '🍴' },
-  { value: 'pin', label: 'Ghim quân', icon: '📌' },
-  { value: 'skewer', label: 'Xiên quân', icon: '🍢' },
-  { value: 'discovered', label: 'Đòn mở', icon: '🔓' },
-  { value: 'double-check', label: 'Chiếu đôi', icon: '⚡' },
-  { value: 'back-rank', label: 'Hàng cuối', icon: '🧱' },
-  { value: 'smothered', label: 'Bí ngạt', icon: '🕸️' },
-]
-
-const listForType = (puzzles: TacticPuzzle[], type: TacticType) =>
-  puzzles.filter((item) => item.type === type)
+/** Mở sẵn đúng chủ đề qua đường dẫn `/tactics?theme=...`. */
+const isBestMoveTheme = (value: unknown): value is BestMoveTheme =>
+  typeof value === 'string' && TYPE_OPTIONS.some((option) => option.value === value)
 
 export function TacticsPage() {
   const { data: puzzles, isLoading } = useTacticsQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
-  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
+  const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
+  const search = useSearch({ from: '/tactics' })
 
-  const [type, setType] = useState<TacticType>('fork')
+  const [theme, setTheme] = useState<BestMoveTheme>(() =>
+    isBestMoveTheme(search.theme) ? search.theme : 'attack',
+  )
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<'solve' | 'solved'>('solve')
   const [wrongTries, setWrongTries] = useState(0)
   const [hint, setHint] = useState(false)
+  /**
+   * Bé vừa bấm một thế cờ trên bản đồ → bàn cờ hiện **thế cờ đó** ở dạng XEM TRƯỚC
+   * (không cho kéo quân, không lộ đáp án), rồi bấm “▶ Giải thế này” mới vào làm.
+   */
+  const [previewing, setPreviewing] = useState(false)
   const [confetti, setConfetti] = useState(false)
+  /** Đang phát lại nước hay nhất để bé xem cho nhớ. */
+  const [replaying, setReplaying] = useState(false)
+  const [replayToken, setReplayToken] = useState(0)
   const [result, setResult] = useState<{
     emoji: string
     title: string
@@ -57,19 +66,16 @@ export function TacticsPage() {
     stars: number
   } | null>(null)
 
-  const list = useMemo(() => listForType(puzzles ?? [], type), [puzzles, type])
+  const list = useMemo(
+    () => (puzzles ?? []).filter((item) => item.theme === theme),
+    [puzzles, theme],
+  )
   const safeIndex = list.length ? Math.min(index, list.length - 1) : 0
-  const puzzle = list[safeIndex]
-  /** Bài đang mở trên bàn cờ (bài giảng viết tay). */
-  const active = puzzle
+  const active: BestMovePuzzle | undefined = list[safeIndex]
 
-  // Bản đồ leo cấp cho từng loại đòn.
   const curriculum = useCurriculum(list, 'tactics')
+  const board = useChessGame(active?.fen ?? '8/8/8/8/8/8/8/K6k w - - 0 1', active?.side ?? 'white')
 
-  const board = useChessGame(active?.fen ?? START_FEN, 'white')
-
-  // Đổi bài → trả về trạng thái ban đầu. Gọi từ chính sự kiện đổi bài để tránh
-  // setState trong effect (React chỉ khuyến khích effect để đồng bộ hệ thống ngoài).
   const resetRound = () => {
     setPhase('solve')
     setWrongTries(0)
@@ -78,40 +84,61 @@ export function TacticsPage() {
 
   const solved = phase === 'solved'
 
-  /**
-   * Nước giải của thế cờ - chỉ lộ ra khi bé bấm 💡 Gợi ý (hoặc đi sai một lần),
-   * để bài đố vẫn còn là bài đố. `null` = không gợi ý gì.
-   */
-  const hintMove = useMemo(() => {
-    if (!active || solved || !hint) return null
+  /** Nước hay nhất (from → to), đọc từ chính FEN nên luôn chính xác. */
+  const solutionMove = useMemo(() => {
+    if (!active) return null
     try {
       const probe = new Chess(active.fen)
-      const move = probe.move(active.solution)
+      const move = probe.move(active.bestSan)
       return { from: move.from, to: move.to }
     } catch {
       return null
     }
-  }, [active, hint, solved])
+  }, [active])
 
-  const solutionArrow = useMemo(
-    () =>
-      hintMove
-        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
-        : [],
-    [hintMove],
+  /** Chỉ lộ nước hay nhất khi bé bấm 💡 (hoặc đi sai một lần). */
+  const hintMove = useMemo(
+    () => (solutionMove && !solved && hint ? solutionMove : null),
+    [solutionMove, solved, hint],
   )
 
-  /**
-   * Tô sáng QUÂN CẦN ĐI (viền vàng) và Ô ĐÍCH (viền xanh) - giống hệt tab Khai
-   * cuộc, để bé 7 tuổi nhìn là biết phải kéo quân nào đi đâu.
-   */
+  const replaySolution = () => {
+    if (!active || replaying) return
+    setReplaying(true)
+    board.reset()
+    setReplayToken((value) => value + 1)
+  }
+
+  // Phải đợi qua một effect mới đi được nước (bàn cờ của lần render hiện tại đã giải rồi).
+  useEffect(() => {
+    if (replayToken === 0 || !active) return
+    const timers: number[] = []
+    timers.push(
+      window.setTimeout(() => {
+        board.playSan(active.bestSan)
+        timers.push(window.setTimeout(() => setReplaying(false), 900))
+      }, 380),
+    )
+    return () => timers.forEach((id) => window.clearTimeout(id))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replayToken])
+
+  const arrowMove = hintMove ?? (replaying ? solutionMove : null)
+  const solutionArrow = useMemo(
+    () =>
+      arrowMove
+        ? [{ startSquare: arrowMove.from, endSquare: arrowMove.to, color: ARROW_COLOR }]
+        : [],
+    [arrowMove],
+  )
+
   const hintSquares = useMemo(() => {
-    if (!hintMove) return undefined
+    if (!arrowMove) return undefined
     return {
-      [hintMove.from]: HINT_FROM_STYLE,
-      [hintMove.to]: HINT_TO_STYLE,
+      [arrowMove.from]: HINT_FROM_STYLE,
+      [arrowMove.to]: HINT_TO_STYLE,
     }
-  }, [hintMove])
+  }, [arrowMove])
 
   const lastMoveSquares = useMemo(
     () =>
@@ -124,18 +151,19 @@ export function TacticsPage() {
     [board.lastMove],
   )
 
-  /** Vệt nước vừa đi + vệt gợi ý quân cần đi (gợi ý đè lên vệt cũ). */
   const squareStyles = useMemo(
     () => (hintSquares ? { ...lastMoveSquares, ...hintSquares } : lastMoveSquares),
     [lastMoveSquares, hintSquares],
   )
 
+  const announceSan = hintMove ? (active?.bestSan ?? null) : null
+
   const puzzleAnnotation: MoveAnnotation | null = useMemo(
     () =>
       active
         ? {
-            san: active.solution,
-            piece: pieceFromSan(active.solution),
+            san: active.bestSan,
+            piece: pieceFromSan(active.bestSan),
             reason: active.explanation,
             rhyme: active.rhyme,
           }
@@ -143,14 +171,34 @@ export function TacticsPage() {
     [active],
   )
 
-  const goTo = (nextType: TacticType, nextPuzzle?: TacticPuzzle) => {
-    setType(nextType)
-    const nextList = listForType(puzzles ?? [], nextType)
-    setIndex(nextPuzzle ? Math.max(0, nextList.findIndex((item) => item.id === nextPuzzle.id)) : 0)
+  const goTo = (nextTheme: BestMoveTheme, nextPuzzle?: BestMovePuzzle) => {
+    setTheme(nextTheme)
+    setPreviewing(false)
+    const nextList = (puzzles ?? []).filter((item) => item.theme === nextTheme)
+    setIndex(
+      nextPuzzle ? Math.max(0, nextList.findIndex((item) => item.id === nextPuzzle.id)) : 0,
+    )
     resetRound()
   }
 
-  /** Sang bài kế tiếp đã được mở khoá (bỏ qua bài còn khoá). */
+  /**
+   * Bấm một thế trên bản đồ: chọn thế đó và cho bàn cờ hiện **thế cờ ấy** để nhìn
+   * trước. KHÔNG lộ nước hay nhất - đáp án chỉ hiện khi bé bấm “▶ Giải thế này”
+   * rồi tự tìm (hoặc bấm 💡 Gợi ý).
+   */
+  const selectPuzzle = (id: string) => {
+    const target = list.find((item) => item.id === id)
+    if (!target) return
+    goTo(target.theme, target)
+    setPreviewing(true)
+  }
+
+  /** Vào làm thế đang xem trước. */
+  const startSolving = () => {
+    setPreviewing(false)
+    resetRound()
+  }
+
   const nextPuzzle = () => {
     if (!curriculum.length) return
     for (let step = 1; step <= curriculum.length; step += 1) {
@@ -164,8 +212,7 @@ export function TacticsPage() {
   }
 
   const handleDrop = (from: string, to: string): boolean => {
-    // Giải xong rồi thì dừng ván - bé bấm ➡️ Bài tiếp để sang câu mới.
-    if (!active || phase === 'solved') return false
+    if (!active || phase === 'solved' || previewing) return false
 
     const probe = new Chess(board.fen)
     let move
@@ -176,17 +223,17 @@ export function TacticsPage() {
       return false
     }
 
-    if (move.san === active.solution) {
+    // Máy đã chấm sẵn danh sách nước giữ nguyên lợi thế → bé vào đúng "vùng tốt" là thắng.
+    if (active.goodMoves.includes(move.san)) {
       board.playSan(move.san)
       if (soundOn) playMove()
       setPhase('solved')
       setConfetti(true)
       if (soundOn) playWin()
-      // Câu "Khởi động" không tính điểm vào mini-Elo (bé mới học vẫn được khen).
       const firstTime = completeActivity(`tactics:${active.id}`, 4)
       setResult({
-        emoji: '🎆',
-        title: 'Đòn tuyệt đỉnh!',
+        emoji: '🎯',
+        title: 'Nước hay nhất!',
         message: `${active.explanation} Khẩu quyết: “${active.rhyme}”.`,
         stars: firstTime ? 4 : 2,
       })
@@ -200,15 +247,14 @@ export function TacticsPage() {
   }
 
   const solvedCount = (puzzles ?? []).filter(
-    (item) => item.type === type && isCompleted(`tactics:${item.id}`),
+    (item) => item.theme === theme && isCompleted(`tactics:${item.id}`),
   ).length
-  const activeMeta = TACTIC_META[type]
+  const activeMeta = BEST_MOVE_THEMES[theme]
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
-      {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
       <BoardStage
         reserve={232}
         top={
@@ -217,18 +263,13 @@ export function TacticsPage() {
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
-              {active?.warmup && (
-                <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-700">
-                  🌱 Khởi động
-                </span>
-              )}
               {active && isCompleted(`tactics:${active.id}`) && (
                 <span className="rounded-full bg-leaf-100 px-3 py-1 text-xs font-extrabold text-leaf-700">
                   🏅 Đã giải
                 </span>
               )}
             </div>
-            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
           </>
         }
         board={
@@ -237,24 +278,55 @@ export function TacticsPage() {
           ) : (
             <ChessBoardPanel
               fen={board.fen}
-              orientation="white"
-              playerSide="white"
-              interactive={board.playerToMove && !board.game.isGameOver() && !solved}
+              orientation={active.side}
+              playerSide={active.side}
+              interactive={
+                !previewing && board.playerToMove && !board.game.isGameOver() && !solved && !replaying
+              }
               heatmap={heatmap}
-              arrows={solutionArrow}
-              extraSquareStyles={squareStyles}
+              arrows={previewing ? [] : solutionArrow}
+              extraSquareStyles={previewing ? undefined : squareStyles}
+              announce={announceSan}
               onDrop={handleDrop}
             />
           )
         }
         under={
           <>
+            {previewing && active && (
+              <p
+                id="kid-tactic-preview-note"
+                className="animate-pop-in rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 px-3 py-2 text-center text-sm font-extrabold text-brand-800"
+              >
+                👀 Bé đang xem thế cờ “{active.title}” — bấm “▶ Giải thế này” để tự tìm nước hay nhất nhé!
+              </p>
+            )}
             <div className="flex flex-wrap items-center gap-2">
-              <KidButton variant="sky" onClick={() => setHint(true)} disabled={hint || solved}>
+              {previewing && (
+                <KidButton id="kid-tactic-start" variant="primary" onClick={startSolving}>
+                  ▶ Giải thế này
+                </KidButton>
+              )}
+              <KidButton
+                variant="sky"
+                onClick={() => setHint(true)}
+                disabled={hint || solved || previewing}
+              >
                 💡 Gợi ý
               </KidButton>
+              {solved && (
+                <KidButton
+                  id="kid-tactic-replay"
+                  variant="sky"
+                  size="sm"
+                  onClick={replaySolution}
+                  disabled={replaying}
+                >
+                  🔁 Xem lại nước hay nhất
+                </KidButton>
+              )}
               <KidButton variant="primary" onClick={nextPuzzle}>
-                ➡️ Bài tiếp
+                ➡️ Thế cờ tiếp
               </KidButton>
               <KidButton
                 variant="ghost"
@@ -271,12 +343,13 @@ export function TacticsPage() {
 
             {wrongTries > 0 && !solved && (
               <p className="animate-pop-in rounded-2xl bg-coral-50 px-3 py-2 text-center text-sm font-extrabold text-coral-600">
-                🤔 Chưa trúng rồi! Bé nhìn 👉 quân viền VÀNG đưa sang ô viền XANH rồi thử lại nhé.
+                🤔 Chưa phải nước mạnh nhất rồi! Bé nhìn 👉 quân viền VÀNG đưa sang ô viền XANH
+                rồi thử lại nhé.
               </p>
             )}
             {solved ? (
               <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
-                🎉 Giải xong rồi! Bé bấm ➡️ Bài tiếp để sang câu mới nhé.
+                🎉 Chuẩn rồi! Bé bấm ➡️ Thế cờ tiếp để sang thế mới nhé.
               </p>
             ) : (
               <p className="text-[0.7rem] font-bold text-brand-400">
@@ -287,36 +360,39 @@ export function TacticsPage() {
         }
       />
 
-      {/* Cột phải: tab loại đòn, nhiệm vụ, băng giải thích, bản đồ săn quân */}
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           <SectionTitle
             icon="⚔️"
-            title="Trung cuộc - Mẹo săn quân"
-            subtitle={`Bé đã giải ${solvedCount}/${list.length} bài ${activeMeta.label.toLowerCase()}`}
-            info={`tactic:${type}`}
+            title="Trung cuộc - Tìm nước hay nhất"
+            subtitle={`Bé đã tìm đúng ${solvedCount}/${list.length} thế ${activeMeta.label.toLowerCase()}`}
+            info={`theme:${theme}`}
           />
           <Segmented
             options={TYPE_OPTIONS}
-            value={type}
+            value={theme}
             onChange={(value) => goTo(value)}
             size="sm"
           />
           <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
             {activeMeta.blurb}
           </p>
+          <p
+            id="kid-tactic-when"
+            className="rounded-2xl border-2 border-dashed border-brand-100 px-3 py-2 text-xs font-bold text-brand-600"
+          >
+            <b className="text-brand-800">🧭 Khi nào dùng?</b> {activeMeta.when}
+          </p>
+          <p className="rounded-2xl bg-leaf-50 px-3 py-2 text-[0.7rem] font-bold text-leaf-700">
+            🤖 Nước tốt nhất của mỗi thế đều do <b>máy chấm sẵn</b> (đối chiếu engine) - bé cứ tìm
+            nước giữ được lợi thế là đúng.
+          </p>
           {active && (
             <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
               <div className="text-xs font-extrabold uppercase text-gold-600">
-                🎯 Nhiệm vụ của bé{active.warmup ? ' · 🌱 Khởi động' : ''}
-
+                🎯 Nhiệm vụ của bé
               </div>
               <div className="text-base font-extrabold text-gold-900">{active.title}</div>
-              {active.warmup && (
-                <div className="mt-1 text-xs font-bold text-gold-700">
-                  Bài làm quen cho bé mới - không tính điểm, cứ thoải mái thử nhé!
-                </div>
-              )}
               {wrongTries > 0 && (
                 <div className="mt-1 text-xs font-bold text-gold-700">💡 {active.hint}</div>
               )}
@@ -339,19 +415,17 @@ export function TacticsPage() {
               id: entry.item.id,
               level: entry.level,
               title: entry.item.title,
-              emoji: TACTIC_META[type].emoji,
+              emoji: activeMeta.emoji,
               subtitle: `Khẩu quyết: “${entry.item.rhyme}”`,
               completed: entry.completed,
               unlocked: entry.unlocked,
             }))}
-            activeId={puzzle?.id}
-            onSelect={(id) => {
-              const target = list.find((item) => item.id === id)
-              if (target) goTo(target.type, target)
-            }}
-            title="Bản đồ săn quân"
+            activeId={active?.id}
+            onSelect={selectPuzzle}
+            allowLockedPreview
+            title="Bản đồ thế cờ"
             unitLabel="thế cờ"
-            allDoneMessage="Bé đã giải hết các thế cờ loại này - sang loại đòn khác thôi! 🏆"
+            allDoneMessage="Bé đã tìm đúng hết các thế của chủ đề này - sang chủ đề khác thôi! 🏆"
           />
         </Panel>
       </div>
@@ -367,7 +441,7 @@ export function TacticsPage() {
           setResult(null)
           nextPuzzle()
         }}
-        retryLabel="Bài tiếp"
+        retryLabel="Thế cờ tiếp"
       />
     </div>
   )

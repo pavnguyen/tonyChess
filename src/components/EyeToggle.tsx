@@ -5,26 +5,21 @@ import { InfoButton } from './InfoPopover'
 interface Props {
   on: boolean
   onToggle: () => void
-  /** Giai đoạn lớn (13+): nút đổi thành “🔍 Kiểm tra”, hiện vài giây rồi tự tắt. */
-  checkMode?: boolean
   className?: string
 }
 
 /** Nút "Mắt Thần Cờ Vua" + bảng chú giải màu ô cờ. */
-export function EyeToggle({ on, onToggle, checkMode = false, className = '' }: Props) {
+export function EyeToggle({ on, onToggle, className = '' }: Props) {
   const [showLegend, setShowLegend] = useState(false)
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <button
+        id="kid-eye-toggle"
         type="button"
         onClick={onToggle}
         aria-pressed={on}
-        title={
-          checkMode
-            ? 'Kiểm tra: hiện các ô nguy hiểm vài giây rồi tự tắt'
-            : 'Mắt Thần Cờ Vua: nhìn toàn cảnh nguy hiểm'
-        }
+        title="Mắt Thần Cờ Vua: nhìn toàn cảnh nguy hiểm"
         className={`flex items-center gap-2 rounded-full border-[3px] border-white px-3 py-2 text-xs font-extrabold shadow-lg transition-all active:translate-y-[2px] sm:text-sm ${
           on
             ? 'bg-gradient-to-br from-brand-700 to-leaf-500 text-white animate-pulse-ring'
@@ -32,18 +27,16 @@ export function EyeToggle({ on, onToggle, checkMode = false, className = '' }: P
         }`}
       >
         <span className={`text-xl ${on ? '' : 'grayscale'}`} aria-hidden>
-          {checkMode ? '🔍' : '👁️'}
+          👁️
         </span>
-        <span className="whitespace-nowrap">{checkMode ? 'Kiểm tra' : 'Mắt Thần Cờ Vua'}</span>
-        {!checkMode && (
-          <span
-            className={`grid size-5 place-items-center rounded-full text-[0.6rem] ${
-              on ? 'bg-white text-leaf-600' : 'bg-brand-100 text-brand-500'
-            }`}
-          >
-            {on ? 'BẬT' : 'TẮT'}
-          </span>
-        )}
+        <span className="whitespace-nowrap">Mắt Thần Cờ Vua</span>
+        <span
+          className={`grid size-5 place-items-center rounded-full text-[0.6rem] ${
+            on ? 'bg-white text-leaf-600' : 'bg-brand-100 text-brand-500'
+          }`}
+        >
+          {on ? 'BẬT' : 'TẮT'}
+        </span>
       </button>
 
       <button

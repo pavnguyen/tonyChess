@@ -227,6 +227,67 @@ export function pickMove(fen: string, difficulty: Difficulty = 'medium'): Move |
   return chosen?.move ?? ordered[0]
 }
 
+export interface RankedMove {
+  san: string
+  from: string
+  to: string
+  /** Điểm thế cờ sau nước này, nhìn từ phía bên ĐANG ĐI (cao hơn = tốt hơn). */
+  score: number
+}
+
+/**
+ * Chấm điểm **mọi** nước hợp lệ ở một thế cờ rồi xếp hạng từ tốt nhất tới dở nhất.
+ *
+ * Dùng cho chế độ "tìm nước hay nhất" của tab Trung cuộc: máy tính điểm từng nước
+ * để biết nước nào giữ nguyên lợi thế, thay vì chỉ đáp lại duy nhất một đáp án.
+ * Khác `pickMove` ở chỗ **không** random và trả về CẢ bảng xếp hạng.
+ */
+export function rankMoves(
+  fen: string,
+  difficulty: Difficulty = 'hard',
+  timeBudgetMs?: number,
+): RankedMove[] {
+  const root = new Chess()
+  try {
+    root.load(fen)
+  } catch {
+    return []
+  }
+
+  const ordered = orderMoves(root.moves({ verbose: true }))
+  if (ordered.length === 0) return []
+
+  const config = DIFFICULTY[difficulty]
+  const deadline = Date.now() + (timeBudgetMs ?? config.timeBudget)
+  const scored: RankedMove[] = []
+
+  for (const move of ordered) {
+    // Bàn cờ MỚI cho mỗi nước gốc: nếu tìm kiếm hết giờ giữa chừng, nó có thể để
+    // lại các nước chưa undo trên bàn cờ dùng chung - dựng lại từ FEN là an toàn nhất.
+    const game = new Chess()
+    game.load(fen)
+    game.move({ from: move.from, to: move.to, promotion: move.promotion ?? 'q' })
+    let score: number
+    try {
+      score = -negamax(
+        game,
+        config.depth - 1,
+        -Infinity,
+        Infinity,
+        deadline,
+        1,
+        config.quiescence,
+      )
+    } catch {
+      // Hết ngân sách thời gian giữa lúc chấm → chấm nốt bằng đánh giá tĩnh.
+      score = (game.turn() === 'w' ? 1 : -1) * evaluateWhite(game)
+    }
+    scored.push({ san: move.san, from: move.from, to: move.to, score })
+  }
+
+  return scored.sort((a, b) => b.score - a.score)
+}
+
 /** Bọc kết quả thành dữ liệu gọn nhẹ để gửi qua Web Worker. */
 export function toEngineMove(move: Move | null): EngineMove | null {
   if (!move) return null

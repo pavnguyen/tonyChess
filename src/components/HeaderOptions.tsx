@@ -1,15 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NOTATION_LEGEND, NOTATION_OPTIONS, NOTATION_SYMBOLS } from '../lib/notation'
+import {
+  getSelectedVoiceName,
+  listEnglishVoices,
+  previewSpeech,
+  setSelectedVoice,
+  subscribeVoices,
+} from '../lib/speech'
 import { InfoButton } from './InfoPopover'
-import { STAGES } from '../lib/stages'
 import { useKidProgress } from '../store/progress'
 
 /**
  * Bánh răng ⚙️ trên thanh tiêu đề: gom hết tuỳ chọn của bé vào một bảng nhỏ,
  * để phần nội dung chính không bị chiếm mất chiều cao.
  */
+/** Câu đọc mẫu khi bé/ba mẹ bấm 🔊 ở mỗi dòng giọng. */
+const VOICE_SAMPLE = 'Knight F 3, check'
+
 export function HeaderOptions() {
   const [open, setOpen] = useState(false)
+  // Danh sách giọng đọc máy có - Chrome/Safari nạp BẤT ĐỒNG BỘ, nên vừa đọc lần
+  // đầu vừa nghe `voiceschanged` để cập nhật lại khi giọng về muộn.
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [voiceName, setVoiceName] = useState<string | null>(getSelectedVoiceName)
+
+  useEffect(() => {
+    const refresh = () => setVoices(listEnglishVoices())
+    refresh()
+    return subscribeVoices(refresh)
+  }, [])
   const {
     notation,
     setNotation,
@@ -21,10 +40,6 @@ export function HeaderOptions() {
     unlockAll,
     toggleUnlockAll,
     resetProgress,
-    stage,
-    setStageId,
-    birthYear,
-    setBirthYear,
   } = useKidProgress()
 
   return (
@@ -74,55 +89,6 @@ export function HeaderOptions() {
                 ? `Còn ${nextRank.minStars - stars} ⭐ nữa để thành ${nextRank.emoji} ${nextRank.title}`
                 : 'Bé đã đạt danh hiệu cao nhất! 🌟'}
             </p>
-
-            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-              🎚️ Giai đoạn của bé
-              <InfoButton topic="stages" />
-            </div>
-            <div className="mt-1 grid grid-cols-2 gap-1">
-              {STAGES.map((item) => {
-                const active = item.id === stage.id
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setStageId(item.id)}
-                    className={`flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
-                      active
-                        ? 'border-brand-400 bg-brand-50 text-brand-800'
-                        : 'border-brand-100 bg-white text-brand-500 hover:border-brand-300'
-                    }`}
-                  >
-                    <span aria-hidden>{item.emoji}</span>
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-            <div className="mt-1.5 flex items-center gap-2">
-              <label htmlFor="kid-birth-year" className="text-xs font-extrabold text-brand-600">
-                🎂 Năm sinh
-              </label>
-              <input
-                id="kid-birth-year"
-                type="number"
-                inputMode="numeric"
-                min={1990}
-                max={2100}
-                placeholder="VD 2019"
-                value={birthYear ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value
-                  setBirthYear(value ? Number(value) : null)
-                }}
-                className="w-24 rounded-xl border-2 border-brand-100 px-2 py-1 text-xs font-extrabold text-brand-800"
-              />
-            </div>
-            <p className="mt-1 text-[0.65rem] font-bold text-brand-600">
-              {stage.emoji} <b>{stage.label}</b> · {stage.focus}
-            </p>
-            <p className="text-[0.65rem] font-bold text-brand-400">🏅 {stage.promotion}</p>
 
             <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               ✍️ Cách ghi nước đi
@@ -200,6 +166,83 @@ export function HeaderOptions() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+              🔈 Giọng đọc
+            </div>
+            {voices.length === 0 ? (
+              <p className="mt-1 text-[0.65rem] font-bold text-brand-400">
+                Máy này chưa có giọng tiếng Anh riêng - app sẽ đọc bằng giọng mặc định của trình duyệt.
+              </p>
+            ) : (
+              <div
+                id="kid-voice-list"
+                className="mt-1 grid max-h-44 gap-0.5 overflow-y-auto rounded-xl border-2 border-brand-100 p-1"
+              >
+                <div
+                  data-voice-name=""
+                  className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
+                    voiceName === null ? 'bg-brand-50' : ''
+                  }`}
+                >
+                  <button
+                    type="button"
+                    aria-pressed={voiceName === null}
+                    onClick={() => {
+                      setSelectedVoice(null)
+                      setVoiceName(null)
+                    }}
+                    className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[0.7rem] font-extrabold ${
+                      voiceName === null ? 'text-brand-800' : 'text-brand-500'
+                    }`}
+                  >
+                    ⭐ Tự động (giọng hay nhất)
+                  </button>
+                  <button
+                    type="button"
+                    title="Nghe thử giọng tự động"
+                    onClick={() => previewSpeech(VOICE_SAMPLE, '')}
+                    className="grid size-6 shrink-0 place-items-center rounded-lg bg-white text-[0.7rem] shadow-sm ring-1 ring-brand-100"
+                  >
+                    🔊
+                  </button>
+                </div>
+                {voices.map((voice) => {
+                  const active = voiceName === voice.name
+                  return (
+                    <div
+                      key={`${voice.name}-${voice.lang}`}
+                      data-voice-name={voice.name}
+                      className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
+                        active ? 'bg-brand-50' : ''
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => {
+                          setSelectedVoice(voice.name)
+                          setVoiceName(voice.name)
+                        }}
+                        className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[0.7rem] font-extrabold ${
+                          active ? 'text-brand-800' : 'text-brand-500'
+                        }`}
+                      >
+                        {voice.name} <span className="text-brand-300">· {voice.lang}</span>
+                      </button>
+                      <button
+                        type="button"
+                        title={`Nghe thử: ${voice.name}`}
+                        onClick={() => previewSpeech(VOICE_SAMPLE, voice.name)}
+                        className="grid size-6 shrink-0 place-items-center rounded-lg bg-white text-[0.7rem] shadow-sm ring-1 ring-brand-100"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             <div className="mt-2.5 grid gap-1.5">
               <button

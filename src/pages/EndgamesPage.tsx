@@ -4,7 +4,6 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
-import { InfoButton } from '../components/InfoPopover'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
@@ -14,24 +13,15 @@ import { useEyeCheck } from '../hooks/useEyeCheck'
 import { findHintMove } from '../lib/hints'
 import { ARROW_COLOR, BOARD_MARKS, HINT_FROM_STYLE, HINT_TO_STYLE } from '../lib/notation'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
-import { MATES } from '../data/mates'
-import { ROOK_ENDGAMES } from '../data/rookEndgames'
 import { useKidProgress } from '../store/progress'
 import type { EndgameChallenge, MoveAnnotation } from '../types'
-
-/** Vài mẫu bí trong thư viện ứng đúng một “họ đòn” đã có giải thích ⓘ. */
-const MATE_INFO: Record<string, string> = {
-  'mate-back-rank-rook': 'tactic:back-rank',
-  'mate-back-rank-queen': 'tactic:back-rank',
-  'mate-smothered': 'tactic:smothered',
-}
 
 const PLAYER_COLOR = 'w' as const
 
 export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
   const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
-  const { on: heatmap, toggle: toggleHeatmap, checkMode } = useEyeCheck()
+  const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
   const [challengeId, setChallengeId] = useState('promote-easy')
   const [hintVisible, setHintVisible] = useState(false)
@@ -57,8 +47,7 @@ export function EndgamesPage() {
     setHintVisible(false)
   }, [challengeId])
 
-  // Đối thủ (Vua Đen) đi theo engine mức thấp: nước đáp trả vẫn có ý nghĩa
-  // nhưng vẫn mắc lỗi để bé còn cơ hội thắng.
+  // Đối thủ đi theo engine ở mức DỄ - máy còn mắc lỗi để bé kịp thực hiện kỹ thuật.
   useEffect(() => {
     if (finished) return
     if (board.playerToMove) return
@@ -76,13 +65,17 @@ export function EndgamesPage() {
   useEffect(() => {
     if (finished || !challenge) return
     const game = board.game
+    const activeId = challenge.id
+    const playerPromoted = board.history.some(
+      (move) => move.promotion && move.color === PLAYER_COLOR,
+    )
 
     if (game.isCheckmate()) {
       setFinished(true)
       if (game.turn() !== PLAYER_COLOR) {
         if (soundOn) playWin()
         setConfetti(true)
-                const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
+        const firstTime = completeActivity(`endgame:${activeId}`, 5)
         setResult({
           emoji: '🏁',
           title: 'Chiếu bí tuyệt vời!',
@@ -90,7 +83,7 @@ export function EndgamesPage() {
           stars: firstTime ? 5 : 2,
         })
       } else {
-                setResult({
+        setResult({
           emoji: '😅',
           title: 'Bé bị chiếu bí rồi!',
           message: 'Lần sau bé nhớ giữ Vua tránh xa nhé. Thử lại nào!',
@@ -102,7 +95,7 @@ export function EndgamesPage() {
 
     if (game.isStalemate() || game.isInsufficientMaterial() || game.isDraw()) {
       setFinished(true)
-            setResult({
+      setResult({
         emoji: '🤝',
         title: 'Hòa cờ mất rồi!',
         message: 'Gần thắng lắm rồi, bé thử lại nhé!',
@@ -111,17 +104,14 @@ export function EndgamesPage() {
       return
     }
 
-    const promoted = board.history.some(
-      (move) => move.promotion && move.color === PLAYER_COLOR,
-    )
-    if (challenge.goal === 'promote' && promoted) {
+    if (challenge.goal === 'promote' && playerPromoted) {
       setFinished(true)
       if (soundOn) {
         playPromote()
         playWin()
       }
       setConfetti(true)
-            const firstTime = completeActivity(`endgame:${challenge.id}`, 5)
+      const firstTime = completeActivity(`endgame:${activeId}`, 5)
       setResult({
         emoji: '👑',
         title: 'Tốt hóa thành Hậu!',
@@ -138,8 +128,8 @@ export function EndgamesPage() {
    * luôn được tính lại theo thế mới.
    */
   const hintMove = useMemo(() => {
-    if (!challenge || finished || !hintVisible) return null
-    if (!board.playerToMove) return null
+    if (finished || !hintVisible || !board.playerToMove) return null
+    if (!challenge) return null
     const move = findHintMove(board.game, challenge.goal, PLAYER_COLOR)
     return move ? { from: move.from, to: move.to } : null
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -195,7 +185,7 @@ export function EndgamesPage() {
   const annotation: MoveAnnotation | null = challenge
     ? {
         san: challenge.goal === 'promote' ? 'e8=Q' : 'Q#',
-        piece: challenge.goal === 'promote' ? 'q' : 'q',
+        piece: 'q',
         reason: challenge.explanation,
         rhyme: challenge.rhyme,
       }
@@ -212,15 +202,13 @@ export function EndgamesPage() {
           <>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
-                {challenge?.goal === 'promote'
-                  ? '🛡️ Đưa Tốt lên thành Hậu'
-                  : '🏁 Chiếu bí Vua Đen'}
+                {challenge?.goal === 'promote' ? '🛡️ Đưa Tốt lên thành Hậu' : '🏁 Chiếu bí Vua Đen'}
               </span>
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 {board.history.length} nước
               </span>
             </div>
-            <EyeToggle on={heatmap} onToggle={toggleHeatmap} checkMode={checkMode} />
+            <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
           </>
         }
         board={
@@ -276,17 +264,12 @@ export function EndgamesPage() {
         }
       />
 
-      {/*
-        Cột phải được dàn lại cho BỚT CUỘN: 8 thế tàn cuộc gom vào một dải chip gọn
-        trên 1-2 hàng (trước đây là lưới thẻ to 4 hàng), và bảng hướng dẫn gộp
-        thành 3 dòng - khẩu quyết vè đã có sẵn ở băng giải thích bên dưới nên
-        không nhắc lại nữa.
-      */}
+      {/* Cột phải: một dải chip gọn cho 12 thế luyện + bảng chi tiết bài đang chọn. */}
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel>
           <SectionTitle
             icon="👑"
-            title="Tàn cuộc - Trạm năng lượng Hậu"
+            title="Tàn cuộc cơ bản"
             subtitle={`Endgame · 🏅 ${doneCount}/${endgames?.length ?? 0} bài xong`}
           />
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -296,6 +279,7 @@ export function EndgamesPage() {
               return (
                 <button
                   key={item.id}
+                  data-endgame-id={item.id}
                   onClick={() => setChallengeId(item.id)}
                   aria-pressed={active}
                   title={item.title}
@@ -330,7 +314,8 @@ export function EndgamesPage() {
               : '1️⃣ Canh chặt hàng ngang · 2️⃣ Quân còn lại chiếu Vua · 3️⃣ Hết đường chạy là bí!'}
           </p>
           <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
-            🤖 Vua Đen đi như một bạn nhỏ đang tập chơi - thỉnh thoảng mắc lỗi, bé cứ bình tĩnh dồn Vua nhé.
+            🤖 Vua Đen đi như một bạn nhỏ đang tập chơi - thỉnh thoảng mắc lỗi, bé cứ bình tĩnh dồn
+            Vua nhé.
           </p>
         </Panel>
 
@@ -342,84 +327,6 @@ export function EndgamesPage() {
             variant={finished ? 'played' : 'hint'}
           />
         )}
-
-        {/* Thư viện thế chiếu bí (§4.2): mẫu bí kinh điển + chuỗi nước đã kiểm chứng. */}
-        <Panel>
-          <SectionTitle
-            icon="📚"
-            title="Thư viện chiếu bí"
-            subtitle="Mẫu bí kinh điển - nhìn là nhớ"
-          />
-          <div className="mt-2 grid gap-1.5">
-            {MATES.map((pattern) => (
-              <div
-                key={pattern.id}
-                className="rounded-2xl border-2 border-brand-100 bg-white px-2.5 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <span aria-hidden className="text-base">
-                    {pattern.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
-                    {pattern.title}
-                  </span>
-                  <InfoButton topic={MATE_INFO[pattern.id]} />
-                  <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.65rem] font-extrabold text-gold-700">
-                    bí sau {pattern.mateIn} nước
-                  </span>
-                </div>
-                <div className="mt-1 font-mono text-[0.7rem] font-bold text-brand-600">
-                  {pattern.line.join(' · ')}
-                </div>
-                <div className="mt-1 text-[0.7rem] font-bold leading-snug text-brand-500">
-                  {pattern.explanation}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        {/* Tàn cuộc Xe + Tốt (§4.5): kết quả thắng/hòa đã được Stockfish chứng minh. */}
-        <Panel>
-          <SectionTitle
-            icon="🏰"
-            title="Tàn cuộc Xe + Tốt"
-            subtitle="Thắng hay hòa - đã được máy chứng minh"
-          />
-          <div className="mt-2 grid gap-1.5">
-            {ROOK_ENDGAMES.map((lesson) => (
-              <div
-                key={lesson.id}
-                className="rounded-2xl border-2 border-brand-100 bg-white px-2.5 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <span aria-hidden className="text-base">
-                    {lesson.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-800">
-                    {lesson.title}
-                  </span>
-                  <InfoButton topic={`endgame:${lesson.id}`} />
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold ${
-                      lesson.result === 'win'
-                        ? 'bg-leaf-100 text-leaf-700'
-                        : 'bg-info-100 text-info-900'
-                    }`}
-                  >
-                    {lesson.result === 'win' ? 'thắng' : 'hòa'}
-                  </span>
-                </div>
-                <div className="mt-1 text-[0.7rem] font-bold leading-snug text-brand-500">
-                  {lesson.idea}
-                </div>
-                <div className="mt-1 text-[0.7rem] font-extrabold text-gold-700">
-                  🎵 “{lesson.rhyme}”
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
       </div>
 
       <CelebrationModal

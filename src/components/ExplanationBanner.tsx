@@ -7,7 +7,6 @@ import {
   PIECE_GLYPH,
   PIECE_NAME_VI,
 } from '../lib/notation'
-import { useKidProgress } from '../store/progress'
 import type { MoveAnnotation, NotationStyle } from '../types'
 
 export type BannerVariant = 'hint' | 'played' | 'opponent' | 'wrong'
@@ -59,7 +58,6 @@ export function ExplanationBanner({
   notation,
   variant = 'hint',
 }: Props) {
-  const { stage } = useKidProgress()
   const style = VARIANT_STYLE[variant]
   const piece = annotation.piece ?? pieceFromSan(annotation.san)
   const info = describeMove(annotation.san, notation)
@@ -123,7 +121,7 @@ export function ExplanationBanner({
             </div>
             <p className="text-sm font-bold text-brand-900">{annotation.reason}</p>
           </div>
-          {stage.showRhyme ? (
+          {annotation.rhyme ? (
             <div className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-sun bg-sun/20 px-2.5 py-1.5">
               <span className="text-lg sm:text-xl" aria-hidden>
                 🎵

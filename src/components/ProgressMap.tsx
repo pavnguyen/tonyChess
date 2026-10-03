@@ -21,6 +21,11 @@ interface Props {
   levelLabel?: string
   /** Khoá nội dung cho nút ⓘ cạnh tiêu đề bản đồ (xem `src/lib/info.ts`). */
   info?: string
+  /**
+   * Cho bấm cả trạm CHƯA mở khoá để **xem trước** (không tính là đã học). Mặc định
+   * tắt: trạm 🔒 vẫn bị chặn như cũ.
+   */
+  allowLockedPreview?: boolean
 }
 
 /**
@@ -36,6 +41,7 @@ export function ProgressMap({
   allDoneMessage,
   levelLabel = 'Cấp',
   info,
+  allowLockedPreview = false,
 }: Props) {
   const done = nodes.filter((node) => node.completed).length
   const unlocked = nodes.filter((node) => node.unlocked).length
@@ -87,13 +93,16 @@ export function ProgressMap({
             <button
               key={node.id}
               type="button"
-              onClick={() => node.unlocked && onSelect(node.id)}
-              disabled={!node.unlocked}
+              data-level-id={node.id}
+              onClick={() => (node.unlocked || allowLockedPreview) && onSelect(node.id)}
+              disabled={!node.unlocked && !allowLockedPreview}
               aria-current={isActive}
               title={
                 node.unlocked
                   ? `${levelLabel} ${node.level} · ${node.title} - ${node.subtitle}`
-                  : `${levelLabel} ${node.level} · ${node.title} (chưa mở khoá)`
+                  : allowLockedPreview
+                    ? `${levelLabel} ${node.level} · ${node.title} - bấm để xem trước thế cờ`
+                    : `${levelLabel} ${node.level} · ${node.title} (chưa mở khoá)`
               }
               className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] disabled:cursor-not-allowed disabled:active:translate-y-0 ${skin}`}
             >

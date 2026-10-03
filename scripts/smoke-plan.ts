@@ -12,7 +12,9 @@
  *   - luôn có nước engine đề xuất, và nước đó phải **đi được thật** trên thế cờ.
  */
 import { Chess } from 'chess.js'
-import { TACTICS } from '../src/data/tactics.ts'
+import { BEST_MOVES } from '../src/data/bestMoves.ts'
+import { OPENINGS } from '../src/data/openings.ts'
+import { isPlanFocusPlayable, isSideMoveLegal, parsePlanFocus } from '../src/lib/planFocus.ts'
 import { buildLivePlan, MAX_LIVE_PLAN_ITEMS } from '../src/lib/livePlan.ts'
 import type { LivePlan } from '../src/lib/livePlan.ts'
 
@@ -99,7 +101,7 @@ if (planPromote) {
 console.log('\n▶ Luật chung trên mọi thế cờ của app')
 const positions = [
   { name: 'thế cờ ban đầu', fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' },
-  ...TACTICS.map((puzzle) => ({ name: puzzle.id, fen: puzzle.fen })),
+  ...BEST_MOVES.map((puzzle) => ({ name: puzzle.id, fen: puzzle.fen })),
 ]
 let engineCount = 0
 let legalCount = 0
@@ -156,6 +158,122 @@ check(
 )
 const planWorse = buildLivePlan(upAQueen, 'black')
 check(planWorse?.mood === 'worse', `nhìn từ phía Đen thì ngược lại (“${planWorse?.evalText}”)`)
+
+// --- 8. Soi ô cờ theo câu kế hoạch trung cuộc (`src/lib/planFocus.ts`).
+// Đây là cách biến phần kế hoạch thành TRỰC QUAN mà không phải thêm dữ liệu: mỗi câu
+// kế hoạch vốn đã có sẵn số ô, chỉ cần đọc lại chính câu đó.
+console.log('\n▶ Soi ô cờ theo câu kế hoạch trung cuộc')
+check(parsePlanFocus('').squares.length === 0, 'câu rỗng → không tô ô nào')
+check(parsePlanFocus('cột Hậu').squares.length === 0, '“cột Hậu” KHÔNG bị hiểu nhầm thành cột h')
+const focusFile = parsePlanFocus('Đưa Xe vào cột e')
+check(
+  focusFile.squares.length === 8 && focusFile.squares.every((square) => square[0] === 'e'),
+  `“cột e” → tô đủ 8 ô của cột e (${focusFile.squares.join(', ')})`,
+)
+const focusTwo = parsePlanFocus('Đưa Mã b1 lên d2')
+check(
+  focusTwo.squares.join(',') === 'b1,d2',
+  `đọc đúng ô và sắp theo thứ tự bàn cờ (${focusTwo.squares.join(', ')})`,
+)
+check(
+  parsePlanFocus('Nhảy Nc6 rồi Bg3').squares.join(',') === 'c6,g3',
+  'đọc được cả khi ô dính ký hiệu quân (Nc6, Bg3)',
+)
+
+// Mũi tên “từ ô này sang ô kia”.
+check(
+  parsePlanFocus('Đưa Mã b1 lên d2 rồi chuyển sang cánh Vua').arrow?.from === 'b1' &&
+    parsePlanFocus('Đưa Mã b1 lên d2 rồi chuyển sang cánh Vua').arrow?.to === 'd2',
+  '“Đưa Mã b1 lên d2” → mũi tên b1 → d2',
+)
+check(
+  parsePlanFocus('Đưa Xe f8 lên e8 giữ ô e5').arrow?.to === 'e8',
+  'ô đích là ô đầu tiên sau phần nguồn, không phải ô nhắc ở cuối câu',
+)
+check(
+  parsePlanFocus('Đưa Xe a8 sang cột c vừa mở.').arrow === null,
+  'nói “sang cột c” → KHÔNG vẽ mũi tên (không đoán bừa ô đích)',
+)
+check(
+  parsePlanFocus('Đẩy Tốt b6 rồi đưa Tượng c8 ra b7 để tăng sức ép.').prep.join(',') === 'b6',
+  'nhận ra nước dọn đường “Đẩy Tốt b6” đứng trước mũi tên',
+)
+check(
+  parsePlanFocus('Đánh sang cánh Hậu bằng ...b5 rồi đưa Tượng c8 lên b7.').prep.join(',') === 'b5',
+  'nhận ra nước dọn đường viết gọn “...b5”',
+)
+check(parsePlanFocus('Đẩy Tốt f5 rồi f4.').arrow === null, 'câu “đẩy” không phải “đưa” → không vẽ mũi tên')
+check(parsePlanFocus('Giữ Tượng g2 quét đường chéo dài.').arrow === null, 'câu chỉ nói giữ quân → không vẽ mũi tên')
+
+/** Thế cờ cuối dòng chính của một khai cuộc. */
+const finalFenOf = (moves: typeof OPENINGS[number]['moves']) => {
+  const game = new Chess()
+  for (const move of moves) {
+    try {
+      game.move(move.san)
+    } catch {
+      break
+    }
+  }
+  return game.fen()
+}
+
+const allPlanPoints = OPENINGS.flatMap((opening) =>
+  opening.plan.points.map((point) => ({
+    id: opening.id,
+    point,
+    side: opening.side,
+    fen: finalFenOf(opening.moves),
+    focus: parsePlanFocus(point),
+  })),
+)
+const blindPoints = allPlanPoints.filter((item) => item.focus.squares.length === 0)
+check(
+  blindPoints.length === 0,
+  `mọi câu kế hoạch đều soi được ô cờ (${allPlanPoints.length - blindPoints.length}/${allPlanPoints.length})`,
+)
+for (const item of blindPoints) console.log(`      · ${item.id}: ${item.point}`)
+check(
+  allPlanPoints.length >= 30,
+  `đủ số câu kế hoạch của 10 khai cuộc Trắng/Đen (${allPlanPoints.length} câu)`,
+)
+
+const arrowPoints = allPlanPoints.filter((item) => item.focus.arrow !== null)
+check(
+  arrowPoints.length >= 5,
+  `đủ nhiều câu nói rõ “từ ô nào sang ô nào” để vẽ mũi tên (${arrowPoints.length} câu)`,
+)
+// Mỗi câu có mũi tên phải LÀM ĐƯỢC THẬT: đi các nước Tốt dọn đường nhắc trong câu
+// rồi tới nước của mũi tên (kế hoạch hai bước vẫn tính là đúng).
+let impossible = 0
+let straightAway = 0
+for (const item of arrowPoints) {
+  const arrow = item.focus.arrow
+  if (!arrow) continue
+  if (!isPlanFocusPlayable(item.fen, item.side, item.point)) {
+    impossible += 1
+    check(false, `${item.id}: câu này KHÔNG làm được → “${item.point}”`)
+    continue
+  }
+  if (isSideMoveLegal(item.fen, item.side, arrow.from, arrow.to)) straightAway += 1
+}
+check(
+  impossible === 0,
+  `mọi câu có mũi tên đều làm được thật trên thế cờ cuối (${arrowPoints.length} câu)`,
+)
+check(
+  straightAway >= 5,
+  `phần lớn mũi tên đi được NGAY ở thế cờ cuối, không cần bước dọn đường (${straightAway}/${arrowPoints.length})`,
+)
+check(
+  isSideMoveLegal('4k3/8/8/8/8/8/8/4K3 w - - 0 1', 'white', 'e1', 'e2') &&
+    !isSideMoveLegal('4k3/8/8/8/8/8/8/4K3 w - - 0 1', 'white', 'e1', 'e3'),
+  'hàm kiểm nước đi: cho Vua đi 1 ô, chặn Vua đi 2 ô',
+)
+check(
+  isSideMoveLegal('4k3/8/8/8/8/8/8/R3K3 w - - 0 1', 'black', 'a1', 'a8') === false,
+  'hàm kiểm nước đi không cho bên không có quân đi',
+)
 
 console.log(
   failures === 0 ? '\n✅ KẾ HOẠCH THEO THẾ CỜ PASS!\n' : `\n❌ KẾ HOẠCH THEO THẾ CỜ: ${failures} lỗi\n`,

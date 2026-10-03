@@ -65,6 +65,8 @@ export const ARROW_COLOR = '#d9a93f'
  * - **Nước vừa đi**: viền xám nhạt (thông tin, không tranh sự chú ý).
  * - **Quân bé cần đi**: viền VÀNG ĐỒNG đậm + nền vàng nhạt.
  * - **Ô đích**: viền XANH THÉP + nền xanh nhạt (khác hẳn màu quân cần đi).
+ * - **Ô trong kế hoạch**: viền TÍM + nền tím nhạt - màu riêng để bé phân biệt
+ *   "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch trung cuộc".
  *
  * Vàng đồng và xanh thép đều nổi rõ trên cả ô trắng lẫn ô xanh lá đậm của bàn cờ.
  */
@@ -75,6 +77,8 @@ export const BOARD_MARKS = {
   hintFromRing: 'inset 0 0 0 5px #c08e22',
   hintToFill: 'rgba(147, 192, 205, 0.42)',
   hintToRing: 'inset 0 0 0 4px #5f9faf',
+  planFill: 'rgba(126, 106, 209, 0.42)',
+  planRing: 'inset 0 0 0 4px #6d5bc7',
 } as const
 
 /**
@@ -97,6 +101,17 @@ export const HINT_TO_STYLE: CSSProperties = {
   boxShadow: BOARD_MARKS.hintToRing,
   // Ô ĐÍCH: nhịp dịu hơn, để mắt bé tập trung vào quân cần đi.
   animation: 'hint-breathe-steel 1.5s ease-in-out infinite',
+}
+
+/**
+ * Style cho những ô cờ thuộc **câu kế hoạch trung cuộc** bé vừa bấm vào (§4.4).
+ *
+ * Tím là màu duy nhất chưa dùng trên bàn cờ (vàng = quân cần đi, xanh = ô đích,
+ * xám = nước vừa đi) nên bé nhìn là biết ngay "ô này thuộc kế hoạch".
+ */
+export const PLAN_FOCUS_STYLE: CSSProperties = {
+  backgroundColor: BOARD_MARKS.planFill,
+  boxShadow: BOARD_MARKS.planRing,
 }
 
 export const NOTATION_OPTIONS: {

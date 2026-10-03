@@ -5,9 +5,9 @@
 import { Chess } from 'chess.js'
 import { ENDGAMES } from '../src/data/endgames.ts'
 import { OPENINGS } from '../src/data/openings.ts'
-import { TACTICS } from '../src/data/tactics.ts'
-import { GM_LECTURES } from '../src/data/gmLectures.ts'
+import { BEST_MOVES, BEST_MOVE_THEMES } from '../src/data/bestMoves.ts'
 import { coordinateLabels, splitSquare } from '../src/lib/coordinates.ts'
+import { describeMoveEnglish, describePieceEnglish, squareSpeech } from '../src/lib/speech.ts'
 import { findHintMove } from '../src/lib/hints.ts'
 import { tabKeyForPath, TIPS_BY_LESSON, TIPS_BY_TAB, tipsFor } from '../src/lib/parentTips.ts'
 import {
@@ -87,15 +87,15 @@ const symbolSamplesOk = NOTATION_SYMBOLS.filter((row) => row.sample !== row.glyp
 })
 check(symbolSamplesOk, 'nước ví dụ của mỗi ký hiệu đều chứa đúng ký hiệu đó')
 // Đối chiếu với nước cờ thật của app: chiếu bí phải kết thúc bằng "#".
-const matePuzzles = TACTICS.filter((puzzle) => puzzle.solution.includes('#'))
+const matePuzzles = BEST_MOVES.filter((puzzle) => puzzle.bestSan.includes('#'))
 check(
   matePuzzles.length > 0 &&
     matePuzzles.every((puzzle) => {
       const probe = new Chess()
       probe.load(puzzle.fen)
-      return probe.move(puzzle.solution) && probe.isCheckmate()
+      return probe.move(puzzle.bestSan) && probe.isCheckmate()
     }),
-  `mọi câu giải có dấu "#" đều thật sự chiếu bí (${matePuzzles.length} câu)`,
+  `mọi nước hay nhất có dấu "#" đều thật sự chiếu bí (${matePuzzles.length} thế)`,
 )
 
 console.log('\n▶ Mắt Thần Cờ Vua (heatmap)')
@@ -164,17 +164,17 @@ for (const challenge of ENDGAMES) {
 }
 
 console.log('\n▶ Đối thủ ngẫu nhiên đi được')
-for (const puzzle of TACTICS) {
+for (const puzzle of BEST_MOVES) {
   const game = new Chess()
   game.load(puzzle.fen)
-  game.move(puzzle.solution)
+  game.move(puzzle.bestSan)
   // Các thế chiếu bí kết thúc ván ngay, không cần (và không thể) cho đối thủ đáp lại.
   if (game.isGameOver()) {
-    check(true, `${puzzle.id}: ${puzzle.solution} kết thúc ván ngay (chiếu bí) - đúng như mong đợi`)
+    check(true, `${puzzle.id}: ${puzzle.bestSan} kết thúc ván ngay (chiếu bí) - đúng như mong đợi`)
     continue
   }
   const options = game.moves()
-  check(options.length > 0, `${puzzle.id}: sau ${puzzle.solution} đối thủ còn nước đi`)
+  check(options.length > 0, `${puzzle.id}: sau ${puzzle.bestSan} đối thủ còn nước đi`)
 }
 
 console.log('\n▶ Gợi ý cho ba mẹ (§10)')
@@ -189,8 +189,12 @@ for (const [route, tip] of Object.entries(TIPS_BY_TAB)) {
     `${route}: có 1-2 câu hỏi (${tip.questions.length})`,
   )
   check(
-    tip.questions.every((question) => question.trim().length >= 20),
+    tip.questions.every((item) => item.q.trim().length >= 20),
     `${route}: câu hỏi đủ rõ để ba mẹ hỏi ngay`,
+  )
+  check(
+    tip.questions.every((item) => item.a.trim().length >= 20),
+    `${route}: câu hỏi nào cũng có đáp án gợi ý (ba mẹ không biết cờ vẫn dùng được)`,
   )
 }
 
@@ -199,20 +203,19 @@ for (const opening of OPENINGS) {
   const key = `opening:${opening.id}`
   check(Boolean(TIPS_BY_LESSON[key]?.length), `${key}: có câu hỏi riêng`)
 }
-for (const lecture of GM_LECTURES) {
-  const key = `lecture:${lecture.id}`
-  check(Boolean(TIPS_BY_LESSON[key]?.length), `${key}: có câu hỏi riêng`)
-}
-
-const lessonTip = tipsFor('/strategy', 'lecture:lucena')
+const lessonTip = tipsFor('/strategy', 'opening:london')
 const tabTip = tipsFor('/strategy', null)
 check(
-  lessonTip.questions[0] === TIPS_BY_LESSON['lecture:lucena'][0],
-  'đang mở bài giảng → hiện đúng câu hỏi của bài đó',
+  lessonTip.questions[0].q === TIPS_BY_LESSON['opening:london'][0].q,
+  'đang mở bài học → hiện đúng câu hỏi của bài đó',
 )
 check(
-  tabTip.questions[0] === TIPS_BY_TAB['/strategy'].questions[0],
+  tabTip.questions[0].q === TIPS_BY_TAB['/strategy'].questions[0].q,
   'không rõ bài → rơi về câu hỏi chung của tab',
+)
+check(
+  Object.values(TIPS_BY_LESSON).every((items) => items.every((item) => item.a.trim().length >= 20)),
+  'mọi câu hỏi riêng của bài học đều có đáp án gợi ý',
 )
 check(tipsFor('/endgames', 'opening:london').questions.length > 0, 'bài lạ trong tab khác vẫn có câu hỏi')
 
@@ -246,6 +249,84 @@ check(
   'tách ô “e4” thành cột e, hàng 4',
 )
 check(splitSquare('z9') === null && splitSquare('') === null, 'ô không hợp lệ → trả null')
+
+console.log('\n▶ Trung cuộc: “Khi nào dùng?” + 4 chủ đề “Tìm nước hay nhất”')
+const moveThemes = Object.keys(BEST_MOVE_THEMES) as (keyof typeof BEST_MOVE_THEMES)[]
+for (const theme of moveThemes) {
+  check(
+    BEST_MOVE_THEMES[theme].when.trim().length >= 30,
+    `${theme}: có dòng “Khi nào dùng?” đủ rõ (${BEST_MOVE_THEMES[theme].when.length} ký tự)`,
+  )
+  check(
+    BEST_MOVES.filter((puzzle) => puzzle.theme === theme).length >= 2,
+    `${theme}: có ít nhất 2 thế cờ để luyện (${BEST_MOVES.filter((p) => p.theme === theme).length})`,
+  )
+}
+check(
+  BEST_MOVES.every((puzzle) => puzzle.goodMoves.includes(puzzle.bestSan)),
+  'mọi thế cờ đều chấp nhận chính nước hay nhất',
+)
+
+console.log('\n▶ Phát âm toạ độ & nước đi (giọng Mỹ qua Web Speech API)')
+check(squareSpeech('e2') === 'E 2', `ô e2 đọc là “E 2” (“${squareSpeech('e2')}”)`)
+check(squareSpeech('h8') === 'H 8', `ô h8 đọc là “H 8” (“${squareSpeech('h8')}”)`)
+check(squareSpeech('z9') === '', 'ô không hợp lệ → không đọc gì')
+check(
+  describeMoveEnglish('Ne3') === 'Knight E 3',
+  `Ne3 → “Knight E 3” (“${describeMoveEnglish('Ne3')}”)`,
+)
+check(describeMoveEnglish('e4') === 'Pawn E 4', `e4 → “Pawn E 4” (“${describeMoveEnglish('e4')}”)`)
+check(
+  describeMoveEnglish('exd5') === 'Pawn takes D 5',
+  `exd5 → “Pawn takes D 5” (“${describeMoveEnglish('exd5')}”)`,
+)
+check(
+  describeMoveEnglish('Nxe5+') === 'Knight takes E 5, check',
+  `Nxe5+ → “Knight takes E 5, check” (“${describeMoveEnglish('Nxe5+')}”)`,
+)
+check(
+  describeMoveEnglish('Qh7#') === 'Queen H 7, checkmate',
+  `Qh7# → “Queen H 7, checkmate” (“${describeMoveEnglish('Qh7#')}”)`,
+)
+check(describeMoveEnglish('O-O') === 'Castles kingside', 'O-O → “Castles kingside”')
+check(describeMoveEnglish('O-O-O') === 'Castles queenside', 'O-O-O → “Castles queenside”')
+check(
+  describeMoveEnglish('e8=Q+') === 'Pawn E 8, promotes to Queen, check',
+  `e8=Q+ → “Pawn E 8, promotes to Queen, check” (“${describeMoveEnglish('e8=Q+')}”)`,
+)
+check(describeMoveEnglish('') === '', 'không có nước đi → không đọc gì')
+
+// Bé CHỌN một quân → đọc TÊN QUÂN tiếng Anh (Bishop, Knight, Queen, Pawn…).
+check(
+  describePieceEnglish('p', 'e4') === 'Pawn E 4',
+  `chọn Tốt e4 → “Pawn E 4” (“${describePieceEnglish('p', 'e4')}”)`,
+)
+check(
+  describePieceEnglish('n', 'c3') === 'Knight C 3',
+  `chọn Mã c3 → “Knight C 3” (“${describePieceEnglish('n', 'c3')}”)`,
+)
+check(
+  describePieceEnglish('b', 'c1') === 'Bishop C 1',
+  `chọn Tượng c1 → “Bishop C 1” (“${describePieceEnglish('b', 'c1')}”)`,
+)
+check(describePieceEnglish('q') === 'Queen', `chọn Hậu → “Queen” (“${describePieceEnglish('q')}”)`)
+check(describePieceEnglish('r') === 'Rook', `chọn Xe → “Rook” (“${describePieceEnglish('r')}”)`)
+check(describePieceEnglish('k') === 'King', `chọn Vua → “King” (“${describePieceEnglish('k')}”)`)
+check(
+  describePieceEnglish('wN', 'f3') === 'Knight F 3',
+  'hiểu cả mã quân kiểu thư viện (wN) → “Knight F 3”',
+)
+check(describePieceEnglish('') === '', 'không có quân → không đọc gì')
+
+// Bảo đảm KHÔNG nước nào của app rơi vào trường hợp “không đọc được”.
+const silentMoves = OPENINGS.flatMap((opening) => opening.moves.map((move) => move.san)).filter(
+  (san) => describeMoveEnglish(san) === '',
+)
+check(
+  silentMoves.length === 0,
+  `mọi nước trong 10 khai cuộc đều đọc được (${silentMoves.length} nước không đọc được)`,
+)
+if (silentMoves.length > 0) console.log('      · ' + silentMoves.join(', '))
 
 console.log(
   failures === 0 ? '\n✅ SMOKE TEST LOGIC PASS!\n' : `\n❌ ${failures} LỖI LOGIC\n`,

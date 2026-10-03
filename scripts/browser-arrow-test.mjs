@@ -27,6 +27,19 @@ if (failedToConnect) {
 
 const { check, finish } = makeChecker()
 
+/** Phần tử theo selector có tồn tại không (trang tải lười nên phải chờ). */
+const exists = (selector) =>
+  evaluate(`Boolean(document.querySelector(${JSON.stringify(selector)}))`)
+
+const waitForSelector = async (selector, timeoutMs = 12000) => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (await exists(selector)) return true
+    await sleep(150)
+  }
+  return false
+}
+
 console.log('\n▶ Kiểm tra mũi tên vàng chỉ nước đi kế tiếp (Hệ thống London, ply 0)')
 
 await sleep(2500)
@@ -294,6 +307,23 @@ await evaluate(`
 `)
 await sleep(3000)
 
+// Bản đồ nay chia hai cột Trắng / Đen: bấm sang cột "Bé cầm Đen" trước.
+const pickedSide = await evaluate(`
+  (() => {
+    const button = [...document.querySelectorAll('button')].find((b) =>
+      b.textContent.includes('Bé cầm Đen'),
+    )
+    if (!button) return 'not-found'
+    button.click()
+    return button.textContent.trim()
+  })()
+`)
+check(
+  String(pickedSide).includes('Bé cầm Đen'),
+  `đã chuyển sang cột khai cuộc quân Đen (${pickedSide})`,
+)
+await sleep(500)
+
 // Ô bài học trên bản đồ chỉ hiện số cấp + emoji, nên tìm qua tooltip (title).
 const pickedLesson = await evaluate(`
   (() => {
@@ -377,6 +407,183 @@ if (!flipped || flipped.error) {
   `)
   check(orientationOk === true, 'hàng 7–8 nằm sát mép bé ngồi (bàn cờ đã xoay 180°)')
 }
+
+// ----------------------------------------------------------------
+// Kịch bản 3: bấm một câu kế hoạch trung cuộc → tô tím đúng ô mà câu đó nhắc tới.
+// Đây là bài kiểm chứng cho cách biến "Kế hoạch trung cuộc" thành trực quan.
+// ----------------------------------------------------------------
+console.log('\n▶ Bấm câu kế hoạch → tô sáng ô trên bàn cờ')
+
+const PLAN_FILL = 'rgba(126, 106, 209, 0.42)'
+
+// Thư viện bàn cờ vẽ màu ô lên **lớp phủ con** của ô (không phải chính ô), nên phải
+// đọc style của phần tử con đầu tiên chứ không phải của `#kid-board-square-*`.
+const readPlanSquare = (square) =>
+  evaluate(`
+    (() => {
+      const el = document.getElementById('kid-board-square-${square}')
+      const overlay = el?.firstElementChild
+      if (!overlay) return null
+      return getComputedStyle(overlay).backgroundColor
+    })()
+  `)
+
+// Câu 1 của Sicilian: "Đánh sang cánh Hậu bằng ...b5 rồi đưa Tượng lên b7." → b5 và b7.
+const planButtons = await evaluate(`
+  [...document.querySelectorAll('[data-plan-point]')].map((b) => b.textContent.trim())
+`)
+check(
+  Array.isArray(planButtons) && planButtons.length >= 1,
+  `có nút kế hoạch trung cuộc để bấm (${Array.isArray(planButtons) ? planButtons.length : 0} nút)`,
+)
+
+const beforeB5 = await readPlanSquare('b5')
+
+const clicked = await evaluate(`
+  (() => {
+    const button = document.querySelector('[data-plan-point="0"]')
+    if (!button) return false
+    button.click()
+    return true
+  })()
+`)
+check(clicked, 'bấm được câu kế hoạch đầu tiên')
+await sleep(350)
+
+const pressed = await evaluate(`
+  document.querySelector('[data-plan-point="0"]')?.getAttribute('aria-pressed')
+`)
+check(pressed === 'true', `câu kế hoạch chuyển sang trạng thái đang chọn (aria-pressed=${pressed})`)
+
+const litB5 = await readPlanSquare('b5')
+const litB7 = await readPlanSquare('b7')
+check(
+  litB5 === PLAN_FILL && litB7 === PLAN_FILL,
+  `hai ô b5 và b7 sáng màu kế hoạch (b5=${litB5}, b7=${litB7})`,
+)
+check(
+  await evaluate(`
+    (() => {
+      const el = document.getElementById('kid-board-square-b5')
+      const shadow = el?.firstElementChild ? getComputedStyle(el.firstElementChild).boxShadow : ''
+      return String(shadow).includes('109, 91, 199')
+    })()
+  `),
+  'ô b5 có thêm viền tím của kế hoạch',
+)
+check(
+  beforeB5 !== PLAN_FILL,
+  `trước khi bấm, ô b5 không bị tô sẵn (${beforeB5})`,
+)
+
+// Ô cạnh đó KHÔNG được dính (đảm bảo không tô lan cả bàn).
+check((await readPlanSquare('b4')) !== PLAN_FILL, 'ô b4 không bị tô nhầm')
+
+// Bàn cờ phải NHẢY sang thế cờ CUỐI khai cuộc, để câu kế hoạch nói về đúng thế cờ
+// bé đang nhìn. Cuối dòng chính Sicilian, Mã Trắng đã đứng ở d4.
+check(await exists('#kid-plan-preview-note'), 'hiện dòng nhắc “đang xem thế cờ CUỐI khai cuộc”')
+check(
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-d4'))`),
+  'bàn cờ đã nhảy sang thế cờ cuối (Mã Trắng đã ở d4 như cuối dòng chính)',
+)
+
+/** Đếm số quân còn kéo được (con trỏ “grab”) - đang soi kế hoạch thì phải là 0. */
+const grabbablePieces = () =>
+  evaluate(`
+    [...document.querySelectorAll('[id^="kid-board-piece-"]')]
+      .filter((el) => {
+        const own = el.getAttribute('style') || ''
+        const kids = [...el.querySelectorAll('div')].map((d) => d.getAttribute('style') || '')
+        return own.includes('grab') || kids.some((style) => style.includes('grab'))
+      }).length
+  `)
+check(
+  (await grabbablePieces()) === 0,
+  'đang xem kế hoạch thì bàn cờ chỉ để XEM (không kéo quân được)',
+)
+
+// Đi tới/lui nước nào thì tự thoát chế độ soi.
+await evaluate(`
+  (() => {
+    const button = [...document.querySelectorAll('button')].find((b) =>
+      b.textContent.includes('Lùi'),
+    )
+    if (button) button.click()
+    return Boolean(button)
+  })()
+`)
+await sleep(500)
+check(
+  !(await exists('#kid-plan-preview-note')),
+  'bấm “Lùi” → tự thoát chế độ soi, quay về đúng bài học',
+)
+
+// --- Soi lại rồi bấm “Quay lại bài học”.
+await evaluate(`document.querySelector('[data-plan-point="0"]')?.click()`)
+await sleep(400)
+check(
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-d4'))`),
+  'soi lại kế hoạch → bàn cờ lại ở thế cờ cuối',
+)
+const backClicked = await evaluate(`
+  (() => {
+    const button = document.getElementById('kid-plan-preview-off')
+    if (!button) return false
+    button.click()
+    return true
+  })()
+`)
+check(backClicked, 'có nút “Quay lại bài học”')
+await sleep(450)
+check(
+  !(await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-d4'))`)),
+  'bấm “Quay lại bài học” → bàn cờ trở về đúng nước đang học',
+)
+check((await readPlanSquare('b5')) !== PLAN_FILL, 'quay lại bài học thì bỏ tô ô kế hoạch (b5 hết tím)')
+
+// ----------------------------------------------------------------
+// Kịch bản 3b: câu kế hoạch có nước “từ ô nào sang ô nào” → vẽ mũi tên vàng.
+// ----------------------------------------------------------------
+console.log('\n▶ Câu kế hoạch “Đưa <quân> <ô> … <ô>” → vẽ mũi tên trên bàn cờ')
+
+// Về bài mặc định (Hệ thống London, cờ Trắng): câu 1 là
+// “Đưa Tượng f1 ra d3 (hoặc e2) rồi nhập thành…” nên mũi tên phải là f1 → d3.
+await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/`)}`)
+await sleep(2600)
+check(await waitForSelector('[data-plan-point="0"]'), 'về bài London và thấy câu kế hoạch số 1')
+
+const readArrow = () =>
+  evaluate(`
+    (() => {
+      const overlay = [...document.querySelectorAll('svg')].find((s) => s.style.zIndex === '20')
+      if (!overlay) return { error: 'không tìm thấy lớp mũi tên' }
+      const marker = overlay.querySelector('marker')
+      return { markerId: marker ? marker.id : null }
+    })()
+  `)
+
+await evaluate(`document.querySelector('[data-plan-point="0"]')?.click()`)
+await sleep(600)
+
+const planArrowShot = await readArrow()
+check(
+  String(planArrowShot?.markerId ?? '').endsWith('-f1-d3'),
+  `mũi tên vàng vẽ đúng nước f1 → d3 (id: ${planArrowShot?.markerId})`,
+)
+const chip = await evaluate(`
+  (() => {
+    const button = document.querySelector('[data-plan-point="0"]')
+    return button ? button.innerText : ''
+  })()
+`)
+check(
+  String(chip).includes('f1 → d3'),
+  `câu đang chọn có ghi rõ nước đi (${JSON.stringify(String(chip).trim())})`,
+)
+check(
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wB-f1'))`),
+  'bàn cờ đang ở thế cờ cuối khai cuộc London (Tượng còn ở f1 như cuối dòng chính)',
+)
 
 close()
 finish('BROWSER ARROW')

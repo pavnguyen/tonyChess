@@ -9,6 +9,11 @@ export function setMuted(value: boolean) {
   muted = value
 }
 
+/** Đang tắt âm thanh? Dùng để phần phát âm toạ độ biết có nên đọc hay không. */
+export function isMuted(): boolean {
+  return muted
+}
+
 function audioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null
   if (ctx) return ctx

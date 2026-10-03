@@ -139,7 +139,7 @@ console.log('\n▶ Nút ⓘ (giải thích tại chỗ)')
 await navigate('/')
 await expectTopic('app', 'Nam An - Cờ Vua', 'Thanh tiêu đề (giới thiệu app)')
 await expectTopic('opening:london', '1922', 'Khai cuộc đang học (lịch sử Hệ thống London)')
-await expectTopic('tree', 'ngã ba', 'Cây khai cuộc')
+await expectTopic('plan', 'trung cuộc', 'Kế hoạch trung cuộc')
 await expectTopic('cup', 'Cúp Vàng', 'Bản đồ chinh phục (Cúp Vàng & mở khoá)')
 
 // Nút ⓘ của khai cuộc phải đổi theo bài đang chọn - chọn một bài khác và kiểm lại.
@@ -170,15 +170,16 @@ if (switched === 'not-found') {
 
 // --- Tab Trung cuộc: đòn chiến thuật mặc định (Bắt đôi).
 await navigate('/tactics')
-await expectTopic('tactic:fork', 'Bắt đôi', 'Trung cuộc - đòn “Bắt đôi”')
+await expectTopic('theme:attack', 'Tấn công Vua', 'Trung cuộc - chủ đề “Tấn công Vua”')
 
-// --- Tab Tàn cuộc: thế Xe + Tốt Lucena.
+// --- Tab Tàn cuộc: không còn nút ⓘ (các thế luyện không có nội dung tham khảo kèm theo).
+//     Bài browser-endgame-test.mjs lo phần dải thế luyện.
 await navigate('/endgames')
-await expectTopic('endgame:lucena', 'Lucena', 'Tàn cuộc Xe + Tốt - thế Lucena')
 
-// --- Tab Chiến lược: bài giảng mặc định + khái niệm vị trí.
+
+// --- Tab Chiến lược: thẻ 10 nguyên tắc vàng + khái niệm vị trí.
 await navigate('/strategy')
-await expectTopic('lecture:minority-attack', 'b4-b5', 'Bài giảng - Đòn bẩy cấu trúc Tốt')
+await expectTopic('principles', 'nguyên tắc', 'Thẻ 10 nguyên tắc vàng')
 await expectTopic('positional:outpost', 'Tiền đồn', 'Chiến lược vị trí - Tiền đồn')
 
 // --- 4. Bảng nằm trọn màn hình và không làm trang tràn ngang.

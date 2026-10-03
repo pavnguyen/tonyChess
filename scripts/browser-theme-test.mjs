@@ -41,7 +41,9 @@ const palette = await evaluate(`
     const header = document.querySelector('header')
     const body = getComputedStyle(document.body)
     // Ô cờ: lấy trực tiếp từ lưới bàn cờ.
-    const squares = [...document.querySelectorAll('[id^="kid-board-square-"]')]
+    const squares = [...document.querySelectorAll('[id^="kid-board-square-"]')].filter((el) =>
+      /^kid-board-square-[a-h][1-8]$/.test(el.id),
+    )
     const first = document.getElementById('kid-board-square-a1')
     const second = document.getElementById('kid-board-square-b1')
     const styleOf = (el) => {
