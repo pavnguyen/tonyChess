@@ -7,7 +7,12 @@ import { ENDGAMES } from '../src/data/endgames.ts'
 import { OPENINGS } from '../src/data/openings.ts'
 import { BEST_MOVES, BEST_MOVE_THEMES } from '../src/data/bestMoves.ts'
 import { coordinateLabels, splitSquare } from '../src/lib/coordinates.ts'
-import { describeMoveEnglish, describePieceEnglish, squareSpeech } from '../src/lib/speech.ts'
+import {
+  describeMoveEnglish,
+  describeOpeningEnglish,
+  describePieceEnglish,
+  squareSpeech,
+} from '../src/lib/speech.ts'
 import { findHintMove } from '../src/lib/hints.ts'
 import { tabKeyForPath, TIPS_BY_LESSON, TIPS_BY_TAB, tipsFor } from '../src/lib/parentTips.ts'
 import {
@@ -317,6 +322,22 @@ check(
   'hiểu cả mã quân kiểu thư viện (wN) → “Knight F 3”',
 )
 check(describePieceEnglish('') === '', 'không có quân → không đọc gì')
+
+// Bấm một khai cuộc → đọc TÊN tiếng Anh + tên Grand Master.
+check(
+  describeOpeningEnglish('London System', 'GM Magnus Carlsen') === 'London System, Magnus Carlsen',
+  `khai cuộc London → “London System, Magnus Carlsen” (“${describeOpeningEnglish('London System', 'GM Magnus Carlsen')}”)`,
+)
+check(
+  describeOpeningEnglish("King's Indian Defense", 'GM Hikaru Nakamura') ===
+    "King's Indian Defense, Hikaru Nakamura",
+  'bỏ tiền tố “GM” trước tên kỳ thủ cho gọn tai bé',
+)
+check(
+  describeOpeningEnglish('French Defense') === 'French Defense',
+  'không có tên kỳ thủ thì chỉ đọc',
+)
+check(describeOpeningEnglish('') === '', 'không có tên khai cuộc → không đọc gì')
 
 // Bảo đảm KHÔNG nước nào của app rơi vào trường hợp “không đọc được”.
 const silentMoves = OPENINGS.flatMap((opening) => opening.moves.map((move) => move.san)).filter(
