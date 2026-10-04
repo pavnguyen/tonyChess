@@ -53,23 +53,9 @@ export function useChessGame(initialFen: string, playerSide: Side) {
     return chess
   }, [initialFen, sans])
 
-  const history = useMemo(() => {
-    const probe = new Chess()
-    try {
-      probe.load(initialFen)
-    } catch {
-      /* ignore */
-    }
-    const verbose: Move[] = []
-    for (const san of sans) {
-      try {
-        verbose.push(probe.move(san))
-      } catch {
-        /* ignore */
-      }
-    }
-    return verbose
-  }, [initialFen, sans])
+  // Lịch sử nước đi lấy thẳng từ `game` đã dựng sẵn - khỏi dựng thêm một ván cờ nữa
+  // rồi phát lại từ đầu, tránh phát lại nước đi HAI lần mỗi khi bé đi một nước.
+  const history = useMemo<Move[]>(() => game.history({ verbose: true }), [game])
 
   const lastMove: LastMove | null = useMemo(() => {
     const last = history[history.length - 1]

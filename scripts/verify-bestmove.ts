@@ -8,8 +8,9 @@
  *
  * Chạy: npm run verify:bestmove
  */
+import { Chess } from 'chess.js'
 import { BEST_MOVES } from '../src/data/bestMoves.ts'
-import { rankMoves } from '../src/engine/minimax.ts'
+import { evaluateWhite, rankMoves } from '../src/engine/minimax.ts'
 
 /** Chênh lệch tối đa (centipawn) so với nước số 1 để vẫn coi là "hay nhất". */
 const MARGIN = 60
@@ -51,6 +52,56 @@ for (const puzzle of BEST_MOVES) {
     fail(
       `${puzzle.id}: "${puzzle.bestSan}"(${mine.score}) kém máy ${gap} điểm - máy thích "${best.san}"(${best.score}); top: ${top3}`,
     )
+  }
+
+  // ── Chuỗi "đánh tiếp": kiểm tra từng nước của bé cũng là nước hay nhất, và
+  // cuối chuỗi phải là chiếu bí hoặc thế thắng rõ ràng cho bé.
+  if (!puzzle.continuation?.length) continue
+  const full = [puzzle.bestSan, ...puzzle.continuation]
+  const sim = new Chess()
+  sim.load(puzzle.fen)
+  sim.move(puzzle.bestSan)
+  let lineBad = false
+  for (let i = 1; i < full.length; i += 1) {
+    // i lẻ = nước đối thủ (ta tự đi), i chẵn = nước của bé (phải do máy chấm).
+    if (i % 2 === 0) {
+      const kidTurnFen = sim.fen()
+      const rankedHere = rankMoves(kidTurnFen, 'hard', BUDGET)
+      const top = rankedHere[0]
+      const played = rankedHere.find((m) => m.san === full[i])
+      if (!played || !top) {
+        fail(`${puzzle.id}: nước bé "${full[i]}" không có trong danh sách hợp lệ`)
+        lineBad = true
+      } else if (top.score - played.score > MARGIN) {
+        fail(
+          `${puzzle.id}: nước bé "${full[i]}" kém máy ${top.score - played.score} điểm (máy thích "${top.san}")`,
+        )
+        lineBad = true
+      }
+    }
+    try {
+      sim.move(full[i])
+    } catch {
+      fail(`${puzzle.id}: nước "${full[i]}" trong chuỗi không hợp lệ`)
+      lineBad = true
+      break
+    }
+  }
+
+  if (!lineBad) {
+    const mate = sim.isCheckmate()
+    const whiteEval = evaluateWhite(sim)
+    const kidWhite = puzzle.side === 'white'
+    const winning = kidWhite ? whiteEval >= 200 : whiteEval <= -200
+    if (mate || winning) {
+      ok(
+        `${puzzle.id}: chuỗi đánh tiếp "${full.join(' ')}" - ${mate ? 'chiếu bí' : `thế thắng (${kidWhite ? '+' : ''}${Math.round(whiteEval / 100)})`}`,
+      )
+    } else {
+      fail(
+        `${puzzle.id}: chuỗi "${full.join(' ')}" chưa kết thúc thắng (eval ${Math.round(whiteEval / 100)})`,
+      )
+    }
   }
 }
 

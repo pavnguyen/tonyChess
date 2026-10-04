@@ -8,10 +8,19 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import { currentRank, nextRankOf } from '../data/ranks'
+import { REVIEW_INTERVALS_DAYS, estimateElo } from '../lib/rating'
 import { setMuted } from '../lib/sound'
 import type { NotationStyle, RankInfo } from '../types'
 
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.v1'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Dấu ôn tập của một hoạt động: lần cuối làm + đang ở "hộp" nào. */
+export interface ReviewMark {
+  last: number
+  box: number
+}
 
 interface Persisted {
   stars: number
@@ -20,6 +29,8 @@ interface Persisted {
   soundOn: boolean
   /** Bố mẹ mở khoá toàn bộ bài học, bỏ qua thứ tự leo cấp. */
   unlockAll: boolean
+  /** Dấu ôn tập ngắt quãng theo id hoạt động. */
+  reviews: Record<string, ReviewMark>
 }
 
 const DEFAULTS: Persisted = {
@@ -28,6 +39,7 @@ const DEFAULTS: Persisted = {
   notation: 'figurine',
   soundOn: true,
   unlockAll: false,
+  reviews: {},
 }
 
 interface KidContextValue extends Persisted {
@@ -42,6 +54,12 @@ interface KidContextValue extends Persisted {
   toggleSound: () => void
   toggleUnlockAll: () => void
   resetProgress: () => void
+  /** `true` nếu hoạt động đã làm và đã tới hạn cần ôn lại. */
+  isReviewDue: (id: string) => boolean
+  /** Số hoạt động đang tới hạn ôn lại. */
+  dueCount: number
+  /** Ước lượng vui về trình độ của bé (chỉ để động viên). */
+  estimatedElo: number
 }
 
 const KidContext = createContext<KidContextValue | null>(null)
@@ -60,6 +78,10 @@ function load(): Persisted {
       notation: parsed.notation === 'vietnamese' ? 'vietnamese' : 'figurine',
       soundOn: parsed.soundOn ?? true,
       unlockAll: parsed.unlockAll ?? false,
+      reviews:
+        parsed.reviews && typeof parsed.reviews === 'object'
+          ? (parsed.reviews as Record<string, ReviewMark>)
+          : {},
     }
   } catch {
     return DEFAULTS
@@ -68,6 +90,20 @@ function load(): Persisted {
 
 export function KidProgressProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Persisted>(load)
+  // "Bây giờ" chỉ để tính việc tới hạn ôn tập; cập nhật lúc mở app, khi quay lại tab,
+  // và định kỳ - đủ để huy hiệu 🔁 không bị cũ mà không gọi Date.now() khi render.
+  const [now, setNow] = useState(0)
+
+  useEffect(() => {
+    const refresh = () => setNow(Date.now())
+    refresh()
+    const timer = window.setInterval(refresh, 30 * 60 * 1000)
+    window.addEventListener('focus', refresh)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', refresh)
+    }
+  }, [])
 
   useEffect(() => {
     try {
@@ -87,10 +123,17 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
     setState((prev) => {
       const already = prev.completed.includes(id)
       firstTime = !already
+      // Ghi dấu ôn tập: lần đầu vào hộp 0, mỗi lần làm lại leo một hộp (nhắc thưa dần).
+      const previousBox = prev.reviews[id]?.box
+      const box =
+        previousBox === undefined
+          ? 0
+          : Math.min(previousBox + 1, REVIEW_INTERVALS_DAYS.length - 1)
       return {
         ...prev,
         stars: prev.stars + (already ? Math.max(1, Math.floor(stars / 2)) : stars),
         completed: already ? prev.completed : [...prev.completed, id],
+        reviews: { ...prev.reviews, [id]: { last: Date.now(), box } },
       }
     })
     return firstTime
@@ -117,6 +160,14 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
     const progressToNext = nextRank
       ? Math.min(1, Math.max(0, (state.stars - rank.minStars) / span))
       : 1
+
+    const isReviewDue = (id: string) => {
+      const mark = state.reviews[id]
+      if (!mark) return false
+      const box = Math.min(mark.box, REVIEW_INTERVALS_DAYS.length - 1)
+      return now - mark.last >= REVIEW_INTERVALS_DAYS[box] * DAY_MS
+    }
+
     return {
       ...state,
       rank,
@@ -129,9 +180,13 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
       toggleSound,
       toggleUnlockAll,
       resetProgress,
+      isReviewDue,
+      dueCount: Object.keys(state.reviews).filter(isReviewDue).length,
+      estimatedElo: estimateElo(state.completed.length),
     }
   }, [
     state,
+    now,
     addStars,
     completeActivity,
     setNotation,

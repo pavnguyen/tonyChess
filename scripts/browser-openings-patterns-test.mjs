@@ -186,5 +186,32 @@ check(
   'bàn cờ trở về đúng thế cờ gốc (Tốt e2 + Tượng c1)',
 )
 
+console.log('\n▶ Bộ lọc khai cuộc theo nước mở đầu của bé')
+
+const nodeCount = () => evaluate(`document.querySelectorAll('[data-level-id]').length`)
+const clickOpenFilter = (move) =>
+  evaluate(`
+    (() => {
+      const el = document.querySelector('[data-opening-move-filter="' + ${JSON.stringify(move)} + '"]')
+      if (!el) return false
+      el.click()
+      return true
+    })()
+  `)
+
+check(await present('#kid-opening-move-filter'), 'có hàng bộ lọc theo nước mở đầu')
+check(await present('[data-opening-move-filter="all"]'), 'có chip “Tất cả”')
+check((await nodeCount()) === 5, `bé cầm Trắng: bản đồ có 5 trạm (${await nodeCount()})`)
+
+check(await clickOpenFilter('e4'), 'bấm chip 1.e4')
+await sleep(400)
+const e4Count = await nodeCount()
+check(e4Count === 2, `lọc 1.e4 gom đúng 2 bài (Ý + Tây Ban Nha) (${e4Count})`)
+
+check(await clickOpenFilter('all'), 'bấm “Tất cả”')
+await sleep(400)
+const allCount = await nodeCount()
+check(allCount === 5, `bỏ lọc hiện lại 5 trạm (${allCount})`)
+
 close()
 finish('BROWSER OPENINGS-PATTERNS')

@@ -13,7 +13,7 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
-const { skipped, failedToConnect, evaluate, close } = await openPage(APP_URL, {
+const { skipped, failedToConnect, evaluate, send, close } = await openPage(APP_URL, {
   port: 9369,
   windowSize: '1440,900',
 })
@@ -162,6 +162,41 @@ check(
 const arrowsAfter = await arrowCount()
 check(arrowsAfter === 0, `phát lại xong: mũi tên tự ẩn (${arrowsAfter} mũi tên)`)
 check(await waitForText('Chuẩn rồi'), 'phát lại xong: bé vẫn có thể bấm “Thế cờ tiếp”')
+
+console.log('\n▶ Phím tắt ◀ ▶ đổi thế cờ (như tab Khai cuộc)')
+
+const present = (id) => evaluate(`Boolean(document.getElementById(${JSON.stringify(id)}))`)
+const readBadge = () =>
+  evaluate(`
+    (() => {
+      const el = [...document.querySelectorAll('span')].find((s) =>
+        (s.innerText || '').trim().startsWith('Thế cờ '),
+      )
+      return el ? el.innerText.trim() : ''
+    })()
+  `)
+const pressKey = async (key, code, vk) => {
+  const base = { key, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk }
+  await send('Input.dispatchKeyEvent', { type: 'keyDown', ...base })
+  await send('Input.dispatchKeyEvent', { type: 'keyUp', ...base })
+}
+
+check(await present('kid-tactic-prev'), 'có nút ◀ Thế trước')
+check(await present('kid-tactic-next'), 'có nút ➡️ Thế cờ tiếp')
+
+const badgeBefore = String(await readBadge())
+await pressKey('ArrowRight', 'ArrowRight', 39)
+await sleep(500)
+const badgeAfter = String(await readBadge())
+check(
+  badgeBefore && badgeAfter && badgeBefore !== badgeAfter,
+  `phím ▶ sang thế cờ kế tiếp (${badgeBefore} → ${badgeAfter})`,
+)
+
+await pressKey('ArrowLeft', 'ArrowLeft', 37)
+await sleep(500)
+const badgeBack = String(await readBadge())
+check(badgeBack === badgeBefore, `phím ◀ quay về thế cờ trước (${badgeBack})`)
 
 close()
 finish('BROWSER TACTICS')

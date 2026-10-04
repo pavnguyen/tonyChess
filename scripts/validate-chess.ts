@@ -6,6 +6,7 @@ import { Chess } from 'chess.js'
 import type { Square } from 'chess.js'
 import { OPENINGS } from '../src/data/openings.ts'
 import { BEST_MOVES } from '../src/data/bestMoves.ts'
+import { COUNTERS } from '../src/data/counters.ts'
 import { ENDGAMES } from '../src/data/endgames.ts'
 import { GOLD_PRINCIPLES } from '../src/data/goldPrinciples.ts'
 
@@ -119,6 +120,102 @@ console.log('\n▶ Kế hoạch trung cuộc - quân được nhắc phải đ�
   if (!bad) ok(`${checked} chỗ “Đưa <quân> <ô>” trong kế hoạch đều khớp thế cờ thật`)
 }
 
+console.log('\n▶ Đối phó khai cuộc')
+for (const lesson of COUNTERS) {
+  let bad = false
+  const game = new Chess()
+  const kidSide = lesson.opponentSide === 'white' ? 'black' : 'white'
+
+  // Liên kết hai chiều Khai cuộc ↔ Đối phó dựa vào quy ước `id = vs-<openingId>`;
+  // sai quy ước là nút nhảy qua lại sẽ mở nhầm bài, nên kiểm thật chặt. Bài chỉ bàn
+  // về một nước mở đầu phổ biến thì KHÔNG có `openingId` - bỏ qua phần liên kết.
+  if (lesson.openingId) {
+    if (lesson.id !== `vs-${lesson.openingId}`) {
+      fail(`${lesson.id}: id phải theo quy ước "vs-<openingId>" (openingId="${lesson.openingId}")`)
+      bad = true
+    }
+    const linkedOpening = OPENINGS.find((opening) => opening.id === lesson.openingId)
+    if (!linkedOpening) {
+      fail(`${lesson.id}: openingId "${lesson.openingId}" không có trong danh sách khai cuộc`)
+      bad = true
+    } else if (linkedOpening.side !== lesson.opponentSide) {
+      fail(
+        `${lesson.id}: khai cuộc ${lesson.openingId} thuộc phe ${linkedOpening.side} nhưng opponentSide=${lesson.opponentSide}`,
+      )
+      bad = true
+    }
+  }
+
+  if (lesson.opponentPlan.trim().length < 30) {
+    fail(`${lesson.id}: “đối thủ đang định làm gì” quá ngắn`)
+    bad = true
+  }
+
+  if (lesson.moves.length < 8) {
+    fail(`${lesson.id}: dòng đối phó chỉ ${lesson.moves.length} ply - cần ≥ 8 để thấy rõ ý đồ`)
+    bad = true
+  }
+  if (lesson.idea.trim().length < 30) {
+    fail(`${lesson.id}: ý tưởng đối phó quá ngắn`)
+    bad = true
+  }
+  if (lesson.points.length < 3 || lesson.points.some((point) => point.length < 20)) {
+    fail(`${lesson.id}: cần ≥ 3 việc, mỗi việc ≥ 20 ký tự`)
+    bad = true
+  }
+
+  lesson.moves.forEach((move, ply) => {
+    const kidPly = kidSide === 'white' ? ply % 2 === 0 : ply % 2 === 1
+    let played
+    try {
+      played = game.move(move.san)
+    } catch {
+      fail(`${lesson.id}: nước ${ply + 1} "${move.san}" KHÔNG hợp lệ`)
+      bad = true
+      return
+    }
+    if (move.annotation && move.annotation.san !== played.san) {
+      fail(`${lesson.id}: annotation.san "${move.annotation.san}" ≠ SAN thật "${played.san}"`)
+      bad = true
+    }
+    // CHỈ nước của bé mới được có lời bình - nước đối thủ phải để trống.
+    if (move.annotation && !kidPly) {
+      fail(`${lesson.id}: nước ${ply + 1} là của ĐỐI THỦ nhưng lại có annotation`)
+      bad = true
+    }
+    if (!move.annotation && kidPly) {
+      fail(`${lesson.id}: nước ${ply + 1} là của BÉ nhưng thiếu annotation`)
+      bad = true
+    }
+    if (move.annotation) {
+      const words = move.annotation.rhyme.trim().split(/\s+/).length
+      if (words < 4 || words > 6) {
+        fail(`${lesson.id}: khẩu quyết "${move.annotation.rhyme}" có ${words} chữ, phải 4-6 chữ`)
+        bad = true
+      }
+    }
+  })
+
+  if (!bad) ok(`${lesson.id} - ${lesson.moves.length} ply (${lesson.counterName})`)
+}
+
+console.log('\n▶ Đối phó khai cuộc - phủ đủ cả hai màu')
+{
+  let bad = false
+  for (const side of ['white', 'black'] as const) {
+    const count = COUNTERS.filter((lesson) => lesson.opponentSide === side).length
+    if (count === 0) {
+      fail(`chưa có bài đối phó nào cho đối thủ cầm ${side}`)
+      bad = true
+    }
+  }
+  if (!bad) {
+    ok(
+      `${COUNTERS.filter((l) => l.opponentSide === 'white').length} bài đối thủ cầm Trắng, ${COUNTERS.filter((l) => l.opponentSide === 'black').length} bài đối thủ cầm Đen`,
+    )
+  }
+}
+
 console.log('\n▶ Trung cuộc (tìm nước hay nhất)')
 for (const puzzle of BEST_MOVES) {
   const game = new Chess()
@@ -160,6 +257,24 @@ for (const puzzle of BEST_MOVES) {
   if (puzzle.hint.trim().length < 10) {
     fail(`${puzzle.id}: gợi ý quá ngắn`)
     bad = true
+  }
+  // Chuỗi "đánh tiếp": độ dài phải CHẴN (nước đầu là địch đáp, nước cuối là của bé)
+  // và toàn bộ nước phải hợp lệ trên bàn cờ thật.
+  if (puzzle.continuation) {
+    if (puzzle.continuation.length === 0 || puzzle.continuation.length % 2 !== 0) {
+      fail(`${puzzle.id}: continuation phải có độ dài chẵn (kết thúc bằng nước của bé)`)
+      bad = true
+    } else {
+      const sim = new Chess()
+      try {
+        sim.load(puzzle.fen)
+        sim.move(puzzle.bestSan)
+        for (const san of puzzle.continuation) sim.move(san)
+      } catch {
+        fail(`${puzzle.id}: chuỗi "đánh tiếp" có nước không hợp lệ - ${puzzle.continuation.join(' ')}`)
+        bad = true
+      }
+    }
   }
   if (!bad) ok(`${puzzle.id} - nước hay nhất ${puzzle.bestSan} (${puzzle.title})`)
 }

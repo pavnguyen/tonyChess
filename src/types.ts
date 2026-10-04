@@ -60,7 +60,14 @@ export interface Opening {
  * Khác bộ "đố mẫu" cũ: bé soi **một thế cờ thật** rồi tự tìm nước mạnh nhất, chứ
  * không học thuộc tên đòn. Các nước được máy kiểm chứng là thật sự tốt nhất.
  */
-export type BestMoveTheme = 'attack' | 'win-material' | 'win-queen' | 'passed-pawn'
+export type BestMoveTheme =
+  | 'attack'
+  | 'win-material'
+  | 'win-queen'
+  | 'passed-pawn'
+  | 'fork'
+  | 'pin'
+  | 'mate-two'
 
 /**
  * Một thế cờ trung cuộc để bé "tìm nước hay nhất".
@@ -82,6 +89,61 @@ export interface BestMovePuzzle {
   hint: string
   explanation: string
   rhyme: string
+  /**
+   * Chuỗi nước **đánh tiếp** để kết liễu sau nước hay nhất (SAN), luôn bắt đầu bằng
+   * nước ĐÁP TRẢ của đối thủ rồi tới nước của bé. Máy tự đi các nước đối thủ, bé phải
+   * tự tìm các nước còn lại.
+   *
+   * Ví dụ `['Kh7', 'Rh1#']`: sau nước hay nhất của bé, máy đi Kh7, bé phải đi Rh1#.
+   * Độ dài luôn là **số chẵn** (kết thúc bằng nước của bé). Bỏ trống = thế chỉ cần
+   * tìm một nước như cũ.
+   */
+  continuation?: string[]
+}
+
+/**
+ * Một nước trong dòng **đối phó** (tab Đối phó). Chỉ nước CỦA BÉ mới có
+ * `annotation`, nước của đối thủ thì để trống - giống quy ước của khai cuộc.
+ */
+export interface CounterMove {
+  san: string
+  annotation?: MoveAnnotation
+}
+
+/**
+ * Một bài "đối phó khai cuộc": **đối thủ chơi X thì bé đáp lại Y**.
+ *
+ * Dòng nước bắt đầu từ nước 1 của ván cờ, xen kẽ nước đối thủ và nước bé. Bé cầm
+ * quân NGƯỢC LẠI với `opponentSide`. Mục tiêu là phá thế khai cuộc và chặn đứng
+ * kế hoạch triển khai quân của đối phương.
+ */
+export interface CounterLesson {
+  id: string
+  /**
+   * Id khai cuộc tương ứng trong `OPENINGS` (ví dụ `sicilian`) - dùng để nhảy qua
+   * lại giữa bài Đối phó và bài Khai cuộc. Bỏ trống với những bài chỉ bàn về một
+   * **nước mở đầu phổ biến** (1.e4, 1.d4…) vốn không có bài khai cuộc riêng.
+   * Khi có `openingId` thì id theo quy ước `id = \`vs-${openingId}\``.
+   */
+  openingId?: string
+  /** Khai cuộc mà ĐỐI THỦ đang dùng, ví dụ "Hệ thống London". */
+  opponentOpening: string
+  /** Đối thủ cầm quân gì - bé cầm quân còn lại. */
+  opponentSide: Side
+  emoji: string
+  /** Tên cách đối phó của bé, ví dụ "Giữ d5, đánh vào chân đế d4". */
+  counterName: string
+  /** Ý tưởng đối phó gói trong 1-2 câu. */
+  idea: string
+  /**
+   * **Đối thủ đang định làm gì** - một câu tóm ý đồ/đe doạ của đối phương, để bé
+   * tập thói quen nhận diện kế hoạch của đối thủ trước khi phá nó.
+   */
+  opponentPlan: string
+  /** Ba việc bé cần làm, mỗi việc một câu ngắn. */
+  points: string[]
+  /** Dòng nước từ nước 1: xen kẽ nước đối thủ và nước bé. */
+  moves: CounterMove[]
 }
 
 export type EndgameGoal = 'promote' | 'checkmate'

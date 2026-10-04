@@ -256,6 +256,7 @@ if (phone.body) {
 // không phải câu chung của tab - đó chính là điều cần kiểm.
 const ROUTES = [
   { path: '/', name: 'Khai cuộc', keyword: 'Tượng ra f4', notKeyword: 'Kim tự tháp Tốt' },
+  { path: '/counters', name: 'Đối phó', keyword: 'đang chơi khai cuộc gì' },
   { path: '/tactics', name: 'Trung cuộc', keyword: 'mạnh nhất' },
   { path: '/endgames', name: 'Tàn cuộc', keyword: 'Vua phải đi' },
   { path: '/strategy', name: 'Chiến lược', keyword: 'bốn nguyên tắc vàng' },

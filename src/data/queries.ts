@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ENDGAMES } from './endgames'
 import { OPENINGS } from './openings'
 import { BEST_MOVES } from './bestMoves'
+import { COUNTERS } from './counters'
 
 const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -26,6 +27,17 @@ export function useTacticsQuery() {
     queryFn: async () => {
       await pause(60)
       return BEST_MOVES
+    },
+    staleTime: Number.POSITIVE_INFINITY,
+  })
+}
+
+export function useCountersQuery() {
+  return useQuery({
+    queryKey: ['counters'],
+    queryFn: async () => {
+      await pause(60)
+      return COUNTERS
     },
     staleTime: Number.POSITIVE_INFINITY,
   })

@@ -1,5 +1,25 @@
 import { InfoButton } from './InfoPopover'
 
+/**
+ * Bong bóng chú thích tự vẽ cho từng trạm trên bản đồ.
+ *
+ * Vì sao KHÔNG dùng tooltip mặc định của trình duyệt (`title`): ô trạm chỉ cao 48px,
+ * nhỏ hơn cả cái khung tooltip gốc, nên nó đè lên cả hàng ô và cắt chữ. Bong bóng này
+ * nằm `absolute` NGAY TRÊN ô, chỉ hiện khi rê chuột HOẶC khi ô được chọn bằng bàn phím
+ * (`group-focus-visible`), và `pointer-events-none` nên không cản bé bấm ô.
+ */
+function Tooltip({ text }: { text: string }) {
+  return (
+    <span
+      aria-hidden
+      role="tooltip"
+      className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-max max-w-[15rem] -translate-x-1/2 rounded-lg bg-brand-900 px-2 py-1 text-center text-[0.62rem] font-bold leading-tight text-white shadow-[0_6px_14px_rgba(13,32,24,0.45)] group-hover:block group-focus-visible:block"
+    >
+      {text}
+    </span>
+  )
+}
+
 export interface ProgressNode {
   id: string
   level: number
@@ -88,8 +108,15 @@ export function ProgressMap({
             : node.unlocked
               ? 'bg-gradient-to-br from-brand-700 to-brand-500 text-white'
               : 'bg-ink-300 text-ink-600'
+          const tooltip = node.unlocked
+            ? `${levelLabel} ${node.level} · ${node.title} - ${node.subtitle}`
+            : allowLockedPreview
+              ? `${levelLabel} ${node.level} · ${node.title} - bấm để xem trước thế cờ`
+              : `${levelLabel} ${node.level} · ${node.title} (chưa mở khoá)`
 
           return (
+            // `relative` + `group` để bong bóng chú thích tự canh vào đúng ô, thay cho
+            // tooltip mặc định của trình duyệt - vốn đè lên cả hàng ô khi ô quá nhỏ.
             <button
               key={node.id}
               type="button"
@@ -97,15 +124,10 @@ export function ProgressMap({
               onClick={() => (node.unlocked || allowLockedPreview) && onSelect(node.id)}
               disabled={!node.unlocked && !allowLockedPreview}
               aria-current={isActive}
-              title={
-                node.unlocked
-                  ? `${levelLabel} ${node.level} · ${node.title} - ${node.subtitle}`
-                  : allowLockedPreview
-                    ? `${levelLabel} ${node.level} · ${node.title} - bấm để xem trước thế cờ`
-                    : `${levelLabel} ${node.level} · ${node.title} (chưa mở khoá)`
-              }
-              className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] disabled:cursor-not-allowed disabled:active:translate-y-0 ${skin}`}
+              aria-label={tooltip}
+              className={`group relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] disabled:cursor-not-allowed disabled:active:translate-y-0 ${skin}`}
             >
+              <Tooltip text={tooltip} />
               <span
                 className={`grid size-5 place-items-center rounded-full text-[0.6rem] font-extrabold ${badge} ${
                   isActive && !node.completed ? 'animate-pulse-ring' : ''
@@ -121,11 +143,15 @@ export function ProgressMap({
         })}
 
         <div
-          title={allDone ? allDoneMessage : 'Chạm đích: hoàn thành hết các trạm phía trên!'}
-          className={`flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed ${
+          role="note"
+          aria-label={allDone ? allDoneMessage : 'Chạm đích: hoàn thành hết các trạm phía trên!'}
+          className={`group relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed ${
             allDone ? 'border-gold-400 bg-gold-50' : 'border-ink-200 bg-ink-50'
           }`}
         >
+          <Tooltip
+            text={allDone ? allDoneMessage : 'Chạm đích: hoàn thành hết các trạm phía trên!'}
+          />
           <span className="text-[0.6rem] font-extrabold text-brand-400">🏁</span>
           <span className="text-sm leading-none">🏆</span>
         </div>

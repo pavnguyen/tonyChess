@@ -6,6 +6,7 @@ import { useKidProgress } from '../store/progress'
 
 const TABS = [
   { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Grand Master', icon: '🛡️' },
+  { to: '/counters', label: 'Đối Phó', full: 'Đối phó khai cuộc - phá thế đối phương', icon: '🧭' },
   { to: '/tactics', label: 'Trung Cuộc', full: 'Trung cuộc - Tìm nước hay nhất', icon: '⚔️' },
   { to: '/endgames', label: 'Tàn Cuộc', full: 'Tàn cuộc cơ bản', icon: '👑' },
   { to: '/strategy', label: 'Chiến Lược', full: 'Chiến lược - 10 nguyên tắc vàng', icon: '🏅' },
@@ -14,7 +15,7 @@ const TABS = [
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
-  const { stars, rank, nextRank } = useKidProgress()
+  const { stars, rank, nextRank, dueCount, estimatedElo } = useKidProgress()
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -66,6 +67,24 @@ export function RootLayout() {
               <span aria-hidden>{rank.emoji}</span>
               <span className="text-xs font-extrabold text-gold-200">⭐ {stars}</span>
             </span>
+            <span
+              id="kid-elo-badge"
+              className="hidden items-center gap-1 rounded-xl bg-white/10 px-2 py-1 ring-1 ring-white/20 sm:flex"
+              title="Trình độ ước lượng của bé (chỉ để động viên, không phải Elo thi đấu)"
+            >
+              <span aria-hidden>🎯</span>
+              <span className="text-xs font-extrabold text-white/90">≈ {estimatedElo}</span>
+            </span>
+            {dueCount > 0 && (
+              <span
+                id="kid-review-badge"
+                className="flex items-center gap-1 rounded-xl bg-info-500/30 px-2 py-1 ring-1 ring-info-300/40"
+                title={`${dueCount} bài đã tới hạn ôn lại - mở lại tab bé đang học để ôn nhé!`}
+              >
+                <span aria-hidden>🔁</span>
+                <span className="text-xs font-extrabold text-white">{dueCount}</span>
+              </span>
+            )}
             <InfoButton topic="app" tone="onDark" />
             <HeaderOptions />
           </div>

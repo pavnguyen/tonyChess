@@ -43,6 +43,19 @@ export const TIPS_BY_TAB: Record<string, ParentTip> = {
       },
     ],
   },
+  '/counters': {
+    title: 'Đối phó khai cuộc',
+    questions: [
+      {
+        q: 'Đố con: đối thủ đang chơi khai cuộc gì, và mình đáp lại để phá thế nào?',
+        a: 'Cùng bé gọi tên khai cuộc của đối thủ rồi nhắc lại một việc đối phó - ví dụ đánh vào chân đế Tốt trung tâm.',
+      },
+      {
+        q: 'Con thử chỉ ra nước nào của mình đang đuổi quân đối thủ đi chỗ khác.',
+        a: 'Những nước như đẩy Tốt đuổi Tượng hay Tốt đuổi Mã làm đối thủ phải lùi - đó là cách chặn triển khai quân của bạn.',
+      },
+    ],
+  },
   '/tactics': {
     title: 'Trung cuộc - Tìm nước hay nhất',
     questions: [

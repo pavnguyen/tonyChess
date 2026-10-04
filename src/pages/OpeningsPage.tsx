@@ -1,3 +1,4 @@
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Chess } from 'chess.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CelebrationModal } from '../components/CelebrationModal'
@@ -64,11 +65,15 @@ export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
   const { notation, completeActivity, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
+  const search = useSearch({ from: '/' })
+  const navigate = useNavigate()
 
   const [openingId, setOpeningId] = useState('london')
   const [mode, setMode] = useState<Mode>('learn')
   /** Cột khai cuộc đang xem: quân Trắng hay quân Đen. */
   const [side, setSide] = useState<Side>('white')
+  /** Bộ lọc theo nước mở đầu của bé (null = xem tất cả). */
+  const [moveFilter, setMoveFilter] = useState<string | null>(null)
   /** Số nửa nước (ply) bé đã đi. Mỗi khai cuộc chỉ có MỘT dòng chính. */
   const [ply, setPly] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
@@ -114,13 +119,49 @@ export function OpeningsPage() {
     [openingList, side],
   )
 
+  /**
+   * Nhảy từ tab Đối phó về: mở sẵn đúng khai cuộc (và đúng phe) bé vừa xem bên đó.
+   * Chỉ chạy khi đường dẫn mang `?opening=…` - bé bấm chọn bài khác trên bản đồ thì
+   * không bị kéo ngược lại.
+   */
+  useEffect(() => {
+    if (!search.opening) return
+    const target = openingList.find((item) => item.id === search.opening)
+    if (!target) return
+    setSide(target.side)
+    setOpeningId(target.id)
+    setMoveFilter(null)
+  }, [search.opening, openingList])
+
   // Bản đồ leo cấp: mỗi phe có chuỗi mở khoá riêng, bài sau mở khi thuộc bài trước.
+  /**
+   * Nước mở đầu của BÉ trong một khai cuộc. Trắng luôn đi trước, nên nếu bé cầm Đen
+   * thì nước mở đầu của bé nằm ở ply 1 (sau nước đi đầu của đối thủ).
+   */
+  const kidFirstMove = useCallback(
+    (item: Opening) => (item.side === 'white' ? item.moves[0]?.san : item.moves[1]?.san),
+    [],
+  )
+
+  /** Các nước mở đầu khác nhau của bé trong cột đang xem - để làm bộ lọc. */
+  const openMoveFilters = useMemo(() => {
+    const seen = new Map<string, string>()
+    for (const item of sideOpenings) {
+      const move = kidFirstMove(item)
+      if (move && !seen.has(move)) {
+        seen.set(move, `${item.side === 'white' ? '1.' : '1...'}${move}`)
+      }
+    }
+    return [...seen.entries()].map(([move, label]) => ({ move, label }))
+  }, [sideOpenings, kidFirstMove])
+
   const curriculum = useCurriculum(sideOpenings, 'openings', ':memorize')
 
   /** Đổi phe: nhảy luôn sang bài đầu tiên của phe đó. */
   const changeSide = (next: Side) => {
     setSide(next)
     setOpeningPreview(false)
+    setMoveFilter(null)
     const first = openingList.find((item) => item.side === next)
     if (first) setOpeningId(first.id)
   }
@@ -667,8 +708,49 @@ export function OpeningsPage() {
             onChange={changeSide}
             size="sm"
           />
+          <div id="kid-opening-move-filter" className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              data-opening-move-filter="all"
+              aria-pressed={moveFilter === null}
+              onClick={() => setMoveFilter(null)}
+              className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                moveFilter === null
+                  ? 'border-brand-600 bg-brand-50 text-brand-800'
+                  : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
+              }`}
+            >
+              Tất cả
+            </button>
+            {openMoveFilters.map(({ move, label }) => {
+              const active = moveFilter === move
+              return (
+                <button
+                  key={move}
+                  type="button"
+                  data-opening-move-filter={move}
+                  aria-pressed={active}
+                  onClick={() => {
+                    setMoveFilter(move)
+                    setOpeningPreview(false)
+                    const first = sideOpenings.find((item) => kidFirstMove(item) === move)
+                    if (first) setOpeningId(first.id)
+                  }}
+                  className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                    active
+                      ? 'border-brand-600 bg-brand-50 text-brand-800'
+                      : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
           <ProgressMap
-            nodes={curriculum.map((entry) => ({
+            nodes={curriculum
+              .filter((entry) => !moveFilter || kidFirstMove(entry.item) === moveFilter)
+              .map((entry) => ({
               id: entry.item.id,
               level: entry.level,
               title: entry.item.name,
@@ -691,14 +773,27 @@ export function OpeningsPage() {
             }
             info="cup"
           />
-          <KidButton
-            id="kid-openings-patterns"
-            variant="sky"
-            size="sm"
-            onClick={openPatterns}
-          >
-            🧩 Ôn mẫu hình cuối khai cuộc
-          </KidButton>
+          <div className="flex flex-wrap gap-1.5">
+            <KidButton
+              id="kid-openings-patterns"
+              variant="sky"
+              size="sm"
+              onClick={openPatterns}
+            >
+              🧩 Ôn mẫu hình cuối khai cuộc
+            </KidButton>
+            <KidButton
+              id="kid-opening-vs"
+              variant="grass"
+              size="sm"
+              onClick={() =>
+                navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
+              }
+              title="Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào"
+            >
+              🧭 Bạn chơi khai cuộc này thì sao?
+            </KidButton>
+          </div>
         </Panel>
 
         <Panel className="grid gap-2">

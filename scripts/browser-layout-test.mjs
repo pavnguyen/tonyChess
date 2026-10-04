@@ -36,6 +36,9 @@ const VIEWPORTS = [
 
 const ROUTES = [
   { path: '/', name: 'Khai cuộc' },
+  // Trang Đối phó có thêm hàng trạng thái (đối thủ + màu quân) trên bàn cờ nên chấp
+  // nhận bàn cờ nhỏ hơn một chút, giống cách xử lý của trang Chiến lược.
+  { path: '/counters', name: 'Đối phó khai cuộc', minBoardScale: 0.9 },
   { path: '/tactics', name: 'Nước hay nhất' },
   { path: '/endgames', name: 'Tàn cuộc' },
   // Trang Chiến lược có nhiều nút điều khiển dưới bàn cờ hơn nên chừa nhiều chỗ hơn.
@@ -186,9 +189,9 @@ for (const viewport of VIEWPORTS) {
       if (slack > 40) console.log(`     ℹ còn dư ${Math.round(slack)}px dưới khối bàn cờ`)
     }
 
-    // Thanh tab phải hiển thị đủ 5 tab, không bị cắt mất tab nào.
+    // Thanh tab phải hiển thị đủ 6 tab, không bị cắt mất tab nào.
     const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
-    check(tabCount === 5, `${route.name}: thanh tab có đủ 5 tab (${tabCount})`)
+    check(tabCount === 6, `${route.name}: thanh tab có đủ 6 tab (${tabCount})`)
 
     if (m.hiddenColumns > 0) {
       console.log(

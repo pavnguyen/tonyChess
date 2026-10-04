@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { CelebrationModal } from '../components/CelebrationModal'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
@@ -10,12 +11,23 @@ import { preloadStockfish } from '../engine/stockfishLoader'
 import { useChessEngine } from '../engine/useChessEngine'
 import { useChessGame } from '../hooks/useChessGame'
 import { useEyeCheck } from '../hooks/useEyeCheck'
-import { BOARD_MARKS, formatSan, PIECE_NAME_VI, pieceFromSan } from '../lib/notation'
+import {
+  ARROW_COLOR,
+  BOARD_MARKS,
+  HINT_FROM_STYLE,
+  HINT_TO_STYLE,
+  formatSan,
+  PIECE_NAME_VI,
+  pieceFromSan,
+} from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
 import type { Side } from '../types'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+
+/** Số lần bé được bấm 💡 Gợi ý trong mỗi ván (để bé tự suy nghĩ nhiều hơn). */
+const HINT_LIMIT = 3
 
 /** Emoji quân cờ để hiển thị "túi quân đã ăn được". */
 const GLYPH: Record<string, string> = {
@@ -33,8 +45,11 @@ const GLYPH: Record<string, string> = {
   bK: '♚',
 }
 
+/**
+ * Ba mức của chế độ Đấu tập (đã bỏ mức 🐣 Dễ vì quá dễ với bé). Mức Dễ vẫn còn trong
+ * bộ máy cờ và được dùng ở tab Tàn cuộc cho bé tập kỹ thuật.
+ */
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string; icon: string }[] = [
-  { value: 'easy', label: 'Dễ', icon: '🐣' },
   { value: 'medium', label: 'Vừa', icon: '🐰' },
   { value: 'hard', label: 'Khó', icon: '🦊' },
   { value: 'master', label: 'Siêu', icon: '🦁' },
@@ -59,11 +74,16 @@ export function FreePlayPage() {
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
-  // Mặc định mức Dễ cho bé mới tập (bé vẫn đổi được). Đây là app học cờ, không phải
-  // bảng xếp hạng: không chấm điểm, không so hơn thua.
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy')
+  // Mức thấp nhất giờ là Vừa (đã bỏ mức Dễ). Đây là app học cờ, không phải bảng xếp
+  // hạng: không chấm điểm, không so hơn thua.
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
+  /** Nước gợi ý cho bé - chỉ hiện khi còn đúng thế cờ đã tính (`fen` khớp). */
+  const [hint, setHint] = useState<{ fen: string; from: string; to: string } | null>(null)
+  const [hintBusy, setHintBusy] = useState(false)
+  /** Số lần gợi ý còn lại của ván hiện tại; hết thì nút 💡 tự khoá. */
+  const [hintsLeft, setHintsLeft] = useState(HINT_LIMIT)
   const [confetti, setConfetti] = useState(false)
   const [result, setResult] = useState<{
     emoji: string
@@ -163,6 +183,8 @@ export function FreePlayPage() {
     setKidSide(side)
     setResult(null)
     setThinking(false)
+    setHint(null)
+    setHintsLeft(HINT_LIMIT)
     board.reset()
     setGameKey((value) => value + 1)
     if (soundOn) playTick()
@@ -196,6 +218,48 @@ export function FreePlayPage() {
   }, [board.history, kidSide])
 
   const isKidTurn = board.playerToMove && !gameOver && !thinking
+
+  /** Gợi ý đang hiện chỉ tính cho ĐÚNG thế cờ hiện tại (đi nước nào là tự ẩn). */
+  const hintMove = hint && hint.fen === board.fen ? hint : null
+
+  /**
+   * Bé bấm 💡 Gợi ý: nhờ engine (mức Khó) tìm nước mạnh nhất cho CHÍNH bên đang đi
+   * (là bé) rồi vẽ mũi tên vàng + khoanh quân đi và ô đích - giống các tab khác.
+   */
+  const showHint = async () => {
+    if (!isKidTurn || hintsLeft <= 0) return
+    const fen = board.fen
+    setHintBusy(true)
+    setHintsLeft((left) => Math.max(0, left - 1))
+    const move = await think(fen, 'hard')
+    setHintBusy(false)
+    const live = liveRef.current
+    if (!move || live.fen !== fen || !live.playerToMove) return
+    setHint({ fen, from: move.from, to: move.to })
+  }
+
+  /** Vệt nước vừa đi + gợi ý nước cần đi (nếu đang bật gợi ý). */
+  const boardStyles = useMemo(() => {
+    const styles: Record<string, CSSProperties> = {}
+    if (board.lastMove) {
+      styles[board.lastMove.from] = { boxShadow: BOARD_MARKS.lastMoveFrom }
+      styles[board.lastMove.to] = { boxShadow: BOARD_MARKS.lastMoveTo }
+    }
+    if (hintMove) {
+      styles[hintMove.from] = HINT_FROM_STYLE
+      styles[hintMove.to] = HINT_TO_STYLE
+    }
+    return Object.keys(styles).length ? styles : undefined
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board.lastMove, hintMove])
+
+  const hintArrow = useMemo(
+    () =>
+      hintMove
+        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
+        : [],
+    [hintMove],
+  )
 
   const handleDrop = (from: string, to: string): boolean => {
     const move = board.playMove(from, to, 'q')
@@ -252,41 +316,46 @@ export function FreePlayPage() {
             playerSide={kidSide}
             interactive={isKidTurn}
             heatmap={heatmap}
-            extraSquareStyles={
-              board.lastMove
-                ? {
-                    [board.lastMove.from]: {
-                      boxShadow: BOARD_MARKS.lastMoveFrom,
-                    },
-                    [board.lastMove.to]: {
-                      boxShadow: BOARD_MARKS.lastMoveTo,
-                    },
-                  }
-                : undefined
-            }
+            arrows={hintArrow}
+            extraSquareStyles={boardStyles}
             onDrop={handleDrop}
           />
         }
         under={
           <>
             <div className="flex flex-wrap items-center gap-2">
-              <KidButton variant="grass" onClick={() => newGame()}>
+              <KidButton variant="grass" size="sm" onClick={() => newGame()}>
               ♟️ Ván mới
             </KidButton>
             <KidButton
               variant="sky"
+              size="sm"
               disabled={board.history.length === 0 || thinking}
               onClick={() => {
                 // Lùi 2 nửa nước: nước của máy và nước của bé.
                 board.undoMoves(board.history.length % 2 === 0 ? 2 : 1)
                 finishedRef.current = false
                 setResult(null)
+                setHint(null)
               }}
             >
               ↩️ Đi lại nước vừa rồi
             </KidButton>
-            <KidButton variant="ghost" onClick={toggleHeatmap}>
+            <KidButton variant="ghost" size="sm" onClick={toggleHeatmap}>
               👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
+            </KidButton>
+            <KidButton
+              id="kid-freeplay-hint"
+              variant="sky"
+              size="sm"
+              disabled={!isKidTurn || hintBusy || hintsLeft <= 0}
+              onClick={showHint}
+            >
+              {hintBusy
+                ? '💡 Đang tính…'
+                : hintsLeft > 0
+                  ? `💡 Gợi ý (${hintsLeft})`
+                  : '💡 Hết gợi ý'}
             </KidButton>
           </div>
 

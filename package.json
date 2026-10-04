@@ -32,10 +32,13 @@
     "check:coords": "node scripts/browser-coords-test.mjs",
     "check:voice": "node scripts/browser-voice-test.mjs",
     "check:tactics": "node scripts/browser-tactics-test.mjs",
+    "check:tactics-tiep": "node scripts/browser-tactics-continuation-test.mjs",
     "check:endgames": "node scripts/browser-endgame-test.mjs",
     "check:assets": "node scripts/generate-assets.mjs",
     "check:patterns": "node scripts/browser-openings-patterns-test.mjs",
-    "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:strategy && npm run check:stockfish && npm run check:tips && npm run check:info-ui && npm run check:coords && npm run check:voice && npm run check:tactics && npm run check:endgames && npm run check:patterns && npm run check:theme && npm run check:layout"
+    "check:counters": "node scripts/browser-counters-test.mjs",
+    "check:freeplay": "node scripts/browser-freeplay-hint-test.mjs",
+    "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:strategy && npm run check:stockfish && npm run check:tips && npm run check:info-ui && npm run check:coords && npm run check:voice && npm run check:tactics && npm run check:tactics-tiep && npm run check:endgames && npm run check:patterns && npm run check:counters && npm run check:freeplay && npm run check:theme && npm run check:layout"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.0",

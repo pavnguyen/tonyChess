@@ -120,7 +120,7 @@ const EMPTY: Opening['moves'] = []
 
 export const OPENINGS: Opening[] = META.map((meta) => {
   const entry = OPENING_TREES[meta.id]
-  if (!entry) {
+  if (!entry && import.meta.env?.DEV) {
     console.warn(`Khai cuộc "${meta.id}" chưa có dòng nước đi trong openingTrees.ts`)
   }
   return {

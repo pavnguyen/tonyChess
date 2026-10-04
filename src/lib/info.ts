@@ -40,7 +40,7 @@ export const INFO: Record<string, InfoEntry> = {
     tag: '🎮 Cách chơi',
     body: [
       'Bé có thể **kéo quân** bằng chuột/ngón tay, hoặc **bấm quân rồi bấm ô đích** (tiện hơn trên iPad).',
-      'Trong tab Khai cuộc còn có phím tắt: ◀ ▼ để lùi, ▶ ▲ để tiến từng nước.',
+      'Phím tắt: ở tab Khai cuộc và tab Đối phó, ◀ ▼ lùi và ▶ ▲ tiến từng nước; ở tab Trung cuộc, ◀ ▼ về thế cờ trước và ▶ ▲ sang thế kế tiếp.',
       'Bàn cờ tự xoay 180° khi bé cầm quân Đen, để hàng 7-8 luôn nằm gần bé.',
     ],
   },
@@ -75,8 +75,9 @@ export const INFO: Record<string, InfoEntry> = {
     title: 'Chú Máy - đối thủ tập luyện',
     tag: '🧠 Ý tưởng',
     body: [
-      'App có hai "chú Máy": một **bộ máy cờ viết bằng JavaScript** (chạy ngay, bốn mức: Dễ - Vừa - Khó - Siêu) và **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới) dùng cho phân tích và mức Siêu.',
-      'Ở mức Dễ và Vừa, chú Máy **cố tình đi hơi bừa** cho ván cờ vui và vừa sức bé; từ mức Khó trở lên thì chơi hết sức.',
+      'App có hai "chú Máy": một **bộ máy cờ viết bằng JavaScript** (chạy ngay, ba mức: Vừa - Khó - Siêu) và **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới) dùng cho mức Siêu.',
+      'Ở mức Vừa, chú Máy **cố tình đi hơi bừa** cho ván cờ vui và vừa sức bé; từ mức Khó trở lên thì chơi hết sức. Mức Dễ nhất đã bỏ khỏi chế độ Đấu tập vì quá dễ - nhưng các bài Tàn cuộc vẫn dùng mức Dễ cho bé tập kỹ thuật.',
+      'Trong lúc đấu, bé có nút **💡 Gợi ý**: máy tìm nước mạnh nhất cho **chính bé** rồi vẽ mũi tên vàng + khoanh quân đi và ô đích. Mỗi ván bé chỉ được gợi ý **3 lần** (nút đếm ngược 3-2-1 rồi tự khoá) - để bé tập tự suy nghĩ, ván mới lại có đủ 3 lượt.',
       'Stockfish được tải theo nhu cầu (chỉ khi bé thật sự chọn mức Siêu) nên mở app vẫn nhanh.',
     ],
   },
@@ -96,6 +97,26 @@ export const INFO: Record<string, InfoEntry> = {
       'Mười thói quen dưới đây áp dụng được ở **mọi ván, mọi thế cờ** - không phải học thuộc lòng một dòng biến nào.',
       'Người chơi cờ giỏi không thắng vì nhớ nhiều biến khai cuộc, mà vì mỗi nước đều tự hỏi: *trung tâm đã chắc chưa, quân đã ra hết chưa, Vua đã an toàn chưa, quân mình có bị treo không?*',
       'Bé cứ mở từng thẻ đọc câu hỏi tự vấn rồi nhẩm khẩu quyết - chỉ cần nhớ và làm đúng bốn nguyên tắc đầu là đã hơn hẳn bạn cùng tuổi.',
+    ],
+  },
+  counter: {
+    title: 'Đối phó khai cuộc 🧭',
+    tag: '🧠 Ý tưởng',
+    body: [
+      'Học khai cuộc cho mình chưa đủ - ra bàn cờ gặp bạn chơi khác, bé cần biết **bạn ấy đang làm gì và phá lại thế nào**.',
+      'Mỗi bài ở tab Đối phó là một dòng nước từ nước đầu: nước nào của **đối thủ**, nước nào **bé đáp lại** để phá thế khai cuộc và chặn triển khai quân của bạn.',
+      'Mỗi bài có câu **“đối thủ đang định làm gì?”** - bé tập nhận diện kế hoạch của đối phương trước, rồi mới tìm cách phá.',
+      'Mục tiêu không phải học thuộc, mà là nắm **ý tưởng**: đánh vào chân đế trung tâm, đuổi quân đang ghim, giữ chặt các ô quan trọng.',
+      'Mỗi bài đều **nhảy qua lại** được với bài khai cuộc gốc ở tab Khai cuộc - bé xem cả hai mặt của cùng một khai cuộc. Bài đã xem cũng tự nhắc lại trong khung **🔁 Ôn tập hôm nay**.',
+    ],
+  },
+  review: {
+    title: 'Ôn tập ngắt quãng 🔁',
+    tag: '🧠 Ý tưởng',
+    body: [
+      'Não bé quên dần theo thời gian, nên học một lần là chưa đủ. Khung **🔁 Ôn tập hôm nay** sẽ nhắc lại đúng những thế cờ bé đã làm, sau đó thưa dần: **1 → 3 → 7 → 16 → 35 ngày**.',
+      'Đây là cách học nhớ lâu nhất mà lại nhẹ nhàng - mỗi ngày chỉ cần vài thế cờ cũ.',
+      'Bé bấm vào một thế trong khung là nhảy thẳng tới thế đó để làm lại. Chưa có gì tới hạn thì cứ học bài mới cho vui.',
     ],
   },
   plan: {
@@ -307,6 +328,33 @@ export const INFO: Record<string, InfoEntry> = {
       'Cách nhớ: **Tốt thông, cứ tiến**.',
     ],
   },
+  'theme:fork': {
+    title: 'Đòn bắt đôi 🍴',
+    tag: '♟️ Thế cờ',
+    body: [
+      '**Bắt đôi** là một nước mà quân bé **tấn công hai quân địch cùng lúc** - địch chỉ kịp cứu một, bé ăn quân còn lại.',
+      'Mã là “vua bắt đôi” vì nó nhảy hình chữ L tới những ô mà quân khác không tới được; Tốt và Hậu cũng bắt đôi rất hay.',
+      'Cách nhớ: **Một nước, hai mũi**.',
+    ],
+  },
+  'theme:pin': {
+    title: 'Đòn ghim 📌',
+    tag: '♟️ Thế cờ',
+    body: [
+      '**Ghim** là khi một quân địch đứng chắn giữa quân bé và Vua (hoặc Hậu) địch trên cùng một đường - nó **không dám nhúc nhích**.',
+      'Vì quân ghim không chạy được, bé cứ **đưa thêm quân tới vây** là bắt gọn nó.',
+      'Cách nhớ: **Ghim rồi thì vồ**.',
+    ],
+  },
+  'theme:mate-two': {
+    title: 'Chiếu bí 2 nước 🏁',
+    tag: '♟️ Thế cờ',
+    body: [
+      'Không phải chiếu bí lúc nào cũng trong một nước. **Chiếu bí 2 nước** nghĩa là nước đầu ép Vua vào thế kẹt, nước sau mới là chiếu bí.',
+      'Vì địch chỉ còn đúng một cách đáp trả, bé **tính trước cả hai nước** là thắng chắc.',
+      'Cách nhớ: **Ép trước, bí sau**.',
+    ],
+  },
 
   // ── 4 khái niệm chiến lược vị trí ─────────────────────────────────────────
   'positional:outpost': {
@@ -380,6 +428,8 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
   'notation',
   'principles',
   'plan',
+  'counter',
+  'review',
   ...[
     'london',
     'italian',
@@ -395,6 +445,14 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
   ...['carlsen', 'so', 'nakamura', 'kasparov', 'fischer', 'polgar', 'botvinnik', 'petrosian'].map(
     (id) => `gm:${id}`,
   ),
-  ...['attack', 'win-material', 'win-queen', 'passed-pawn'].map((id) => `theme:${id}`),
+  ...[
+    'attack',
+    'win-material',
+    'win-queen',
+    'passed-pawn',
+    'fork',
+    'pin',
+    'mate-two',
+  ].map((id) => `theme:${id}`),
   ...['outpost', 'open-file', 'bishop-pair', 'seventh-rank'].map((id) => `positional:${id}`),
 ]
