@@ -48,6 +48,16 @@ export interface Opening {
   side: Side
   emoji: string
   tagline: string
+  /**
+   * **Bé muốn gì với khai cuộc này** - ý niệm bao trùm trong MỘT câu, viết cho bé
+   * 7 tuổi. Trả lời câu hỏi "mình ra quân kiểu này để làm gì?" trước khi học từng
+   * nước, để bé có đích đến chứ không học vẹt.
+   *
+   * Câu này nên nhắc tới **ô cờ cụ thể** (ví dụ `f7`, `d5`): giao diện đọc chính câu
+   * đó để tô sáng các ô ấy trên bàn cờ (`parsePlanFocus`), nên mục tiêu trở nên trực
+   * quan mà không cần thêm dữ liệu riêng.
+   */
+  goal: string
   /** Một dòng chính duy nhất, đủ cho cả hai bên (xen kẽ nước bé và nước đối thủ). */
   moves: OpeningMove[]
   /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */

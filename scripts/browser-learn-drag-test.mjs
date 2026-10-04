@@ -102,6 +102,13 @@ check(
   'chế độ thuộc lòng không tô sáng sẵn quân cần đi (để bé tự nhớ)',
 )
 
+await evaluate(`document.querySelector('[data-opening-goal]').click()`)
+await sleep(100)
+check(await evaluate(`document.querySelector('[data-opening-goal]').getAttribute('aria-pressed') === 'true'`), 'soi mục tiêu khai cuộc bật được ở chế độ luyện')
+check(String(await clickButton('Gợi ý')) !== 'not-found', 'bấm Gợi ý để quay về nước đang luyện')
+await sleep(100)
+check(await evaluate(`document.querySelector('[data-opening-goal]').getAttribute('aria-pressed') === 'false'`), 'Gợi ý tắt soi mục tiêu khai cuộc')
+
 const backToLearn = await clickButton('Học từng bước')
 check(String(backToLearn) !== 'not-found', `đã quay lại “${backToLearn}”`)
 await sleep(600)

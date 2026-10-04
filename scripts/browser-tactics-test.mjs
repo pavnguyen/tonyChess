@@ -103,6 +103,8 @@ check(
   'chưa giải thì chưa có nút “Xem lại nước hay nhất”',
 )
 
+check(await waitFor('#kid-tactic-think'), 'chưa giải và chưa gợi ý thì không lộ đáp án')
+
 // Giải thế pawn-1 bằng bấm-chọn-đi: Tốt d5 → d6 (nước hay nhất theo máy).
 await clickSquare('d5')
 await sleep(250)
@@ -197,6 +199,29 @@ await pressKey('ArrowLeft', 'ArrowLeft', 37)
 await sleep(500)
 const badgeBack = String(await readBadge())
 check(badgeBack === badgeBefore, `phím ◀ quay về thế cờ trước (${badgeBack})`)
+
+console.log('\n▶ Làm lại và đổi bài khi đang phát lời giải')
+// Quay về bài đầu đã giải rồi giải lại để phát lời giải.
+await clickSquare('d5')
+await sleep(250)
+await clickSquare('d6')
+await waitFor('#kid-tactic-replay')
+await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
+await clickById('kid-tactic-replay')
+await evaluate(`[...document.querySelectorAll('button')].find(el => el.innerText.includes('Làm lại')).click()`)
+await sleep(1600)
+check(await evaluate(`Boolean(document.getElementById('kid-board-piece-wP-d5'))`), 'Làm lại hủy lời giải đang phát, giữ thế ban đầu')
+check(await waitFor('#kid-tactic-think'), 'Làm lại ẩn đáp án để bé tự giải')
+await clickSquare('d5')
+await sleep(250)
+await clickSquare('d6')
+await waitFor('#kid-tactic-replay')
+await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
+await clickById('kid-tactic-replay')
+await clickById('kid-tactic-next')
+await sleep(1600)
+check(await evaluate(`Boolean(document.getElementById('kid-board-piece-wP-e5'))`), 'đổi bài hủy timer lời giải cũ, giữ Tốt bài mới ở e5')
+check(await waitFor('#kid-tactic-think'), 'bài mới không lộ đáp án cũ')
 
 close()
 finish('BROWSER TACTICS')

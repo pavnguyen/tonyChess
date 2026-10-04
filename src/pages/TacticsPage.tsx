@@ -98,12 +98,18 @@ export function TacticsPage() {
   const exampleSans = useRef(solutionLine)
   exampleSans.current = solutionLine
 
+  const resetBoard = board.reset
   const resetRound = useCallback(() => {
     setPhase('solve')
     setLineIndex(0)
     setWrongTries(0)
     setHint(false)
-  }, [])
+    setPreviewing(false)
+    setReplaying(false)
+    setResult(null)
+    setConfetti(false)
+    resetBoard()
+  }, [resetBoard])
 
   /** Nước mà BÉ cần đi tiếp theo (from → to), đọc từ chính thế cờ đang đứng. */
   const currentMove = useMemo(() => {
@@ -234,7 +240,7 @@ export function TacticsPage() {
   const boardRef = useRef(board)
   boardRef.current = board
   useEffect(() => {
-    if (replayToken === 0 || !active) return
+    if (replayToken === 0 || !active || !replaying) return
     const timers: number[] = []
     exampleSans.current.forEach((san, ply) => {
       timers.push(
@@ -252,7 +258,7 @@ export function TacticsPage() {
     )
     return () => timers.forEach((id) => window.clearTimeout(id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replayToken])
+  }, [replayToken, active, replaying])
 
   const replaySolution = () => {
     if (!active || replaying) return
@@ -490,6 +496,11 @@ export function TacticsPage() {
         }
       />
 
+      {/*
+        Cột phải xếp theo đúng thứ tự bé làm việc: chọn CHỦ ĐỀ → chọn THẾ CỜ trên
+        bản đồ → đọc lời giải → ôn tập. Bản đồ nằm NGAY dưới khung chọn chủ đề (và
+        sát bàn cờ) nên bé luôn thấy mình đang đứng ở ô nào của chủ đề.
+      */}
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           <SectionTitle
@@ -517,42 +528,14 @@ export function TacticsPage() {
             🤖 Nước tốt nhất của mỗi thế đều do <b>máy chấm sẵn</b> (đối chiếu engine) - bé cứ tìm
             nước giữ được lợi thế là đúng.
           </p>
-          {active && (
-            <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
-              <div className="text-xs font-extrabold uppercase text-gold-600">
-                🎯 Nhiệm vụ của bé
-              </div>
-              <div className="text-base font-extrabold text-gold-900">{active.title}</div>
-              {hasContinuation && (
-                <div className="mt-1 text-xs font-bold text-gold-700">
-                  🏁 Thế này phải <b>đánh tiếp {kidPlies - 1}</b> nước nữa mới kết liễu đấy!
-                </div>
-              )}
-              {wrongTries > 0 && (
-                <div className="mt-1 text-xs font-bold text-gold-700">💡 {active.hint}</div>
-              )}
-            </div>
-          )}
         </Panel>
 
-        <ReviewStrip
-          items={(puzzles ?? []).map((item) => ({
-            id: `tactics:${item.id}`,
-            label: item.title,
-          }))}
-          onPick={reviewPuzzle}
-        />
-
-        {puzzleAnnotation && (
-          <ExplanationBanner
-            annotation={puzzleAnnotation}
-            plyIndex={0}
-            notation={notation}
-            variant={solved ? 'played' : 'hint'}
-          />
-        )}
-
-        <Panel>
+        {/*
+          Bản đồ thế cờ và THẾ CỜ ĐANG LÀM nằm chung một khung: ô sáng trên bản đồ
+          và nhiệm vụ ngay bên dưới là cùng một thế cờ, bé nhìn một chỗ là hiểu mình
+          đang ở đâu. Trước đây hai thứ này bị đẩy cách xa nhau nên khó theo dõi.
+        */}
+        <Panel id="kid-tactic-map" className="grid gap-2">
           <ProgressMap
             nodes={curriculum.map((entry) => ({
               id: entry.item.id,
@@ -570,7 +553,57 @@ export function TacticsPage() {
             unitLabel="thế cờ"
             allDoneMessage="Bé đã tìm đúng hết các thế của chủ đề này - sang chủ đề khác thôi! 🏆"
           />
+
+          {active && (
+            <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                <span className="text-xs font-extrabold uppercase text-gold-600">
+                  🎯 Nhiệm vụ của bé
+                </span>
+                {/* Nhắc lại đúng số thế cờ đang làm để bé nối ô sáng trên bản đồ
+                    với con số trên thanh tiêu đề bàn cờ (không phải dò lại). */}
+                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-gold-700 ring-1 ring-gold-200">
+                  Thế cờ {safeIndex + 1}/{list.length}
+                </span>
+              </div>
+              <div className="text-base font-extrabold text-gold-900">{active.title}</div>
+              {hasContinuation && (
+                <div className="mt-1 text-xs font-bold text-gold-700">
+                  🏁 Thế này phải <b>đánh tiếp {kidPlies - 1}</b> nước nữa mới kết liễu đấy!
+                </div>
+              )}
+              {wrongTries > 0 && (
+                <div className="mt-1 text-xs font-bold text-gold-700">💡 {active.hint}</div>
+              )}
+            </div>
+          )}
         </Panel>
+
+        {puzzleAnnotation && !previewing && (hint || solved) ? (
+          <ExplanationBanner
+            annotation={puzzleAnnotation}
+            plyIndex={0}
+            notation={notation}
+            variant={solved ? 'played' : 'hint'}
+          />
+        ) : (
+          <Panel id="kid-tactic-think">
+            <p className="text-sm font-bold text-brand-700">
+              🧠 Bé nhìn xem Vua có an toàn không, quân nào đang bị tấn công và mình có thể chiếu hay bắt quân nào nhé.
+            </p>
+            <p className="mt-1 text-xs font-bold text-brand-500">
+              💡 Lời giải chỉ hiện khi bé bấm Gợi ý hoặc giải xong, để bé tự suy nghĩ trước.
+            </p>
+          </Panel>
+        )}
+
+        <ReviewStrip
+          items={(puzzles ?? []).map((item) => ({
+            id: `tactics:${item.id}`,
+            label: item.title,
+          }))}
+          onPick={reviewPuzzle}
+        />
       </div>
 
       <CelebrationModal

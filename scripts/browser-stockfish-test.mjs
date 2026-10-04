@@ -9,7 +9,7 @@
 import { Chess } from 'chess.js'
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
-const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/free-play'
+const APP_URL = new URL('/free-play', process.env.APP_URL ?? 'http://localhost:5198').href
 
 const { skipped, failedToConnect, evaluate, close } = await openPage(APP_URL, {
   port: 9357,

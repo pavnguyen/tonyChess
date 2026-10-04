@@ -64,6 +64,12 @@ for (const opening of OPENINGS) {
     bad = true
   }
 
+  // 3. “Bé muốn gì?” - ý niệm cả khai cuộc phải viết rõ, đủ dài để bé hiểu mục tiêu.
+  if (opening.goal.trim().length < 30) {
+    fail(`${opening.id}: câu “bé muốn gì” cần ≥ 30 ký tự`)
+    bad = true
+  }
+
   if (!bad) {
     ok(`${opening.id} - dòng chính ${opening.moves.length} ply (${opening.plan.title})`)
   }

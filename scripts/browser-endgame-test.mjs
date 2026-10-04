@@ -11,7 +11,7 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
-const { skipped, failedToConnect, evaluate, close } = await openPage(APP_URL, {
+const { skipped, failedToConnect, evaluate, send, close } = await openPage(APP_URL, {
   port: 9371,
   windowSize: '1440,900',
 })
@@ -71,6 +71,33 @@ const hasPiece = (piece, square) =>
 
 const bodyText = () => evaluate(`document.body.innerText`)
 
+/** Bấm quân rồi ô đích bằng chuột thật, giống thao tác chạm của bé. */
+const moveByClick = async (from, to) => {
+  for (const square of [from, to]) {
+    const point = await evaluate(`(() => {
+      const r = document.getElementById('kid-board-square-${square}').getBoundingClientRect()
+      return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 }
+    })()`)
+    for (const type of ['mousePressed', 'mouseReleased']) {
+      await send('Input.dispatchMouseEvent', {
+        type, ...point, button: 'left', clickCount: 1,
+        buttons: type === 'mousePressed' ? 1 : 0,
+      })
+    }
+    await sleep(80)
+  }
+  // Chờ hoạt ảnh quân cờ kết thúc trước khi thao tác tiếp trên cùng bàn.
+  await sleep(350)
+}
+const historyCount = () => evaluate(`document.querySelectorAll('#kid-endgame-history button').length`)
+const status = () => evaluate(`document.getElementById('kid-endgame-status').innerText`)
+const purpleSquares = () => evaluate(`
+  [...document.querySelectorAll('[data-square]')].filter(el =>
+    [...el.querySelectorAll('div')].some(child => child.style.backgroundColor === 'rgba(126, 106, 209, 0.42)')
+  ).map(el => el.dataset.square).sort()
+`)
+const clickId = (id) => evaluate(`document.getElementById(${JSON.stringify(id)}).click()`)
+
 await sleep(2000)
 await go('/endgames')
 check(await waitForSelector('[data-endgame-id]'), 'mở được tab Tàn cuộc')
@@ -116,7 +143,12 @@ check(
 
 console.log('\n▶ Gợi ý hiện mũi tên + bong bóng đọc nước')
 
-check(await clickByText('Gợi ý'), 'bấm “💡 Gợi ý”')
+await clickId('kid-endgame-goal')
+await sleep(100)
+check((await purpleSquares()).includes('g8'), 'soi mục tiêu tô tím Vua Đen')
+check(await clickByText('Gợi ý'), 'bấm “💡 Gợi ý” khi đang soi mục tiêu')
+await sleep(100)
+check(await evaluate(`document.getElementById('kid-endgame-goal').getAttribute('aria-pressed') === 'false'`), 'Gợi ý tự tắt soi mục tiêu để mũi tên không bị che')
 const readout = await evaluate(`
   (() => {
     const el = document.getElementById('kid-board-coord-readout')
@@ -134,6 +166,65 @@ check(await clickChip('Tốt đua biến Hậu (dễ)'), 'bấm thẻ “Tốt �
 await sleep(600)
 check(await hasPiece('wP', 'e5'), 'bàn cờ trở về thế Tốt Trắng ở e5')
 check(await hasPiece('wK', 'd6'), 'Vua Trắng ở d6 như thế ban đầu')
+
+console.log('\n▶ Mục tiêu, lịch sử và Đi lại')
+await clickId('kid-endgame-goal')
+await sleep(100)
+check(JSON.stringify(await purpleSquares()) === JSON.stringify(['e5', 'e8']), 'phong Hậu tô đúng Tốt và ô phong cấp')
+check(String(await evaluate(`document.getElementById('kid-endgame-explanation').innerText`)).includes('Mẹo của bài này'), 'giải thích là mẹo, không giả làm nước sắp tới')
+check((await historyCount()) === 0, 'bài mới có lịch sử rỗng')
+await moveByClick('e5', 'e6')
+check(await hasPiece('wP', 'e6'), 'bấm quân và ô đích đi được e6')
+check(String(await status()).includes('Máy đang nghĩ'), 'báo rõ đang chờ máy')
+await clickId('kid-endgame-takeback')
+await sleep(1100)
+check((await historyCount()) === 0 && await hasPiece('wP', 'e5'), 'Đi lại trong lúc chờ hủy nước máy, trả về thế ban đầu')
+await moveByClick('e5', 'e6')
+await sleep(1200)
+check((await historyCount()) === 2, 'lịch sử ghi cả nước bé và máy')
+await clickId('kid-endgame-takeback')
+await sleep(350)
+check((await historyCount()) === 0 && await hasPiece('wP', 'e5'), 'Đi lại sau nước máy lùi cả cặp nước')
+await moveByClick('e5', 'e6')
+await sleep(1200)
+await moveByClick('e6', 'e7')
+await sleep(1200)
+await evaluate(`document.querySelector('#kid-endgame-history button').click()`)
+await sleep(1200)
+check((await historyCount()) === 2 && await hasPiece('wP', 'e6'), 'bấm lịch sử quay về thế sau e6 rồi máy trả lời đúng một nước')
+await moveByClick('e6', 'e7')
+await clickChip('Chiếu bí hàng cuối bằng Hậu')
+await sleep(1200)
+check((await historyCount()) === 0 && await hasPiece('wQ', 'd1'), 'đổi bài khi máy đang chờ không nhận nước cũ')
+await moveByClick('d1', 'd8')
+await sleep(300)
+check(String(await status()).includes('Đạt mục tiêu'), 'chiếu bí báo đạt mục tiêu')
+check(await waitForSelector('[role="dialog"]'), 'chiếu bí mở lời chúc mừng')
+check(String(await evaluate(`document.querySelector('[role="dialog"]').innerText`)).includes('+5'), 'hoàn thành lần đầu hiện đúng 5 sao')
+await clickByText('Tuyệt vời!')
+await clickId('kid-endgame-takeback')
+await sleep(100)
+check((await historyCount()) === 0 && String(await status()).includes('Đến lượt bé'), 'Đi lại sau chiếu bí mở lại lượt chơi')
+
+await sleep(350)
+await moveByClick('d1', 'd8')
+await sleep(300)
+check(String(await evaluate(`document.querySelector('[role="dialog"]').innerText`)).includes('+2'), 'ôn lại hiện đúng 2 sao')
+await clickByText('Tuyệt vời!')
+
+console.log('\n▶ Hòa không bị ghi nhận là hoàn thành')
+await clickChip('Chiếu bí bằng Hậu + Vua')
+await sleep(500)
+await moveByClick('e7', 'e3')
+await sleep(300)
+check(String(await status()).includes('Thử lại'), 'hết nước đi nhưng không chiếu là hòa, cần thử lại')
+check(String(await bodyText()).includes('Hòa cờ mất rồi!'), 'hòa có thông báo đúng')
+await clickByText('Tuyệt vời!')
+check(!String(await bodyText()).includes('Bé đã đạt mục tiêu!'), 'hòa không báo đạt mục tiêu')
+check(await evaluate(`!document.querySelector('[data-endgame-id="mate-queen"]').innerText.includes('🏆')`), 'hòa không trao cúp hoàn thành')
+await clickId('kid-endgame-takeback')
+await sleep(350)
+check(await hasPiece('wQ', 'e7') && String(await status()).includes('Đến lượt bé'), 'Đi lại sau hòa cho bé sửa nước vừa đi')
 
 close()
 finish('BROWSER ENDGAME')

@@ -50,6 +50,23 @@ export function StrategyPage() {
     return styles
   }, [board])
 
+  /**
+   * Bảng chú giải ô màu: mỗi dòng nói RÕ ô nào được tô và vì sao (nhãn viết tay
+   * trong dữ liệu). Trước đây các nhãn này chỉ nằm trong dữ liệu mà không hiện ra,
+   * nên bé thấy ô xanh/đỏ mà không biết chúng đang chỉ điều gì.
+   *
+   * Gom theo nhãn để hai ô cùng ý nghĩa không chiếm hai dòng.
+   */
+  const legend = useMemo(() => {
+    const byLabel = new Map<string, string[]>()
+    for (const mark of board.marks) {
+      const squares = byLabel.get(mark.label) ?? []
+      squares.push(mark.square)
+      byLabel.set(mark.label, squares)
+    }
+    return [...byLabel.entries()].map(([label, squares]) => ({ label, squares }))
+  }, [board])
+
   const togglePrinciple = (id: string) => {
     setDemoSide('good')
     setOpenPrinciple((current) => (current === id ? null : id))
@@ -97,13 +114,57 @@ export function StrategyPage() {
               onChange={(value) => setDemoSide(value)}
               size="sm"
             />
-            <p
+            {/*
+              Khung lời giải đổi hẳn MÀU theo thế đang xem (xanh = nên, đỏ =
+              không nên) và nói rõ nó đang khoe thế nào. Nhờ vậy chỉ cần liếc một
+              cái là bé biết mình đang nhìn thế "làm đúng" hay "làm sai".
+            */}
+            <div
               id="kid-principle-note"
-              className="card-pop px-3 py-2 text-[0.78rem] font-bold leading-snug text-ink-600"
+              className={`rounded-2xl border-2 px-3 py-2 text-[0.78rem] font-bold leading-snug ${
+                demoSide === 'good'
+                  ? 'border-leaf-300 bg-leaf-50 text-leaf-800'
+                  : 'border-coral-300 bg-coral-50 text-coral-800'
+              }`}
             >
-              {demoSide === 'good' ? '✅ ' : '⚠️ '}
+              <b className="font-extrabold">
+                {demoSide === 'good' ? '✅ Thế cờ NÊN làm: ' : '⚠️ Thế cờ KHÔNG NÊN: '}
+              </b>
               {board.note}
-            </p>
+            </div>
+            {/*
+              Bảng chú giải ô màu: đọc thẳng từ nhãn viết tay trong dữ liệu, nên
+              bé biết chính xác ô nào đang chỉ điều gì thay vì đoán theo màu.
+            */}
+            {legend.length > 0 && (
+              <ul
+                id="kid-principle-legend"
+                className="grid gap-1"
+                aria-label="Vì sao các ô được tô màu"
+              >
+                {legend.map((entry) => (
+                  <li
+                    key={entry.label}
+                    className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[0.7rem] font-bold ${
+                      demoSide === 'good'
+                        ? 'bg-leaf-50 text-leaf-800 ring-1 ring-leaf-200'
+                        : 'bg-coral-50 text-coral-800 ring-1 ring-coral-200'
+                    }`}
+                  >
+                    {/* Tên ô viết THƯỜNG (d4) cho khớp cách viết trên bàn cờ và
+                        trong biên bản cờ - bé không phải học hai kiểu viết. */}
+                    <span
+                      className={`shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[0.65rem] font-extrabold text-white ${
+                        demoSide === 'good' ? 'bg-leaf-600' : 'bg-coral-600'
+                      }`}
+                    >
+                      {entry.squares.join(' ')}
+                    </span>
+                    <span className="min-w-0">{entry.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="flex flex-wrap items-center gap-1.5">
               <KidButton
                 variant="grass"
@@ -113,7 +174,7 @@ export function StrategyPage() {
                 ✅ Bé đã hiểu nguyên tắc này
               </KidButton>
               <span className="text-[0.7rem] font-bold text-ink-500">
-                {mastered ? 'đã ghi nhận ✓' : 'ô xanh là NÊN, ô đỏ là KHÔNG NÊN'}
+                {mastered ? 'đã ghi nhận ✓' : '🟩 ô xanh là NÊN · 🟥 ô đỏ là KHÔNG NÊN'}
               </span>
             </div>
           </div>

@@ -2,7 +2,9 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Chess } from 'chess.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BoardStage } from '../components/BoardStage'
+import { CelebrationModal } from '../components/CelebrationModal'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
+import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
@@ -11,8 +13,19 @@ import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { useCountersQuery } from '../data/queries'
-import { ARROW_COLOR, BOARD_MARKS, pieceFromSan } from '../lib/notation'
-import { playWin } from '../lib/sound'
+import {
+  ARROW_COLOR,
+  BOARD_MARKS,
+  HINT_FROM_STYLE,
+  HINT_TO_STYLE,
+  OPPONENT_ARROW_COLOR,
+  OPPONENT_FROM_STYLE,
+  OPPONENT_TO_STYLE,
+  PIECE_GLYPH,
+  formatSanLetters,
+  pieceFromSan,
+} from '../lib/notation'
+import { playError, playMove, playWin } from '../lib/sound'
 import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
 import type { CounterLesson, MoveAnnotation, Side } from '../types'
@@ -21,6 +34,17 @@ import type { CounterLesson, MoveAnnotation, Side } from '../types'
 const SIDE_OPTIONS: { value: Side; label: string; icon: string }[] = [
   { value: 'white', label: 'Đối thủ cầm Trắng', icon: '⬜' },
   { value: 'black', label: 'Đối thủ cầm Đen', icon: '⬛' },
+]
+
+/**
+ * Hai cách học tab Đối phó: **xem** máy dẫn từng nước, hoặc **tự kéo quân** đáp trả.
+ * Chế độ luyện giữ nguyên bàn cờ, chỉ đổi việc bé được kéo-thả hay chỉ ngồi xem.
+ */
+type Mode = 'view' | 'practice'
+
+const MODES: { value: Mode; label: string; icon: string }[] = [
+  { value: 'view', label: 'Xem từng bước', icon: '📖' },
+  { value: 'practice', label: 'Luyện tự đáp trả', icon: '🖐️' },
 ]
 
 const sideLabel = (side: Side) => (side === 'white' ? 'Trắng ⬜' : 'Đen ⬛')
@@ -51,6 +75,22 @@ export function CountersPage() {
   const [ply, setPly] = useState(0)
   /** Lọc danh sách theo nước mở đầu của đối thủ (null = xem tất cả). */
   const [moveFilter, setMoveFilter] = useState<string | null>(null)
+  /** Chế độ học: xem từng bước (như cũ) hay TỰ kéo quân đáp trả. */
+  const [mode, setMode] = useState<Mode>('view')
+  /** Có hiện mũi tên + tô sáng quân sắp đi không (chỉ dùng ở chế độ luyện). */
+  const [hintVisible, setHintVisible] = useState(true)
+  /** Nước bé vừa kéo sai - hiện băng đỏ nhắc thử lại (chỉ ở chế độ luyện). */
+  const [wrongInfo, setWrongInfo] = useState<{
+    annotation: MoveAnnotation
+    plyIndex: number
+  } | null>(null)
+  const [confetti, setConfetti] = useState(false)
+  const [result, setResult] = useState<{
+    emoji: string
+    title: string
+    message: string
+    stars: number
+  } | null>(null)
   const awardedRef = useRef(false)
 
   /**
@@ -122,21 +162,45 @@ export function CountersPage() {
     return out
   }, [moves, ply, totalPlies])
 
-  // Đổi bài → quay lại xem từ nước đầu.
+  // Đổi bài hoặc đổi chế độ → quay lại từ nước đầu.
   useEffect(() => {
     setPly(0)
+    setWrongInfo(null)
+    setHintVisible(true)
     awardedRef.current = false
-  }, [lessonId])
+    setResult(null)
+    setConfetti(false)
+  }, [lesson?.id, mode])
 
-  /** Bé xem hết cả dòng → ghi nhận đã hiểu bài đối phó này. */
+  /**
+   * Chế độ LUYỆN: đối thủ tự đi khi tới lượt. Nhờ vậy bé chỉ phải kéo quân của MÌNH,
+   * còn đối thủ đáp trả đúng như một ván thật.
+   */
+  useEffect(() => {
+    if (mode !== 'practice' || !lesson || atLeaf) return
+    if (isKidPly(ply)) return
+    const timer = setTimeout(() => setPly((current) => current + 1), 650)
+    return () => clearTimeout(timer)
+  }, [mode, lesson, ply, atLeaf, isKidPly])
+
+  /** Bé đi hết cả dòng → ghi nhận đã hiểu bài đối phó này (luyện xong thì mừng lớn). */
   useEffect(() => {
     if (!lesson || ply === 0 || !atLeaf) return
     if (awardedRef.current) return
     awardedRef.current = true
-    completeActivity(`counter:${lesson.id}`, 3)
+    const firstTime = completeActivity(`counter:${lesson.id}`, 3)
     if (soundOn) playWin()
+    if (mode === 'practice') {
+      setConfetti(true)
+      setResult({
+        emoji: lesson.emoji,
+        title: 'Bé tự đáp trả trọn vẹn!',
+        message: `Bé đã tự tay kéo đúng mọi nước đáp trả ${lesson.opponentOpening}. Cách “${lesson.counterName}” đã vào tay rồi!`,
+        stars: firstTime ? 3 : 1,
+      })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson, ply, atLeaf])
+  }, [lesson, ply, atLeaf, mode])
 
   /** Nước kế tiếp theo dòng: from → to để vẽ mũi tên gợi ý. */
   const hintMove = useMemo(() => {
@@ -151,13 +215,37 @@ export function CountersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [atLeaf, moves, ply, fens, isKidPly])
 
+  /**
+   * Mũi tên báo nước SẮP tới: **vàng đồng** cho nước của bé, **san hô** cho nước
+   * của đối thủ - để bé nhìn màu là biết ngay ai sắp đi.
+   */
+  /** Ở chế độ luyện bé có thể ẩn gợi ý để tự nhớ; chế độ xem thì luôn hiện. */
+  const showHint = mode === 'view' || hintVisible
+
   const arrows = useMemo(
     () =>
-      hintMove
-        ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
+      hintMove && showHint
+        ? [
+            {
+              startSquare: hintMove.from,
+              endSquare: hintMove.to,
+              color: hintMove.mine ? ARROW_COLOR : OPPONENT_ARROW_COLOR,
+            },
+          ]
         : [],
-    [hintMove],
+    [hintMove, showHint],
   )
+
+  /**
+   * Tô sáng QUÂN SẮP ĐI và Ô ĐÍCH: vàng cho nước của bé (như tab Khai cuộc), san hô
+   * cho nước của đối thủ. Nhờ vậy bé nhìn bàn cờ là thấy ngay quân nào sắp nhúc nhích.
+   */
+  const nextMoveSquares = useMemo(() => {
+    if (!hintMove || !showHint) return undefined
+    return hintMove.mine
+      ? { [hintMove.from]: HINT_FROM_STYLE, [hintMove.to]: HINT_TO_STYLE }
+      : { [hintMove.from]: OPPONENT_FROM_STYLE, [hintMove.to]: OPPONENT_TO_STYLE }
+  }, [hintMove, showHint])
 
   const lastMoveSquares = useMemo(() => {
     if (ply === 0) return undefined
@@ -176,6 +264,7 @@ export function CountersPage() {
   /** Băng giải thích: nước của bé thì lấy lời bình, nước đối thủ thì nhắc xem. */
   const bannerState = useMemo(() => {
     if (!lesson) return null
+    if (wrongInfo) return { ...wrongInfo, variant: 'wrong' as const }
     if (ply === 0) {
       const san = moves[0]?.san
       if (!san) return null
@@ -183,11 +272,13 @@ export function CountersPage() {
         annotation: {
           san,
           piece: pieceFromSan(san),
-          reason: 'Đối thủ mở màn như vậy - bé xem ý đồ rồi đáp lại nhé.',
-          rhyme: 'Đối thủ vừa đi',
+          reason: kidSide === 'white'
+            ? 'Trắng đi trước. Bé mở màn bằng nước này rồi xem đối thủ đáp lại nhé.'
+            : 'Đối thủ sắp mở màn như vậy - bé xem ý đồ rồi đáp lại nhé.',
+          rhyme: 'Xem trước rồi đi',
         },
         plyIndex: 0,
-        variant: 'opponent' as const,
+        variant: 'hint' as const,
       }
     }
     const node = moves[ply - 1]
@@ -202,7 +293,7 @@ export function CountersPage() {
       rhyme: 'Đối thủ vừa đi',
     }
     return { annotation, plyIndex: ply - 1, variant: 'opponent' as const }
-  }, [lesson, moves, ply])
+  }, [lesson, moves, ply, wrongInfo, kidSide])
 
   const announceSan = ply > 0 ? (moves[ply - 1]?.san ?? null) : null
 
@@ -221,8 +312,8 @@ export function CountersPage() {
   const goBack = useCallback(() => goStep(-1), [goStep])
   const goForward = useCallback(() => goStep(1), [goStep])
 
-  // ◀ ▼ lùi, ▶ ▲ tiến - y như tab Khai cuộc.
-  useArrowKeys({ onPrev: goBack, onNext: goForward })
+  // ◀ ▼ lùi, ▶ ▲ tiến - chỉ ở chế độ xem; chế độ luyện bé đi bằng kéo-thả.
+  useArrowKeys({ enabled: mode === 'view', onPrev: goBack, onNext: goForward })
 
   const changeSide = (next: Side) => {
     setViewSide(next)
@@ -259,6 +350,97 @@ export function CountersPage() {
 
   const kidStep = Math.floor(ply / 2)
 
+  /**
+   * Dải “lượt ai sắp đi”: nêu rõ TÊN QUÂN và hai ô đi, để bé vừa đọc vừa dò theo
+   * đúng quân đang được tô sáng màu trên bàn cờ.
+   */
+  const nextMove = atLeaf ? undefined : moves[ply]
+  const nextIsKid = hintMove?.mine ?? false
+  const nextTurnStrip = nextMove ? (
+    <div
+      id="kid-counter-turn"
+      className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border-2 p-2.5 text-center ${
+        nextIsKid ? 'border-gold-300 bg-gold-50' : 'border-coral-200 bg-coral-50'
+      }`}
+    >
+      <span
+        className={`text-sm font-extrabold ${nextIsKid ? 'text-gold-900' : 'text-coral-800'}`}
+      >
+        {nextIsKid ? '👉 Lượt BÉ sắp đi' : '🤖 Lượt ĐỐI THỦ sắp đi'}
+      </span>
+      {showHint ? (
+        <>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-sm font-extrabold ring-2 ${
+              nextIsKid ? 'text-gold-900 ring-gold-300' : 'text-coral-800 ring-coral-200'
+            }`}
+          >
+            <span aria-hidden>{PIECE_GLYPH[pieceFromSan(nextMove.san)]}</span>
+            {formatSanLetters(nextMove.san)}
+            <b className={nextIsKid ? 'text-gold-700' : 'text-coral-700'}>
+              {hintMove?.from} → {hintMove?.to}
+            </b>
+          </span>
+          <span className="text-[0.7rem] font-bold text-brand-500">
+            {nextIsKid
+              ? 'Quân viền VÀNG sắp đi tới ô viền xanh'
+              : 'Quân viền SAN HÔ là quân đối thủ sắp di chuyển'}
+          </span>
+        </>
+      ) : (
+        <span className="text-[0.7rem] font-bold text-brand-500">
+          {nextIsKid
+            ? 'Bé tự tìm quân và ô đáp trả nhé - bấm 💡 nếu cần gợi ý'
+            : 'Đối thủ sắp đi - bé chuẩn bị đáp trả'}
+        </span>
+      )}
+    </div>
+  ) : null
+
+  /** Chỉ chế độ luyện mới cho kéo-thả, và chỉ khi tới lượt bé. */
+  const kidTurn = isKidPly(ply) && !atLeaf
+  const interactive = mode === 'practice' && kidTurn
+
+  /** Bé kéo quân đáp trả: đúng thì tiến, sai thì hiện băng đỏ nhắc thử lại. */
+  const handleDrop = (from: string, to: string): boolean => {
+    if (!interactive) return false
+    const expected = moves[ply]
+    const probe = new Chess(fens[ply])
+    let move
+    try {
+      move = probe.move({ from, to, promotion: 'q' })
+    } catch {
+      if (soundOn) playError()
+      return false
+    }
+    if (move.san !== expected.san) {
+      if (soundOn) playError()
+      setHintVisible(true)
+      const annotation: MoveAnnotation = {
+        san: expected.san,
+        piece: expected.annotation?.piece ?? pieceFromSan(expected.san),
+        reason: 'Nước này chưa đúng rồi. Bé nhìn quân viền vàng và mũi tên rồi thử lại nhé!',
+        rhyme: 'Bình tĩnh thử lại',
+      }
+      setWrongInfo({ annotation, plyIndex: ply })
+      return false
+    }
+    if (soundOn) playMove()
+    setWrongInfo(null)
+    setPly((current) => current + 1)
+    return true
+  }
+
+  /** Chơi lại từ nước đầu ở chế độ luyện. */
+  const resetPractice = () => {
+    setPly(0)
+    setHintVisible(true)
+    setWrongInfo(null)
+    awardedRef.current = false
+    setResult(null)
+    setConfetti(false)
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <BoardStage
@@ -281,15 +463,23 @@ export function CountersPage() {
             fen={fens[ply]}
             orientation={kidSide}
             playerSide={kidSide}
-            interactive={false}
+            interactive={interactive}
             heatmap={heatmap}
             arrows={arrows}
-            extraSquareStyles={lastMoveSquares}
+            extraSquareStyles={{ ...lastMoveSquares, ...nextMoveSquares }}
             announce={announceSan}
+            onDrop={handleDrop}
           />
         }
         under={
           <div className="grid gap-2">
+            {atLeaf ? (
+              <div className="rounded-2xl border-2 border-leaf-300 bg-leaf-50 p-2.5 text-center text-sm font-extrabold text-leaf-800">
+                {mode === 'practice'
+                  ? '✅ Bé đã tự đáp trả trọn vẹn dòng này!'
+                  : '✅ Bé đã xem trọn dòng đối phó này!'}
+              </div>
+            ) : null}
             {bannerState ? (
               <ExplanationBanner
                 annotation={bannerState.annotation}
@@ -307,41 +497,79 @@ export function CountersPage() {
       />
 
       <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+        {/*
+          Dải “lượt ai sắp đi” + quân nào đi đâu. Đặt ở CỘT ĐIỀU KHIỂN chứ không
+          nằm dưới bàn cờ: khối dưới bàn cờ càng cao thì bàn cờ càng bị thu nhỏ
+          (ở cửa sổ thấp, bàn cờ chỉ còn vừa đúng mức tối thiểu), nên nhường chỗ
+          ấy cho bàn cờ. Dải này vẫn nằm ngay cạnh bàn cờ, và trên bàn cờ quân cần
+          đi đã được tô viền màu sẵn.
+        */}
+        {nextTurnStrip}
+
         <Panel className="grid gap-2">
+          <Segmented
+            options={MODES}
+            value={mode}
+            onChange={(next) => setMode(next)}
+            size="sm"
+          />
           <div className="flex flex-wrap items-center gap-2">
-            <KidButton
-              variant="ghost"
-              size="sm"
-              onClick={goBack}
-              disabled={ply === 0}
-              title="Lùi một nước (hoặc bấm phím ◀ / ▼)"
-              aria-keyshortcuts="ArrowLeft ArrowDown"
-            >
-              ◀ Lùi
-            </KidButton>
-            <KidButton
-              variant="sun"
-              size="sm"
-              onClick={goForward}
-              disabled={atLeaf}
-              title="Tiến một nước (hoặc bấm phím ▶ / ▲)"
-              aria-keyshortcuts="ArrowRight ArrowUp"
-            >
-              Tiến ▶
-            </KidButton>
-            <KidButton
-              variant="ghost"
-              size="sm"
-              onClick={() => setPly(0)}
-              disabled={ply === 0}
-            >
-              🔄 Đầu
-            </KidButton>
+            {mode === 'view' ? (
+              <>
+                <KidButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={goBack}
+                  disabled={ply === 0}
+                  title="Lùi một nước (hoặc bấm phím ◀ / ▼)"
+                  aria-keyshortcuts="ArrowLeft ArrowDown"
+                >
+                  ◀ Lùi
+                </KidButton>
+                <KidButton
+                  variant="sun"
+                  size="sm"
+                  onClick={goForward}
+                  disabled={atLeaf}
+                  title="Tiến một nước (hoặc bấm phím ▶ / ▲)"
+                  aria-keyshortcuts="ArrowRight ArrowUp"
+                >
+                  Tiến ▶
+                </KidButton>
+                <KidButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPly(0)}
+                  disabled={ply === 0}
+                >
+                  🔄 Đầu
+                </KidButton>
+              </>
+            ) : (
+              <>
+                <KidButton
+                  variant="sky"
+                  size="sm"
+                  onClick={() => setHintVisible((value) => !value)}
+                  disabled={atLeaf}
+                  title={hintVisible ? 'Ẩn mũi tên để tự nhớ' : 'Hiện lại mũi tên gợi ý'}
+                >
+                  {hintVisible ? '🙈 Ẩn gợi ý' : '💡 Hiện gợi ý'}
+                </KidButton>
+                <KidButton variant="ghost" size="sm" onClick={resetPractice}>
+                  🔄 Chơi lại
+                </KidButton>
+              </>
+            )}
           </div>
           <p className="text-[0.7rem] font-bold text-brand-400">
-            {atLeaf && ply > 0
-              ? '✅ Bé đã xem trọn dòng đối phó này!'
-              : `👀 Đang xem nước ${kidStep} · ⌨️ hoặc bấm ◀ ▶ ▲ ▼`}
+            {mode === 'practice'
+              ? atLeaf
+                ? '✅ Bé đã tự đáp trả trọn dòng này!'
+                : '🖐️ Kéo quân hoặc bấm quân rồi ô đích - đối thủ sẽ tự đáp lại'
+              : atLeaf && ply > 0
+                ? '✅ Bé đã xem trọn dòng đối phó này!'
+                : `👀 Đang xem nước ${kidStep} · ⌨️ hoặc bấm ◀ ▶ ▲ ▼`}
             <InfoButton topic="board" />
           </p>
         </Panel>
@@ -506,6 +734,20 @@ export function CountersPage() {
           </p>
         </Panel>
       </div>
+
+      <Confetti show={confetti} onDone={() => setConfetti(false)} />
+      <CelebrationModal
+        open={Boolean(result)}
+        emoji={result?.emoji ?? '🛡️'}
+        title={result?.title ?? ''}
+        message={result?.message ?? ''}
+        stars={result?.stars ?? 0}
+        onClose={() => setResult(null)}
+        onRetry={() => {
+          setResult(null)
+          resetPractice()
+        }}
+      />
     </div>
   )
 }

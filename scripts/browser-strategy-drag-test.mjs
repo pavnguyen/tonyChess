@@ -116,5 +116,26 @@ const pieceCount = await evaluate(`
 `)
 check(Number(pieceCount) > 0, `bàn cờ có quân (${pieceCount} quân)`)
 
+console.log('\n▶ Chú giải cho cả 10 nguyên tắc, hai thế cờ')
+const ids = await evaluate(`[...document.querySelectorAll('[data-principle-id]')].map(el => el.dataset.principleId)`)
+for (const id of ids) {
+  await evaluate(`(() => {
+    const el = document.querySelector('[data-principle-id="${id}"]')
+    if (el.getAttribute('aria-expanded') !== 'true') el.click()
+  })()`)
+  await sleep(100)
+  for (const side of ['Nên làm', 'Không nên']) {
+    await clickByText(side)
+    await sleep(100)
+    const legend = await evaluate(`(() => {
+      const el = document.getElementById('kid-principle-legend')
+      return { count: el?.querySelectorAll('li').length ?? 0, text: el?.innerText ?? '',
+        note: document.getElementById('kid-principle-note').innerText }
+    })()`)
+    check(legend.count > 0 && /[a-h][1-8]/.test(legend.text), `${id} / ${side}: chú giải có ô cờ và ý nghĩa`)
+    check(legend.note.includes(side === 'Nên làm' ? 'Thế cờ NÊN làm' : 'Thế cờ KHÔNG NÊN'), `${id} / ${side}: nhãn khớp thế đang xem`)
+  }
+}
+
 close()
 finish('BROWSER STRATEGY')

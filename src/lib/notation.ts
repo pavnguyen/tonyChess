@@ -59,14 +59,44 @@ const VIETNAMESE: Record<PieceCode, string> = {
 export const ARROW_COLOR = '#d9a93f'
 
 /**
+ * Màu san hô của mũi tên báo **nước sắp tới CỦA ĐỐI THỦ** trong tab Đối phó.
+ * Khác hẳn vàng đồng của nước bé, để bé phân biệt "đối thủ sắp đi" với "mình sắp đi".
+ */
+export const OPPONENT_ARROW_COLOR = '#c8553d'
+
+/** Màu tím của mũi tên chỉ tới **ô bé muốn nhắm** (mục tiêu khai cuộc). */
+export const GOAL_ARROW_COLOR = '#6d5bc7'
+
+/**
+ * Ô QUÂN SẮP ĐI của đối thủ (viền san hô) trong tab Đối phó - đối xứng với
+ * `HINT_FROM_STYLE` (vàng) dành cho nước của bé.
+ */
+export const OPPONENT_FROM_STYLE: CSSProperties = {
+  backgroundColor: 'rgba(200, 85, 61, 0.30)',
+  boxShadow: 'inset 0 0 0 4px #c8553d',
+}
+
+/** Ô ĐÍCH sắp tới của đối thủ (viền san hô mảnh hơn) - nổi rõ trên cả hai màu ô. */
+export const OPPONENT_TO_STYLE: CSSProperties = {
+  backgroundColor: 'rgba(200, 85, 61, 0.18)',
+  boxShadow: 'inset 0 0 0 3px #c8553d',
+}
+
+/**
  * Các vệt tô trên bàn cờ - khai báo một chỗ để gam màu luôn khớp nhau.
  *
  * Quy ước màu cho bé:
  * - **Nước vừa đi**: viền xám nhạt (thông tin, không tranh sự chú ý).
  * - **Quân bé cần đi**: viền VÀNG ĐỒNG đậm + nền vàng nhạt.
  * - **Ô đích**: viền XANH THÉP + nền xanh nhạt (khác hẳn màu quân cần đi).
- * - **Ô trong kế hoạch**: viền TÍM + nền tím nhạt - màu riêng để bé phân biệt
- *   "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch trung cuộc".
+ * - **Ô trong kế hoạch / mục tiêu**: viền TÍM + nền tím nhạt - màu riêng để bé phân
+ *   biệt "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch trung cuộc" hay "ô
+ *   mình cần nhắm tới" (tab Khai cuộc, Trung cuộc, Tàn cuộc dùng chung màu này).
+ * - **Ô NÊN làm**: nền XANH LÁ + viền xanh đậm (thế minh hoạ ở tab Chiến lược).
+ * - **Ô KHÔNG NÊN**: nền ĐỎ ĐẤT + viền đỏ đậm (thế minh hoạ ở tab Chiến lược).
+ *
+ * Mọi màu tô trên bàn cờ của CẢ NĂM tab đều khai báo ở đây - nhờ vậy gam màu
+ * luôn đồng bộ, bé chuyển tab không phải học lại quy ước màu.
  *
  * Vàng đồng và xanh thép đều nổi rõ trên cả ô trắng lẫn ô xanh lá đậm của bàn cờ.
  */
@@ -79,6 +109,10 @@ export const BOARD_MARKS = {
   hintToRing: 'inset 0 0 0 4px #5f9faf',
   planFill: 'rgba(126, 106, 209, 0.42)',
   planRing: 'inset 0 0 0 4px #6d5bc7',
+  goodFill: 'rgba(104, 174, 119, 0.55)',
+  goodRing: 'inset 0 0 0 4px #3a7547',
+  badFill: 'rgba(160, 74, 59, 0.5)',
+  badRing: 'inset 0 0 0 4px #a04a3b',
 } as const
 
 /**

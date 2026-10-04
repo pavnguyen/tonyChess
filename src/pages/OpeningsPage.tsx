@@ -19,6 +19,7 @@ import { useOpeningsQuery } from '../data/queries'
 import {
   ARROW_COLOR,
   BOARD_MARKS,
+  GOAL_ARROW_COLOR,
   HINT_FROM_STYLE,
   HINT_TO_STYLE,
   PLAN_FOCUS_STYLE,
@@ -86,6 +87,11 @@ export function OpeningsPage() {
   const [finished, setFinished] = useState(false)
   /** Câu kế hoạch trung cuộc bé vừa bấm để soi ô cờ trên bàn (null = không soi). */
   const [planFocusIdx, setPlanFocusIdx] = useState<number | null>(null)
+  /**
+   * Bé bấm “🎯 Bé muốn gì?” → bàn cờ tô tím đúng những ô mục tiêu của khai cuộc
+   * (đọc từ chính câu `goal`), để bé thấy mình đang nhắm tới đâu thay vì chỉ đọc chữ.
+   */
+  const [goalFocus, setGoalFocus] = useState(false)
   /**
    * Bé vừa bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng
    * chính** của khai cuộc đó để nhìn trước, rồi bấm “▶ Bắt đầu học” mới vào bài.
@@ -161,6 +167,7 @@ export function OpeningsPage() {
   const changeSide = (next: Side) => {
     setSide(next)
     setOpeningPreview(false)
+    setGoalFocus(false)
     setMoveFilter(null)
     const first = openingList.find((item) => item.side === next)
     if (first) setOpeningId(first.id)
@@ -176,6 +183,7 @@ export function OpeningsPage() {
       const target = openingList.find((item) => item.id === id)
       setOpeningId(id)
       setOpeningPreview(true)
+      setGoalFocus(false)
       if (target) speakOpening(target.englishName, target.gm)
     },
     [openingList],
@@ -184,10 +192,21 @@ export function OpeningsPage() {
   /** Rời chế độ xem trước để bắt đầu bài từ nước đầu. */
   const startLearning = useCallback(() => {
     setOpeningPreview(false)
+    setGoalFocus(false)
     setPly(0)
     setHintVisible(true)
     setWrongInfo(null)
     setFinished(false)
+  }, [])
+
+  /**
+   * Bật/tắt “soi mục tiêu khai cuộc”: bàn cờ tô tím đúng những ô câu `goal` nhắc tới.
+   * Tắt luôn chế độ xem trước/soi kế hoạch để bàn cờ quay về đúng thế cờ đang học.
+   */
+  const toggleGoalFocus = useCallback(() => {
+    setPlanFocusIdx(null)
+    setOpeningPreview(false)
+    setGoalFocus((value) => !value)
   }, [])
 
   const moves = useMemo(() => opening?.moves ?? [], [opening])
@@ -225,6 +244,7 @@ export function OpeningsPage() {
     setFinished(false)
     setAutoPlay(false)
     setPlanFocusIdx(null)
+    setGoalFocus(false)
     awardedRef.current = false
     replyAfterDropRef.current = false
   }, [openingId, mode])
@@ -391,6 +411,29 @@ export function OpeningsPage() {
     return isSideMoveLegal(finalFen, opening.side, arrow.from, arrow.to) ? arrow : null
   }, [planPreview, finalFen, opening])
 
+  /**
+   * Mục tiêu của cả khai cuộc (`opening.goal`) đọc ra ô cờ + mũi tên. Dùng lại
+   * `parsePlanFocus` nên KHÔNG cần thêm dữ liệu: câu viết tay đã nhắc ô nào thì
+   * bàn cờ tô ô đó.
+   */
+  const goalFocusInfo = useMemo(() => parsePlanFocus(opening?.goal ?? ''), [opening])
+
+  /** Bôi tím những ô mà mục tiêu khai cuộc nhắc tới - soi trên THẾ CỜ ĐANG ĐỨNG. */
+  const goalSquareStyles = useMemo(() => {
+    if (!goalFocus || previewing || goalFocusInfo.squares.length === 0) return undefined
+    const styles: Record<string, CSSProperties> = {}
+    for (const square of goalFocusInfo.squares) styles[square] = PLAN_FOCUS_STYLE
+    return styles
+  }, [goalFocus, previewing, goalFocusInfo])
+
+  /** Mũi tên mục tiêu - chỉ vẽ khi nước ấy đi được thật trên thế cờ đang đứng. */
+  const goalArrow = useMemo(() => {
+    if (!goalFocus || previewing || !opening) return null
+    const aim = goalFocusInfo.arrow
+    if (!aim) return null
+    return isSideMoveLegal(fens[ply], opening.side, aim.from, aim.to) ? aim : null
+  }, [goalFocus, previewing, opening, goalFocusInfo, fens, ply])
+
   const arrow = useMemo(() => {
     // Đang soi kế hoạch: bàn cờ đang ở thế cờ KHÁC, nên mũi tên gợi ý của bài phải
     // nhường chỗ cho mũi tên của câu kế hoạch.
@@ -399,10 +442,17 @@ export function OpeningsPage() {
         ? [{ startSquare: planArrow.from, endSquare: planArrow.to, color: ARROW_COLOR }]
         : []
     }
+    // Đang soi MỤC TIÊU khai cuộc: mũi tên tím chỉ tới ô bé muốn nhắm, để bé không
+    // bị lẫn với mũi tên vàng của nước đang học.
+    if (goalFocus) {
+      return goalArrow
+        ? [{ startSquare: goalArrow.from, endSquare: goalArrow.to, color: GOAL_ARROW_COLOR }]
+        : []
+    }
     return hintVisible && hintMove
       ? [{ startSquare: hintMove.from, endSquare: hintMove.to, color: ARROW_COLOR }]
       : []
-  }, [previewing, planArrow, hintVisible, hintMove])
+  }, [previewing, planArrow, goalFocus, goalArrow, hintVisible, hintMove])
 
   const lastMoveSquares = useMemo(() => {
     if (ply === 0) return undefined
@@ -439,11 +489,12 @@ export function OpeningsPage() {
   const announceSan = !previewing && ply > 0 ? (moves[ply - 1]?.san ?? null) : null
 
   /** Vệt vàng của nước vừa đi + vệt gợi ý quân cần đi, hoặc vệt tím của câu kế hoạch. */
-  const squareStyles = useMemo(
-    () =>
-      previewing ? (planSquareStyles ?? {}) : { ...lastMoveSquares, ...hintSquares },
-    [previewing, planSquareStyles, lastMoveSquares, hintSquares],
-  )
+  const squareStyles = useMemo(() => {
+    if (previewing) return planSquareStyles ?? {}
+    // Soi mục tiêu thì chỉ hiện ô mục tiêu, tạm ẩn vệt gợi ý nước đi cho đỡ rối mắt.
+    if (goalFocus) return goalSquareStyles ?? {}
+    return { ...lastMoveSquares, ...hintSquares }
+  }, [previewing, planSquareStyles, goalFocus, goalSquareStyles, lastMoveSquares, hintSquares])
 
   const bannerState = useMemo(() => {
     if (!opening || atLeaf) {
@@ -701,6 +752,48 @@ export function OpeningsPage() {
           />
         </Panel>
 
+        {/*
+          “Bé muốn gì?” - ý niệm bao trùm của cả khai cuộc. Đặt ngay dưới phần chọn
+          chế độ để bé đọc trước khi học từng nước, và bấm được để soi ô mục tiêu.
+        */}
+        <Panel id="kid-opening-goal" className="grid gap-2">
+          <SectionTitle
+            icon="🎯"
+            title="Bé muốn gì với khai cuộc này?"
+            subtitle={
+              goalFocus && !previewing
+                ? 'Ô tím trên bàn cờ là những gì bé đang nhắm tới'
+                : 'Câu trả lời gọn cho “mình ra quân kiểu này để làm gì?”'
+            }
+            info="goal"
+          />
+          <button
+            type="button"
+            data-opening-goal
+            aria-pressed={goalFocus && !previewing}
+            onClick={toggleGoalFocus}
+            className={`grid gap-1.5 rounded-2xl border-2 px-3 py-2.5 text-left transition-all active:translate-y-[1px] ${
+              goalFocus && !previewing
+                ? 'border-[#6d5bc7] bg-[rgba(126,106,209,0.14)]'
+                : 'border-gold-300 bg-gold-50 hover:border-gold-400'
+            }`}
+          >
+            <span className="flex flex-wrap items-center gap-1.5">
+              <span className="text-lg" aria-hidden>
+                {opening.emoji}
+              </span>
+              <span className="text-sm font-extrabold text-brand-900">{opening.goal}</span>
+            </span>
+            <span className="text-[0.7rem] font-bold text-brand-500">
+              {goalFocusInfo.squares.length > 0
+                ? goalFocus && !previewing
+                  ? '👆 Bấm để tắt - quay về nước đang học'
+                  : '👆 Bấm để tô sáng các ô bé muốn nhắm trên bàn cờ'
+                : '💡 Đọc câu này trước khi học từng nước nhé'}
+            </span>
+          </button>
+        </Panel>
+
         <Panel className="grid gap-2">
           <Segmented
             options={SIDE_OPTIONS}
@@ -839,8 +932,11 @@ export function OpeningsPage() {
               <>
                 <KidButton
                   variant="sky"
-                  onClick={() => setHintVisible(true)}
-                  disabled={hintVisible || atLeaf}
+                  onClick={() => {
+                    setGoalFocus(false)
+                    setHintVisible(true)
+                  }}
+                  disabled={(hintVisible && !goalFocus) || atLeaf}
                 >
                   💡 Gợi ý
                 </KidButton>
@@ -905,7 +1001,10 @@ export function OpeningsPage() {
                       type="button"
                       data-plan-point={index}
                       aria-pressed={active}
-                      onClick={() => setPlanFocusIdx(active ? null : index)}
+                      onClick={() => {
+                        setGoalFocus(false)
+                        setPlanFocusIdx(active ? null : index)
+                      }}
                       title="Bấm để xem thế cờ cuối khai cuộc và soi ô của việc này"
                       className={`flex w-full items-start gap-1.5 rounded-xl px-2 py-1 text-left text-xs font-bold transition-all active:translate-y-[1px] ${
                         active
@@ -1182,6 +1281,9 @@ export function OpeningsPage() {
                   className="rounded-2xl bg-brand-50 px-2.5 py-1.5 font-mono text-[0.7rem] font-bold leading-relaxed text-brand-700"
                 >
                   {patternOpening.moves.map((move) => move.san).join(' ')}
+                </div>
+                <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5 text-xs font-bold text-gold-900">
+                  🎯 Bé muốn gì: {patternOpening.goal}
                 </div>
                 <div className="rounded-2xl border-2 border-dashed border-brand-100 px-2.5 py-1.5 text-xs font-bold text-brand-600">
                   <b className="text-brand-800">{patternOpening.plan.title}</b>

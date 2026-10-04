@@ -14,6 +14,9 @@
  * không đang bị chiếu, đúng lượt Trắng) - thêm một nguyên tắc mới mà gõ sai thế cờ
  * là bài kiểm báo ngay.
  */
+// Ghi rõ đuôi `.ts` vì file này còn được nạp thẳng bằng Node (type-stripping) trong
+// `scripts/validate-chess.ts` - Node không tự thêm đuôi như Vite.
+import { BOARD_MARKS } from '../lib/notation.ts'
 import type { PieceCode } from '../types'
 
 /** Ô tô sáng trên bàn cờ minh hoạ: xanh = điều nên làm, đỏ = điều nên tránh. */
@@ -56,14 +59,17 @@ export interface GoldPrinciple {
 
 /**
  * Màu tô ô cho bàn cờ minh hoạ nguyên tắc: xanh lá = nên, đỏ đất = nên tránh.
- * Khai báo một chỗ để bàn cờ luôn khớp bảng chú giải.
+ *
+ * Lấy thẳng từ `BOARD_MARKS` trong `src/lib/notation.ts` - nơi khai báo màu của
+ * **mọi** vệt tô trên bàn cờ ở cả năm tab. Nhờ vậy bảng chú giải, thẻ nguyên tắc
+ * và bàn cờ không thể lệch màu nhau.
  */
 export const PRINCIPLE_TONE_STYLES: Record<
   'good' | 'bad',
   { fill: string; ring: string }
 > = {
-  good: { fill: 'rgba(104, 174, 119, 0.55)', ring: 'inset 0 0 0 4px #3a7547' },
-  bad: { fill: 'rgba(160, 74, 59, 0.5)', ring: 'inset 0 0 0 4px #a04a3b' },
+  good: { fill: BOARD_MARKS.goodFill, ring: BOARD_MARKS.goodRing },
+  bad: { fill: BOARD_MARKS.badFill, ring: BOARD_MARKS.badRing },
 }
 
 export const GOLD_PRINCIPLES: GoldPrinciple[] = [

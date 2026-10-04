@@ -119,6 +119,26 @@ export const INFO: Record<string, InfoEntry> = {
       'Bé bấm vào một thế trong khung là nhảy thẳng tới thế đó để làm lại. Chưa có gì tới hạn thì cứ học bài mới cho vui.',
     ],
   },
+  goal: {
+    title: 'Bé muốn gì với khai cuộc này? 🎯',
+    tag: '🧠 Ý tưởng',
+    body: [
+      'Mỗi khai cuộc đều có **một ý niệm bao trùm** - biết nó trước thì bé hiểu vì sao mình đi từng nước, chứ không học vẹt.',
+      'Câu “Bé muốn gì?” gói ý niệm đó trong một câu, có nhắc **ô cờ cụ thể**. Bấm vào câu là bàn cờ tô **tím** đúng những ô bé đang nhắm tới.',
+      'Bé cứ đọc câu này mỗi khi mở bài mới - sau vài lần sẽ tự nhớ: London muốn dựng kim tự tháp Tốt và ra Tượng f4, Ý muốn Tượng c4 nhắm f7, v.v.',
+    ],
+  },
+  endgame: {
+    title: 'Tàn cuộc cơ bản 👑',
+    tag: '🧠 Ý tưởng',
+    body: [
+      'Tàn cuộc là lúc bàn cờ đã vắng quân. Đây là phần **dễ thắng nhất** nếu bé thuộc vài thế cơ bản: đưa Tốt lên thành Hậu, hoặc dồn Vua Đen vào mép rồi chiếu bí.',
+      'Mười hai thế ở đây chia làm **hai nhóm**: 🛡️ đưa Tốt lên thành Hậu và 🏁 chiếu bí Vua Đen. Bé cứ luyện nhóm nào cũng được - bấm thẻ là bàn cờ đổi ngay sang thế đó.',
+      'Bé **tự kéo quân** trên bàn cờ để chơi thật. Vua Đen đi như một bạn nhỏ đang tập chơi nên thỉnh thoảng mắc lỗi - bé cứ bình tĩnh làm đúng kỹ thuật.',
+      'Lỡ tay thì bấm **◀ Đi lại** để lùi nước vừa rồi, hoặc bấm một nước trong khung **📜 Nước đi của ván** để quay lại đúng lúc đó.',
+      'Bấm **🎯 Soi mục tiêu** là bàn cờ tô **tím** những gì bé cần nhắm tới: Tốt của bé và ô phong cấp, hoặc Vua Đen cùng mọi ô nó còn chạy được.',
+    ],
+  },
   plan: {
     title: 'Kế hoạch trung cuộc 🧭',
     tag: '🧠 Ý tưởng',
@@ -427,9 +447,11 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
   'machine',
   'notation',
   'principles',
+  'goal',
   'plan',
   'counter',
   'review',
+  'endgame',
   ...[
     'london',
     'italian',

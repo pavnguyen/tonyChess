@@ -18,6 +18,8 @@ interface OpeningMeta {
   side: Opening['side']
   emoji: string
   tagline: string
+  /** Bé muốn gì với khai cuộc này - xem `Opening['goal']` trong `src/types.ts`. */
+  goal: string
 }
 
 const META: OpeningMeta[] = [
@@ -29,6 +31,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇬🇧',
     tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
+    goal: 'Bé muốn dựng kim tự tháp Tốt c3-d4-e3 thật cứng, đưa Tượng ra f4 rồi nhập thành - chơi chắc mà vẫn có thế đẹp để tấn công.',
   },
   {
     id: 'italian',
@@ -38,6 +41,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇮🇹',
     tagline: 'Tốt e nhảy vọt, Tượng nhắm tim Vua Đen ở ô f7.',
+    goal: 'Bé muốn Tượng ra c4 nhắm ô f7 yếu của Vua Đen, rồi nhập thành và đẩy d4 mở trung tâm.',
   },
   {
     id: 'kings-indian',
@@ -47,6 +51,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🏰',
     tagline: 'Giấu Tượng vào lều g7 rồi nhập thành dựng pháo đài.',
+    goal: 'Bé muốn giấu Tượng vào lều g7, nhập thành rồi đẩy e5 và f5 để mở cánh Vua tấn công.',
   },
   {
     id: 'sicilian',
@@ -56,6 +61,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🌋',
     tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
+    goal: 'Bé muốn dùng Tốt c5 đổi Tốt d4 để mở cột c, rồi phản công cánh Hậu bằng b5-b4.',
   },
   {
     id: 'ruy-lopez',
@@ -65,6 +71,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇪🇸',
     tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
+    goal: 'Bé muốn Tượng ra b5 ghim Mã c6, rồi nhập thành và đẩy d4 chiếm trung tâm.',
   },
   {
     id: 'queens-gambit',
@@ -74,6 +81,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇭🇺',
     tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
+    goal: 'Bé muốn dâng Tốt c4 mời đổi để làm chủ ô d5, rồi phát triển quân và ghim quân Đen.',
   },
   {
     id: 'french',
@@ -83,6 +91,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🇫🇷',
     tagline: 'Dựng hàng rào Tốt vững như thành rồi phản công vào chân đế d4.',
+    goal: 'Bé muốn dựng hàng rào Tốt e6-d5 rồi đánh vào chân đế Tốt d4 của Trắng bằng c5.',
   },
   {
     id: 'caro-kann',
@@ -92,6 +101,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
+    goal: 'Bé muốn đưa Tượng c8 ra f5 trước, rồi mới đóng Tốt e6 để Tượng không bị nhốt.',
   },
 
   // ── Hai khai cuộc giữ lại từ bộ bổ sung (5 Trắng / 5 Đen) ────────────────
@@ -103,6 +113,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🏝️',
     tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
+    goal: 'Bé muốn kiểm soát ô d5 từ xa bằng Tốt c4, rồi mới mở trung tâm khi đã sẵn sàng.',
   },
   {
     id: 'nimzo-indian',
@@ -112,6 +123,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '⛓️',
     tagline: 'Tượng ra ghim Mã c3, khoá chặt không cho Trắng đẩy Tốt e4.',
+    goal: 'Bé muốn Tượng ra b4 ghim Mã c3, khoá chặt không cho Trắng đẩy e4.',
   },
 ]
 

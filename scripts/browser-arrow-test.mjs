@@ -324,20 +324,20 @@ check(
 )
 await sleep(500)
 
-// Ô bài học trên bản đồ chỉ hiện số cấp + emoji, nên tìm qua tooltip (title).
+// Ô bài học trên bản đồ chỉ hiện số cấp + emoji, nên chọn theo `data-level-id`
+// (id khai cuộc). Tooltip giờ là bong bóng tự vẽ dùng `aria-label`, KHÔNG còn thuộc
+// tính `title` của trình duyệt nữa - nên đọc `aria-label` để kiểm chứng.
 const pickedLesson = await evaluate(`
   (() => {
-    const button = [...document.querySelectorAll('button')].find((b) =>
-      (b.getAttribute('title') || '').includes('Sicilian'),
-    )
+    const button = document.querySelector('[data-level-id="sicilian"]')
     if (!button) return 'not-found'
     button.click()
-    return button.getAttribute('title')
+    return button.getAttribute('aria-label')
   })()
 `)
 check(
   String(pickedLesson).includes('Sicilian'),
-  `đã chọn bài cờ Đen (tooltip: ${pickedLesson})`,
+  `đã chọn bài cờ Đen (bong bóng: ${pickedLesson})`,
 )
 
 // Sang ply 1 = nước của bé (c5).

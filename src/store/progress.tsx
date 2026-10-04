@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import type { ReactNode } from 'react'
@@ -90,6 +91,8 @@ function load(): Persisted {
 
 export function KidProgressProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Persisted>(load)
+  // Giá trị trả về phải có ngay, không phụ thuộc lúc React chạy updater.
+  const completedRef = useRef(new Set(state.completed))
   // "Bây giờ" chỉ để tính việc tới hạn ôn tập; cập nhật lúc mở app, khi quay lại tab,
   // và định kỳ - đủ để huy hiệu 🔁 không bị cũ mà không gọi Date.now() khi render.
   const [now, setNow] = useState(0)
@@ -119,10 +122,10 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const completeActivity = useCallback((id: string, stars = 3) => {
-    let firstTime = false
+    const firstTime = !completedRef.current.has(id)
+    completedRef.current.add(id)
     setState((prev) => {
       const already = prev.completed.includes(id)
-      firstTime = !already
       // Ghi dấu ôn tập: lần đầu vào hộp 0, mỗi lần làm lại leo một hộp (nhắc thưa dần).
       const previousBox = prev.reviews[id]?.box
       const box =
@@ -151,7 +154,10 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, unlockAll: !prev.unlockAll }))
   }, [])
 
-  const resetProgress = useCallback(() => setState(DEFAULTS), [])
+  const resetProgress = useCallback(() => {
+    completedRef.current.clear()
+    setState(DEFAULTS)
+  }, [])
 
   const value = useMemo<KidContextValue>(() => {
     const rank = currentRank(state.stars)
