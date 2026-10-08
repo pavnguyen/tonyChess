@@ -13,7 +13,6 @@ import { InfoButton } from '../components/InfoPopover'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
-import { useCurriculum } from '../hooks/useCurriculum'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { useOpeningsQuery } from '../data/queries'
 import {
@@ -64,7 +63,7 @@ const NO_OPENINGS: Opening[] = []
 
 export function OpeningsPage() {
   const { data: openings, isLoading } = useOpeningsQuery()
-  const { notation, completeActivity, soundOn } = useKidProgress()
+  const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/' })
   const navigate = useNavigate()
@@ -101,7 +100,6 @@ export function OpeningsPage() {
     emoji: string
     title: string
     message: string
-    stars: number
   } | null>(null)
   /** Modal “Ôn mẫu hình cuối khai cuộc”: xem thế cờ cuối của BẤT KỲ khai cuộc nào. */
   const [patternOpen, setPatternOpen] = useState(false)
@@ -160,8 +158,6 @@ export function OpeningsPage() {
     }
     return [...seen.entries()].map(([move, label]) => ({ move, label }))
   }, [sideOpenings, kidFirstMove])
-
-  const curriculum = useCurriculum(sideOpenings, 'openings', ':memorize')
 
   /** Đổi phe: nhảy luôn sang bài đầu tiên của phe đó. */
   const changeSide = (next: Side) => {
@@ -289,15 +285,12 @@ export function OpeningsPage() {
     setAutoPlay(false)
     if (awardedRef.current) return
     awardedRef.current = true
-    const stars = 6
-    completeActivity(`openings:${opening.id}:memorize`, stars)
     if (soundOn) playWin()
     setConfetti(true)
     setResult({
       emoji: '🏆',
       title: 'Cúp Vàng thuộc về bé!',
       message: `Bé đã thuộc trọn vẹn ${opening.name} của ${opening.gm}!`,
-      stars,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ply, mode, opening, finished, atLeaf])
@@ -715,7 +708,7 @@ export function OpeningsPage() {
       />
 
       {/* Cột phải: tab chế độ, bản đồ leo cấp, điều khiển, mục tiêu… (tự cuộn) */}
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           {/*
             `min-w-0` là BẮT BUỘC: đây là một ô của lưới Panel, mà ô lưới mặc định
@@ -841,30 +834,18 @@ export function OpeningsPage() {
             })}
           </div>
           <ProgressMap
-            nodes={curriculum
-              .filter((entry) => !moveFilter || kidFirstMove(entry.item) === moveFilter)
-              .map((entry) => ({
-              id: entry.item.id,
-              level: entry.level,
-              title: entry.item.name,
-              emoji: entry.item.emoji,
-              subtitle: `${
-                entry.item.side === 'white' ? '⬜ Bé cầm Trắng' : '⬛ Bé cầm Đen'
-              } · ${entry.item.gm}`,
-              completed: entry.completed,
-              unlocked: entry.unlocked,
-            }))}
+            nodes={sideOpenings
+              .filter((item) => !moveFilter || kidFirstMove(item) === moveFilter)
+              .map((item, index) => ({
+                id: item.id,
+                level: index + 1,
+                title: item.name,
+                emoji: item.emoji,
+                subtitle: `${item.side === 'white' ? '⬜ Bé cầm Trắng' : '⬛ Bé cầm Đen'} · ${item.gm}`,
+              }))}
             activeId={opening.id}
             onSelect={selectOpening}
-            allowLockedPreview
             title={side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
-            unitLabel="bài"
-            allDoneMessage={
-              side === 'white'
-                ? 'Bé đã phá đảo toàn bộ khai cuộc Trắng! 🏆'
-                : 'Bé đã phá đảo toàn bộ khai cuộc Đen! 🏆'
-            }
-            info="cup"
           />
           <div className="flex flex-wrap gap-1.5">
             <KidButton
@@ -1309,7 +1290,6 @@ export function OpeningsPage() {
         emoji={result?.emoji ?? '🏆'}
         title={result?.title ?? ''}
         message={result?.message ?? ''}
-        stars={result?.stars ?? 0}
         onClose={() => setResult(null)}
         onRetry={() => {
           setResult(null)

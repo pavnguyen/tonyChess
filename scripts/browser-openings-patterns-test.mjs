@@ -154,7 +154,7 @@ await sleep(400)
 check(!(await present('#kid-patterns-modal')), 'modal đã đóng')
 check(await present('#kid-board-board'), 'bàn cờ chính vẫn hoạt động bình thường')
 
-console.log('\n▶ Bấm một khai cuộc → bàn cờ hiện thế cờ mẫu hình (kể cả bài 🔒)')
+console.log('\n▶ Bấm một khai cuộc → bàn cờ hiện thế cờ mẫu hình')
 
 check(!(await present('#kid-opening-preview')), 'lúc chưa bấm gì thì chưa có bàn xem trước')
 
@@ -167,7 +167,7 @@ const clickedLevel = await evaluate(`
     return 'clicked'
   })()
 `)
-check(clickedLevel === 'clicked', `bấm được khai cuộc cấp 2 “Ván cờ Ý” dù đang 🔒 (${clickedLevel})`)
+check(clickedLevel === 'clicked', `bấm được khai cuộc “Ván cờ Ý” trên bản đồ (${clickedLevel})`)
 await sleep(500)
 
 check(await present('#kid-opening-preview'), 'hiện bàn xem trước thế cờ mẫu hình')

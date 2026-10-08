@@ -89,7 +89,7 @@ function kingEscapeSquares(game: Chess, from: string): string[] {
 
 export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
-  const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
+  const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
   const [challengeId, setChallengeId] = useState('promote-easy')
@@ -107,7 +107,6 @@ export function EndgamesPage() {
     emoji: string
     title: string
     message: string
-    stars: number
   } | null>(null)
 
   const challenge: EndgameChallenge | undefined =
@@ -144,7 +143,6 @@ export function EndgamesPage() {
   useEffect(() => {
     if (finished || !challenge) return
     const game = board.game
-    const activeId = challenge.id
     const playerPromoted = board.history.some(
       (move) => move.promotion && move.color === PLAYER_COLOR,
     )
@@ -154,19 +152,16 @@ export function EndgamesPage() {
       if (game.turn() !== PLAYER_COLOR) {
         if (soundOn) playWin()
         setConfetti(true)
-        const firstTime = completeActivity(`endgame:${activeId}`, 5)
         setResult({
           emoji: '🏁',
           title: 'Chiếu bí tuyệt vời!',
           message: 'Bé đã khóa hết đường chạy của Vua Đen. Quá đỉnh!',
-          stars: firstTime ? 5 : 2,
         })
       } else {
         setResult({
           emoji: '😅',
           title: 'Bé bị chiếu bí rồi!',
           message: 'Lần sau bé nhớ giữ Vua tránh xa nhé. Thử lại nào!',
-          stars: 0,
         })
       }
       return
@@ -178,7 +173,6 @@ export function EndgamesPage() {
         emoji: '🤝',
         title: 'Hòa cờ mất rồi!',
         message: 'Gần thắng lắm rồi, bé thử lại nhé!',
-        stars: 0,
       })
       return
     }
@@ -190,12 +184,10 @@ export function EndgamesPage() {
         playWin()
       }
       setConfetti(true)
-      const firstTime = completeActivity(`endgame:${activeId}`, 5)
       setResult({
         emoji: '👑',
         title: 'Tốt hóa thành Hậu!',
         message: 'Bé đã đưa được Tốt lên tận cùng và phong Hậu. Tuyệt cú mèo!',
-        stars: firstTime ? 5 : 2,
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,8 +323,6 @@ export function EndgamesPage() {
     setHintVisible(false)
   }
 
-  const doneCount = (endgames ?? []).filter((item) => isCompleted(`endgame:${item.id}`)).length
-
   const statusLabel = finished === 'success'
     ? '✅ Đạt mục tiêu'
     : finished === 'retry'
@@ -457,7 +447,7 @@ export function EndgamesPage() {
       />
 
       {/* Cột phải: bài đang luyện → lịch sử nước đi → chọn bài theo nhóm. */}
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0 truncate text-sm font-extrabold text-brand-900">
@@ -542,7 +532,7 @@ export function EndgamesPage() {
           <SectionTitle
             icon="👑"
             title="Tàn cuộc cơ bản"
-            subtitle={`Endgame · 🏅 ${doneCount}/${endgames?.length ?? 0} bài xong`}
+            subtitle="Endgame · 12 thế luyện cơ bản"
             info="endgame"
           />
           <div className="mt-2 grid gap-2.5">
@@ -562,7 +552,6 @@ export function EndgamesPage() {
                   <div className="grid gap-1.5 sm:grid-cols-2">
                     {items.map((item) => {
                       const active = item.id === challenge?.id
-                      const done = isCompleted(`endgame:${item.id}`)
                       return (
                         <button
                           key={item.id}
@@ -586,7 +575,6 @@ export function EndgamesPage() {
                             >
                               {item.title}
                             </span>
-                            {done && <span aria-hidden>🏆</span>}
                           </span>
                           {/* Một dòng gợi ý ngay trên thẻ để bé chọn bài mà không
                               phải bấm thử từng cái. */}
@@ -609,7 +597,6 @@ export function EndgamesPage() {
         emoji={result?.emoji ?? '🎉'}
         title={result?.title ?? ''}
         message={result?.message ?? ''}
-        stars={result?.stars ?? 0}
         onClose={() => setResult(null)}
         onRetry={() => {
           setResult(null)

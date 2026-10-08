@@ -1,8 +1,6 @@
 /**
- * Kiểm tra tính năng MỚI của tab Trung cuộc:
- *   1. Chế độ “đánh tiếp”: sau nước hay nhất, máy tự đáp trả rồi bé đi nốt để kết liễu.
- *   2. Huy hiệu trình độ ước lượng (Elo) trên thanh tiêu đề.
- *   3. Khung “🔁 Ôn tập hôm nay” hiện đúng bài đã tới hạn.
+ * Kiểm tra chế độ “đánh tiếp” của tab Trung cuộc: sau nước hay nhất, máy tự đáp
+ * trả rồi bé đi nốt để kết liễu.
  *
  * Chạy: node scripts/browser-tactics-continuation-test.mjs
  */
@@ -56,45 +54,6 @@ const clickSquare = async (square) => {
 }
 
 await sleep(2500)
-
-// ── Nạp sẵn tiến độ: một bài Trung cuộc đã làm từ 5 ngày trước (tới hạn ôn lại).
-await evaluate(`
-  (() => {
-    const old = Date.now() - 5 * 24 * 60 * 60 * 1000
-    localStorage.setItem('hoc-vien-co-vua-nhi.v1', JSON.stringify({
-      stars: 12,
-      completed: ['tactics:pawn-1'],
-      notation: 'figurine',
-      soundOn: false,
-      unlockAll: true,
-      reviews: { 'tactics:pawn-1': { last: old, box: 0 } },
-    }))
-    return true
-  })()
-`)
-
-console.log('\n▶ Huy hiệu Elo + khung ôn tập')
-
-await evaluate(`window.location.href = ${JSON.stringify(APP_URL + '/tactics')}`)
-await sleep(2000)
-check(await waitFor('#kid-elo-badge'), 'thanh tiêu đề có huy hiệu trình độ ước lượng (Elo)')
-const eloText = await evaluate(`document.getElementById('kid-elo-badge')?.innerText ?? ''`)
-check(/≈\s*\d+/.test(String(eloText)), `Elo hiện số ước lượng dễ đọc (${String(eloText).trim()})`)
-
-check(await waitFor('#kid-review-strip'), 'tab Trung cuộc có khung “🔁 Ôn tập hôm nay”')
-const reviewCount = await evaluate(
-  `document.getElementById('kid-review-count')?.innerText ?? ''`,
-)
-check(
-  /1\s*đến hạn/.test(String(reviewCount)),
-  `đếm đúng 1 bài tới hạn ôn lại (${String(reviewCount).trim()})`,
-)
-check(
-  await evaluate(
-    `Boolean(document.querySelector('[data-review-id="tactics:pawn-1"]'))`,
-  ),
-  'hiện chip ôn tập đúng bài đã làm từ 5 ngày trước',
-)
 
 console.log('\n▶ Chế độ “đánh tiếp” (chiếu bí 2 nước)')
 

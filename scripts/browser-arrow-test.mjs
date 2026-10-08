@@ -287,18 +287,12 @@ for (const step of KEY_STEPS) {
 // ----------------------------------------------------------------
 console.log('\n▶ Kiểm tra mũi tên trên bàn cờ ĐÃ XOAY (Phòng thủ Sicilian, nước c5)')
 
-// Mở khoá tất cả bài học qua localStorage rồi tải lại trang.
+// Đặt sẵn tuỳ chọn hiển thị qua localStorage rồi tải lại trang.
 await evaluate(`
   (() => {
     localStorage.setItem(
       'hoc-vien-co-vua-nhi.v1',
-      JSON.stringify({
-        stars: 0,
-        completed: [],
-        notation: 'figurine',
-        soundOn: false,
-        unlockAll: true,
-      }),
+      JSON.stringify({ notation: 'figurine', soundOn: false }),
     )
     location.hash = '#black'
     location.reload()

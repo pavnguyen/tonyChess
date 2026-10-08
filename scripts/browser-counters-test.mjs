@@ -167,10 +167,6 @@ console.log('\n▶ Nút ⓘ có nội dung')
 
 check(await present('#kid-info-counter'), 'có nút ⓘ “Đối phó khai cuộc”')
 
-console.log('\n▶ Khung “Ôn tập hôm nay” có mặt ở tab Đối phó')
-
-check(await present('#kid-review-strip'), 'có khung 🔁 Ôn tập hôm nay (dùng chung cơ chế ôn tập ngắt quãng)')
-
 console.log('\n▶ Mở sẵn đúng bài qua đường dẫn /counters?vs=…')
 
 // Bài chỉ bàn về một nước mở đầu (không gắn khai cuộc riêng) vẫn xem được, nhưng

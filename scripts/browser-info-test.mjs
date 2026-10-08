@@ -140,7 +140,6 @@ await navigate('/')
 await expectTopic('app', 'Nam An - Cờ Vua', 'Thanh tiêu đề (giới thiệu app)')
 await expectTopic('opening:london', '1922', 'Khai cuộc đang học (lịch sử Hệ thống London)')
 await expectTopic('plan', 'trung cuộc', 'Kế hoạch trung cuộc')
-await expectTopic('cup', 'Cúp Vàng', 'Bản đồ chinh phục (Cúp Vàng & mở khoá)')
 
 // Nút ⓘ của khai cuộc phải đổi theo bài đang chọn - chọn một bài khác và kiểm lại.
 // (Dải chọn khai cuộc là các nút trong bản đồ leo cấp.)
@@ -155,7 +154,7 @@ const switched = await evaluate(`
   })()
 `)
 if (switched === 'not-found') {
-  console.log('  (bỏ qua: khai cuộc thứ hai chưa mở khoá trên hồ sơ này)')
+  console.log('  (bỏ qua: không tìm thấy ô khai cuộc “Ván cờ Ý” trên bản đồ)')
 } else {
   await sleep(400)
   const exists = await waitForTopic('opening:italian', 4000)

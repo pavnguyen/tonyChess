@@ -36,7 +36,7 @@
  *   brand  → xanh rừng: thanh điều hướng, nút chính, viền nhấn
  *   sand   → giấy ngà: nền trang, viền thẻ, vùng chờ
  *   leaf   → xanh non: trạng thái đúng / an toàn (Mắt Thần)
- *   gold   → vàng đồng: sao ⭐, cúp 🏆, nút "mặt trời", mũi tên gợi ý
+ *   gold   → vàng đồng: cúp 🏆, nút "mặt trời", mũi tên gợi ý
  *   coral  → đất nung: nước sai, cảnh báo quân bị treo
  *   info   → xanh thép: nước của đối thủ, ô đích gợi ý, túi chiến lợi phẩm
  *   ink    → xám ngả xanh: chữ phụ, đường kẻ
@@ -160,6 +160,32 @@
   box-shadow:
     0 1px 2px rgb(31 42 36 / 0.04),
     0 14px 30px -20px rgb(31 42 36 / 0.45);
+}
+
+/* Vùng đọc bài tách khỏi bàn cờ: tăng chữ mà không đổi rem toàn trang hay
+   kích thước quân cờ. Nhãn nhỏ 14px, câu hướng dẫn 16px, giãn dòng cho dấu Việt. */
+.lesson-reader :is(.text-xs, [class*='text-[0.']) {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.lesson-reader :is(p, li),
+.lesson-reader :is(p, li)[class] {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.lesson-reader :is(.text-brand-400, .text-brand-500) {
+  color: var(--color-brand-700);
+}
+
+.lesson-reader .text-ink-500 {
+  color: var(--color-ink-600);
+}
+
+.lesson-reader button:focus-visible {
+  outline: 2px solid var(--color-brand-700);
+  outline-offset: 2px;
 }
 
 /* ---------- Animations ---------- */

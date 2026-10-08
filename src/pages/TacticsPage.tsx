@@ -7,10 +7,8 @@ import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { ProgressMap } from '../components/ProgressMap'
-import { ReviewStrip } from '../components/ReviewStrip'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
-import { useCurriculum } from '../hooks/useCurriculum'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BEST_MOVE_THEMES } from '../data/bestMoves'
 import { useTacticsQuery } from '../data/queries'
@@ -44,7 +42,7 @@ const REPLY_DELAY = 620
 
 export function TacticsPage() {
   const { data: puzzles, isLoading } = useTacticsQuery()
-  const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
+  const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/tactics' })
 
@@ -73,7 +71,6 @@ export function TacticsPage() {
     emoji: string
     title: string
     message: string
-    stars: number
   } | null>(null)
 
   const list = useMemo(
@@ -83,7 +80,6 @@ export function TacticsPage() {
   const safeIndex = list.length ? Math.min(index, list.length - 1) : 0
   const active: BestMovePuzzle | undefined = list[safeIndex]
 
-  const curriculum = useCurriculum(list, 'tactics')
   const board = useChessGame(active?.fen ?? '8/8/8/8/8/8/8/K6k w - - 0 1', active?.side ?? 'white')
 
   /** Toàn bộ lời giải: nước hay nhất của bé + chuỗi "đánh tiếp" (nếu có). */
@@ -210,13 +206,6 @@ export function TacticsPage() {
     setPreviewing(true)
   }
 
-  /** Bấm một thế trong khung "Ôn tập hôm nay": nhảy tới đúng chủ đề và vào làm luôn. */
-  const reviewPuzzle = (completionId: string) => {
-    const raw = completionId.replace(/^tactics:/, '')
-    const target = (puzzles ?? []).find((item) => item.id === raw)
-    if (target) goTo(target.theme, target)
-  }
-
   const startSolving = () => {
     setPreviewing(false)
     resetRound()
@@ -270,31 +259,19 @@ export function TacticsPage() {
 
   /** Sang thế cờ kế tiếp (nút ➡️ hoặc phím ▶ / ▲). */
   const nextPuzzle = useCallback(() => {
-    const total = curriculum.length
+    const total = list.length
     if (!total) return
-    for (let step = 1; step <= total; step += 1) {
-      const candidate = (safeIndex + step) % total
-      if (curriculum[candidate]?.unlocked) {
-        setIndex(candidate)
-        resetRound()
-        return
-      }
-    }
-  }, [curriculum, safeIndex, resetRound])
+    setIndex((safeIndex + 1) % total)
+    resetRound()
+  }, [list.length, safeIndex, resetRound])
 
   /** Về thế cờ trước đó (nút ◀ hoặc phím ◀ / ▼). */
   const prevPuzzle = useCallback(() => {
-    const total = curriculum.length
+    const total = list.length
     if (!total) return
-    for (let step = 1; step <= total; step += 1) {
-      const candidate = (safeIndex - step + total) % total
-      if (curriculum[candidate]?.unlocked) {
-        setIndex(candidate)
-        resetRound()
-        return
-      }
-    }
-  }, [curriculum, safeIndex, resetRound])
+    setIndex((safeIndex - 1 + total) % total)
+    resetRound()
+  }, [list.length, safeIndex, resetRound])
 
   // ◀ ▼ về thế trước, ▶ ▲ sang thế kế tiếp - giống phím tắt ở tab Khai cuộc.
   useArrowKeys({ onPrev: prevPuzzle, onNext: nextPuzzle })
@@ -304,12 +281,10 @@ export function TacticsPage() {
     setPhase('solved')
     setConfetti(true)
     if (soundOn) playWin()
-    const firstTime = completeActivity(`tactics:${active.id}`, 4)
     setResult({
       emoji: hasContinuation ? '🏁' : '🎯',
       title: hasContinuation ? 'Đánh tiếp tuyệt vời!' : 'Nước hay nhất!',
       message: `${active.explanation} Khẩu quyết: “${active.rhyme}”.`,
-      stars: firstTime ? 4 : 2,
     })
   }
 
@@ -348,9 +323,6 @@ export function TacticsPage() {
     return false
   }
 
-  const solvedCount = (puzzles ?? []).filter(
-    (item) => item.theme === theme && isCompleted(`tactics:${item.id}`),
-  ).length
   const activeMeta = BEST_MOVE_THEMES[theme]
   const kidPlies = Math.ceil(solutionLine.length / 2)
   const kidStep = Math.min(Math.floor(lineIndex / 2) + 1, kidPlies)
@@ -373,11 +345,6 @@ export function TacticsPage() {
                   className="rounded-full bg-info-100 px-3 py-1 text-xs font-extrabold text-info-700"
                 >
                   🏁 Nước {kidStep}/{kidPlies}
-                </span>
-              )}
-              {active && isCompleted(`tactics:${active.id}`) && (
-                <span className="rounded-full bg-leaf-100 px-3 py-1 text-xs font-extrabold text-leaf-700">
-                  🏅 Đã giải
                 </span>
               )}
             </div>
@@ -501,12 +468,12 @@ export function TacticsPage() {
         bản đồ → đọc lời giải → ôn tập. Bản đồ nằm NGAY dưới khung chọn chủ đề (và
         sát bàn cờ) nên bé luôn thấy mình đang đứng ở ô nào của chủ đề.
       */}
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           <SectionTitle
             icon="⚔️"
             title="Trung cuộc - Tìm nước hay nhất"
-            subtitle={`Bé đã tìm đúng ${solvedCount}/${list.length} thế ${activeMeta.label.toLowerCase()}`}
+            subtitle="Chọn chủ đề rồi tìm nước hay nhất cho mỗi thế cờ"
             info={`theme:${theme}`}
           />
           <Segmented
@@ -537,21 +504,16 @@ export function TacticsPage() {
         */}
         <Panel id="kid-tactic-map" className="grid gap-2">
           <ProgressMap
-            nodes={curriculum.map((entry) => ({
-              id: entry.item.id,
-              level: entry.level,
-              title: entry.item.title,
+            nodes={list.map((item, index) => ({
+              id: item.id,
+              level: index + 1,
+              title: item.title,
               emoji: activeMeta.emoji,
-              subtitle: `Khẩu quyết: “${entry.item.rhyme}”`,
-              completed: entry.completed,
-              unlocked: entry.unlocked,
+              subtitle: `Khẩu quyết: “${item.rhyme}”`,
             }))}
             activeId={active?.id}
             onSelect={selectPuzzle}
-            allowLockedPreview
             title="Bản đồ thế cờ"
-            unitLabel="thế cờ"
-            allDoneMessage="Bé đã tìm đúng hết các thế của chủ đề này - sang chủ đề khác thôi! 🏆"
           />
 
           {active && (
@@ -597,13 +559,6 @@ export function TacticsPage() {
           </Panel>
         )}
 
-        <ReviewStrip
-          items={(puzzles ?? []).map((item) => ({
-            id: `tactics:${item.id}`,
-            label: item.title,
-          }))}
-          onPick={reviewPuzzle}
-        />
       </div>
 
       <CelebrationModal
@@ -611,7 +566,6 @@ export function TacticsPage() {
         emoji={result?.emoji ?? '🎉'}
         title={result?.title ?? ''}
         message={result?.message ?? ''}
-        stars={result?.stars ?? 0}
         onClose={() => setResult(null)}
         onRetry={() => {
           setResult(null)

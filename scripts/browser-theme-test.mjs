@@ -144,7 +144,7 @@ const buttonColors = await evaluate(`
   })()
 `)
 const hasColor = (value) => buttonColors.includes(value)
-check(hasColor('rgb(217, 169, 63)'), 'có nút vàng đồng #d9a93f (nút “Tiến”, cúp, sao ⭐)')
+check(hasColor('rgb(217, 169, 63)'), 'có nút vàng đồng #d9a93f (nút “Tiến ▶”)')
 check(hasColor('rgb(58, 117, 71)'), 'có nút xanh non #3a7547 (nút “Tự chạy”, “Bắt đầu 30s”)')
 check(
   !buttonColors.some((color) => /rgb\(109, 40, 217\)|rgb\(124, 58, 237\)|rgb\(236, 72, 153\)/.test(color)),

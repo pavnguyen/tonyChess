@@ -189,9 +189,37 @@ for (const viewport of VIEWPORTS) {
       if (slack > 40) console.log(`     ℹ còn dư ${Math.round(slack)}px dưới khối bàn cờ`)
     }
 
+    const reading = await evaluate(`(() => {
+      const root = document.querySelector('.lesson-reader')
+      const text = root ? [...root.querySelectorAll('p, li')].filter(el =>
+        el.innerText.trim() && el.getClientRects().length) : []
+      return { present: Boolean(root), count: text.length,
+        small: text.filter(el => parseFloat(getComputedStyle(el).fontSize) < 16).length }
+    })()`)
+    check(reading.present && reading.count > 0 && reading.small === 0,
+      `${route.name}: câu hướng dẫn trong vùng đọc ít nhất 16px`)
+
     // Thanh tab phải hiển thị đủ 6 tab, không bị cắt mất tab nào.
     const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
     check(tabCount === 6, `${route.name}: thanh tab có đủ 6 tab (${tabCount})`)
+
+    if (route.path === '/strategy') {
+      // Cả 20 thế minh họa và trạng thái thử thách ở mọi cỡ màn hình:
+      // lời giải dài giờ nằm trong cột đọc, không được làm bàn cờ teo lại.
+      const ids = await evaluate(`[...document.querySelectorAll('[data-principle-id]')].map(el => el.dataset.principleId)`)
+      for (const id of ids) {
+        await evaluate(`document.querySelector('[data-principle-id="${id}"]').click()`)
+        for (const label of ['Nên làm', 'Không nên', 'Thử xem bé hiểu chưa']) {
+          await evaluate(`[...document.querySelectorAll('button')].find(el => el.innerText.includes('${label}')).click()`)
+          await sleep(80)
+          const example = await measure()
+          check(example.scrollW <= example.innerW + 2 && example.board.size >= minBoard &&
+            example.card.bottom <= example.innerH + 2,
+            `Chiến lược ${id} / ${label}: chữ lớn không lấn bàn cờ`)
+        }
+        await evaluate(`[...document.querySelectorAll('button')].find(el => el.innerText.includes('Xem bài học')).click()`)
+      }
+    }
 
     if (m.hiddenColumns > 0) {
       console.log(

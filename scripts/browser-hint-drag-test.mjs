@@ -234,8 +234,8 @@ await sleep(900)
 
 const solvedText = await bodyText()
 check(
-  solvedText.includes('Đòn tuyệt đỉnh') || solvedText.includes('Đã giải'),
-  'bài đố được tính là đã giải sau khi bé kéo đúng',
+  solvedText.includes('Nước hay nhất') || solvedText.includes('Đánh tiếp tuyệt vời'),
+  'giải đúng thì báo lời chúc mừng “Nước hay nhất!”',
 )
 const solvedPiece = await pieceAt(after.steel[0])
 check(

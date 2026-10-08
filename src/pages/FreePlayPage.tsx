@@ -70,7 +70,7 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
 }
 
 export function FreePlayPage() {
-  const { notation, completeActivity, soundOn } = useKidProgress()
+  const { notation, soundOn } = useKidProgress()
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
@@ -89,7 +89,6 @@ export function FreePlayPage() {
     emoji: string
     title: string
     message: string
-    stars: number
   } | null>(null)
   const [gameKey, setGameKey] = useState(0)
 
@@ -139,21 +138,16 @@ export function FreePlayPage() {
       if (kidWins) {
         if (soundOn) playWin()
         setConfetti(true)
-        const first = completeActivity('freeplay:first-win', 8)
-        const tough =
-          difficulty === 'master' ? 9 : difficulty === 'hard' ? 6 : difficulty === 'medium' ? 3 : 0
         setResult({
           emoji: '🏆',
           title: 'Bé chiếu bí máy rồi!',
           message: `Tuyệt vời! Bé đã hạ gục chú máy ở mức ${DIFFICULTY_LABEL[difficulty]}.`,
-          stars: (first ? 8 : 4) + tough,
         })
       } else {
         setResult({
           emoji: '🤗',
           title: 'Máy chiếu bí mất rồi!',
           message: 'Không sao đâu bé! Bật 👁️ Mắt Thần rồi chơi lại, lần này bé sẽ thắng!',
-          stars: 1,
         })
       }
       return
@@ -164,7 +158,6 @@ export function FreePlayPage() {
         emoji: '🤝',
         title: 'Hòa cờ!',
         message: 'Hai bên hòa nhau. Bé chơi lại để tìm cách thắng nhé!',
-        stars: 1,
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -403,7 +396,7 @@ export function FreePlayPage() {
       />
 
       {/* Cột phải: chọn quân / độ khó, sách ghi ván cờ, bí kíp */}
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
           <SectionTitle
             icon="🎮"
@@ -519,7 +512,6 @@ export function FreePlayPage() {
         emoji={result?.emoji ?? '🎉'}
         title={result?.title ?? ''}
         message={result?.message ?? ''}
-        stars={result?.stars ?? 0}
         onClose={() => setResult(null)}
         onRetry={() => newGame()}
         retryLabel="Ván mới"

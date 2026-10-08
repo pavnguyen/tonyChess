@@ -6,7 +6,6 @@ interface Props {
   emoji: string
   title: string
   message: string
-  stars: number
   children?: ReactNode
   onClose: () => void
   onRetry?: () => void
@@ -18,7 +17,6 @@ export function CelebrationModal({
   emoji,
   title,
   message,
-  stars,
   children,
   onClose,
   onRetry,
@@ -39,10 +37,6 @@ export function CelebrationModal({
         <div className="animate-float-slow text-6xl sm:text-7xl">{emoji}</div>
         <h3 className="mt-2 text-2xl font-extrabold text-brand-900 sm:text-3xl">{title}</h3>
         <p className="mt-1 text-sm font-bold text-brand-600 sm:text-base">{message}</p>
-
-        <div className="my-3 inline-flex items-center gap-2 rounded-full bg-gold-100 px-4 py-2 text-lg font-extrabold text-gold-800">
-          +{stars} ⭐
-        </div>
 
         {children}
         <div className="mt-4 flex flex-wrap justify-center gap-2">

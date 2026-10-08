@@ -44,24 +44,6 @@ export const INFO: Record<string, InfoEntry> = {
       'Bàn cờ tự xoay 180° khi bé cầm quân Đen, để hàng 7-8 luôn nằm gần bé.',
     ],
   },
-  stars: {
-    title: 'Sao ⭐ và danh hiệu',
-    tag: '🎮 Cách chơi',
-    body: [
-      'Mỗi hoạt động hoàn thành cho bé một số sao: bốn ⭐ cho bài giảng, năm ⭐ cho thế tàn cuộc, sáu ⭐ cho Cúp Vàng khai cuộc… Làm lại lần sau được ít hơn.',
-      'Đủ sao thì lên danh hiệu: 🌱 Kỳ thủ Nhí → 🐣 Tập sự Cờ vua (8 ⭐) → 🥉 Kiện tướng Nhí (20 ⭐) → 👑 Grand Master Nhí (40 ⭐).',
-      'Sao chỉ để động viên tinh thần học - app **không** chấm điểm hơn thua, và làm sai không bao giờ bị trừ sao.',
-    ],
-  },
-  cup: {
-    title: 'Cúp Vàng 🏆',
-    tag: '🎮 Cách chơi',
-    body: [
-      'Cúp Vàng là phần thưởng lớn nhất của tab Khai cuộc: bé phải **tự kéo-thả đúng từng nước của mình** trong chế độ *Luyện thuộc lòng* cho tới hết bài.',
-      'Nhận Cúp Vàng cũng chính là lúc **mở khoá bài khai cuộc kế tiếp** trong bản đồ leo cấp.',
-      'Chế độ *Học từng bước* không mở khoá bài mới - nó để bé hiểu bài trước đã.',
-    ],
-  },
   eye: {
     title: 'Mắt Thần Cờ Vua 👁️',
     tag: '🧠 Ý tưởng',
@@ -107,16 +89,7 @@ export const INFO: Record<string, InfoEntry> = {
       'Mỗi bài ở tab Đối phó là một dòng nước từ nước đầu: nước nào của **đối thủ**, nước nào **bé đáp lại** để phá thế khai cuộc và chặn triển khai quân của bạn.',
       'Mỗi bài có câu **“đối thủ đang định làm gì?”** - bé tập nhận diện kế hoạch của đối phương trước, rồi mới tìm cách phá.',
       'Mục tiêu không phải học thuộc, mà là nắm **ý tưởng**: đánh vào chân đế trung tâm, đuổi quân đang ghim, giữ chặt các ô quan trọng.',
-      'Mỗi bài đều **nhảy qua lại** được với bài khai cuộc gốc ở tab Khai cuộc - bé xem cả hai mặt của cùng một khai cuộc. Bài đã xem cũng tự nhắc lại trong khung **🔁 Ôn tập hôm nay**.',
-    ],
-  },
-  review: {
-    title: 'Ôn tập ngắt quãng 🔁',
-    tag: '🧠 Ý tưởng',
-    body: [
-      'Não bé quên dần theo thời gian, nên học một lần là chưa đủ. Khung **🔁 Ôn tập hôm nay** sẽ nhắc lại đúng những thế cờ bé đã làm, sau đó thưa dần: **1 → 3 → 7 → 16 → 35 ngày**.',
-      'Đây là cách học nhớ lâu nhất mà lại nhẹ nhàng - mỗi ngày chỉ cần vài thế cờ cũ.',
-      'Bé bấm vào một thế trong khung là nhảy thẳng tới thế đó để làm lại. Chưa có gì tới hạn thì cứ học bài mới cho vui.',
+      'Mỗi bài đều **nhảy qua lại** được với bài khai cuộc gốc ở tab Khai cuộc - bé xem cả hai mặt của cùng một khai cuộc. Bé muốn học lại bài nào lúc nào cũng được - cứ bấm vào bài đó.',
     ],
   },
   goal: {
@@ -441,8 +414,6 @@ export function infoById(topic: string): InfoEntry | undefined {
 export const REQUIRED_INFO_IDS: readonly string[] = [
   'app',
   'board',
-  'stars',
-  'cup',
   'eye',
   'machine',
   'notation',
@@ -450,7 +421,6 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
   'goal',
   'plan',
   'counter',
-  'review',
   'endgame',
   ...[
     'london',

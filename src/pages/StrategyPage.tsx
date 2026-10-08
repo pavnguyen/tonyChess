@@ -7,7 +7,6 @@ import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { GOLD_PRINCIPLES, PRINCIPLE_TONE_STYLES } from '../data/goldPrinciples'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { useReportLesson } from '../store/lesson'
-import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
 
 type DemoSide = 'good' | 'bad'
@@ -26,11 +25,13 @@ const DEMO_OPTIONS: { value: DemoSide; label: string; icon: string }[] = [
  * - học chay bằng chữ thì nhớ được rất ít.
  */
 export function StrategyPage() {
-  const { completeActivity, isCompleted } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
   const [openPrinciple, setOpenPrinciple] = useState<string | null>(null)
   const [demoSide, setDemoSide] = useState<DemoSide>('good')
+  const [quiz, setQuiz] = useState(false)
+  const [answer, setAnswer] = useState<'correct' | 'wrong' | null>(null)
+  const hidingAnswer = quiz && answer === null
 
   const activePrinciple = useMemo(
     () => GOLD_PRINCIPLES.find((item) => item.id === openPrinciple) ?? GOLD_PRINCIPLES[0],
@@ -39,7 +40,7 @@ export function StrategyPage() {
   const board = activePrinciple[demoSide]
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang mở thẻ nguyên tắc nào.
-  useReportLesson(openPrinciple ? `principle:${openPrinciple}` : null)
+  useReportLesson(!hidingAnswer && openPrinciple ? `principle:${openPrinciple}` : null)
 
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {}
@@ -68,11 +69,22 @@ export function StrategyPage() {
   }, [board])
 
   const togglePrinciple = (id: string) => {
+    setQuiz(false)
+    setAnswer(null)
     setDemoSide('good')
     setOpenPrinciple((current) => (current === id ? null : id))
   }
 
-  const mastered = isCompleted(`strategy:principle:${activePrinciple.id}`)
+  const startQuiz = () => {
+    setDemoSide(Math.random() < 0.5 ? 'good' : 'bad')
+    setAnswer(null)
+    setQuiz(true)
+  }
+
+  const submitAnswer = (choice: DemoSide) => {
+    if (!hidingAnswer) return
+    setAnswer(choice === demoSide ? 'correct' : 'wrong')
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
@@ -89,11 +101,11 @@ export function StrategyPage() {
                   {activePrinciple.order}. {activePrinciple.title}
                 </div>
                 <div className="hidden truncate text-[0.7rem] font-bold text-ink-500 sm:block">
-                  {demoSide === 'good' ? '✅ Thế cờ NÊN làm' : '⚠️ Thế cờ KHÔNG NÊN'}
+                  {hidingAnswer ? '🔎 Bé đang xem quân Trắng' : demoSide === 'good' ? '✅ Thế cờ NÊN làm' : '⚠️ Thế cờ KHÔNG NÊN'}
                 </div>
               </div>
             </div>
-            <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
+            {!hidingAnswer && <EyeToggle on={heatmap} onToggle={toggleHeatmap} />}
           </div>
         }
         board={
@@ -102,18 +114,66 @@ export function StrategyPage() {
             orientation="white"
             playerSide="white"
             interactive={false}
-            heatmap={heatmap}
-            extraSquareStyles={squareStyles}
+            heatmap={!hidingAnswer && heatmap}
+            extraSquareStyles={hidingAnswer ? {} : squareStyles}
           />
         }
         under={
           <div className="grid gap-2">
-            <Segmented
-              options={DEMO_OPTIONS}
-              value={demoSide}
-              onChange={(value) => setDemoSide(value)}
-              size="sm"
-            />
+            {quiz ? (
+              <div className="flex flex-wrap gap-2" aria-label="Chọn câu trả lời">
+                <KidButton
+                  id="kid-principle-answer-good"
+                  size="sm"
+                  variant="ghost"
+                  disabled={answer !== null}
+                  onClick={() => submitAnswer('good')}
+                >
+                  Nên làm
+                </KidButton>
+                <KidButton
+                  id="kid-principle-answer-bad"
+                  size="sm"
+                  variant="ghost"
+                  disabled={answer !== null}
+                  onClick={() => submitAnswer('bad')}
+                >
+                  Không nên
+                </KidButton>
+                <KidButton size="sm" variant="ghost" onClick={() => {
+                  setQuiz(false)
+                  setAnswer(null)
+                }}>
+                  Xem bài học
+                </KidButton>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <Segmented options={DEMO_OPTIONS} value={demoSide} onChange={setDemoSide} size="sm" />
+                <KidButton id="kid-principle-quiz" variant="sun" size="sm" onClick={startQuiz}>
+                  🔎 Thử xem bé hiểu chưa
+                </KidButton>
+              </div>
+            )}
+          </div>
+        }
+      />
+
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+        <Panel id="kid-principle-check">
+          <h3 className="text-lg font-extrabold text-brand-900">{quiz ? '🔎 Bé quan sát rồi chọn nhé' : '💡 Nhìn bàn cờ, hiểu nguyên tắc'}</h3>
+          <p className="mt-1 text-base font-bold text-brand-700">{activePrinciple.ask}</p>
+          {quiz && (
+            <div id="kid-principle-feedback" role="status" className="mt-2 rounded-xl bg-brand-50 p-3 text-base font-bold text-brand-800">
+              {answer === null ? 'Nhìn quân Trắng trên bàn: cách sắp xếp này NÊN làm hay KHÔNG NÊN? Bé nói một lý do rồi chọn nhé.'
+                : answer === 'correct' ? '✅ Đúng rồi! Bé chỉ lên bàn cờ và nói vì sao nhé.'
+                : '🌱 Chưa đúng cũng không sao! Cùng xem lời giải bên dưới rồi thử lại nhé.'}
+            </div>
+          )}
+          {quiz && answer !== null && (
+            <KidButton id="kid-principle-quiz-again" className="mt-2" size="sm" variant="sun" onClick={startQuiz}>Thử một lượt nữa</KidButton>
+          )}
+          {!hidingAnswer && <div className="mt-2 grid gap-2">
             {/*
               Khung lời giải đổi hẳn MÀU theo thế đang xem (xanh = nên, đỏ =
               không nên) và nói rõ nó đang khoe thế nào. Nhờ vậy chỉ cần liếc một
@@ -121,7 +181,7 @@ export function StrategyPage() {
             */}
             <div
               id="kid-principle-note"
-              className={`rounded-2xl border-2 px-3 py-2 text-[0.78rem] font-bold leading-snug ${
+              className={`rounded-2xl border-2 px-3 py-2 text-base font-bold leading-relaxed ${
                 demoSide === 'good'
                   ? 'border-leaf-300 bg-leaf-50 text-leaf-800'
                   : 'border-coral-300 bg-coral-50 text-coral-800'
@@ -165,23 +225,8 @@ export function StrategyPage() {
                 ))}
               </ul>
             )}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <KidButton
-                variant="grass"
-                size="sm"
-                onClick={() => completeActivity(`strategy:principle:${activePrinciple.id}`, 2)}
-              >
-                ✅ Bé đã hiểu nguyên tắc này
-              </KidButton>
-              <span className="text-[0.7rem] font-bold text-ink-500">
-                {mastered ? 'đã ghi nhận ✓' : '🟩 ô xanh là NÊN · 🟥 ô đỏ là KHÔNG NÊN'}
-              </span>
-            </div>
-          </div>
-        }
-      />
-
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+          </div>}
+        </Panel>
         <Panel id="kid-gold-principles">
           <SectionTitle
             icon="🏅"
@@ -189,13 +234,12 @@ export function StrategyPage() {
             subtitle="Mười thói quen giúp bé chơi cờ giỏi hơn mỗi ngày"
             info="principles"
           />
-          <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
+          <p className="mt-1 text-[0.7rem] font-bold text-brand-600">
             👆 Bấm một nguyên tắc để soi hai thế cờ NÊN / KHÔNG NÊN lên bàn cờ lớn.
           </p>
           <div className="mt-2 grid gap-1.5">
             {GOLD_PRINCIPLES.map((principle) => {
               const open = openPrinciple === principle.id
-              const viewed = isCompleted(`strategy:principle:${principle.id}`)
               return (
                 <div
                   key={principle.id}
@@ -218,18 +262,17 @@ export function StrategyPage() {
                       >
                         {principle.order}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-900">
+                      <span className="min-w-0 flex-1 text-sm font-extrabold text-brand-900">
                         {principle.emoji} {principle.title}
                       </span>
-                      {viewed && <span aria-hidden>🏆</span>}
-                      <span aria-hidden className="shrink-0 text-brand-400">
+                      <span aria-hidden className="shrink-0 text-brand-600">
                         {open ? '▾' : '▸'}
                       </span>
                     </button>
-                    <InfoButton topic={principle.info} />
+                    {!hidingAnswer && <InfoButton topic={principle.info} />}
                   </div>
 
-                  {open && (
+                  {open && !hidingAnswer && (
                     <div className="animate-pop-in mt-1.5 grid gap-1.5">
                       <p className="rounded-xl bg-white px-2.5 py-1.5 text-[0.7rem] font-extrabold text-info-700 ring-1 ring-info-200">
                         ❓ {principle.ask}

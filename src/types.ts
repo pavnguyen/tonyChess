@@ -169,12 +169,3 @@ export interface EndgameChallenge {
   explanation: string
   rhyme: string
 }
-
-export type RankId = 'seed' | 'apprentice' | 'knight' | 'master'
-
-export interface RankInfo {
-  id: RankId
-  title: string
-  emoji: string
-  minStars: number
-}

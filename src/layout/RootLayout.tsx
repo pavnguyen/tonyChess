@@ -2,7 +2,6 @@ import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
 import { HeaderOptions } from '../components/HeaderOptions'
 import { InfoButton } from '../components/InfoPopover'
 import { ParentTips } from '../components/ParentTips'
-import { useKidProgress } from '../store/progress'
 
 const TABS = [
   { to: '/', label: 'Khai Cuộc', full: 'Khai cuộc Grand Master', icon: '🛡️' },
@@ -15,7 +14,6 @@ const TABS = [
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
-  const { stars, rank, nextRank, dueCount, estimatedElo } = useKidProgress()
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -56,35 +54,6 @@ export function RootLayout() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <span
-              className="hidden items-center gap-1 rounded-xl bg-gold-400/20 px-2 py-1 ring-1 ring-gold-300/40 md:flex"
-              title={
-                nextRank
-                  ? `${rank.title} - còn ${nextRank.minStars - stars} ⭐ để lên ${nextRank.title}`
-                  : `${rank.title} - danh hiệu cao nhất`
-              }
-            >
-              <span aria-hidden>{rank.emoji}</span>
-              <span className="text-xs font-extrabold text-gold-200">⭐ {stars}</span>
-            </span>
-            <span
-              id="kid-elo-badge"
-              className="hidden items-center gap-1 rounded-xl bg-white/10 px-2 py-1 ring-1 ring-white/20 sm:flex"
-              title="Trình độ ước lượng của bé (chỉ để động viên, không phải Elo thi đấu)"
-            >
-              <span aria-hidden>🎯</span>
-              <span className="text-xs font-extrabold text-white/90">≈ {estimatedElo}</span>
-            </span>
-            {dueCount > 0 && (
-              <span
-                id="kid-review-badge"
-                className="flex items-center gap-1 rounded-xl bg-info-500/30 px-2 py-1 ring-1 ring-info-300/40"
-                title={`${dueCount} bài đã tới hạn ôn lại - mở lại tab bé đang học để ôn nhé!`}
-              >
-                <span aria-hidden>🔁</span>
-                <span className="text-xs font-extrabold text-white">{dueCount}</span>
-              </span>
-            )}
             <InfoButton topic="app" tone="onDark" />
             <HeaderOptions />
           </div>

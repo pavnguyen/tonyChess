@@ -29,18 +29,7 @@ export function HeaderOptions() {
     refresh()
     return subscribeVoices(refresh)
   }, [])
-  const {
-    notation,
-    setNotation,
-    soundOn,
-    toggleSound,
-    stars,
-    rank,
-    nextRank,
-    unlockAll,
-    toggleUnlockAll,
-    resetProgress,
-  } = useKidProgress()
+  const { notation, setNotation, soundOn, toggleSound } = useKidProgress()
 
   return (
     <div className="relative shrink-0">
@@ -78,17 +67,8 @@ export function HeaderOptions() {
             <div className="flex flex-wrap items-center justify-between gap-1">
               <div className="flex items-center gap-1.5 text-sm font-extrabold text-brand-900">
                 🎛️ Tùy chọn của bé
-                <InfoButton topic="stars" />
               </div>
-              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-gold-800">
-                {rank.emoji} ⭐ {stars}
-              </span>
             </div>
-            <p className="mt-1 text-[0.7rem] font-bold text-brand-500">
-              {nextRank
-                ? `Còn ${nextRank.minStars - stars} ⭐ nữa để thành ${nextRank.emoji} ${nextRank.title}`
-                : 'Bé đã đạt danh hiệu cao nhất! 🌟'}
-            </p>
 
             <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               ✍️ Cách ghi nước đi
@@ -259,35 +239,10 @@ export function HeaderOptions() {
                   {soundOn ? 'BẬT' : 'TẮT'}
                 </span>
               </button>
-              <button
-                type="button"
-                onClick={toggleUnlockAll}
-                className="flex items-center justify-between rounded-xl border-2 border-brand-100 bg-white px-2.5 py-1.5 text-xs font-extrabold text-brand-600 transition-all active:translate-y-[1px]"
-              >
-                <span>🔓 Mở khoá tất cả bài</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[0.65rem] ${
-                    unlockAll ? 'bg-gold-100 text-gold-700' : 'bg-ink-100 text-ink-500'
-                  }`}
-                >
-                  {unlockAll ? 'BẬT' : 'TẮT'}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm('Bé muốn xóa hết sao và bắt đầu lại từ đầu chứ?')) {
-                    resetProgress()
-                  }
-                }}
-                className="rounded-xl border-2 border-coral-100 bg-coral-50 px-2.5 py-1.5 text-xs font-extrabold text-coral-600 transition-all active:translate-y-[1px]"
-              >
-                🧹 Chơi lại từ đầu
-              </button>
             </div>
 
             <p className="mt-2 text-[0.65rem] font-bold text-brand-400">
-              🔄 Bài cờ Đen tự xoay bàn cờ 180° · 🗺️ Bài học mở dần theo cấp.
+              🔄 Bài cờ Đen tự xoay bàn cờ 180°
             </p>
           </div>
         </>

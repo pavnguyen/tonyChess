@@ -8,7 +8,6 @@ import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
-import { ReviewStrip } from '../components/ReviewStrip'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -64,7 +63,7 @@ function openingMoveLabel(lesson: CounterLesson): string {
 
 export function CountersPage() {
   const { data: counters, isLoading } = useCountersQuery()
-  const { notation, completeActivity, isCompleted, soundOn } = useKidProgress()
+  const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/counters' })
   const navigate = useNavigate()
@@ -89,7 +88,6 @@ export function CountersPage() {
     emoji: string
     title: string
     message: string
-    stars: number
   } | null>(null)
   const awardedRef = useRef(false)
 
@@ -188,7 +186,6 @@ export function CountersPage() {
     if (!lesson || ply === 0 || !atLeaf) return
     if (awardedRef.current) return
     awardedRef.current = true
-    const firstTime = completeActivity(`counter:${lesson.id}`, 3)
     if (soundOn) playWin()
     if (mode === 'practice') {
       setConfetti(true)
@@ -196,7 +193,6 @@ export function CountersPage() {
         emoji: lesson.emoji,
         title: 'Bé tự đáp trả trọn vẹn!',
         message: `Bé đã tự tay kéo đúng mọi nước đáp trả ${lesson.opponentOpening}. Cách “${lesson.counterName}” đã vào tay rồi!`,
-        stars: firstTime ? 3 : 1,
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -326,17 +322,6 @@ export function CountersPage() {
   const selectLesson = (id: string) => {
     setLessonId(id)
     setPly(0)
-  }
-
-  /** Bấm một bài trong khung “Ôn tập hôm nay”: nhảy tới đúng màu + bài đó. */
-  const reviewLesson = (completionId: string) => {
-    const raw = completionId.replace(/^counter:/, '')
-    const target = (counters ?? []).find((item) => item.id === raw)
-    if (!target) return
-    setViewSide(target.opponentSide)
-    setLessonId(target.id)
-    setPly(0)
-    setMoveFilter(null)
   }
 
   if (isLoading || !lesson) {
@@ -496,7 +481,7 @@ export function CountersPage() {
         }
       />
 
-      <div className="flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         {/*
           Dải “lượt ai sắp đi” + quân nào đi đâu. Đặt ở CỘT ĐIỀU KHIỂN chứ không
           nằm dưới bàn cờ: khối dưới bàn cờ càng cao thì bàn cờ càng bị thu nhỏ
@@ -574,14 +559,6 @@ export function CountersPage() {
           </p>
         </Panel>
 
-        <ReviewStrip
-          items={(counters ?? []).map((item) => ({
-            id: `counter:${item.id}`,
-            label: `Đối phó: ${item.opponentOpening}`,
-          }))}
-          onPick={reviewLesson}
-        />
-
         <Panel className="grid gap-2">
           <SectionTitle
             icon="🧭"
@@ -639,7 +616,6 @@ export function CountersPage() {
           <div id="kid-counter-list" className="grid gap-1.5">
             {visibleList.map((item) => {
               const active = item.id === lesson.id
-              const seen = isCompleted(`counter:${item.id}`)
               return (
                 <button
                   key={item.id}
@@ -664,11 +640,6 @@ export function CountersPage() {
                       {item.counterName}
                     </span>
                   </span>
-                  {seen && (
-                    <span className="shrink-0 text-sm" title="Bé đã xem bài này">
-                      ✅
-                    </span>
-                  )}
                 </button>
               )
             })}
@@ -741,7 +712,6 @@ export function CountersPage() {
         emoji={result?.emoji ?? '🛡️'}
         title={result?.title ?? ''}
         message={result?.message ?? ''}
-        stars={result?.stars ?? 0}
         onClose={() => setResult(null)}
         onRetry={() => {
           setResult(null)

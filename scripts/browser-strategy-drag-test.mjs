@@ -137,5 +137,51 @@ for (const id of ids) {
   }
 }
 
+console.log('\n▶ Thử thách: tự quan sát, không lộ lời giải, phản hồi đúng/sai')
+await evaluate(`localStorage.removeItem('hoc-vien-co-vua-nhi.v1'); location.reload()`)
+await sleep(1500)
+for (const id of ids) {
+  await evaluate(`document.querySelector('[data-principle-id="${id}"]').click()`)
+  await sleep(100)
+  for (const good of [true, false]) {
+    // Ép hai nhánh ngẫu nhiên để cả hai thế đều được kiểm tra, không dựa vào may rủi.
+    await evaluate(`Math.random = () => ${good ? 0.1 : 0.9}`)
+    await clickByText('Thử xem bé hiểu chưa')
+    await sleep(100)
+    const hidden = await evaluate(`(() => {
+      const marks = [...document.querySelectorAll('[data-square]')].some(el =>
+        [...el.querySelectorAll('div')].some(child => child.style.boxShadow.includes('inset')))
+      return !document.getElementById('kid-principle-note') &&
+        !document.getElementById('kid-principle-legend') &&
+        !document.body.innerText.includes('Khẩu quyết') && !marks
+    })()`)
+    check(hidden, `${id} / ${good ? 'nên' : 'không nên'}: chưa hiện lời giải, chú giải hay màu đáp án`)
+    // Chọn sai: hiện giải thích để bé học lại, không chấm điểm.
+    await evaluate(`document.getElementById('kid-principle-answer-${good ? 'bad' : 'good'}').click()`)
+    await sleep(100)
+    check(await evaluate(`document.getElementById('kid-principle-feedback').innerText.includes('Chưa đúng') &&
+      Boolean(document.getElementById('kid-principle-note'))`),
+      `${id}: sai có giải thích`)
+    await evaluate(`document.getElementById('kid-principle-quiz-again').click()`)
+    await sleep(100)
+    await evaluate(`document.getElementById('kid-principle-answer-${good ? 'good' : 'bad'}').click()`)
+    await sleep(100)
+    check(await evaluate(`document.getElementById('kid-principle-feedback').innerText.includes('Đúng rồi')`),
+      `${id}: đúng báo “Đúng rồi”`)
+    // Nút trả lời phải khoá sau khi đã chọn.
+    check(await evaluate(`document.getElementById('kid-principle-answer-${good ? 'good' : 'bad'}').disabled === true`),
+      `${id}: nút trả lời khóa sau khi chọn`)
+    await clickByText('Xem bài học')
+    await sleep(100)
+  }
+}
+
+// Đổi bài khi đang làm thử thách phải thoát trạng thái/đáp án của bài trước.
+await clickByText('Thử xem bé hiểu chưa')
+await evaluate(`document.querySelector('[data-principle-id="center"]').click()`)
+await sleep(100)
+check(await evaluate(`!document.getElementById('kid-principle-feedback') && Boolean(document.getElementById('kid-principle-note'))`),
+  'đổi bài hủy thử thách cũ')
+
 close()
 finish('BROWSER STRATEGY')
