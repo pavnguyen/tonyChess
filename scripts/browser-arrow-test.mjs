@@ -11,7 +11,11 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 
-const { skipped, failedToConnect, evaluate, send, close } = await openPage(`${APP_URL}#arrow`, {
+// Ghim bài London (?opening=london): các phép đo dưới đây dùng đúng nước d2→d4 và
+// câu kế hoạch f1 → d3 của London, còn bài mặc định của app là Ván cờ Ý.
+const { skipped, failedToConnect, evaluate, send, close } = await openPage(
+  `${APP_URL}?opening=london#arrow`,
+  {
   port: 9334,
 })
 
@@ -431,6 +435,11 @@ check(
   `có nút kế hoạch trung cuộc để bấm (${Array.isArray(planButtons) ? planButtons.length : 0} nút)`,
 )
 
+// Ô mục tiêu khai cuộc giờ BẬT MẶC ĐỊNH, mà câu `goal` của Sicilian cũng nhắc b5,
+// nên tắt trước khi đo cảnh “chưa bấm câu kế hoạch” - nếu không b5 đã tím sẵn.
+await evaluate(`document.querySelector('[data-opening-goal]')?.click()`)
+await sleep(200)
+
 const beforeB5 = await readPlanSquare('b5')
 
 const clicked = await evaluate(`
@@ -542,7 +551,7 @@ console.log('\n▶ Câu kế hoạch “Đưa <quân> <ô> … <ô>” → vẽ 
 
 // Về bài mặc định (Hệ thống London, cờ Trắng): câu 1 là
 // “Đưa Tượng f1 ra d3 (hoặc e2) rồi nhập thành…” nên mũi tên phải là f1 → d3.
-await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/`)}`)
+await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/?opening=london`)}`)
 await sleep(2600)
 check(await waitForSelector('[data-plan-point="0"]'), 'về bài London và thấy câu kế hoạch số 1')
 

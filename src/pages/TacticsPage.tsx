@@ -491,10 +491,6 @@ export function TacticsPage() {
           >
             <b className="text-brand-800">🧭 Khi nào dùng?</b> {activeMeta.when}
           </p>
-          <p className="rounded-2xl bg-leaf-50 px-3 py-2 text-[0.7rem] font-bold text-leaf-700">
-            🤖 Nước tốt nhất của mỗi thế đều do <b>máy chấm sẵn</b> (đối chiếu engine) - bé cứ tìm
-            nước giữ được lợi thế là đúng.
-          </p>
         </Panel>
 
         {/*

@@ -138,6 +138,9 @@ console.log('\n▶ Nút ⓘ (giải thích tại chỗ)')
 // --- Tab Khai cuộc: logo/thanh tiêu đề, khai cuộc đang học, cây, bản đồ.
 await navigate('/')
 await expectTopic('app', 'Nam An - Cờ Vua', 'Thanh tiêu đề (giới thiệu app)')
+// Ghim London để kiểm nút ⓘ của khai cuộc đang học (bài mặc định của app nay là
+// Ván cờ Ý - bài đứng đầu danh sách ưu tiên).
+await navigate('/?opening=london')
 await expectTopic('opening:london', '1922', 'Khai cuộc đang học (lịch sử Hệ thống London)')
 await expectTopic('plan', 'trung cuộc', 'Kế hoạch trung cuộc')
 
@@ -145,12 +148,12 @@ await expectTopic('plan', 'trung cuộc', 'Kế hoạch trung cuộc')
 // (Dải chọn khai cuộc là các nút trong bản đồ leo cấp.)
 const switched = await evaluate(`
   (() => {
-    const button = [...document.querySelectorAll('button')].find((b) =>
-      b.textContent.includes('Ván cờ Ý'),
-    )
+    // Bản đồ giờ hiện TÊN QUỐC TẾ, tên tiếng Việt chỉ nằm trong aria-label; bám
+    // vào data-level-id để không phụ thuộc chữ hiển thị.
+    const button = document.querySelector('[data-level-id="italian"]')
     if (!button || button.disabled) return 'not-found'
     button.click()
-    return button.textContent.trim()
+    return button.getAttribute('data-level-id')
   })()
 `)
 if (switched === 'not-found') {

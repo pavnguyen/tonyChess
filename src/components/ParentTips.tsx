@@ -48,7 +48,9 @@ export function ParentTips() {
   return (
     <aside
       id="kid-parent-tips"
-      className="fixed bottom-2 right-2 z-40 flex max-w-[calc(100vw-1rem)] flex-col items-end gap-1.5 print:hidden"
+      // Trên điện thoại nhường chỗ cho thanh tab cố định ở đáy màn hình
+      // (`bottom-2` sẽ bị nó che mất nên phải nhấc lên trên).
+      className="fixed right-2 bottom-[4.9rem] z-40 flex max-w-[calc(100vw-1rem)] flex-col items-end gap-1.5 stage:bottom-2 print:hidden"
     >
       {open && (
         <div

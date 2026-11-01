@@ -16,7 +16,9 @@ const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 // 1440×900 là bố cục 2 cột đã được bài kiểm tra layout xác nhận bàn cờ nằm
 // trọn trong màn hình - cần thiết để toạ độ chuột rơi đúng lên quân cờ.
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
-  `${APP_URL}#learn-drag`,
+  // Ghim đúng bài London: bài kiểm này soi nước d2→d4 của London, còn bài mặc định
+  // của app nay là bài đứng đầu danh sách ưu tiên (Ván cờ Ý, nước e4).
+  `${APP_URL}?opening=london#learn-drag`,
   { port: 9345, windowSize: '1440,900' },
 )
 
@@ -92,26 +94,17 @@ const arrowCount = await evaluate(`
 `)
 check(arrowCount === 1, `vẫn có mũi tên vàng chỉ nước đi (nhận ${arrowCount})`)
 
-// --- 2. “Luyện thuộc lòng” thì KHÔNG được gợi ý sẵn (bé phải tự nhớ).
-const memorize = await clickButton('Luyện')
-check(String(memorize) !== 'not-found', `đã chuyển sang chế độ “${memorize}”`)
-await sleep(600)
-const d2Memorize = await squareStyle('d2')
-check(
-  !marks(d2Memorize, FROM_MARKS),
-  'chế độ thuộc lòng không tô sáng sẵn quân cần đi (để bé tự nhớ)',
-)
-
+// --- 2. App chỉ còn MỘT chế độ, nhưng nút “Bé muốn gì?” vẫn bật/tắt được ô mục tiêu.
+const goalPressed = () =>
+  evaluate(`document.querySelector('[data-opening-goal]').getAttribute('aria-pressed')`)
+check((await goalPressed()) === 'true', 'ô mục tiêu khai cuộc bật sẵn theo mặc định')
 await evaluate(`document.querySelector('[data-opening-goal]').click()`)
 await sleep(100)
-check(await evaluate(`document.querySelector('[data-opening-goal]').getAttribute('aria-pressed') === 'true'`), 'soi mục tiêu khai cuộc bật được ở chế độ luyện')
-check(String(await clickButton('Gợi ý')) !== 'not-found', 'bấm Gợi ý để quay về nước đang luyện')
+check((await goalPressed()) === 'false', 'bấm “Bé muốn gì?” tắt được ô mục tiêu')
+await evaluate(`document.querySelector('[data-opening-goal]').click()`)
 await sleep(100)
-check(await evaluate(`document.querySelector('[data-opening-goal]').getAttribute('aria-pressed') === 'false'`), 'Gợi ý tắt soi mục tiêu khai cuộc')
+check((await goalPressed()) === 'true', 'bấm lần nữa bật lại được ô mục tiêu')
 
-const backToLearn = await clickButton('Học từng bước')
-check(String(backToLearn) !== 'not-found', `đã quay lại “${backToLearn}”`)
-await sleep(600)
 
 // --- 3. Kéo-thả THẬT bằng chuột (dnd-kit dùng pointer events).
 const rectOf = (square) =>

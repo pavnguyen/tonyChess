@@ -97,7 +97,7 @@ export const INFO: Record<string, InfoEntry> = {
     tag: '🧠 Ý tưởng',
     body: [
       'Mỗi khai cuộc đều có **một ý niệm bao trùm** - biết nó trước thì bé hiểu vì sao mình đi từng nước, chứ không học vẹt.',
-      'Câu “Bé muốn gì?” gói ý niệm đó trong một câu, có nhắc **ô cờ cụ thể**. Bấm vào câu là bàn cờ tô **tím** đúng những ô bé đang nhắm tới.',
+      'Câu “Bé muốn gì?” gói ý niệm đó trong một câu, có nhắc **ô cờ cụ thể**. Bàn cờ **tự tô tím** đúng những ô bé đang nhắm tới - mở bài là thấy ngay, không phải bấm gì.',
       'Bé cứ đọc câu này mỗi khi mở bài mới - sau vài lần sẽ tự nhớ: London muốn dựng kim tự tháp Tốt và ra Tượng f4, Ý muốn Tượng c4 nhắm f7, v.v.',
     ],
   },

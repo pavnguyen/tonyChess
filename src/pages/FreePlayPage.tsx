@@ -5,7 +5,7 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
-import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { FoldPanel, KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
 import { preloadStockfish } from '../engine/stockfishLoader'
 import { useChessEngine } from '../engine/useChessEngine'
@@ -440,13 +440,19 @@ export function FreePlayPage() {
           </p>
         </Panel>
 
-        <Panel>
-          <SectionTitle
-            icon="📜"
-            title="Sách ghi ván cờ"
-            subtitle="Bé tập đọc lại ván đấu của mình như một kỳ thủ nhí!"
-            info="notation"
-          />
+        {/*
+          Sách ghi ván cờ là phần TRA CỨU, không phải việc bé làm mỗi nước: trên
+          điện thoại thu lại sau một dòng bấm-mở để trang không dài lê thê.
+        */}
+        <FoldPanel id="kid-freeplay-book" icon="📜" title="Sách ghi ván cờ">
+          <div className="hidden stage:block">
+            <SectionTitle
+              icon="📜"
+              title="Sách ghi ván cờ"
+              subtitle="Bé tập đọc lại ván đấu của mình như một kỳ thủ nhí!"
+              info="notation"
+            />
+          </div>
           <div className="mt-2 max-h-56 overflow-y-auto rounded-2xl bg-brand-50 p-2">
             {moveRows.length === 0 ? (
               <p className="px-2 py-4 text-center text-sm font-bold text-brand-400">
@@ -472,7 +478,7 @@ export function FreePlayPage() {
               </table>
             )}
           </div>
-        </Panel>
+        </FoldPanel>
 
         <Panel>
           <SectionTitle

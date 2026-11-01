@@ -458,6 +458,9 @@ export function EndgamesPage() {
             </span>
           </div>
           <p className="mt-1 text-xs font-bold text-brand-600">{challenge?.hint}</p>
+          <p className="mt-1 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            🧠 Mindset: 3 việc bé nhớ theo thứ tự
+          </p>
           <p className="mt-1 rounded-2xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-700">
             {challenge?.goal === 'promote'
               ? '1️⃣ Vua đi trước che Tốt · 2️⃣ Đẩy Tốt thẳng lên hàng 8 · 3️⃣ Chạm đích là thành Hậu!'
@@ -474,10 +477,6 @@ export function EndgamesPage() {
                 : 'Vua Đen và mọi ô nó còn chạy được - bé phải khóa hết rồi mới chiếu bí.'}
             </p>
           )}
-          <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
-            🤖 Vua Đen đi như một bạn nhỏ đang tập chơi - thỉnh thoảng mắc lỗi, bé cứ bình tĩnh dồn
-            Vua nhé.
-          </p>
         </Panel>
 
         {/*

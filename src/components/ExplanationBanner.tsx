@@ -1,3 +1,4 @@
+import { MoveText } from './MoveText'
 import {
   describeMove,
   formatSan,
@@ -119,7 +120,9 @@ export function ExplanationBanner({
             <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
               💡 Vì sao?
             </div>
-            <p className="text-sm font-bold text-brand-900">{annotation.reason}</p>
+            <p className="text-sm font-bold text-brand-900">
+              <MoveText text={annotation.reason} />
+            </p>
           </div>
           {annotation.rhyme ? (
             <div className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-sun bg-sun/20 px-2.5 py-1.5">

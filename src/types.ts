@@ -58,6 +58,11 @@ export interface Opening {
    * quan mà không cần thêm dữ liệu riêng.
    */
   goal: string
+  /**
+   * Nhãn 2-3 chữ nói vì sao khai cuộc này đứng ở vị trí đó trong thứ tự ưu tiên
+   * học ("Gặp nhiều nhất", "Dễ nhất", "Khó nhất"…). Hiện ngay dưới tên trên bản đồ.
+   */
+  rankNote?: string
   /** Một dòng chính duy nhất, đủ cho cả hai bên (xen kẽ nước bé và nước đối thủ). */
   moves: OpeningMove[]
   /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */
@@ -136,7 +141,13 @@ export interface CounterLesson {
    * Khi có `openingId` thì id theo quy ước `id = \`vs-${openingId}\``.
    */
   openingId?: string
-  /** Khai cuộc mà ĐỐI THỦ đang dùng, ví dụ "Hệ thống London". */
+  /**
+   * Tên **QUỐC TẾ** của khai cuộc đối thủ ("London System", "Queen's Indian
+   * Defense"…) - tên bé/ba mẹ tra sách, video, cơ sở dữ liệu cờ đều gặp, nên nó
+   * là tên hiện chính trên thẻ bài.
+   */
+  englishName: string
+  /** Tên tiếng Việt của khai cuộc đối thủ (dòng phụ dưới tên quốc tế), ví dụ "Hệ thống London". */
   opponentOpening: string
   /** Đối thủ cầm quân gì - bé cầm quân còn lại. */
   opponentSide: Side

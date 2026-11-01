@@ -8,9 +8,11 @@ import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
-import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { MoveText } from '../components/MoveText'
+import { FoldPanel, KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
+import { OPENINGS } from '../data/openings'
 import { useCountersQuery } from '../data/queries'
 import {
   ARROW_COLOR,
@@ -70,10 +72,16 @@ export function CountersPage() {
 
   /** Màu quân của ĐỐI THỦ; bé cầm màu ngược lại. */
   const [viewSide, setViewSide] = useState<Side>('white')
-  const [lessonId, setLessonId] = useState('vs-london')
+  /** Bài mặc định cùng thứ tự ưu tiên với tab Khai cuộc (Ván cờ Ý đứng đầu). */
+  const [lessonId, setLessonId] = useState('vs-italian')
   const [ply, setPly] = useState(0)
   /** Lọc danh sách theo nước mở đầu của đối thủ (null = xem tất cả). */
   const [moveFilter, setMoveFilter] = useState<string | null>(null)
+  /**
+   * Mở khung “Tham khảo thêm” (các bài ít gặp). MẶC ĐỊNH ĐÓNG, giống tab Khai cuộc:
+   * chỉ bày 3 bài thông dụng nhất cho gọn, cần bài khác thì bấm mở.
+   */
+  const [showExtras, setShowExtras] = useState(false)
   /** Chế độ học: xem từng bước (như cũ) hay TỰ kéo quân đáp trả. */
   const [mode, setMode] = useState<Mode>('view')
   /** Có hiện mũi tên + tô sáng quân sắp đi không (chỉ dùng ở chế độ luyện). */
@@ -104,9 +112,25 @@ export function CountersPage() {
     setMoveFilter(null)
   }, [search.vs, counters])
 
+  /**
+   * Thứ tự ưu tiên học = thứ tự trong `OPENINGS` (gặp nhiều + dễ triển khai quân
+   * trước). Bài đối phó gắn `openingId` đi theo đúng thứ tự đó; bài chỉ bàn về một
+   * nước mở đầu phổ biến (1.e4, ...d5…) xếp sau cùng.
+   */
+  const openingRank = useMemo(
+    () => new Map(OPENINGS.map((opening, index) => [opening.id, index])),
+    [],
+  )
   const list = useMemo(
-    () => (counters ?? []).filter((item) => item.opponentSide === viewSide),
-    [counters, viewSide],
+    () =>
+      (counters ?? [])
+        .filter((item) => item.opponentSide === viewSide)
+        .sort((a, b) => {
+          const rankA = a.openingId ? (openingRank.get(a.openingId) ?? 99) : 100
+          const rankB = b.openingId ? (openingRank.get(b.openingId) ?? 99) : 100
+          return rankA - rankB
+        }),
+    [counters, viewSide, openingRank],
   )
 
   /**
@@ -127,6 +151,11 @@ export function CountersPage() {
     () => (moveFilter ? list.filter((item) => opponentFirstMove(item) === moveFilter) : list),
     [list, moveFilter],
   )
+  /** 3 bài thông dụng nhất bày sẵn; phần còn lại gom vào “Tham khảo thêm”. */
+  const mainList = visibleList.slice(0, 3)
+  const extraList = visibleList.slice(3)
+  /** Đang học bài nằm trong phần tham khảo → tự mở khung, không để bài bị ẩn. */
+  const extrasOpen = showExtras || extraList.some((item) => item.id === lessonId)
 
   const lesson: CounterLesson | undefined =
     visibleList.find((item) => item.id === lessonId) ?? visibleList[0]
@@ -324,6 +353,52 @@ export function CountersPage() {
     setPly(0)
   }
 
+  /** Một dòng bài đối phó: tên khai cuộc ↔ cách bé đáp ↔ nước mở đầu. */
+  const LessonRow = ({
+    item,
+    compact = false,
+  }: {
+    item: CounterLesson
+    compact?: boolean
+  }) => {
+    const active = item.id === lesson?.id
+    return (
+      <button
+        type="button"
+        data-counter-id={item.id}
+        data-counter-extra={compact ? '1' : undefined}
+        aria-pressed={active}
+        onClick={() => selectLesson(item.id)}
+        className={`flex min-w-0 items-center gap-2 rounded-2xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
+          active
+            ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+            : 'border-brand-100 bg-white hover:border-brand-300'
+        }`}
+      >
+        <span className="text-lg" aria-hidden>
+          {item.emoji}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-xs font-extrabold text-brand-900">
+            {item.englishName}
+          </span>
+          <span className="block truncate text-[0.7rem] font-bold text-brand-500">
+            {item.opponentOpening} · <MoveText text={item.counterName} />
+          </span>
+          {/* Ý đồ ngắn để tra cứu nhanh: đọc một dòng là hiểu vì sao đáp như vậy. */}
+          {!compact && (
+            <span className="mt-0.5 line-clamp-2 block text-[0.66rem] font-bold leading-snug text-brand-400">
+              <MoveText text={item.idea} />
+            </span>
+          )}
+        </span>
+        <span className="shrink-0 rounded-lg bg-brand-100 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-700">
+          {openingMoveLabel(item)}
+        </span>
+      </button>
+    )
+  }
+
   if (isLoading || !lesson) {
     return (
       <div className="grid gap-3 sm:grid-cols-2">
@@ -434,7 +509,7 @@ export function CountersPage() {
           <>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-coral-100 px-3 py-1 text-xs font-extrabold text-coral-700">
-                🧭 Đối thủ: {lesson.emoji} {lesson.opponentOpening}
+                🧭 Đối thủ: {lesson.emoji} {lesson.englishName}
               </span>
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Bé cầm {sideLabel(kidSide)}
@@ -491,7 +566,156 @@ export function CountersPage() {
         */}
         {nextTurnStrip}
 
-        <Panel className="grid gap-2">
+        {/*
+          MIND-SET ĐỐI PHÓ đặt ngay dưới dải “lượt ai sắp đi”, TRÊN cả danh sách
+          bài và nút điều khiển: bé cần hiểu “đối thủ muốn gì - mình làm gì”
+          trước khi nhớ nước nào đi trước. Mở sẵn trên điện thoại.
+        */}
+        <FoldPanel
+          id="kid-counter-detail"
+          icon="🧠"
+          title={`Mindset: ${lesson.counterName}`}
+          defaultOpen
+        >
+          {/* Tiêu đề + nút ⓘ chỉ hiện trên máy tính: điện thoại đã có dòng “Mindset”. */}
+          <div className="hidden stage:block">
+            <SectionTitle
+              icon="🧭"
+              title="Đối phó khai cuộc"
+              subtitle="Đối thủ chơi gì - bé phá lại thế nào"
+              info="counter"
+            />
+          </div>
+          <p
+            id="kid-counter-opponent-plan"
+            className="rounded-2xl bg-coral-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-coral-800 ring-1 ring-coral-200"
+          >
+            🚩 <b className="text-coral-900">Đối thủ muốn:</b>{' '}
+            <MoveText text={lesson.opponentPlan} />
+          </p>
+          <div
+            id="kid-counter-name"
+            className="rounded-2xl border-2 border-[#6d5bc7] bg-[rgba(126,106,209,0.12)] px-2.5 py-1.5 text-sm font-extrabold text-brand-900"
+          >
+            🛡️ Cách của bé: <MoveText text={lesson.counterName} />
+            <span className="mt-0.5 block text-[0.7rem] font-bold text-brand-500">
+              {lesson.emoji} {lesson.englishName} ·{' '}
+              {lesson.opponentSide === 'white' ? 'đối thủ cầm Trắng' : 'đối thủ cầm Đen'}
+            </span>
+          </div>
+          <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
+            <MoveText text={lesson.idea} />
+          </p>
+          <div className="grid gap-1">
+            <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+              ✅ Ba việc bé cần nhớ
+            </div>
+            <ul id="kid-counter-points" className="grid gap-1">
+              {lesson.points.map((point, index) => (
+                <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
+                  <span
+                    aria-hidden
+                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-[0.65rem] font-extrabold text-brand-600"
+                  >
+                    {index + 1}
+                  </span>
+                  <span>
+                    <MoveText text={point} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {lesson.openingId && (
+            <KidButton
+              id="kid-counter-opening"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: '/', search: { opening: lesson.openingId } })}
+              title="Mở bài khai cuộc gốc ở tab Khai cuộc"
+            >
+              📖 Mở bài khai cuộc gốc
+            </KidButton>
+          )}
+        </FoldPanel>
+
+        {/*
+          Chọn khai cuộc của đối thủ: mỗi dòng là TÊN khai cuộc + cách bé đáp lại +
+          nước mở đầu, để bé dò nhanh các kiểu khai cuộc mà không phải mở từng bài.
+        */}
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+          <Segmented
+            options={SIDE_OPTIONS}
+            value={viewSide}
+            onChange={changeSide}
+            size="sm"
+          />
+          <div id="kid-counter-move-filter" className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              data-move-filter="all"
+              aria-pressed={moveFilter === null}
+              onClick={() => setMoveFilter(null)}
+              className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                moveFilter === null
+                  ? 'border-brand-600 bg-brand-50 text-brand-800'
+                  : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
+              }`}
+            >
+              Tất cả
+            </button>
+            {moveFilters.map(({ move, label }) => {
+              const active = moveFilter === move
+              return (
+                <button
+                  key={move}
+                  type="button"
+                  data-move-filter={move}
+                  aria-pressed={active}
+                  onClick={() => {
+                    setMoveFilter(move)
+                    const first = list.find((item) => opponentFirstMove(item) === move)
+                    if (first) setLessonId(first.id)
+                  }}
+                  className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                    active
+                      ? 'border-brand-600 bg-brand-50 text-brand-800'
+                      : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <div id="kid-counter-list" className="grid min-w-0 gap-1.5">
+            {mainList.map((item) => (
+              <LessonRow key={item.id} item={item} />
+            ))}
+          </div>
+          {extraList.length > 0 && (
+            <div className="grid gap-1.5">
+              <button
+                type="button"
+                id="kid-counter-extras"
+                aria-expanded={extrasOpen}
+                onClick={() => setShowExtras((open) => !open)}
+                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1.5 text-left text-[0.7rem] font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
+              >
+                <span>📚 Tham khảo thêm {extraList.length} bài khác</span>
+                <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
+              </button>
+              {/* Vẫn giữ trong DOM khi đóng (chỉ ẩn CSS) để điều hướng và bài kiểm vẫn thấy đủ. */}
+              <div className={extrasOpen ? 'grid gap-1.5' : 'hidden'}>
+                {extraList.map((item) => (
+                  <LessonRow key={item.id} item={item} compact />
+                ))}
+              </div>
+            </div>
+          )}
+        </Panel>
+
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
           <Segmented
             options={MODES}
             value={mode}
@@ -559,151 +783,6 @@ export function CountersPage() {
           </p>
         </Panel>
 
-        <Panel className="grid gap-2">
-          <SectionTitle
-            icon="🧭"
-            title="Đối phó khai cuộc"
-            subtitle="Đối thủ chơi gì - bé phá lại thế nào"
-            info="counter"
-          />
-          <Segmented
-            options={SIDE_OPTIONS}
-            value={viewSide}
-            onChange={changeSide}
-            size="sm"
-          />
-          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
-            👆 Bấm một khai cuộc của đối thủ để xem bé đáp lại ra sao - hoặc lọc theo nước mở đầu.
-          </p>
-          <div id="kid-counter-move-filter" className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              data-move-filter="all"
-              aria-pressed={moveFilter === null}
-              onClick={() => setMoveFilter(null)}
-              className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
-                moveFilter === null
-                  ? 'border-brand-600 bg-brand-50 text-brand-800'
-                  : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
-              }`}
-            >
-              Tất cả
-            </button>
-            {moveFilters.map(({ move, label }) => {
-              const active = moveFilter === move
-              return (
-                <button
-                  key={move}
-                  type="button"
-                  data-move-filter={move}
-                  aria-pressed={active}
-                  onClick={() => {
-                    setMoveFilter(move)
-                    const first = list.find((item) => opponentFirstMove(item) === move)
-                    if (first) setLessonId(first.id)
-                  }}
-                  className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
-                    active
-                      ? 'border-brand-600 bg-brand-50 text-brand-800'
-                      : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-          <div id="kid-counter-list" className="grid gap-1.5">
-            {visibleList.map((item) => {
-              const active = item.id === lesson.id
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  data-counter-id={item.id}
-                  aria-pressed={active}
-                  onClick={() => selectLesson(item.id)}
-                  className={`flex items-center gap-2 rounded-2xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
-                    active
-                      ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
-                      : 'border-brand-100 bg-white hover:border-brand-300'
-                  }`}
-                >
-                  <span className="text-lg" aria-hidden>
-                    {item.emoji}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-extrabold text-brand-900">
-                      {item.opponentOpening}
-                    </span>
-                    <span className="block truncate text-[0.7rem] font-bold text-brand-500">
-                      {item.counterName}
-                    </span>
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </Panel>
-
-        <Panel className="grid gap-2">
-          <div className="text-xs font-extrabold uppercase tracking-wide text-coral-600">
-            Đối thủ chơi
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-base font-extrabold text-brand-900">
-              {lesson.emoji} {lesson.opponentOpening} ({sideLabel(lesson.opponentSide)})
-            </div>
-            {lesson.openingId && (
-              <KidButton
-                id="kid-counter-opening"
-                variant="grass"
-                size="sm"
-                onClick={() =>
-                  navigate({ to: '/', search: { opening: lesson.openingId } })
-                }
-                title="Mở bài khai cuộc gốc ở tab Khai cuộc"
-              >
-                📖 Mở bài khai cuộc gốc
-              </KidButton>
-            )}
-          </div>
-          <p
-            id="kid-counter-opponent-plan"
-            className="rounded-2xl bg-coral-50 px-3 py-2 text-xs font-bold text-coral-800 ring-1 ring-coral-200"
-          >
-            🕵️ <b className="text-coral-900">Đối thủ đang định làm gì?</b>{' '}
-            {lesson.opponentPlan}
-          </p>
-          <div
-            id="kid-counter-name"
-            className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2 text-sm font-extrabold text-gold-900"
-          >
-            🛡️ Cách đối phó của bé: {lesson.counterName}
-          </div>
-          <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
-            {lesson.idea}
-          </p>
-          <div className="grid gap-1">
-            <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-              ✅ Bé cần làm
-            </div>
-            <ul id="kid-counter-points" className="grid gap-1">
-              {lesson.points.map((point) => (
-                <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
-                  <span aria-hidden className="text-gold-500">
-                    ◆
-                  </span>
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="text-[0.7rem] font-bold text-brand-400">
-            💡 Mục tiêu không phải học thuộc, mà là biết <b>phá thế khai cuộc</b> và <b>chặn
-            triển khai quân</b> của đối thủ.
-          </p>
-        </Panel>
       </div>
 
       <Confetti show={confetti} onDone={() => setConfetti(false)} />

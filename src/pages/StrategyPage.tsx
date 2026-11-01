@@ -274,9 +274,6 @@ export function StrategyPage() {
 
                   {open && !hidingAnswer && (
                     <div className="animate-pop-in mt-1.5 grid gap-1.5">
-                      <p className="rounded-xl bg-white px-2.5 py-1.5 text-[0.7rem] font-extrabold text-info-700 ring-1 ring-info-200">
-                        ❓ {principle.ask}
-                      </p>
                       <p className="text-[0.7rem] font-bold leading-snug text-brand-600">
                         {principle.why}
                       </p>
@@ -286,6 +283,21 @@ export function StrategyPage() {
                       <p className="rounded-xl bg-coral-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-coral-800 ring-1 ring-coral-200">
                         ⚠️ Không nên: {principle.bad.note}
                       </p>
+                      {principle.tips && (
+                        <ul className="grid gap-0.5 rounded-xl bg-white px-2.5 py-1.5 ring-1 ring-info-200">
+                          {principle.tips.map((tip) => (
+                            <li
+                              key={tip}
+                              className="flex gap-1.5 text-[0.7rem] font-bold leading-snug text-info-800"
+                            >
+                              <span aria-hidden className="shrink-0">
+                                {principle.emoji}
+                              </span>
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <p className="text-[0.7rem] font-extrabold text-gold-700">
                         🎵 Khẩu quyết: “{principle.rhyme}”
                       </p>

@@ -12,8 +12,10 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
+// Ghim London cho phần kiểm phím ◀ ▶ (bài dễ soát nhất: 1.d4 d5 2.Bf4); bài mặc
+// định của app nay là bài đứng đầu danh sách ưu tiên - Ván cờ Ý (1.e4 e5).
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
-  `${APP_URL}/counters`,
+  `${APP_URL}/counters?vs=vs-london`,
   { port: 9385, windowSize: '1440,900' },
 )
 
@@ -71,7 +73,42 @@ check(await present('#kid-board-board'), 'có bàn cờ chính (kid-board-board)
 const whiteCount = await evaluate(
   `document.querySelectorAll('#kid-counter-list [data-counter-id]').length`,
 )
-check(whiteCount === 8, `mặc định có 8 bài đối phó cho đối thủ cầm Trắng (${whiteCount})`)
+check(
+  whiteCount === 3,
+  `mặc định chỉ bày 3 bài đối phó thông dụng nhất cbo đối thủ cầm Trắng (${whiteCount})`,
+)
+const totalWhite = await evaluate(`document.querySelectorAll('[data-counter-id]').length`)
+check(totalWhite === 8, `vẫn đủ 8 bài trong trang (${totalWhite})`)
+check(
+  await evaluate(`
+    (() => {
+      const extras = [...document.querySelectorAll('[data-counter-extra]')]
+      return extras.length === 5 && extras.every((el) => !el.offsetParent)
+    })()
+  `),
+  'phần “Tham khảo thêm” mặc định ĐÓNG (5 bài còn lại bị ẩn)',
+)
+check(
+  await evaluate(`
+    (() => {
+      document.getElementById('kid-counter-extras')?.click()
+      return true
+    })()
+  `),
+  'bấm mở được khung tham khảo',
+)
+await sleep(350)
+check(
+  await evaluate(`
+    (() => {
+      const extras = [...document.querySelectorAll('[data-counter-extra]')]
+      return extras.length === 5 && extras.every((el) => Boolean(el.offsetParent))
+    })()
+  `),
+  'mở khung thì thấy 5 bài tham khảo',
+)
+await evaluate(`document.getElementById('kid-counter-extras')?.click()`)
+await sleep(250)
 check(
   String(await text('#kid-counter-idea')).trim().length >= 30,
   'hiện ý tưởng đối phó của bài đang chọn',
@@ -126,7 +163,7 @@ check(await present('#kid-counter-move-filter'), 'có hàng bộ lọc theo nư�
 check(await present('[data-move-filter="d4"]'), 'có chip lọc cho 1.d4')
 check(await present('[data-move-filter="all"]'), 'có chip “Tất cả”')
 const allWhite = await countList()
-check(allWhite === 8, `mặc định hiện đủ 8 bài (${allWhite})`)
+check(allWhite === 3, `bỏ lọc thì danh sách chính gọn 3 bài (${allWhite})`)
 
 check(await clickFilter('d4'), 'bấm chip 1.d4')
 await sleep(400)
@@ -140,7 +177,7 @@ check(d4Selected === 'vs-london', `bài đang chọn là bài 1.d4 đầu tiên 
 check(await clickFilter('all'), 'bấm “Tất cả”')
 await sleep(400)
 const allAgain = await countList()
-check(allAgain === 8, `bỏ lọc hiện lại đủ 8 bài (${allAgain})`)
+check(allAgain === 3, `bỏ lọc hiện lại 3 bài chính (${allAgain})`)
 
 console.log('\n▶ Đổi sang “đối thủ cầm Đen”')
 
@@ -149,7 +186,7 @@ await sleep(500)
 const blackCount = await evaluate(
   `document.querySelectorAll('#kid-counter-list [data-counter-id]').length`,
 )
-check(blackCount === 8, `danh sách đổi sang 8 bài cho đối thủ cầm Đen (${blackCount})`)
+check(blackCount === 3, `danh sách đổi sang 3 bài thông dụng nhất của Đen (${blackCount})`)
 const firstBlack = await evaluate(
   `document.querySelector('#kid-counter-list [data-counter-id]')?.getAttribute('data-counter-id')`,
 )
@@ -200,7 +237,7 @@ check(
   urlBack.includes('opening=sicilian'),
   `sang tab Khai cuộc kèm ?opening=sicilian (${urlBack})`,
 )
-check(await waitFor('#kid-opening-vs'), 'tab Khai cuộc có nút “🧭 Bạn chơi khai cuộc này thì sao?”')
+check(await waitFor('#kid-opening-vs'), 'tab Khai cuộc có nút “🧭 Đối thủ chơi khai cuộc này thì sao?”')
 check(
   String(await evaluate(`document.body.innerText`)).includes('Phòng thủ Sicilian'),
   'mở sẵn đúng bài khai cuộc Sicilian',
@@ -208,7 +245,7 @@ check(
 
 console.log('\n▶ Từ Khai cuộc nhảy ngược lại Đối phó')
 
-check(await clickInBody('Bạn chơi khai cuộc này thì sao'), 'bấm nút nhảy sang Đối phó')
+check(await clickInBody('Đối thủ chơi khai cuộc này thì sao'), 'bấm nút nhảy sang Đối phó')
 await sleep(1800)
 const urlVs = String(await evaluate(`location.pathname + location.search`))
 check(

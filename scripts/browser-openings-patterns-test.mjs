@@ -81,11 +81,30 @@ const present = (selector) =>
 
 await sleep(2500)
 
-console.log('\n▶ Mở modal ôn mẫu hình từ tab Khai cuộc')
+console.log('\n▶ Bấm nút 🧩 nhỏ → hiện mẫu hình cuối khai cuộc')
 
-check(await waitFor('#kid-openings-patterns'), 'hiện nút “🧩 Ôn mẫu hình cuối khai cuộc”')
-check(await clickId('kid-openings-patterns'), 'bấm nút mở modal')
-check(await waitFor('#kid-patterns-modal'), 'modal mẫu hình hiện ra')
+// Không còn nút to “🧩 Ôn mẫu hình cuối khai cuộc”, và bàn cờ KHÔNG tự bung khung
+// khi rê chuột nữa (dễ bật nhầm, che mất thế cờ đang học).
+check(
+  !(await evaluate(`Boolean(document.getElementById('kid-openings-patterns'))`)),
+  'không còn nút to “🧩 Ôn mẫu hình cuối khai cuộc”',
+)
+check(
+  !(await present('#kid-opening-board-hover')),
+  'bàn cờ không còn tự bung khung khi rê chuột',
+)
+const autoOpened = await evaluate(`
+  (() => {
+    const el = document.getElementById('kid-board-board')
+    if (!el) return 'no-board'
+    el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    return Boolean(document.getElementById('kid-patterns-modal'))
+  })()
+`)
+check(autoOpened === false, 'rê chuột ngang bàn cờ KHÔNG mở khung mẫu hình')
+check(await waitFor('#kid-final-pattern'), 'có nút 🧩 nhỏ cạnh tên khai cuộc để chủ động mở')
+check(await clickId('kid-final-pattern'), 'bấm nút 🧩')
+check(await waitFor('#kid-patterns-modal'), 'khung mẫu hình hiện ra sau khi bấm nút 🧩')
 
 console.log('\n▶ Bàn cờ trong modal có id riêng, không trùng bàn cờ chính')
 
@@ -106,14 +125,18 @@ check(dupBoardIds === 1, `chỉ có ĐÚNG 1 bàn cờ chính (nhận ${dupBoard
 
 console.log('\n▶ Mặc định mở đúng khai cuộc đang học')
 
+// Bài mặc định nay là bài đứng đầu danh sách ưu tiên - Ván cờ Ý.
 check(
-  (await present('[data-pattern-id="london"]')) &&
-    String(await evaluate(`document.querySelector('[data-pattern-id="london"]').getAttribute('aria-pressed')`)) ===
+  (await present('[data-pattern-id="italian"]')) &&
+    String(await evaluate(`document.querySelector('[data-pattern-id="italian"]').getAttribute('aria-pressed')`)) ===
       'true',
-  'thẻ khai cuộc đang học (London) được chọn sẵn',
+  'thẻ khai cuộc đang học (Ván cờ Ý) được chọn sẵn',
 )
-const londonLine = String(await text('#kid-pattern-line'))
-check(londonLine.includes('d4'), `hiện dòng chính của London (${londonLine.slice(0, 40)}…)`)
+const defaultLine = String(await text('#kid-pattern-line'))
+check(
+  defaultLine.includes('e4'),
+  `hiện dòng chính của bài mặc định - Ván cờ Ý (${defaultLine.slice(0, 40)}…)`,
+)
 
 const whiteChips = await evaluate(
   `document.querySelectorAll('#kid-patterns-list [data-pattern-id]').length`,
@@ -122,15 +145,15 @@ check(whiteChips === 5, `cột Trắng có đủ 5 khai cuộc (${whiteChips})`)
 
 console.log('\n▶ Bấm khai cuộc khác → bàn cờ trong modal đổi thế cờ cuối')
 
-check(await clickPattern('italian'), 'bấm thẻ “Ván cờ Ý”')
+check(await clickPattern('london'), 'bấm thẻ “Hệ thống London”')
 await sleep(400)
-const italianLine = String(await text('#kid-pattern-line'))
-check(italianLine !== londonLine, 'dòng chính đổi sang khai cuộc mới')
-check(italianLine.includes('e4') || italianLine.includes('Bc4'), `đúng dòng của Ván cờ Ý (${italianLine.slice(0, 40)}…)`)
+const londonLine = String(await text('#kid-pattern-line'))
+check(londonLine !== defaultLine, 'dòng chính đổi sang khai cuộc mới')
+check(londonLine.includes('d4'), `đúng dòng của London (${londonLine.slice(0, 40)}…)`)
 check(
-  String(await evaluate(`document.querySelector('[data-pattern-id="italian"]').getAttribute('aria-pressed')`)) ===
+  String(await evaluate(`document.querySelector('[data-pattern-id="london"]').getAttribute('aria-pressed')`)) ===
     'true',
-  'thẻ Ván cờ Ý được đánh dấu đang chọn',
+  'thẻ London được đánh dấu đang chọn',
 )
 
 console.log('\n▶ Chuyển sang cột quân Đen')
@@ -189,6 +212,10 @@ check(
 console.log('\n▶ Bộ lọc khai cuộc theo nước mở đầu của bé')
 
 const nodeCount = () => evaluate(`document.querySelectorAll('[data-level-id]').length`)
+// Bản đồ chỉ bày 3 kiểu thông dụng nhất; các kiểu khác nằm trong khung “Tham khảo
+// thêm” (mặc định đóng). Đếm riêng để chắc phần chính vẫn đúng 3 thẻ.
+const mainCount = () =>
+  evaluate(`document.querySelectorAll('[data-level-id]:not([data-opening-extra])').length`)
 const clickOpenFilter = (move) =>
   evaluate(`
     (() => {
@@ -201,7 +228,48 @@ const clickOpenFilter = (move) =>
 
 check(await present('#kid-opening-move-filter'), 'có hàng bộ lọc theo nước mở đầu')
 check(await present('[data-opening-move-filter="all"]'), 'có chip “Tất cả”')
-check((await nodeCount()) === 5, `bé cầm Trắng: bản đồ có 5 trạm (${await nodeCount()})`)
+check(
+  (await mainCount()) === 3,
+  `bé cầm Trắng: bản đồ chỉ bày 3 kiểu thông dụng nhất (${await mainCount()})`,
+)
+check((await nodeCount()) === 5, `vẫn đủ 5 khai cuộc trong trang (${await nodeCount()})`)
+check(
+  await evaluate(
+    `document.querySelector('[data-level-id="italian"]')?.getAttribute('aria-current') === 'true'`,
+  ),
+  'bài đang chọn mặc định đúng là bài số 1 (Ván cờ Ý)',
+)
+check(await present('#kid-opening-extras'), 'có nút “📚 Tham khảo thêm” cho các kiểu ít gặp')
+check(
+  await evaluate(`
+    (() => {
+      const extras = [...document.querySelectorAll('[data-opening-extra]')]
+      return extras.length === 2 && extras.every((el) => !el.offsetParent)
+    })()
+  `),
+  'phần tham khảo mặc định ĐÓNG (2 kiểu còn lại bị ẩn)',
+)
+check(
+  await evaluate(`
+    (() => {
+      document.getElementById('kid-opening-extras')?.click()
+      return true
+    })()
+  `),
+  'bấm mở được khung tham khảo',
+)
+await sleep(350)
+check(
+  await evaluate(`
+    (() => {
+      const extras = [...document.querySelectorAll('[data-opening-extra]')]
+      return extras.length === 2 && extras.every((el) => Boolean(el.offsetParent))
+    })()
+  `),
+  'mở khung thì thấy 2 kiểu tham khảo',
+)
+await evaluate(`document.getElementById('kid-opening-extras')?.click()`)
+await sleep(250)
 
 check(await clickOpenFilter('e4'), 'bấm chip 1.e4')
 await sleep(400)
@@ -211,7 +279,11 @@ check(e4Count === 2, `lọc 1.e4 gom đúng 2 bài (Ý + Tây Ban Nha) (${e4Coun
 check(await clickOpenFilter('all'), 'bấm “Tất cả”')
 await sleep(400)
 const allCount = await nodeCount()
-check(allCount === 5, `bỏ lọc hiện lại 5 trạm (${allCount})`)
+check(allCount === 5, `bỏ lọc hiện lại đủ 5 khai cuộc (${allCount})`)
+check(
+  (await mainCount()) === 3,
+  `bỏ lọc thì bản đồ chính vẫn gọn 3 thẻ (${await mainCount()})`,
+)
 
 close()
 finish('BROWSER OPENINGS-PATTERNS')

@@ -9,6 +9,12 @@ import { OPENING_TREES } from './openingTrees.ts'
  *
  * Nước đi nằm ở `openingTrees.ts` dưới dạng **một dòng chính**; ở đây chỉ giữ phần
  * giới thiệu (tên, Grand Master, màu quân của bé) rồi ghép lại thành bài học.
+ *
+ * THỨ TỰ TRONG MẢNG LÀ THỨ TỰ ƯU TIÊN HỌC (bản đồ đánh số 1, 2, 3… theo đúng thứ
+ * tự này). Xếp theo hai tiêu chí của phụ huynh:
+ *   1. xác suất gặp trên bàn cờ thật (khai cuộc càng phổ biến càng học trước),
+ *   2. dễ triển khai quân và mạnh về lâu dài (không cần thuộc nhiều biến).
+ * Mỗi bài có `rankNote` - một nhãn 2-3 chữ nói vì sao nó đứng ở vị trí đó.
  */
 interface OpeningMeta {
   id: string
@@ -20,19 +26,12 @@ interface OpeningMeta {
   tagline: string
   /** Bé muốn gì với khai cuộc này - xem `Opening['goal']` trong `src/types.ts`. */
   goal: string
+  /** Vì sao khai cuộc này đứng ở vị trí này trong thứ tự ưu tiên học. */
+  rankNote: string
 }
 
 const META: OpeningMeta[] = [
-  {
-    id: 'london',
-    name: 'Hệ thống London',
-    englishName: 'London System',
-    gm: 'GM Magnus Carlsen',
-    side: 'white',
-    emoji: '🇬🇧',
-    tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
-    goal: 'Bé muốn dựng kim tự tháp Tốt c3-d4-e3 thật cứng, đưa Tượng ra f4 rồi nhập thành - chơi chắc mà vẫn có thế đẹp để tấn công.',
-  },
+  // ── BÉ CẦM TRẮNG ────────────────────────────────────────────────────────
   {
     id: 'italian',
     name: 'Ván cờ Ý',
@@ -41,37 +40,19 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇮🇹',
     tagline: 'Tốt e nhảy vọt, Tượng nhắm tim Vua Đen ở ô f7.',
-    goal: 'Bé muốn Tượng ra c4 nhắm ô f7 yếu của Vua Đen, rồi nhập thành và đẩy d4 mở trung tâm.',
+    goal: 'Tượng c4 nhắm ô f7 yếu nhất của Vua Đen; giữ trung tâm bằng c3-d3 rồi đẩy d4 đúng lúc - mục tiêu là f7, không phải ăn quân.',
+    rankNote: 'Gặp nhiều nhất',
   },
   {
-    id: 'kings-indian',
-    name: "Phòng thủ King's Indian",
-    englishName: "King's Indian Defense",
-    gm: 'GM Hikaru Nakamura',
-    side: 'black',
-    emoji: '🏰',
-    tagline: 'Giấu Tượng vào lều g7 rồi nhập thành dựng pháo đài.',
-    goal: 'Bé muốn giấu Tượng vào lều g7, nhập thành rồi đẩy e5 và f5 để mở cánh Vua tấn công.',
-  },
-  {
-    id: 'sicilian',
-    name: 'Phòng thủ Sicilian',
-    englishName: 'Sicilian Defense',
-    gm: 'GM Garry Kasparov',
-    side: 'black',
-    emoji: '🌋',
-    tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
-    goal: 'Bé muốn dùng Tốt c5 đổi Tốt d4 để mở cột c, rồi phản công cánh Hậu bằng b5-b4.',
-  },
-  {
-    id: 'ruy-lopez',
-    name: 'Khai cuộc Tây Ban Nha',
-    englishName: 'Ruy López',
-    gm: 'GM Bobby Fischer',
+    id: 'london',
+    name: 'Hệ thống London',
+    englishName: 'London System',
+    gm: 'GM Magnus Carlsen',
     side: 'white',
-    emoji: '🇪🇸',
-    tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
-    goal: 'Bé muốn Tượng ra b5 ghim Mã c6, rồi nhập thành và đẩy d4 chiếm trung tâm.',
+    emoji: '🇬🇧',
+    tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
+    goal: 'Dựng khung c3-d4-e3 với Tượng f4 rồi nhập thành cho chắc; sau đó đổi Tượng ô đen của Đen và mở cánh Vua bằng h4-h5.',
+    rankNote: 'Dễ nhất',
   },
   {
     id: 'queens-gambit',
@@ -81,17 +62,45 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇭🇺',
     tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
-    goal: 'Bé muốn dâng Tốt c4 mời đổi để làm chủ ô d5, rồi phát triển quân và ghim quân Đen.',
+    goal: 'Dâng Tốt c4 để đổi được Tốt d5 và lấy ô d4 làm bàn đạp; con đường tấn công chính là cột c, không phải ăn Tốt.',
+    rankNote: 'Phổ biến',
   },
   {
-    id: 'french',
-    name: 'Phòng thủ Pháp',
-    englishName: 'French Defense',
-    gm: 'GM Mikhail Botvinnik',
+    id: 'ruy-lopez',
+    name: 'Khai cuộc Tây Ban Nha',
+    // Viết không dấu cho đúng cách tra cứu phổ biến (ChessBase, chess.com, sách
+    // tiếng Anh đều ghi "Ruy Lopez"); tên tiếng Việt vẫn là "Khai cuộc Tây Ban Nha".
+    englishName: 'Ruy Lopez',
+    gm: 'GM Bobby Fischer',
+    side: 'white',
+    emoji: '🇪🇸',
+    tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
+    goal: 'Tượng b5 ghim Mã c6 làm Tốt e5 của Đen yếu dần; bé chơi d3-c3 rồi mới đẩy d4 - áp lực từ từ, không đổi quân vội.',
+    rankNote: 'Nhiều lý thuyết',
+  },
+  {
+    id: 'english',
+    name: 'Khai cuộc Anh',
+    englishName: 'English Opening',
+    gm: 'GM Tony Miles',
+    side: 'white',
+    emoji: '🏝️',
+    tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
+    goal: 'Kiểm soát ô d5 từ xa bằng Tốt c4 rồi mới mở trung tâm: English dạy bé chơi theo Ô, không theo nước.',
+    rankNote: 'Ít gặp hơn',
+  },
+
+  // ── BÉ CẦM ĐEN ──────────────────────────────────────────────────────────
+  {
+    id: 'sicilian',
+    name: 'Phòng thủ Sicilian',
+    englishName: 'Sicilian Defense',
+    gm: 'GM Garry Kasparov',
     side: 'black',
-    emoji: '🇫🇷',
-    tagline: 'Dựng hàng rào Tốt vững như thành rồi phản công vào chân đế d4.',
-    goal: 'Bé muốn dựng hàng rào Tốt e6-d5 rồi đánh vào chân đế Tốt d4 của Trắng bằng c5.',
+    emoji: '🌋',
+    tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
+    goal: 'Đổi Tốt c5 lấy Tốt d4 để Trắng mất trung tâm, rồi phản công cánh Hậu bằng b5-b4 và cột c - Sicilian thắng bằng cột c.',
+    rankNote: 'Gặp nhiều nhất',
   },
   {
     id: 'caro-kann',
@@ -101,19 +110,30 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
-    goal: 'Bé muốn đưa Tượng c8 ra f5 trước, rồi mới đóng Tốt e6 để Tượng không bị nhốt.',
+    goal: 'Đưa Tượng c8 ra f5 trước khi đóng Tốt e6 để Tượng không bị nhốt, rồi mới đánh vào d4 bằng c5 - đó là cả bí quyết Caro-Kann.',
+    rankNote: 'Dễ nhất',
   },
-
-  // ── Hai khai cuộc giữ lại từ bộ bổ sung (5 Trắng / 5 Đen) ────────────────
   {
-    id: 'english',
-    name: 'Khai cuộc Anh',
-    englishName: 'English Opening',
-    gm: 'GM Tony Miles',
-    side: 'white',
-    emoji: '🏝️',
-    tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
-    goal: 'Bé muốn kiểm soát ô d5 từ xa bằng Tốt c4, rồi mới mở trung tâm khi đã sẵn sàng.',
+    id: 'french',
+    name: 'Phòng thủ Pháp',
+    englishName: 'French Defense',
+    gm: 'GM Mikhail Botvinnik',
+    side: 'black',
+    emoji: '🇫🇷',
+    tagline: 'Dựng hàng rào Tốt vững như thành rồi phản công vào chân đế d4.',
+    goal: 'Hàng rào e6-d5 giam Tốt e4 của Trắng, rồi đánh vào chân đế d4 bằng c5 - chấp nhận chật một chút để Trắng hết đường tiến.',
+    rankNote: 'Chắc, hơi chật',
+  },
+  {
+    id: 'kings-indian',
+    name: "Phòng thủ King's Indian",
+    englishName: 'King\'s Indian Defense',
+    gm: 'GM Hikaru Nakamura',
+    side: 'black',
+    emoji: '🏰',
+    tagline: 'Giấu Tượng vào lều g7 rồi nhập thành dựng pháo đài.',
+    goal: 'Nhường trung tâm để dựng pháo đài Tượng g7 + Vua nhập thành, rồi đập e5-f5 vào cánh Vua: càng về sau càng mạnh.',
+    rankNote: 'Nhiều kế hoạch',
   },
   {
     id: 'nimzo-indian',
@@ -123,7 +143,8 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '⛓️',
     tagline: 'Tượng ra ghim Mã c3, khoá chặt không cho Trắng đẩy Tốt e4.',
-    goal: 'Bé muốn Tượng ra b4 ghim Mã c3, khoá chặt không cho Trắng đẩy e4.',
+    goal: 'Tượng b4 ghim Mã c3 buộc Trắng chọn: nhân đôi Tốt c hoặc mất quyền đẩy e4 - Đen thắng bằng cấu trúc Tốt, không bằng nước hay.',
+    rankNote: 'Khó nhất',
   },
 ]
 

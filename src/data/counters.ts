@@ -25,6 +25,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-london',
     openingId: 'london',
+    englishName: 'London System',
     opponentOpening: 'Hệ thống London',
     opponentSide: 'white',
     emoji: '🇬🇧',
@@ -56,6 +57,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-italian',
     openingId: 'italian',
+    englishName: 'Italian Game',
     opponentOpening: 'Ván cờ Ý',
     opponentSide: 'white',
     emoji: '🇮🇹',
@@ -85,6 +87,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-queens-gambit',
     openingId: 'queens-gambit',
+    englishName: "Queen's Gambit",
     opponentOpening: 'Gambit Hậu',
     opponentSide: 'white',
     emoji: '🇭🇺',
@@ -116,6 +119,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-english',
     openingId: 'english',
+    englishName: 'English Opening',
     opponentOpening: 'Khai cuộc Anh',
     opponentSide: 'white',
     emoji: '🏝️',
@@ -147,6 +151,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-ruy-lopez',
     openingId: 'ruy-lopez',
+    englishName: 'Ruy Lopez',
     opponentOpening: 'Khai cuộc Tây Ban Nha',
     opponentSide: 'white',
     emoji: '🇪🇸',
@@ -180,6 +185,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-sicilian',
     openingId: 'sicilian',
+    englishName: 'Sicilian Defense',
     opponentOpening: 'Phòng thủ Sicilian',
     opponentSide: 'black',
     emoji: '🌋',
@@ -211,6 +217,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-french',
     openingId: 'french',
+    englishName: 'French Defense',
     opponentOpening: 'Phòng thủ Pháp',
     opponentSide: 'black',
     emoji: '🇫🇷',
@@ -242,6 +249,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-caro-kann',
     openingId: 'caro-kann',
+    englishName: 'Caro-Kann Defense',
     opponentOpening: 'Phòng thủ Caro-Kann',
     opponentSide: 'black',
     emoji: '🛡️',
@@ -273,6 +281,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-kings-indian',
     openingId: 'kings-indian',
+    englishName: "King's Indian Defense",
     opponentOpening: "Phòng thủ King's Indian",
     opponentSide: 'black',
     emoji: '🏰',
@@ -304,6 +313,7 @@ export const COUNTERS: CounterLesson[] = [
   {
     id: 'vs-nimzo-indian',
     openingId: 'nimzo-indian',
+    englishName: 'Nimzo-Indian Defense',
     opponentOpening: 'Phòng thủ Nimzo-Indian',
     opponentSide: 'black',
     emoji: '⛓️',
@@ -336,7 +346,9 @@ export const COUNTERS: CounterLesson[] = [
   // ── Các nước mở đầu phổ biến (không gắn một khai cuộc riêng nào) ─────────────
   {
     id: 'vs-1e4-open',
-    opponentOpening: '1.e4 - Ván mở',
+    // 1.e4 e5: tên quốc tế là "Open Game" (cùng nhóm với Scotch, Four Knights).
+    englishName: 'Open Game',
+    opponentOpening: 'Ván mở · 1.e4 e5',
     opponentSide: 'white',
     emoji: '⚔️',
     counterName: 'Đáp e5, chơi Ván mở đối xứng',
@@ -366,7 +378,10 @@ export const COUNTERS: CounterLesson[] = [
   },
   {
     id: 'vs-1d4-indian',
-    opponentOpening: '1.d4 - Phòng thủ Ấn Độ',
+    // Dòng 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 chính là Queen's Indian (không
+    // phải "Ấn Độ" chung chung) - gọi đúng tên để bé tra sách là ra.
+    englishName: "Queen's Indian Defense",
+    opponentOpening: 'Phòng thủ Queen\'s Indian',
     opponentSide: 'white',
     emoji: '🏔️',
     counterName: 'Đáp Nf6, dựng thế Ấn Độ linh hoạt',
@@ -394,7 +409,9 @@ export const COUNTERS: CounterLesson[] = [
   },
   {
     id: 'vs-1d5',
-    opponentOpening: 'Đối thủ đáp ...d5',
+    // 1.e4 d5 là Scandinavian Defense (tên cũ: Center Counter).
+    englishName: 'Scandinavian Defense',
+    opponentOpening: 'Phòng thủ Scandinavian · 1.e4 d5',
     opponentSide: 'black',
     emoji: '🗡️',
     counterName: 'Ăn Tốt đúng lúc, phát triển nhanh',
@@ -422,7 +439,9 @@ export const COUNTERS: CounterLesson[] = [
   },
   {
     id: 'vs-1nf6',
-    opponentOpening: 'Đối thủ đáp ...Nf6',
+    // Dòng 1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 là Grünfeld, biến Đổi quân.
+    englishName: 'Grünfeld Defense',
+    opponentOpening: 'Phòng thủ Grünfeld',
     opponentSide: 'black',
     emoji: '🐉',
     counterName: 'Trung tâm lớn, giữ nhịp phát triển',
@@ -450,7 +469,9 @@ export const COUNTERS: CounterLesson[] = [
   },
   {
     id: 'vs-1c6',
-    opponentOpening: 'Đối thủ đáp ...c6',
+    // 1.e4 c6 2.d4 d5 3.e5 là Caro-Kann, biến Tiến Tốt e (khác bài Caro-Kann cổ điển).
+    englishName: 'Caro-Kann: Advance Variation',
+    opponentOpening: 'Caro-Kann · biến Tiến Tốt e',
     opponentSide: 'black',
     emoji: '🧱',
     counterName: 'Đẩy e5, giam Tượng c8',
@@ -478,7 +499,8 @@ export const COUNTERS: CounterLesson[] = [
   },
   {
     id: 'vs-1nf3',
-    opponentOpening: '1.Nf3 - Khai cuộc Réti',
+    englishName: 'Réti Opening',
+    opponentOpening: 'Khai cuộc Réti · 1.Nf3',
     opponentSide: 'white',
     emoji: '🎩',
     counterName: 'Chiếm d5, dựng thế vững cân bằng',

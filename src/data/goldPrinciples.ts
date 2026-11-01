@@ -55,6 +55,12 @@ export interface GoldPrinciple {
   bad: PrincipleBoard
   /** Khoá giải thích ⓘ (nếu có) - ví dụ khái niệm chiến lược liên quan. */
   info?: string
+  /**
+   * 2-3 câu nhắc ngắn, dễ nhớ cho RIÊNG quân của nguyên tắc (hiện khi mở thẻ).
+   * Dùng khi một quân cần thêm luật chơi mà bàn cờ minh hoạ không nói hết - ví dụ
+   * Tượng chỉ đi một màu ô, Tượng bị Tốt nhà chặn là Tượng xấu.
+   */
+  tips?: string[]
 }
 
 /**
@@ -283,11 +289,17 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     order: 9,
     title: 'Giữ cặp Tượng',
     emoji: '⛪',
-    ask: 'Mình có đang giữ được cả hai Tượng không?',
-    why: 'Hai Tượng phủ cả ô đen lẫn ô trắng - như hai người canh hai cửa. Giữ được cặp Tượng là lợi thế lâu dài.',
+    ask: 'Tượng mình đang nhắm ô nào - và mình có đang giữ được cả hai Tượng không?',
+    why: 'Tượng chỉ đi được MỘT màu ô: Tượng ô đen không bao giờ bảo vệ nổi ô trắng. Giữ đủ cặp Tượng là phủ kín cả hai màu ô - càng về tàn cuộc càng mạnh.',
     rhyme: 'Giữ đủ hai Tượng',
     piece: 'b',
     info: 'positional:bishop-pair',
+    tips: [
+      'Tượng ô đen KHÔNG che được ô trắng - mất một Tượng là mất nửa bàn cờ.',
+      'Đừng đổi Tượng lấy Mã khi chưa có lý do: cặp Tượng càng về tàn cuộc càng mạnh.',
+      'Đưa Tượng ra TRƯỚC khi khoá Tốt; Tượng bị Tốt nhà chặn là “Tượng xấu”, gần như vô dụng.',
+      'Tượng thích đường chéo dài: nhắm f7 hoặc h7 của Vua Đen là con đường tấn công nhanh nhất.',
+    ],
     good: {
       fen: 'r2qkb1r/pppp1ppp/2n2n2/8/8/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1',
       note: 'Trắng giữ đủ hai Tượng phủ cả ô sáng lẫn ô tối, còn Đen đã mất một Tượng - lợi thế lâu dài thuộc về Trắng.',

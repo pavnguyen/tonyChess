@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { InfoButton } from './InfoPopover'
 
@@ -116,6 +117,55 @@ export function Panel({
     <div id={id} className={`card-pop p-2.5 sm:p-3 ${className}`}>
       {children}
     </div>
+  )
+}
+
+/**
+ * Khung nội dung PHỤ: trên điện thoại thu lại sau một dòng “xem thêm” để trang
+ * không dài lê thê, còn trên máy tính (bố cục `stage`) luôn mở sẵn như cũ.
+ *
+ * Vì sao không dùng `<details>`: cần bố cục hai chế độ khác nhau (đóng trên điện
+ * thoại, luôn mở trên máy tính) mà vẫn giữ NGUYÊN nội dung trong DOM - nhờ vậy
+ * không phải render hai bản, không sinh id trùng, và bài kiểm tra trình duyệt
+ * vẫn bấm được các nút bên trong.
+ */
+export function FoldPanel({
+  children,
+  className = '',
+  id,
+  icon,
+  title,
+  defaultOpen = false,
+}: {
+  children: ReactNode
+  className?: string
+  id?: string
+  icon: string
+  title: string
+  /** Mở sẵn trên điện thoại (dùng cho khung MIND-SET - thứ bé cần thấy ngay). */
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    // `minmax(0,1fr)` chặn cột phình theo nội dung: một câu dài trong khung không
+    // được kéo cả trang rộng hơn màn hình điện thoại (chữ vẫn tự xuống dòng).
+    <Panel id={id} className={`grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 ${className}`}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-xl border-2 border-brand-100 bg-brand-50 px-2.5 py-1.5 text-left text-sm font-extrabold text-brand-700 active:translate-y-[1px] stage:hidden"
+      >
+        <span className="min-w-0 truncate">
+          <span aria-hidden>{icon}</span> {title}
+        </span>
+        <span aria-hidden className="shrink-0 text-brand-500">
+          {open ? '▲' : '▼'}
+        </span>
+      </button>
+      <div className={`${open ? 'grid' : 'hidden'} gap-2 stage:grid`}>{children}</div>
+    </Panel>
   )
 }
 

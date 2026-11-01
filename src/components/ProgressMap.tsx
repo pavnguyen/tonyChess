@@ -26,6 +26,8 @@ export interface ProgressNode {
   title: string
   emoji: string
   subtitle: string
+  /** Nhãn ngắn dưới tên khi bật `showNames` - vì sao bài này đứng ở thứ tự đó. */
+  tag?: string
 }
 
 interface Props {
@@ -37,13 +39,29 @@ interface Props {
   levelLabel?: string
   /** Khoá nội dung cho nút ⓘ cạnh tiêu đề bản đồ (xem `src/lib/info.ts`). */
   info?: string
+  /**
+   * Hiện TÊN khai cuộc ngay trên từng ô (dạng thẻ 2 cột) thay vì chỉ số cấp + emoji.
+   *
+   * Vì sao cần: điện thoại không có "rê chuột" nên bong bóng chú thích không bao giờ
+   * hiện - bé/ba mẹ chỉ thấy một hàng số với emoji, không biết ô nào là khai cuộc nào.
+   * Bật cờ này thì tên nằm sẵn trên thẻ, tra cứu nhanh không cần bấm thử từng ô.
+   */
+  showNames?: boolean
 }
 
 /**
  * Bản đồ chọn bài dạng ô vuông gọn gàng: mọi trạm đều bấm được ngay, bé muốn học bài
  * nào lúc nào cũng được - app không khoá theo thứ tự và không theo dõi đã học tới đâu.
  */
-export function ProgressMap({ nodes, activeId, onSelect, title, levelLabel = 'Cấp', info }: Props) {
+export function ProgressMap({
+  nodes,
+  activeId,
+  onSelect,
+  title,
+  levelLabel = 'Cấp',
+  info,
+  showNames = false,
+}: Props) {
   const active = nodes.find((node) => node.id === activeId)
 
   return (
@@ -56,12 +74,58 @@ export function ProgressMap({ nodes, activeId, onSelect, title, levelLabel = 'C�
       </div>
 
       <div
-        className="grid gap-1.5"
-        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(2.7rem, 1fr))' }}
+        className={showNames ? 'grid grid-cols-2 gap-1.5 sm:grid-cols-3' : 'grid gap-1.5'}
+        style={
+          showNames ? undefined : { gridTemplateColumns: 'repeat(auto-fit, minmax(2.7rem, 1fr))' }
+        }
       >
         {nodes.map((node) => {
           const isActive = node.id === activeId
           const tooltip = `${levelLabel} ${node.level} · ${node.title} - ${node.subtitle}`
+          const stateClass = isActive
+            ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+            : 'border-sand-200 bg-white hover:border-brand-400'
+
+          // Thẻ CÓ TÊN (điện thoại): emoji + tên khai cuộc + nhãn ngắn, thay cho ô
+          // chỉ có số cấp mà bé phải rê chuột mới biết là bài gì.
+          if (showNames) {
+            return (
+              <button
+                key={node.id}
+                type="button"
+                data-level-id={node.id}
+                onClick={() => onSelect(node.id)}
+                aria-current={isActive}
+                aria-label={tooltip}
+                className={`flex min-h-11 items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-left transition-all active:translate-y-[1px] ${stateClass}`}
+              >
+                <span
+                  className={`grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[0.6rem] font-extrabold text-white ${
+                    isActive ? 'animate-pulse-ring' : ''
+                  }`}
+                >
+                  {node.level}
+                </span>
+                <span className="text-base leading-none" aria-hidden>
+                  {node.emoji}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={`block text-[0.72rem] font-extrabold leading-tight ${
+                      isActive ? 'text-brand-900' : 'text-brand-800'
+                    }`}
+                  >
+                    {node.title}
+                  </span>
+                  {node.tag && (
+                    <span className="mt-0.5 block truncate text-[0.62rem] font-bold text-brand-500">
+                      {node.tag}
+                    </span>
+                  )}
+                </span>
+              </button>
+            )
+          }
 
           return (
             // `relative` + `group` để bong bóng chú thích tự canh vào đúng ô, thay cho
@@ -73,11 +137,7 @@ export function ProgressMap({ nodes, activeId, onSelect, title, levelLabel = 'C�
               onClick={() => onSelect(node.id)}
               aria-current={isActive}
               aria-label={tooltip}
-              className={`group relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] ${
-                isActive
-                  ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
-                  : 'border-sand-200 bg-white hover:border-brand-400'
-              }`}
+              className={`group relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] ${stateClass}`}
             >
               <Tooltip text={tooltip} />
               <span

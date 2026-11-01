@@ -15,8 +15,10 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.parent-tips.v1'
 
+// Bài kiểm này soi đúng câu hỏi riêng của London, nên ghim sẵn bài đó (bài mặc định
+// của app nay là bài đứng đầu danh sách ưu tiên - Ván cờ Ý).
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
-  `${APP_URL}#parent-tips`,
+  `${APP_URL}?opening=london#parent-tips`,
   { port: 9365, windowSize: '1440,900' },
 )
 
@@ -255,7 +257,9 @@ if (phone.body) {
 // Hai tab đầu/cuối có bài học riêng nên khung hiện câu hỏi CỦA BÀI đang mở,
 // không phải câu chung của tab - đó chính là điều cần kiểm.
 const ROUTES = [
-  { path: '/', name: 'Khai cuộc', keyword: 'Tượng ra f4', notKeyword: 'Kim tự tháp Tốt' },
+  // Ghim London để câu hỏi riêng của bài ổn định (bài mặc định của app nay là
+  // Ván cờ Ý - câu hỏi riêng của bài đó cũng đúng nhưng không nhắc “Tượng ra f4”).
+  { path: '/?opening=london', name: 'Khai cuộc', keyword: 'Tượng ra f4', notKeyword: 'Kim tự tháp Tốt' },
   { path: '/counters', name: 'Đối phó', keyword: 'đang chơi khai cuộc gì' },
   { path: '/tactics', name: 'Trung cuộc', keyword: 'mạnh nhất' },
   { path: '/endgames', name: 'Tàn cuộc', keyword: 'Vua phải đi' },
