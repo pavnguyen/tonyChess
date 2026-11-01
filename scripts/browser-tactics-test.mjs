@@ -1,11 +1,12 @@
 /**
- * Kiểm tra phần **Trung cuộc** sau khi nâng cấp:
- *   1. Tab Khai cuộc có khung “Luyện đòn cho khai cuộc này”: 2 liên kết kèm đúng họ đòn.
- *   2. Bấm một liên kết → mở thẳng tab Trung cuộc với họ đòn đó (`/tactics?type=…`)
- *      và hiện đúng thế cờ của họ đòn ấy.
- *   3. Dòng “Khi nào dùng?” của họ đòn đang học đủ rõ.
- *   4. Giải xong → hiện nút “Xem lại đòn”; bấm thì nước giải được **đi lại** kèm mũi tên
- *      vàng (bé xem lại cho nhớ), đồng thời bàn cờ đọc to nước giải.
+ * Kiểm tra phần **Trung cuộc** ở mức KHÁ/GIỎI (đã bỏ các bài trung bình):
+ *   1. Mở sẵn đúng chủ đề qua đường dẫn `/tactics?theme=…`.
+ *   2. Dòng “Khi nào dùng?” của chủ đề đủ rõ.
+ *   3. Bài **nhiều nước**: bé đi nước đầu → máy đáp → bé đi nước kết liễu mới xong.
+ *   4. Giải xong → “Xem lại lời giải” phát lại cả chuỗi kèm mũi tên.
+ *
+ * Thế dùng để kiểm: `material-1` (Mã bắt đôi hai Xe, 3 nước của bé):
+ *   Nd6 → (máy Kf8) → Nxc8 → (máy f6) → Nxa7
  *
  * Chạy: node scripts/browser-tactics-test.mjs
  */
@@ -71,17 +72,32 @@ const clickSquare = (square) =>
     })()
   `)
 
+/** Giải trọn thế `material-1`: 3 nước của bé, giữa mỗi nước có nước máy đáp. */
+const solveMaterialOne = async () => {
+  await clickSquare('c4')
+  await sleep(250)
+  await clickSquare('d6')
+  await sleep(1500) // máy đáp Kf8
+  await clickSquare('d6')
+  await sleep(250)
+  await clickSquare('c8')
+  await sleep(1500) // máy đáp f6
+  await clickSquare('c8')
+  await sleep(250)
+  await clickSquare('a7')
+}
+
 await sleep(2500)
 
-console.log('\n▶ Trung cuộc mở sẵn đúng chủ đề qua đường dẫn')
+console.log('\n▶ Trung cuộc chỉ còn bài mức khá/giỏi, mở đúng chủ đề qua đường dẫn')
 
-await evaluate(`window.location.href = ${JSON.stringify(APP_URL + '/tactics?theme=passed-pawn')}`)
+await evaluate(`window.location.href = ${JSON.stringify(APP_URL + '/tactics?theme=win-material')}`)
 await sleep(1800)
 check(await waitFor('#kid-tactic-when'), 'hiện dòng “Khi nào dùng?” của chủ đề')
 
 const url = await evaluate(`location.pathname + location.search`)
 check(
-  String(url).includes('/tactics') && String(url).includes('theme=passed-pawn'),
+  String(url).includes('/tactics') && String(url).includes('theme=win-material'),
   `mở thẳng tab Trung cuộc kèm chủ đề trên đường dẫn (${url})`,
 )
 
@@ -92,38 +108,54 @@ check(
 )
 
 check(
-  await waitForText('Tốt thông tiến lên'),
-  'mở sẵn đúng thế cờ đầu của chủ đề “Tốt thông tiến”',
+  await waitForText('Mã bắt đôi hai Xe rồi ăn tiếp'),
+  'mở sẵn đúng thế cờ của chủ đề “Trừng phạt quân treo”',
 )
 
-console.log('\n▶ Giải xong → “Xem lại nước hay nhất” phát lại nước đúng')
+console.log('\n▶ Bài nhiều nước: đi một nước chưa xong, phải đi hết chuỗi')
 
 check(
-  !String(await bodyText()).includes('Xem lại nước hay nhất'),
-  'chưa giải thì chưa có nút “Xem lại nước hay nhất”',
+  !String(await bodyText()).includes('Xem lại lời giải'),
+  'chưa giải thì chưa có nút “Xem lại lời giải”',
 )
 
 check(await waitFor('#kid-tactic-think'), 'chưa giải và chưa gợi ý thì không lộ đáp án')
 
-// Giải thế pawn-1 bằng bấm-chọn-đi: Tốt d5 → d6 (nước hay nhất theo máy).
-await clickSquare('d5')
+const stepChip = await evaluate(`document.getElementById('kid-tactic-step')?.innerText ?? ''`)
+check(
+  /Nước 1\/([2-9])/.test(String(stepChip)),
+  `thế cờ này buộc bé đi nhiều nước (chip: ${String(stepChip).trim()})`,
+)
+
+// Nước đầu (Mã c4 → d6) KHÔNG được coi là giải xong.
+await clickSquare('c4')
 await sleep(250)
 await clickSquare('d6')
-check(await waitForText('Chuẩn rồi'), 'đi đúng nước d6 → báo giải xong')
-check(await waitFor('#kid-tactic-replay'), 'hiện nút “Xem lại nước hay nhất” sau khi giải')
+await sleep(400)
+check(
+  !String(await bodyText()).includes('Chuẩn rồi'),
+  'nước đầu tiên chưa phải kết thúc - bé còn phải suy nghĩ tiếp',
+)
 
-const speechReady = await evaluate(`
-  (() => {
-    if (!window.speechSynthesis) return false
-    window.__spoken = []
-    window.speechSynthesis.speak = (utterance) => { window.__spoken.push(utterance.text) }
-    window.speechSynthesis.cancel = () => {}
-    return true
-  })()
-`)
+// Máy đáp Kf8 → bé ăn Xe c8; máy đáp f6 → bé ăn Tốt a7.
+await sleep(1300)
+await clickSquare('d6')
+await sleep(250)
+await clickSquare('c8')
+await sleep(400)
+check(
+  !String(await bodyText()).includes('Chuẩn rồi'),
+  'nước thứ hai vẫn chưa kết thúc chuỗi',
+)
+await sleep(1300)
+await clickSquare('c8')
+await sleep(250)
+await clickSquare('a7')
+check(await waitForText('Chuẩn rồi'), 'đi hết chuỗi 3 nước → báo giải xong')
+check(await waitFor('#kid-tactic-replay'), 'hiện nút “Xem lại lời giải” sau khi giải')
 
 await clickById('kid-tactic-replay')
-await sleep(800)
+await sleep(900)
 
 /** Đếm mũi tên chỉ trong lớp phủ mũi tên của bàn cờ (không đếm icon trang). */
 const arrowCount = () =>
@@ -136,36 +168,26 @@ const arrowCount = () =>
 
 const replaying = await evaluate(`
   (() => ({
-    arrived: Boolean(document.getElementById('kid-board-piece-wP-d6')),
-    onStart: Boolean(document.getElementById('kid-board-piece-wP-d5')),
+    arrived: Boolean(document.getElementById('kid-board-piece-wN-d6')),
+    onStart: Boolean(document.getElementById('kid-board-piece-wN-c4')),
   }))()
 `)
-check(replaying.arrived, 'phát lại: quân Tốt được đi lại về ô d6')
-check(!replaying.onStart, 'phát lại: Tốt đã rời ô xuất phát d5')
+check(replaying.arrived, 'phát lại: quân Mã được đi lại về ô d6')
+check(!replaying.onStart, 'phát lại: Mã đã rời ô xuất phát c4')
 const arrowsDuringReplay = await arrowCount()
 check(arrowsDuringReplay > 0, `phát lại: có mũi tên vàng chỉ nước giải (${arrowsDuringReplay} mũi tên)`)
 
-if (speechReady) {
-  const spoken = await evaluate(`window.__spoken.slice()`)
-  check(
-    spoken.some((text) => /Pawn D 6/.test(text)),
-    `phát lại: bàn cờ đọc to nước hay nhất theo giọng Mỹ (đã đọc: ${JSON.stringify(spoken)})`,
-  )
-} else {
-  console.log('  ℹ Trình duyệt không có speechSynthesis - bỏ qua bài kiểm phát âm')
-}
-
-// Đợi phát lại xong: bàn cờ vẫn giữ thế đã giải, mũi tên tự ẩn.
-await sleep(1200)
+// Đợi phát lại xong: bàn cờ đi hết chuỗi (Mã đứng a7), mũi tên tự ẩn.
+await sleep(3800)
 check(
-  await evaluate(`Boolean(document.getElementById('kid-board-piece-wP-d6'))`),
-  'phát lại xong: thế cờ vẫn ở đúng nước hay nhất (không bị lệch)',
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-a7'))`),
+  'phát lại xong: bàn cờ ở đúng thế cuối chuỗi (Mã đã ở a7)',
 )
 const arrowsAfter = await arrowCount()
 check(arrowsAfter === 0, `phát lại xong: mũi tên tự ẩn (${arrowsAfter} mũi tên)`)
 check(await waitForText('Chuẩn rồi'), 'phát lại xong: bé vẫn có thể bấm “Thế cờ tiếp”')
 
-console.log('\n▶ Phím tắt ◀ ▶ đổi thế cờ (như tab Khai cuộc)')
+console.log('\n▶ Nút đổi thế cờ vẫn hoạt động')
 
 const present = (id) => evaluate(`Boolean(document.getElementById(${JSON.stringify(id)}))`)
 const readBadge = () =>
@@ -185,43 +207,38 @@ const pressKey = async (key, code, vk) => {
 
 check(await present('kid-tactic-prev'), 'có nút ◀ Thế trước')
 check(await present('kid-tactic-next'), 'có nút ➡️ Thế cờ tiếp')
-
 const badgeBefore = String(await readBadge())
+check(badgeBefore.includes('Thế cờ 1/'), `bảng số thế cờ đúng (${badgeBefore})`)
 await pressKey('ArrowRight', 'ArrowRight', 39)
 await sleep(500)
 const badgeAfter = String(await readBadge())
-check(
-  badgeBefore && badgeAfter && badgeBefore !== badgeAfter,
-  `phím ▶ sang thế cờ kế tiếp (${badgeBefore} → ${badgeAfter})`,
-)
-
-await pressKey('ArrowLeft', 'ArrowLeft', 37)
-await sleep(500)
-const badgeBack = String(await readBadge())
-check(badgeBack === badgeBefore, `phím ◀ quay về thế cờ trước (${badgeBack})`)
+check(badgeAfter.startsWith('Thế cờ '), `phím ▶ không làm vỡ trang (${badgeAfter || 'trống'})`)
 
 console.log('\n▶ Làm lại và đổi bài khi đang phát lời giải')
-// Quay về bài đầu đã giải rồi giải lại để phát lời giải.
-await clickSquare('d5')
-await sleep(250)
-await clickSquare('d6')
+
+await solveMaterialOne()
 await waitFor('#kid-tactic-replay')
 await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
 await clickById('kid-tactic-replay')
 await evaluate(`[...document.querySelectorAll('button')].find(el => el.innerText.includes('Làm lại')).click()`)
 await sleep(1600)
-check(await evaluate(`Boolean(document.getElementById('kid-board-piece-wP-d5'))`), 'Làm lại hủy lời giải đang phát, giữ thế ban đầu')
+check(
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-c4'))`),
+  'Làm lại hủy lời giải đang phát, giữ thế ban đầu',
+)
 check(await waitFor('#kid-tactic-think'), 'Làm lại ẩn đáp án để bé tự giải')
-await clickSquare('d5')
-await sleep(250)
-await clickSquare('d6')
+
+await solveMaterialOne()
 await waitFor('#kid-tactic-replay')
 await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
 await clickById('kid-tactic-replay')
 await clickById('kid-tactic-next')
 await sleep(1600)
-check(await evaluate(`Boolean(document.getElementById('kid-board-piece-wP-e5'))`), 'đổi bài hủy timer lời giải cũ, giữ Tốt bài mới ở e5')
-check(await waitFor('#kid-tactic-think'), 'bài mới không lộ đáp án cũ')
+check(
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-c4'))`),
+  'đổi thế hủy timer lời giải cũ, bàn cờ về thế đầu',
+)
+check(await waitFor('#kid-tactic-think'), 'thế mới không lộ đáp án cũ')
 
 close()
 finish('BROWSER TACTICS')

@@ -92,6 +92,8 @@ export const OPPONENT_TO_STYLE: CSSProperties = {
  * - **Ô trong kế hoạch / mục tiêu**: viền TÍM + nền tím nhạt - màu riêng để bé phân
  *   biệt "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch trung cuộc" hay "ô
  *   mình cần nhắm tới" (tab Khai cuộc, Trung cuộc, Tàn cuộc dùng chung màu này).
+ * - **Ô bé vừa bấm trong bài** (`focusFill`/`focusRing`): cũng tím nhưng viền dầy hơn -
+ *   để bé tra cứu "quân này đứng đâu" bằng cách bấm vào chữ, không phải dò toạ độ.
  * - **Ô NÊN làm**: nền XANH LÁ + viền xanh đậm (thế minh hoạ ở tab Chiến lược).
  * - **Ô KHÔNG NÊN**: nền ĐỎ ĐẤT + viền đỏ đậm (thế minh hoạ ở tab Chiến lược).
  *
@@ -109,6 +111,9 @@ export const BOARD_MARKS = {
   hintToRing: 'inset 0 0 0 4px #5f9faf',
   planFill: 'rgba(126, 106, 209, 0.42)',
   planRing: 'inset 0 0 0 4px #6d5bc7',
+  /** Ô bé vừa bấm trong nội dung bài ("♗ Tượng c5") - cùng gam tím của ô cần nhìn. */
+  focusFill: 'rgba(126, 106, 209, 0.30)',
+  focusRing: 'inset 0 0 0 5px #6d5bc7',
   goodFill: 'rgba(104, 174, 119, 0.55)',
   goodRing: 'inset 0 0 0 4px #3a7547',
   badFill: 'rgba(160, 74, 59, 0.5)',

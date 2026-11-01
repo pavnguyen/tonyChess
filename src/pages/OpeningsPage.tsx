@@ -822,6 +822,26 @@ export function OpeningsPage() {
               <span className="block truncate text-[0.68rem] font-bold text-brand-500">
                 {opening.name} · {opening.gm}
               </span>
+              {/*
+                Chip số liệu THẬT (đo từ Lichess Opening Explorer): % số ván đi vào
+                khai cuộc này, kèm tên nguồn ngay trên chip. Khai cuộc chưa có số đo
+                thì không hiện gì - không dựng ô rỗng hay số ước lượng.
+              */}
+              {opening.popularity && (
+                <span className="mt-0.5 flex items-center gap-0.5">
+                  <span
+                    title={`${opening.popularity.source} · đo ở thế ${opening.popularity.position}`}
+                    className="shrink-0 rounded-full border border-brand-100 bg-brand-50 px-1.5 py-px text-[0.6rem] font-extrabold leading-tight text-brand-600"
+                  >
+                    📊 ≈
+                    {opening.popularity.percent.toLocaleString('vi-VN', {
+                      maximumFractionDigits: 1,
+                    })}
+                    % ván · Lichess
+                  </span>
+                  <InfoButton topic="popularity" />
+                </span>
+              )}
             </span>
             <div className="flex shrink-0 items-center gap-1">
               <button
@@ -929,7 +949,13 @@ export function OpeningsPage() {
               subtitle: `${item.name} · ${
                 item.side === 'white' ? '⬜ Bé cầm Trắng' : '⬛ Bé cầm Đen'
               } · ${item.gm}`,
-              tag: item.rankNote,
+              // Nhãn dạy học + (nếu có) % số ván đo thật - hai thứ khác bản chất nên
+              // đứng cạnh nhau trong cùng một dòng nhỏ dưới tên khai cuộc.
+              tag: item.popularity
+                ? `${item.rankNote} · ≈${item.popularity.percent.toLocaleString('vi-VN', {
+                    maximumFractionDigits: 1,
+                  })}%`
+                : item.rankNote,
             }))}
             activeId={opening.id}
             onSelect={selectOpening}

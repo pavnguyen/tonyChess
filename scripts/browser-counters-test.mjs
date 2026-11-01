@@ -125,6 +125,10 @@ check(
 
 console.log('\n▶ Phím tắt tiến/lùi từng nước')
 
+// Tab Đối phó giờ mặc định mở ở chế độ LUYỆN (bé tự đi ngay). Phím ◀ ▶ chỉ dành cho
+// chế độ Xem nên phải chuyển sang chế độ đó trước khi kiểm phím tắt.
+await clickInBody('Xem từng bước')
+await sleep(600)
 check(
   (await present('#kid-board-piece-wP-d2')) && !(await present('#kid-board-piece-wP-d4')),
   'thế cờ ban đầu: Tốt Trắng còn ở d2',
@@ -283,6 +287,15 @@ await move('d7', 'd5')
 check(await present('#kid-board-piece-bP-d5'), 'đáp đúng d5 được chấp nhận')
 await sleep(800)
 check(await present('#kid-board-piece-wB-f4'), 'đối thủ tự đi tiếp Bf4')
+// Chế độ luyện vẫn có Lùi/Tiến để xem lại nước vừa đi (không phải đổi sang chế độ Xem).
+check(await present('#kid-counter-back'), 'chế độ luyện có nút ◀ Lùi')
+await clickInBody('◀ Lùi')
+await sleep(600)
+check(!(await present('#kid-board-piece-wB-f4')), '◀ Lùi gỡ nước vừa đi (Bf4), và đối thủ KHÔNG tự đi lại')
+check(await present('#kid-board-piece-bP-d5'), 'lùi xong vẫn giữ nước bé vừa đáp (Tốt Đen ở d5)')
+await clickInBody('Tiến ▶')
+await sleep(700)
+check(await present('#kid-board-piece-wB-f4'), 'Tiến ▶ đi tiếp lại được (Bf4 trở lại)')
 await clickInBody('Ẩn gợi ý')
 await sleep(100)
 check(!String(await text('#kid-counter-turn')).includes('→'), 'ẩn gợi ý không lộ ô đáp trả trong dải lượt')

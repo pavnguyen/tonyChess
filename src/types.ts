@@ -39,6 +39,21 @@ export interface OpeningPlan {
   points: string[]
 }
 
+/**
+ * Tần suất gặp của một khai cuộc - **số đo thật**, khác hẳn `rankNote` (lựa chọn dạy học).
+ *
+ * `percent` là xác suất đi tới thế cờ đặc trưng của bài, tính bằng **tích xác suất
+ * từng nước trên dòng chính** trong cơ sở dữ liệu Lichess, nên là số **xấp xỉ**.
+ */
+export interface OpeningPopularity {
+  /** % số ván tới được thế cờ mốc (đã làm tròn 1 chữ số thập phân). */
+  percent: number
+  /** Đo ở đâu - hiện kèm để phụ huynh kiểm chứng lại được. */
+  source: string
+  /** Thế cờ mốc dùng để đo, ví dụ "sau 3.Bc4". */
+  position: string
+}
+
 export interface Opening {
   id: string
   name: string
@@ -60,9 +75,18 @@ export interface Opening {
   goal: string
   /**
    * Nhãn 2-3 chữ nói vì sao khai cuộc này đứng ở vị trí đó trong thứ tự ưu tiên
-   * học ("Gặp nhiều nhất", "Hay nhất", "Khó nhất"…). Hiện ngay dưới tên trên bản đồ.
+   * học ("Dễ chơi nhất", "Nhiều lý thuyết", "Học sau cùng"…). Hiện ngay dưới tên trên
+   * bản đồ.
+   *
+   * Đây là **lựa chọn dạy học**, không phải số liệu thống kê - muốn nói về tần suất
+   * gặp thì dùng `popularity` (số đo thật), đừng viết nhãn nghe như số liệu.
    */
   rankNote?: string
+  /**
+   * Số liệu thật: khoảng bao nhiêu % số ván đi vào đúng thế cờ của khai cuộc này.
+   * Bỏ trống thì giao diện không hiện chip - không hiện ô rỗng cho khai cuộc chưa đo.
+   */
+  popularity?: OpeningPopularity
   /** Một dòng chính duy nhất, đủ cho cả hai bên (xen kẽ nước bé và nước đối thủ). */
   moves: OpeningMove[]
   /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */
@@ -76,13 +100,9 @@ export interface Opening {
  * không học thuộc tên đòn. Các nước được máy kiểm chứng là thật sự tốt nhất.
  */
 export type BestMoveTheme =
-  | 'attack'
   | 'win-material'
   | 'win-queen'
-  | 'passed-pawn'
-  | 'fork'
   | 'pin'
-  | 'mate-two'
 
 /**
  * Một thế cờ trung cuộc để bé "tìm nước hay nhất".

@@ -132,7 +132,9 @@ export function EndgamesPage() {
     if (board.game.isGameOver()) return
     const fen = board.fen
     const timer = setTimeout(() => {
-      const move = pickMove(fen, 'easy')
+      // Mức KHÓ (không còn mức Dễ): bài tàn cuộc phải là đối thủ thật, đỡ quân
+       // đúng - hạ được máy mức Khó mới tính là biết kỹ thuật tàn cuộc.
+      const move = pickMove(fen, 'hard')
       if (move) board.playSan(move.san)
     }, 750)
     return () => clearTimeout(timer)
@@ -331,6 +333,12 @@ export function EndgamesPage() {
         ? '🖐️ Đến lượt bé'
         : '🤖 Máy đang nghĩ…'
 
+  /** Ba việc cốt lõi của nhóm bài - một câu, không phải đoạn văn. */
+  const mindset =
+    (challenge?.goal ?? 'promote') === 'promote'
+      ? '1️⃣ Vua đi trước che Tốt · 2️⃣ Đẩy Tốt thẳng lên hàng 8 · 3️⃣ Chạm đích là thành Hậu!'
+      : '1️⃣ Canh chặt hàng ngang · 2️⃣ Quân còn lại chiếu Vua · 3️⃣ Hết đường chạy là bí!'
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
@@ -446,109 +454,34 @@ export function EndgamesPage() {
         }
       />
 
-      {/* Cột phải: bài đang luyện → lịch sử nước đi → chọn bài theo nhóm. */}
+      {/*
+        Cột phải xếp theo đúng thứ tự bé dùng:
+          1. CHỌN BÀI (việc làm nhiều nhất - trước đây nằm tận cuối, phải cuộn qua ba khung),
+          2. bài đang luyện: mục tiêu → 3 việc → mẹo → nước đã đi, gói trong MỘT khung.
+      */}
       <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
-        <Panel>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0 truncate text-sm font-extrabold text-brand-900">
-              🧭 {challenge?.title ?? ''}
-            </div>
-            <span className="rounded-full bg-sand-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-brand-600 ring-1 ring-sand-200">
-              {statusLabel}
-            </span>
-          </div>
-          <p className="mt-1 text-xs font-bold text-brand-600">{challenge?.hint}</p>
-          <p className="mt-1 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-            🧠 Mindset: 3 việc bé nhớ theo thứ tự
-          </p>
-          <p className="mt-1 rounded-2xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-700">
-            {challenge?.goal === 'promote'
-              ? '1️⃣ Vua đi trước che Tốt · 2️⃣ Đẩy Tốt thẳng lên hàng 8 · 3️⃣ Chạm đích là thành Hậu!'
-              : '1️⃣ Canh chặt hàng ngang · 2️⃣ Quân còn lại chiếu Vua · 3️⃣ Hết đường chạy là bí!'}
-          </p>
-          {goalFocus && challenge && (
-            <p
-              id="kid-endgame-goal-note"
-              className="animate-pop-in mt-1 rounded-2xl border-2 border-dashed border-[#6d5bc7] bg-[rgba(126,106,209,0.12)] px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-800"
-            >
-              🎯 Ô tím trên bàn cờ:{' '}
-              {challenge.goal === 'promote'
-                ? 'Tốt của bé và ô phong cấp trên cùng cột - đưa Tốt tới đó là thành Hậu.'
-                : 'Vua Đen và mọi ô nó còn chạy được - bé phải khóa hết rồi mới chiếu bí.'}
-            </p>
-          )}
-        </Panel>
-
-        {/*
-          Lịch sử nước đi: bé thấy mình đã đi những gì, và bấm một nước là quay lại
-          đúng lúc đó. Trước đây bàn cờ chỉ hiện vệt nước vừa đi nên bé không có
-          cách nào "sửa sai" ngoài bấm Làm lại từ đầu.
-        */}
-        <Panel id="kid-endgame-history">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[0.7rem] font-extrabold uppercase tracking-wide text-brand-500">
-              📜 Nước đi của ván
-            </span>
-            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[0.7rem] font-extrabold text-brand-700 ring-1 ring-brand-100">
-              {board.history.length} nước
-            </span>
-          </div>
-          {playedMoves.length === 0 ? (
-            <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
-              🐣 Bé kéo một quân trên bàn cờ để bắt đầu - từng nước sẽ hiện ở đây.
-            </p>
-          ) : (
-            <div className="mt-1.5">
-              <MoveStrip
-                moves={playedMoves}
-                side={challenge?.playerSide ?? 'white'}
-                ply={playedMoves.length}
-                notation={notation}
-                onJump={jumpToMove}
-              />
-              <p className="mt-1 text-[0.7rem] font-bold text-brand-400">
-                👆 Bấm một nước để quay lại đúng lúc đó, hoặc bấm ◀ Đi lại để lùi nước vừa rồi.
-              </p>
-            </div>
-          )}
-        </Panel>
-
-        {challenge && (
-          <Panel id="kid-endgame-explanation">
-            <h3 className="text-xs font-extrabold text-brand-800">💡 Mẹo của bài này</h3>
-            <p className="mt-1 text-sm font-bold text-brand-700">{challenge.explanation}</p>
-            <p className="mt-1 rounded-xl bg-gold-50 px-2.5 py-1.5 text-xs font-extrabold text-gold-800">
-              🎵 Khẩu quyết: “{challenge.rhyme}”
-            </p>
-          </Panel>
-        )}
-
-        {/*
-          12 thế luyện chia thành HAI NHÓM theo đích cuối cùng. Bé thấy rõ mình đang
-          luyện "đưa Tốt lên Hậu" hay "chiếu bí", thay vì một dải chip dài phẳng.
-        */}
         <Panel id="kid-endgame-list">
           <SectionTitle
             icon="👑"
             title="Tàn cuộc cơ bản"
-            subtitle="Endgame · 12 thế luyện cơ bản"
+            subtitle={`Endgame · ${endgames?.length ?? 0} thế luyện`}
             info="endgame"
           />
-          <div className="mt-2 grid gap-2.5">
+          {/*
+            Hai nhóm theo ĐÍCH (phong Hậu / chiếu bí), mỗi thẻ chỉ ghi TÊN BÀI.
+            Thẻ chỉ cao một hai dòng nên cả 12 thế nằm gọn trong một khung - bé soát
+            bằng mắt rồi bấm đúng bài, không phải đọc lại lời gợi ý lần hai.
+          */}
+          <div className="mt-1.5 grid gap-1.5">
             {GROUPS.map((group) => {
               const items = (endgames ?? []).filter((item) => item.goal === group.goal)
               if (items.length === 0) return null
               return (
-                <div key={group.goal} className="grid gap-1.5">
-                  <div className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-xs font-extrabold text-brand-800">
-                      {group.icon} {group.title}
-                    </span>
-                    <span className="text-[0.7rem] font-bold text-brand-400">
-                      {group.blurb}
-                    </span>
-                  </div>
-                  <div className="grid gap-1.5 sm:grid-cols-2">
+                <div key={group.goal} className="grid gap-1">
+                  <span className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+                    {group.icon} {group.title} · {items.length} bài
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                     {items.map((item) => {
                       const active = item.id === challenge?.id
                       return (
@@ -559,26 +492,18 @@ export function EndgamesPage() {
                           onClick={() => setChallengeId(item.id)}
                           aria-pressed={active}
                           title={item.title}
-                          className={`grid gap-0.5 rounded-2xl border-2 px-2.5 py-1.5 text-left transition-all active:translate-y-[2px] ${
+                          className={`min-w-0 rounded-lg border-2 px-1.5 py-1 text-left transition-all active:translate-y-[1px] ${
                             active
                               ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
                               : 'border-brand-100 bg-white hover:border-brand-300'
                           }`}
                         >
-                          <span className="flex items-center gap-1.5">
-                            <span aria-hidden>{group.icon}</span>
-                            <span
-                              className={`min-w-0 flex-1 truncate text-[0.72rem] font-extrabold ${
-                                active ? 'text-brand-800' : 'text-brand-700'
-                              }`}
-                            >
-                              {item.title}
-                            </span>
-                          </span>
-                          {/* Một dòng gợi ý ngay trên thẻ để bé chọn bài mà không
-                              phải bấm thử từng cái. */}
-                          <span className="line-clamp-2 text-[0.66rem] font-bold leading-snug text-brand-400">
-                            {item.hint}
+                          <span
+                            className={`line-clamp-2 text-[0.7rem] font-extrabold leading-tight ${
+                              active ? 'text-brand-900' : 'text-brand-700'
+                            }`}
+                          >
+                            {item.title}
                           </span>
                         </button>
                       )
@@ -589,6 +514,51 @@ export function EndgamesPage() {
             })}
           </div>
         </Panel>
+
+        <Panel id="kid-endgame-lesson" className="grid gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
+              🧭 {challenge?.title ?? ''}
+            </span>
+            <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-[0.65rem] font-extrabold text-brand-600 ring-1 ring-sand-200">
+              {board.history.length} nước
+            </span>
+          </div>
+          <p className="text-xs font-bold text-brand-600">{challenge?.hint}</p>
+          <p className="rounded-2xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-700">
+            🧠 {mindset}
+          </p>
+
+          <div id="kid-endgame-explanation" className="grid gap-1 border-t border-brand-100 pt-1.5">
+            <span className="text-[0.7rem] font-extrabold tracking-wide text-brand-500">
+              💡 Mẹo của bài này
+            </span>
+            <p className="text-xs font-bold text-brand-700">{challenge?.explanation}</p>
+            <p className="rounded-xl bg-gold-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-gold-800">
+              🎵 “{challenge?.rhyme}”
+            </p>
+          </div>
+
+          <div id="kid-endgame-history" className="grid gap-1 border-t border-brand-100 pt-1.5">
+            <span className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+              📜 Nước đi của ván · bấm một nước để quay lại
+            </span>
+            {playedMoves.length === 0 ? (
+              <p className="text-[0.7rem] font-bold text-brand-400">
+                🐣 Bé kéo một quân trên bàn cờ để bắt đầu - từng nước sẽ hiện ở đây.
+              </p>
+            ) : (
+              <MoveStrip
+                moves={playedMoves}
+                side={challenge?.playerSide ?? 'white'}
+                ply={playedMoves.length}
+                notation={notation}
+                onJump={jumpToMove}
+              />
+            )}
+          </div>
+        </Panel>
+
       </div>
 
       <CelebrationModal

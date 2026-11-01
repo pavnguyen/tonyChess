@@ -80,83 +80,8 @@ export const PRINCIPLE_TONE_STYLES: Record<
 
 export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   {
-    id: 'center',
-    order: 1,
-    title: 'Làm chủ trung tâm',
-    emoji: '🎯',
-    ask: 'Tốt và quân của mình có kiểm soát được bốn ô giữa bàn không?',
-    why: 'Quân đứng gần trung tâm đi được nhiều ô hơn hẳn quân ở mép bàn - kiểm soát trung tâm là nền móng của mọi kế hoạch.',
-    rhyme: 'Giữ chặt trung tâm',
-    piece: 'p',
-    good: {
-      fen: '4k3/8/8/8/3PP3/8/8/4K3 w - - 0 1',
-      note: 'Hai Tốt d4 và e4 sánh đôi giữ chặt bốn ô trung tâm - mọi quân của bé đều có nhiều đường hoạt động.',
-      marks: [
-        { square: 'd4', tone: 'good', label: 'Tốt giữ trung tâm' },
-        { square: 'e4', tone: 'good', label: 'Tốt giữ trung tâm' },
-      ],
-    },
-    bad: {
-      fen: '4k3/8/8/3pp3/8/P6P/8/4K3 w - - 0 1',
-      note: 'Tốt Trắng đi hoang ra hai cánh (a3, h3) trong khi Đen đứng giữa bàn: quân mình bị dồn ra rìa, càng đánh càng bí.',
-      marks: [
-        { square: 'a3', tone: 'bad', label: 'Tốt đi hoang ra cánh' },
-        { square: 'h3', tone: 'bad', label: 'Tốt đi hoang ra cánh' },
-      ],
-    },
-  },
-  {
-    id: 'develop',
-    order: 2,
-    title: 'Phát triển quân nhanh',
-    emoji: '🚀',
-    ask: 'Còn quân nào đang ngủ ở hàng cuối mà mình chưa đưa ra không?',
-    why: 'Mỗi nước nên đưa thêm một quân mới vào trận. Đánh nhau bằng hai quân không bao giờ thắng được năm quân đã ra trận.',
-    rhyme: 'Đưa quân ra trận',
-    piece: 'n',
-    good: {
-      fen: 'r1bqkb1r/pppp1ppp/2n2n2/8/8/2N2N2/PPPPPPPP/R1BQKB1R w KQkq - 0 1',
-      note: 'Hai Mã đã nhảy ra c3 và f3 giữ trung tâm - mỗi nước của bé lại thêm một quân vào trận.',
-      marks: [
-        { square: 'c3', tone: 'good', label: 'Mã đã ra trận' },
-        { square: 'f3', tone: 'good', label: 'Mã đã ra trận' },
-      ],
-    },
-    bad: {
-      fen: 'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1',
-      note: 'Ngoài Mã f3, cả đội quân còn ngủ ở hàng cuối: đánh nhau bằng một quân thì thua chắc.',
-      marks: [
-        { square: 'b1', tone: 'bad', label: 'Mã còn ngủ' },
-        { square: 'c1', tone: 'bad', label: 'Tượng còn ngủ' },
-      ],
-    },
-  },
-  {
-    id: 'castle',
-    order: 3,
-    title: 'Nhập thành sớm',
-    emoji: '🏰',
-    ask: 'Vua mình đã vào góc an toàn chưa?',
-    why: 'Vua đứng giữa bàn là miếng mồi ngon. Nhập thành trong 5-8 nước đầu, rồi mới lo tấn công.',
-    rhyme: 'Vua vào lều sớm',
-    piece: 'k',
-    good: {
-      fen: '6k1/8/8/8/8/8/5PPP/5RK1 w - - 0 1',
-      note: 'Vua đã nhập thành vào góc g1, được ba Tốt f2 g2 h2 dựng tường che - an tâm lo tấn công.',
-      marks: [
-        { square: 'g1', tone: 'good', label: 'Vua trong lều' },
-        { square: 'f2', tone: 'good', label: 'Tốt che Vua' },
-      ],
-    },
-    bad: {
-      fen: 'r5k1/8/8/8/8/8/8/4K3 w - - 0 1',
-      note: 'Vua còn kẹt ở e1 giữa bàn, không Tốt nào che: chỉ cần đối thủ mở một cột là Vua bị chĩa vào ngay.',
-      marks: [{ square: 'e1', tone: 'bad', label: 'Vua phơi giữa bàn' }],
-    },
-  },
-  {
     id: 'hanging',
-    order: 4,
+    order: 1,
     title: 'Coi chừng quân treo',
     emoji: '🪝',
     ask: 'Quân mình vừa định để đó có ai che không? Có quân địch nào đang chĩa vào nó không?',
@@ -182,7 +107,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'open-file',
-    order: 5,
+    order: 2,
     title: 'Đưa Xe vào cột mở',
     emoji: '📏',
     ask: 'Có cột nào hết Tốt để Xe mình tràn xuống không?',
@@ -209,7 +134,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'outpost',
-    order: 6,
+    order: 3,
     title: 'Đặt Mã lên tiền đồn',
     emoji: '🐴',
     ask: 'Có ô nào Tốt địch không đuổi được Mã mình không?',
@@ -236,7 +161,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'seventh-rank',
-    order: 7,
+    order: 4,
     title: 'Xe lên hàng 7',
     emoji: '7️⃣',
     ask: 'Xe mình có thể lên hàng Tốt của địch không?',
@@ -263,7 +188,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'passed-pawn',
-    order: 8,
+    order: 5,
     title: 'Tạo và đẩy Tốt thông',
     emoji: '🌱',
     ask: 'Có Tốt nào của mình mà không còn Tốt địch nào cản đường không?',
@@ -286,7 +211,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'bishop-pair',
-    order: 9,
+    order: 6,
     title: 'Giữ cặp Tượng',
     emoji: '⛪',
     ask: 'Tượng mình đang nhắm ô nào - và mình có đang giữ được cả hai Tượng không?',
@@ -316,7 +241,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'trade',
-    order: 10,
+    order: 7,
     title: 'Đổi quân đúng lúc',
     emoji: '⚖️',
     ask: 'Mình đang hơn quân hay kém quân? Nếu hơn thì có nên đổi bớt cho gọn không?',

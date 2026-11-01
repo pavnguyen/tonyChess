@@ -2,7 +2,7 @@
  * Kiểm tra thật trong trình duyệt: bản Stockfish WASM đi kèm (public/stockfish/)
  * khởi động được và trả về một nước hợp lệ.
  *
- * Chỉ mở một Worker tới tệp tĩnh - đúng con đường mà app dùng ở mức "Siêu".
+ * Chỉ mở một Worker tới tệp tĩnh - đúng con đường mà app dùng ở mức "Khá".
  *
  * Chạy: node scripts/browser-stockfish-test.mjs  (cần `npx vite preview --port 5198`)
  */
@@ -111,13 +111,13 @@ if (result && result.error) {
   check(false, 'engine KHÔNG trả về nước đi')
 }
 
-// ── Phần 2: chính app dùng Stockfish ở mức "Siêu" ─────────────────────────────
-console.log('\n▶ Kiểm tra: app dùng Stockfish ở mức Siêu')
+// ── Phần 2: chính app dùng Stockfish ở mức "Khá" ─────────────────────────────
+console.log('\n▶ Kiểm tra: app dùng Stockfish ở mức Khá')
 
 const pickedMaster = await evaluate(`
   (() => {
     const btn = [...document.querySelectorAll('button')].find(
-      (b) => b.closest('[role="tablist"]') && b.textContent.includes('Siêu'),
+      (b) => b.closest('[role="tablist"]') && b.textContent.includes('Khá'),
     )
     if (!btn) return 'not-found'
     btn.click()
@@ -125,8 +125,8 @@ const pickedMaster = await evaluate(`
   })()
 `)
 check(
-  typeof pickedMaster === 'string' && pickedMaster.includes('Siêu'),
-  `đã bấm chọn mức “Siêu” (nút: ${pickedMaster})`,
+  typeof pickedMaster === 'string' && pickedMaster.includes('Khá'),
+  `đã bấm chọn mức “Khá” (nút: ${pickedMaster})`,
 )
 
 // Cho bé cầm quân Đen → máy (Trắng) đi nước đầu tiên bằng Stockfish.

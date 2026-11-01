@@ -46,27 +46,30 @@ const GLYPH: Record<string, string> = {
 }
 
 /**
- * Ba mức của chế độ Đấu tập (đã bỏ mức 🐣 Dễ vì quá dễ với bé). Mức Dễ vẫn còn trong
+ * Hai mức của chế độ Đấu tập: NHÃN hiển thị là Dễ và Khá, còn engine thật vẫn là mức KHÓ
+ * (depth 3 + quiescence) và mức SIÊU (Stockfish) - đổi nhãn để bé không thấy nản khi vào.
+ * Mức `easy`/`medium` chỉ còn trong engine cho bài kiểm, không hiện ra UI. Vẫn còn trong
  * bộ máy cờ và được dùng ở tab Tàn cuộc cho bé tập kỹ thuật.
  */
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string; icon: string }[] = [
-  { value: 'medium', label: 'Vừa', icon: '🐰' },
-  { value: 'hard', label: 'Khó', icon: '🦊' },
-  { value: 'master', label: 'Siêu', icon: '🦁' },
+  { value: 'hard', label: 'Dễ', icon: '🦊' },
+  { value: 'master', label: 'Khá', icon: '🦁' },
 ]
 
 const DIFFICULTY_LABEL: Record<Difficulty, string> = {
-  easy: 'Dễ',
-  medium: 'Vừa',
-  hard: 'Khó',
-  master: 'Siêu',
+  easy: 'Dễ (engine)',
+  medium: 'Vừa (engine)',
+  hard: 'Dễ',
+  master: 'Khá',
 }
 
 const DIFFICULTY_BLURB: Record<Difficulty, string> = {
+  // `easy`/`medium` vẫn khai báo vì kiểu `Difficulty` dùng chung với engine (bài kiểm
+  // engine vẫn gọi hai mức này), nhưng giao diện KHÔNG còn cho bé chọn.
   easy: 'Máy chơi ngây thơ, hay quên bảo vệ quân - bé tha hồ săn quân!',
   medium: 'Máy biết ăn quân và tránh mất quân. Bé phải nhìn kỹ nhé!',
-  hard: 'Máy tính trước 3 nước. Hãy bật 👁️ Mắt Thần trước khi đi!',
-  master: 'Máy tính trước 4 nước, gần như không mắc lỗi. Dành cho bé đã rất chắc tay!',
+  hard: 'Đối thủ này tính trước 3 nước và không đi bừa - bé bật 👁️ Mắt Thần rồi thử sức nhé!',
+  master: 'Máy tính trước 4 nước, gần như không mắc lỗi. Bé chơi được mức này là rất cứng rồi!',
 }
 
 export function FreePlayPage() {
@@ -74,9 +77,9 @@ export function FreePlayPage() {
   const { think } = useChessEngine()
 
   const [kidSide, setKidSide] = useState<Side>('white')
-  // Mức thấp nhất giờ là Vừa (đã bỏ mức Dễ). Đây là app học cờ, không phải bảng xếp
-  // hạng: không chấm điểm, không so hơn thua.
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
+  // Chỉ còn hai mức KHÓ và SIÊU (đã bỏ Dễ và Vừa vì dưới 1200 Elo). Đây là app học
+  // cờ, không phải bảng xếp hạng: không chấm điểm, không so hơn thua.
+  const [difficulty, setDifficulty] = useState<Difficulty>('hard')
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const [thinking, setThinking] = useState(false)
   /** Nước gợi ý cho bé - chỉ hiện khi còn đúng thế cờ đã tính (`fen` khớp). */
@@ -428,7 +431,7 @@ export function FreePlayPage() {
                 value={difficulty}
                 onChange={(value) => {
                   setDifficulty(value)
-                  // Bé chọn mức Siêu → tải sẵn Stockfish để nước đầu không phải chờ lâu.
+                  // Bé chọn mức KHÁ (= Stockfish) → tải sẵn để nước đầu không phải chờ lâu.
                   if (value === 'master') preloadStockfish()
                 }}
                 size="sm"

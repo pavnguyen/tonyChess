@@ -60,7 +60,7 @@ await sleep(2500)
 
 console.log('\n▶ Chiến lược: một module “10 nguyên tắc vàng” có thế cờ minh hoạ')
 
-check(await waitForText('10 nguyên tắc vàng'), 'khung “10 nguyên tắc vàng” đã hiện')
+check(await waitForText('7 nguyên tắc vàng'), 'khung “7 nguyên tắc vàng” đã hiện')
 
 // Mỗi thẻ là một nút bấm mở ra nội dung - đếm theo thuộc tính aria-expanded.
 const cardCount = await evaluate(`
@@ -68,38 +68,38 @@ const cardCount = await evaluate(`
     /^\\s*\\d+\\s*$/.test(b.querySelector('span')?.textContent ?? ''),
   ).length
 `)
-check(cardCount === 10, `có đủ 10 thẻ nguyên tắc (đếm được ${cardCount})`)
+check(cardCount === 7, `có đủ 7 nguyên tắc mức khá/giỏi (đếm được ${cardCount})`)
 
 // Mặc định bàn cờ soi thế “NÊN” của nguyên tắc đầu tiên (Tốt d4/e4 giữ trung tâm).
 check(
-  (await hasPiece('wP', 'd4')) && (await hasPiece('wP', 'e4')),
-  'bàn cờ mặc định soi thế minh hoạ của nguyên tắc đầu tiên',
+  (await hasPiece('wN', 'd5')) && (await hasPiece('wP', 'e4')),
+  'bàn cờ mặc định soi thế minh hoạ của nguyên tắc đầu tiên (Mã d5 có Tốt đỡ)',
 )
 
 // Bấm thẻ đầu tiên → phải lộ câu hỏi tự vấn + cả hai thế + khẩu quyết.
 const opened = await evaluate(`
   (() => {
-    const button = document.querySelector('[data-principle-id="center"]')
+    const button = document.querySelector('[data-principle-id="hanging"]')
     if (!button) return false
     button.click()
     return true
   })()
 `)
-check(opened, 'bấm được thẻ “Làm chủ trung tâm”')
+check(opened, 'bấm được thẻ “Coi chừng quân treo”')
 await sleep(300)
 const afterOpen = String(await bodyText())
-check(afterOpen.includes('trung tâm'), 'thẻ mở ra có nội dung về trung tâm')
+check(afterOpen.includes('treo'), 'thẻ mở ra có nội dung về quân treo')
 check(
-  afterOpen.includes('Nên:') && afterOpen.includes('Không nên:'),
-  'thẻ mở ra có cả hai thế cờ “Nên” và “Không nên”',
+  afterOpen.includes('Thế cờ NÊN làm'),
+  'thẻ mở ra nói rõ bàn cờ đang soi thế nào',
 )
 check(afterOpen.includes('Khẩu quyết'), 'thẻ mở ra có khẩu quyết vè')
 
 // Gạt công tắc sang “Không nên” → bàn cờ đổi sang thế cờ đỏ.
 check(await clickByText('Không nên'), 'bấm công tắc “Không nên”')
 await sleep(400)
-check(await hasPiece('wP', 'a3'), 'bàn cờ đổi sang thế “không nên” (Tốt đi hoang ra a3)')
-check(!(await hasPiece('wP', 'd4')), 'thế “nên” cũ đã được thay bằng thế “không nên”')
+check(await hasPiece('bB', 'e6'), 'bàn cờ đổi sang thế “không nên” (Tượng Đen chĩa vào Mã)')
+check(!(await hasPiece('wP', 'e4')), 'thế “nên” cũ đã được thay bằng thế “không nên”')
 
 // Không còn dấu vết bài giảng GM.
 const stale = ['Bài giảng GM', 'Grand Master', 'minority', 'Phòng thủ dự phòng', 'Đòn bẩy']
@@ -178,7 +178,7 @@ for (const id of ids) {
 
 // Đổi bài khi đang làm thử thách phải thoát trạng thái/đáp án của bài trước.
 await clickByText('Thử xem bé hiểu chưa')
-await evaluate(`document.querySelector('[data-principle-id="center"]').click()`)
+await evaluate(`document.querySelector('[data-principle-id="hanging"]').click()`)
 await sleep(100)
 check(await evaluate(`!document.getElementById('kid-principle-feedback') && Boolean(document.getElementById('kid-principle-note'))`),
   'đổi bài hủy thử thách cũ')

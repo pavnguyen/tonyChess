@@ -1,6 +1,6 @@
 /**
  * Kiểm tra tab **Đấu tập tự do với chú Máy** sau khi tinh gọn độ khó:
- *   1. Chỉ còn **3 mức**: Vừa · Khó · Siêu (đã bỏ mức Dễ vì quá dễ).
+ *   1. Chỉ còn **2 mức**, nhãn Dễ · Khá (engine thật vẫn là Khó · Siêu).
  *   2. Nút **💡 Gợi ý**: bấm thì máy tìm nước mạnh nhất cho CHÍNH bé và vẽ **mũi tên
  *      vàng** chỉ nước đó (dùng engine JS chạy trong Web Worker).
  *   3. **Giới hạn 3 lần gợi ý mỗi ván**: đếm ngược trên nút, hết thì nút tự khoá;
@@ -92,7 +92,7 @@ const hintBusy = () =>
 
 await sleep(2500)
 
-console.log('\n▶ Độ khó tinh gọn: chỉ còn 3 mức')
+console.log('\n▶ Hai mức máy: nhãn Dễ · Khá')
 
 check(await waitFor('#kid-board-board'), 'bàn cờ sẵn sàng')
 check(await waitFor('#kid-freeplay-hint'), 'có nút “💡 Gợi ý”')
@@ -102,11 +102,14 @@ const tabTexts = await evaluate(
 )
 const joined = JSON.stringify(tabTexts)
 check(
-  joined.includes('Vừa') && joined.includes('Khó') && joined.includes('Siêu'),
-  `có đủ 3 mức Vừa · Khó · Siêu (${joined})`,
+  joined.includes('Dễ') && joined.includes('Khá') && !joined.includes('Vừa'),
+  `chỉ còn 2 mức Dễ · Khá, không còn mức Vừa (${joined})`,
 )
-check(!joined.includes('Dễ'), `không còn mức Dễ (${joined})`)
-check(Array.isArray(tabTexts) && tabTexts.length === 5, `đúng 5 nút tab: 2 chọn quân + 3 độ khó (${tabTexts.length})`)
+check(
+  String(await evaluate(`document.body.innerText`)).includes('tính trước 3 nước'),
+  'mức “Dễ” vẫn là máy mạnh thật (blurb ghi “tính trước 3 nước”) - chỉ đổi nhãn cho bé đỡ nản',
+)
+check(Array.isArray(tabTexts) && tabTexts.length === 4, `đúng 4 nút tab: 2 chọn quân + 2 mức máy (${tabTexts.length})`)
 
 console.log('\n▶ Bấm 💡 Gợi ý → máy vẽ mũi tên nước tốt nhất cho bé')
 

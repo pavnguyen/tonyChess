@@ -17,12 +17,17 @@ const DEMO_OPTIONS: { value: DemoSide; label: string; icon: string }[] = [
 ]
 
 /**
- * Tab Chiến lược - dạy bé **tư duy vị trí** (không phải học thuộc biến khai cuộc).
+ * Tab Chiến lược - dạy bé **tư duy vị trí**, không phải học thuộc biến khai cuộc.
  *
- * Mười nguyên tắc vàng là trái tim của tab. Mỗi nguyên tắc kèm **hai thế cờ minh
- * hoạ**: một thế "NÊN làm" (tô xanh) và một thế "KHÔNG NÊN" (tô đỏ). Bé bấm thẻ để
- * soi thế cờ lên bàn cờ lớn rồi gạt công tắc Nên / Không nên để **so sánh bằng mắt**
- * - học chay bằng chữ thì nhớ được rất ít.
+ * Bố cục cột phải chỉ còn **hai khung**, xếp đúng thứ tự bé dùng:
+ *   1. `10 nguyên tắc vàng` - lưới ô bấm được, cả 10 nguyên tắc nằm gọn một màn
+ *      (bản cũ là danh sách xổ dọc, mỗi nguyên tắc một thẻ, mở ra bốn khối chữ).
+ *   2. `Bài đang học` - một mạch đọc: khẩu quyết → câu bé tự hỏi → vì sao →
+ *      thế cờ đang soi trên bàn (kèm chú giải ô màu) → mẹo.
+ *
+ * Nội dung KHÔNG bị cắt: chỉ bỏ phần lặp. Bản cũ vừa hiện lời giải thế cờ ngay dưới
+ * bàn cờ, vừa lặp lại đúng câu đó trong thẻ nguyên tắc đang mở; giờ mỗi câu chỉ nằm
+ * ở một chỗ, và lời giải thế "Nên/Không nên" chỉ hiện cho phía đang xem.
  */
 export function StrategyPage() {
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
@@ -52,11 +57,9 @@ export function StrategyPage() {
   }, [board])
 
   /**
-   * Bảng chú giải ô màu: mỗi dòng nói RÕ ô nào được tô và vì sao (nhãn viết tay
-   * trong dữ liệu). Trước đây các nhãn này chỉ nằm trong dữ liệu mà không hiện ra,
-   * nên bé thấy ô xanh/đỏ mà không biết chúng đang chỉ điều gì.
-   *
-   * Gom theo nhãn để hai ô cùng ý nghĩa không chiếm hai dòng.
+   * Chú giải ô màu, gom theo nhãn để hai ô cùng ý nghĩa không chiếm hai dòng.
+   * Nằm NGAY TRONG khung lời giải (không phải khung riêng) vì nó trả lời đúng câu
+   * "vì sao ô này được tô màu" của khung đó.
    */
   const legend = useMemo(() => {
     const byLabel = new Map<string, string[]>()
@@ -101,7 +104,11 @@ export function StrategyPage() {
                   {activePrinciple.order}. {activePrinciple.title}
                 </div>
                 <div className="hidden truncate text-[0.7rem] font-bold text-ink-500 sm:block">
-                  {hidingAnswer ? '🔎 Bé đang xem quân Trắng' : demoSide === 'good' ? '✅ Thế cờ NÊN làm' : '⚠️ Thế cờ KHÔNG NÊN'}
+                  {hidingAnswer
+                    ? '🔎 Bé đang xem quân Trắng'
+                    : demoSide === 'good'
+                      ? '✅ Thế cờ NÊN làm'
+                      : '⚠️ Thế cờ KHÔNG NÊN'}
                 </div>
               </div>
             </div>
@@ -140,16 +147,25 @@ export function StrategyPage() {
                 >
                   Không nên
                 </KidButton>
-                <KidButton size="sm" variant="ghost" onClick={() => {
-                  setQuiz(false)
-                  setAnswer(null)
-                }}>
+                <KidButton
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setQuiz(false)
+                    setAnswer(null)
+                  }}
+                >
                   Xem bài học
                 </KidButton>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
-                <Segmented options={DEMO_OPTIONS} value={demoSide} onChange={setDemoSide} size="sm" />
+                <Segmented
+                  options={DEMO_OPTIONS}
+                  value={demoSide}
+                  onChange={setDemoSide}
+                  size="sm"
+                />
                 <KidButton id="kid-principle-quiz" variant="sun" size="sm" onClick={startQuiz}>
                   🔎 Thử xem bé hiểu chưa
                 </KidButton>
@@ -160,153 +176,167 @@ export function StrategyPage() {
       />
 
       <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
-        <Panel id="kid-principle-check">
-          <h3 className="text-lg font-extrabold text-brand-900">{quiz ? '🔎 Bé quan sát rồi chọn nhé' : '💡 Nhìn bàn cờ, hiểu nguyên tắc'}</h3>
-          <p className="mt-1 text-base font-bold text-brand-700">{activePrinciple.ask}</p>
-          {quiz && (
-            <div id="kid-principle-feedback" role="status" className="mt-2 rounded-xl bg-brand-50 p-3 text-base font-bold text-brand-800">
-              {answer === null ? 'Nhìn quân Trắng trên bàn: cách sắp xếp này NÊN làm hay KHÔNG NÊN? Bé nói một lý do rồi chọn nhé.'
-                : answer === 'correct' ? '✅ Đúng rồi! Bé chỉ lên bàn cờ và nói vì sao nhé.'
-                : '🌱 Chưa đúng cũng không sao! Cùng xem lời giải bên dưới rồi thử lại nhé.'}
-            </div>
-          )}
-          {quiz && answer !== null && (
-            <KidButton id="kid-principle-quiz-again" className="mt-2" size="sm" variant="sun" onClick={startQuiz}>Thử một lượt nữa</KidButton>
-          )}
-          {!hidingAnswer && <div className="mt-2 grid gap-2">
-            {/*
-              Khung lời giải đổi hẳn MÀU theo thế đang xem (xanh = nên, đỏ =
-              không nên) và nói rõ nó đang khoe thế nào. Nhờ vậy chỉ cần liếc một
-              cái là bé biết mình đang nhìn thế "làm đúng" hay "làm sai".
-            */}
-            <div
-              id="kid-principle-note"
-              className={`rounded-2xl border-2 px-3 py-2 text-base font-bold leading-relaxed ${
-                demoSide === 'good'
-                  ? 'border-leaf-300 bg-leaf-50 text-leaf-800'
-                  : 'border-coral-300 bg-coral-50 text-coral-800'
-              }`}
-            >
-              <b className="font-extrabold">
-                {demoSide === 'good' ? '✅ Thế cờ NÊN làm: ' : '⚠️ Thế cờ KHÔNG NÊN: '}
-              </b>
-              {board.note}
-            </div>
-            {/*
-              Bảng chú giải ô màu: đọc thẳng từ nhãn viết tay trong dữ liệu, nên
-              bé biết chính xác ô nào đang chỉ điều gì thay vì đoán theo màu.
-            */}
-            {legend.length > 0 && (
-              <ul
-                id="kid-principle-legend"
-                className="grid gap-1"
-                aria-label="Vì sao các ô được tô màu"
-              >
-                {legend.map((entry) => (
-                  <li
-                    key={entry.label}
-                    className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-[0.7rem] font-bold ${
-                      demoSide === 'good'
-                        ? 'bg-leaf-50 text-leaf-800 ring-1 ring-leaf-200'
-                        : 'bg-coral-50 text-coral-800 ring-1 ring-coral-200'
-                    }`}
-                  >
-                    {/* Tên ô viết THƯỜNG (d4) cho khớp cách viết trên bàn cờ và
-                        trong biên bản cờ - bé không phải học hai kiểu viết. */}
-                    <span
-                      className={`shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[0.65rem] font-extrabold text-white ${
-                        demoSide === 'good' ? 'bg-leaf-600' : 'bg-coral-600'
-                      }`}
-                    >
-                      {entry.squares.join(' ')}
-                    </span>
-                    <span className="min-w-0">{entry.label}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>}
-        </Panel>
+        {/*
+          Lưới 10 ô thay cho danh sách xổ dọc: bé/ba mẹ thấy CẢ 10 nguyên tắc trong
+          một màn, bấm ô nào là bài đó hiện ra ở khung dưới - đúng kiểu "tra cứu".
+        */}
         <Panel id="kid-gold-principles">
           <SectionTitle
             icon="🏅"
-            title="10 nguyên tắc vàng"
-            subtitle="Mười thói quen giúp bé chơi cờ giỏi hơn mỗi ngày"
+            title="7 nguyên tắc vàng"
+            subtitle="Bấm một ô để học · cả 7 nằm gọn một màn"
             info="principles"
           />
-          <p className="mt-1 text-[0.7rem] font-bold text-brand-600">
-            👆 Bấm một nguyên tắc để soi hai thế cờ NÊN / KHÔNG NÊN lên bàn cờ lớn.
-          </p>
-          <div className="mt-2 grid gap-1.5">
+          <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
             {GOLD_PRINCIPLES.map((principle) => {
-              const open = openPrinciple === principle.id
+              const open = activePrinciple.id === principle.id
               return (
-                <div
+                <button
                   key={principle.id}
-                  className={`rounded-2xl border-2 px-2.5 py-2 transition-all ${
-                    open ? 'border-gold-300 bg-gold-50' : 'border-brand-100 bg-white'
+                  type="button"
+                  data-principle-id={principle.id}
+                  onClick={() => togglePrinciple(principle.id)}
+                  aria-expanded={open}
+                  aria-label={`${principle.order}. ${principle.title}`}
+                  className={`flex min-h-9 min-w-0 items-center gap-1.5 rounded-lg border-2 px-1.5 py-1 text-left transition-all active:translate-y-[1px] ${
+                    open
+                      ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
+                      : 'border-sand-200 bg-white hover:border-brand-400'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      data-principle-id={principle.id}
-                      onClick={() => togglePrinciple(principle.id)}
-                      aria-expanded={open}
-                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                    >
-                      <span
-                        className={`grid size-6 shrink-0 place-items-center rounded-full text-[0.7rem] font-extrabold ${
-                          open ? 'bg-gold-400 text-gold-950' : 'bg-brand-100 text-brand-700'
-                        }`}
-                      >
-                        {principle.order}
-                      </span>
-                      <span className="min-w-0 flex-1 text-sm font-extrabold text-brand-900">
-                        {principle.emoji} {principle.title}
-                      </span>
-                      <span aria-hidden className="shrink-0 text-brand-600">
-                        {open ? '▾' : '▸'}
-                      </span>
-                    </button>
-                    {!hidingAnswer && <InfoButton topic={principle.info} />}
-                  </div>
-
-                  {open && !hidingAnswer && (
-                    <div className="animate-pop-in mt-1.5 grid gap-1.5">
-                      <p className="text-[0.7rem] font-bold leading-snug text-brand-600">
-                        {principle.why}
-                      </p>
-                      <p className="rounded-xl bg-leaf-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-leaf-800 ring-1 ring-leaf-200">
-                        ✅ Nên: {principle.good.note}
-                      </p>
-                      <p className="rounded-xl bg-coral-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-coral-800 ring-1 ring-coral-200">
-                        ⚠️ Không nên: {principle.bad.note}
-                      </p>
-                      {principle.tips && (
-                        <ul className="grid gap-0.5 rounded-xl bg-white px-2.5 py-1.5 ring-1 ring-info-200">
-                          {principle.tips.map((tip) => (
-                            <li
-                              key={tip}
-                              className="flex gap-1.5 text-[0.7rem] font-bold leading-snug text-info-800"
-                            >
-                              <span aria-hidden className="shrink-0">
-                                {principle.emoji}
-                              </span>
-                              <span>{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      <p className="text-[0.7rem] font-extrabold text-gold-700">
-                        🎵 Khẩu quyết: “{principle.rhyme}”
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  <span
+                    className={`grid size-4 shrink-0 place-items-center rounded-full text-[0.55rem] font-extrabold text-white ${
+                      open
+                        ? 'bg-gradient-to-br from-brand-700 to-brand-500 animate-pulse-ring'
+                        : 'bg-gradient-to-br from-brand-700 to-brand-500'
+                    }`}
+                  >
+                    {principle.order}
+                  </span>
+                  <span className="text-xs leading-none" aria-hidden>
+                    {principle.emoji}
+                  </span>
+                  <span
+                    className={`line-clamp-2 min-w-0 flex-1 text-[0.72rem] font-extrabold leading-tight ${
+                      open ? 'text-brand-900' : 'text-brand-800'
+                    }`}
+                  >
+                    {principle.title}
+                  </span>
+                </button>
               )
             })}
           </div>
+        </Panel>
+
+        {/*
+          Khung bài học duy nhất: một mạch đọc từ trên xuống, thay cho bố cục cũ hai
+          khung (một khung câu hỏi + một khung danh sách) khiến bé phải nhảy mắt
+          qua lại và đọc trùng nội dung.
+        */}
+        <Panel id="kid-principle-check" className="grid gap-1.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="grid size-7 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-300 text-sm font-extrabold text-gold-950">
+              {activePrinciple.order}
+            </span>
+            <h3 className="min-w-0 flex-1 truncate text-base font-extrabold text-brand-900">
+              {activePrinciple.emoji} {activePrinciple.title}
+            </h3>
+            {!hidingAnswer && <InfoButton topic={activePrinciple.info} />}
+          </div>
+
+          {/*
+            Khẩu quyết đặt ngay dưới tên: câu dễ thuộc nhất phải thấy trước tiên.
+            Ẩn khi bé đang làm thử thách để không lộ đáp án.
+          */}
+          {!hidingAnswer && (
+            <p className="rounded-xl bg-gold-50 px-2.5 py-1 text-[0.72rem] font-extrabold text-gold-800 ring-1 ring-gold-200">
+              🎵 Khẩu quyết: “{activePrinciple.rhyme}”
+            </p>
+          )}
+
+          <p className="text-sm font-bold leading-snug text-brand-800">
+            <span aria-hidden>🤔 </span>
+            {quiz ? 'Thế cờ này nên làm hay không nên?' : activePrinciple.ask}
+          </p>
+
+          {quiz && (
+            <div
+              id="kid-principle-feedback"
+              role="status"
+              className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-sm font-bold text-brand-800"
+            >
+              {answer === null
+                ? 'Bé nhìn quân Trắng trên bàn, nói một lý do rồi chọn Nên / Không nên nhé.'
+                : answer === 'correct'
+                  ? '✅ Đúng rồi! Bé chỉ lên bàn cờ và nói vì sao nhé.'
+                  : '🌱 Chưa đúng cũng không sao! Cùng xem thế cờ đang soi bên dưới rồi thử lại nhé.'}
+            </div>
+          )}
+          {quiz && answer !== null && (
+            <KidButton
+              id="kid-principle-quiz-again"
+              size="sm"
+              variant="sun"
+              onClick={startQuiz}
+            >
+              Thử một lượt nữa
+            </KidButton>
+          )}
+
+          {!hidingAnswer && (
+            <>
+              <p className="text-[0.72rem] font-bold leading-snug text-brand-600">
+                <b className="text-brand-800">Vì sao?</b> {activePrinciple.why}
+              </p>
+
+              <div
+                id="kid-principle-note"
+                className={`grid gap-1 rounded-2xl border-2 px-2.5 py-1.5 text-sm font-bold leading-snug ${
+                  demoSide === 'good'
+                    ? 'border-leaf-300 bg-leaf-50 text-leaf-800'
+                    : 'border-coral-300 bg-coral-50 text-coral-800'
+                }`}
+              >
+                <p>
+                  <b className="font-extrabold">
+                    {demoSide === 'good' ? '✅ Thế cờ NÊN làm: ' : '⚠️ Thế cờ KHÔNG NÊN: '}
+                  </b>
+                  {board.note}
+                </p>
+                {legend.length > 0 && (
+                  <ul
+                    id="kid-principle-legend"
+                    className="flex flex-wrap gap-1"
+                    aria-label="Vì sao các ô được tô màu"
+                  >
+                    {legend.map((entry) => (
+                      <li
+                        key={entry.label}
+                        className="flex items-center gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-[0.68rem] font-bold"
+                      >
+                        <span
+                          className={`shrink-0 rounded px-1 font-mono text-[0.62rem] font-extrabold text-white ${
+                            demoSide === 'good' ? 'bg-leaf-600' : 'bg-coral-600'
+                          }`}
+                        >
+                          {entry.squares.join(' ')}
+                        </span>
+                        <span className="min-w-0">{entry.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {activePrinciple.tips && activePrinciple.tips.length > 0 && (
+                <p className="rounded-xl bg-info-50 px-2.5 py-1 text-[0.72rem] font-bold leading-snug text-info-800 ring-1 ring-info-200">
+                  <span aria-hidden>{activePrinciple.emoji} </span>
+                  {activePrinciple.tips.join(' · ')}
+                </p>
+              )}
+            </>
+          )}
         </Panel>
       </div>
     </div>

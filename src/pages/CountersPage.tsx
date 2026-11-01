@@ -78,12 +78,24 @@ export function CountersPage() {
   /** Lọc danh sách theo nước mở đầu của đối thủ (null = xem tất cả). */
   const [moveFilter, setMoveFilter] = useState<string | null>(null)
   /**
+   * Ô bé vừa bấm trong nội dung bài (ví dụ bấm “♗ Tượng c5”) → tô sáng đúng ô đó
+   * trên bàn cờ. Bé không phải tự dò toạ độ: bấm vào chữ là thấy quân ấy đứng đâu.
+   * Bấm lại đúng ô đó thì bỏ tô.
+   */
+  const [pickedSquare, setPickedSquare] = useState<string | null>(null)
+  /**
    * Mở khung “Tham khảo thêm” (các bài ít gặp). MẶC ĐỊNH ĐÓNG, giống tab Khai cuộc:
    * chỉ bày 3 bài thông dụng nhất cho gọn, cần bài khác thì bấm mở.
    */
   const [showExtras, setShowExtras] = useState(false)
-  /** Chế độ học: xem từng bước (như cũ) hay TỰ kéo quân đáp trả. */
-  const [mode, setMode] = useState<Mode>('view')
+  /**
+   * Bé đang XEM LẠI một nước cũ (bấm ◀/▶ ở chế độ luyện). Trong lúc xem lại thì tạm
+   * dừng việc đối thủ tự đi, nếu không bé vừa lùi một bước là máy lại tiến tiếp ngay.
+   * Kéo đúng một nước là tự bỏ chế độ xem lại.
+   */
+  const [reviewing, setReviewing] = useState(false)
+  /** Chế độ học: xem từng bước hay TỰ kéo quân đáp trả. Mặc định TỰ ĐI để bé vào là thực hành ngay. */
+  const [mode, setMode] = useState<Mode>('practice')
   /** Có hiện mũi tên + tô sáng quân sắp đi không (chỉ dùng ở chế độ luyện). */
   const [hintVisible, setHintVisible] = useState(true)
   /** Nước bé vừa kéo sai - hiện băng đỏ nhắc thử lại (chỉ ở chế độ luyện). */
@@ -194,6 +206,7 @@ export function CountersPage() {
     setPly(0)
     setWrongInfo(null)
     setHintVisible(true)
+    setReviewing(false)
     awardedRef.current = false
     setResult(null)
     setConfetti(false)
@@ -204,11 +217,11 @@ export function CountersPage() {
    * còn đối thủ đáp trả đúng như một ván thật.
    */
   useEffect(() => {
-    if (mode !== 'practice' || !lesson || atLeaf) return
+    if (mode !== 'practice' || reviewing || !lesson || atLeaf) return
     if (isKidPly(ply)) return
     const timer = setTimeout(() => setPly((current) => current + 1), 650)
     return () => clearTimeout(timer)
-  }, [mode, lesson, ply, atLeaf, isKidPly])
+  }, [mode, reviewing, lesson, ply, atLeaf, isKidPly])
 
   /** Bé đi hết cả dòng → ghi nhận đã hiểu bài đối phó này (luyện xong thì mừng lớn). */
   useEffect(() => {
@@ -286,6 +299,20 @@ export function CountersPage() {
     }
   }, [ply, moves, fens])
 
+  /** Ô của cụm “quân + ô” bé vừa bấm trong bài (tím, cùng gam ô cần nhìn). */
+  const pickedSquares = useMemo(
+    () =>
+      pickedSquare
+        ? {
+            [pickedSquare]: {
+              backgroundColor: BOARD_MARKS.focusFill,
+              boxShadow: BOARD_MARKS.focusRing,
+            },
+          }
+        : undefined,
+    [pickedSquare],
+  )
+
   /** Băng giải thích: nước của bé thì lấy lời bình, nước đối thủ thì nhắc xem. */
   const bannerState = useMemo(() => {
     if (!lesson) return null
@@ -334,11 +361,34 @@ export function CountersPage() {
     },
     [totalPlies],
   )
-  const goBack = useCallback(() => goStep(-1), [goStep])
-  const goForward = useCallback(() => goStep(1), [goStep])
+  /**
+   * Ở chế độ luyện, bấm Lùi/Tiến là **xem lại** nước vừa đi: tạm dừng việc đối thủ
+   * tự đi, để bé ngắm lại thế cờ thay vì bị máy kéo đi tiếp ngay.
+   */
+  const goBack = useCallback(() => {
+    setReviewing(true)
+    goStep(-1)
+  }, [goStep])
+  const goForward = useCallback(() => {
+    setReviewing(true)
+    goStep(1)
+  }, [goStep])
 
   // ◀ ▼ lùi, ▶ ▲ tiến - chỉ ở chế độ xem; chế độ luyện bé đi bằng kéo-thả.
   useArrowKeys({ enabled: mode === 'view', onPrev: goBack, onNext: goForward })
+
+  /**
+   * Bấm một cụm “quân + ô” trong bài: tô sáng ô đó trên bàn cờ, bấm lại thì bỏ tô.
+   */
+  const pickSquare = useCallback(
+    (square: string) => setPickedSquare((current) => (current === square ? null : square)),
+    [],
+  )
+
+  // Đổi bài hoặc đi tới nước khác thì bỏ tô cũ: ô đó có thể không còn quân ấy nữa.
+  useEffect(() => {
+    setPickedSquare(null)
+  }, [lessonId, ply])
 
   const changeSide = (next: Side) => {
     setViewSide(next)
@@ -386,6 +436,7 @@ export function CountersPage() {
             {item.opponentOpening} · <MoveText text={item.counterName} />
           </span>
           {/* Ý đồ ngắn để tra cứu nhanh: đọc một dòng là hiểu vì sao đáp như vậy. */}
+          {/* Ý đồ gói trong 2 dòng ngắn: đọc hết câu, không bị cắt giữa chừng. */}
           {!compact && (
             <span className="mt-0.5 line-clamp-2 block text-[0.66rem] font-bold leading-snug text-brand-400">
               <MoveText text={item.idea} />
@@ -487,12 +538,14 @@ export function CountersPage() {
     }
     if (soundOn) playMove()
     setWrongInfo(null)
+    setReviewing(false)
     setPly((current) => current + 1)
     return true
   }
 
   /** Chơi lại từ nước đầu ở chế độ luyện. */
   const resetPractice = () => {
+    setReviewing(false)
     setPly(0)
     setHintVisible(true)
     setWrongInfo(null)
@@ -526,7 +579,7 @@ export function CountersPage() {
             interactive={interactive}
             heatmap={heatmap}
             arrows={arrows}
-            extraSquareStyles={{ ...lastMoveSquares, ...nextMoveSquares }}
+            extraSquareStyles={{ ...lastMoveSquares, ...nextMoveSquares, ...pickedSquares }}
             announce={announceSan}
             onDrop={handleDrop}
           />
@@ -591,24 +644,29 @@ export function CountersPage() {
             className="rounded-2xl bg-coral-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-coral-800 ring-1 ring-coral-200"
           >
             🚩 <b className="text-coral-900">Đối thủ muốn:</b>{' '}
-            <MoveText text={lesson.opponentPlan} />
+            <MoveText
+              text={lesson.opponentPlan}
+              onPickSquare={pickSquare}
+              pickedSquare={pickedSquare}
+            />
           </p>
           <div
             id="kid-counter-name"
             className="rounded-2xl border-2 border-[#6d5bc7] bg-[rgba(126,106,209,0.12)] px-2.5 py-1.5 text-sm font-extrabold text-brand-900"
           >
-            🛡️ Cách của bé: <MoveText text={lesson.counterName} />
-            <span className="mt-0.5 block text-[0.7rem] font-bold text-brand-500">
-              {lesson.emoji} {lesson.englishName} ·{' '}
-              {lesson.opponentSide === 'white' ? 'đối thủ cầm Trắng' : 'đối thủ cầm Đen'}
-            </span>
+            🛡️ Cách của bé:{' '}
+            <MoveText
+              text={lesson.counterName}
+              onPickSquare={pickSquare}
+              pickedSquare={pickedSquare}
+            />
           </div>
           <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
-            <MoveText text={lesson.idea} />
+            <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
           </p>
           <div className="grid gap-1">
             <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-              ✅ Ba việc bé cần nhớ
+              ✅ Ba việc cần nhớ
             </div>
             <ul id="kid-counter-points" className="grid gap-1">
               {lesson.points.map((point, index) => (
@@ -620,12 +678,19 @@ export function CountersPage() {
                     {index + 1}
                   </span>
                   <span>
-                    <MoveText text={point} />
+                    <MoveText
+                      text={point}
+                      onPickSquare={pickSquare}
+                      pickedSquare={pickedSquare}
+                    />
                   </span>
                 </li>
               ))}
             </ul>
           </div>
+          <p className="text-[0.62rem] font-bold text-brand-400">
+            👆 Bấm vào “♗ Tượng c5” trong bài để bàn cờ tô sáng ô đó.
+          </p>
           {lesson.openingId && (
             <KidButton
               id="kid-counter-opening"
@@ -722,38 +787,42 @@ export function CountersPage() {
             onChange={(next) => setMode(next)}
             size="sm"
           />
+          {/*
+            Lùi / Tiến có mặt ở CẢ HAI chế độ: đang ở chế độ luyện mà muốn ngắm lại
+            nước vừa đi thì bấm luôn, không phải đổi sang chế độ Xem rồi quay lại.
+          */}
           <div className="flex flex-wrap items-center gap-2">
+            <KidButton
+              id="kid-counter-back"
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              disabled={ply === 0}
+              title="Lùi một nước để xem lại"
+              aria-keyshortcuts="ArrowLeft ArrowDown"
+            >
+              ◀ Lùi
+            </KidButton>
+            <KidButton
+              id="kid-counter-forward"
+              variant={mode === 'view' ? 'sun' : 'ghost'}
+              size="sm"
+              onClick={goForward}
+              disabled={atLeaf}
+              title="Tiến một nước"
+              aria-keyshortcuts="ArrowRight ArrowUp"
+            >
+              Tiến ▶
+            </KidButton>
             {mode === 'view' ? (
-              <>
-                <KidButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={goBack}
-                  disabled={ply === 0}
-                  title="Lùi một nước (hoặc bấm phím ◀ / ▼)"
-                  aria-keyshortcuts="ArrowLeft ArrowDown"
-                >
-                  ◀ Lùi
-                </KidButton>
-                <KidButton
-                  variant="sun"
-                  size="sm"
-                  onClick={goForward}
-                  disabled={atLeaf}
-                  title="Tiến một nước (hoặc bấm phím ▶ / ▲)"
-                  aria-keyshortcuts="ArrowRight ArrowUp"
-                >
-                  Tiến ▶
-                </KidButton>
-                <KidButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setPly(0)}
-                  disabled={ply === 0}
-                >
-                  🔄 Đầu
-                </KidButton>
-              </>
+              <KidButton
+                variant="ghost"
+                size="sm"
+                onClick={() => setPly(0)}
+                disabled={ply === 0}
+              >
+                🔄 Đầu
+              </KidButton>
             ) : (
               <>
                 <KidButton
@@ -775,7 +844,9 @@ export function CountersPage() {
             {mode === 'practice'
               ? atLeaf
                 ? '✅ Bé đã tự đáp trả trọn dòng này!'
-                : '🖐️ Kéo quân hoặc bấm quân rồi ô đích - đối thủ sẽ tự đáp lại'
+                : reviewing
+                  ? '👀 Đang xem lại nước vừa đi · ▶ để tiến, hoặc kéo quân đúng để đi tiếp'
+                  : '🖐️ Kéo quân hoặc bấm quân rồi ô đích - đối thủ sẽ tự đáp lại'
               : atLeaf && ply > 0
                 ? '✅ Bé đã xem trọn dòng đối phó này!'
                 : `👀 Đang xem nước ${kidStep} · ⌨️ hoặc bấm ◀ ▶ ▲ ▼`}

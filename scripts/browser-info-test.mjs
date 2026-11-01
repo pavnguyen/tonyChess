@@ -172,7 +172,11 @@ if (switched === 'not-found') {
 
 // --- Tab Trung cuộc: đòn chiến thuật mặc định (Bắt đôi).
 await navigate('/tactics')
-await expectTopic('theme:attack', 'Tấn công Vua', 'Trung cuộc - chủ đề “Tấn công Vua”')
+await expectTopic(
+  'theme:win-material',
+  'Trừng phạt quân treo',
+  'Trung cuộc - chủ đề “Trừng phạt quân treo”',
+)
 
 // --- Tab Tàn cuộc: không còn nút ⓘ (các thế luyện không có nội dung tham khảo kèm theo).
 //     Bài browser-endgame-test.mjs lo phần dải thế luyện.
@@ -182,6 +186,11 @@ await navigate('/endgames')
 // --- Tab Chiến lược: thẻ 10 nguyên tắc vàng + khái niệm vị trí.
 await navigate('/strategy')
 await expectTopic('principles', 'nguyên tắc', 'Thẻ 10 nguyên tắc vàng')
+// Mỗi nguyên tắc không còn một nút ⓘ riêng trong danh sách: nút ⓘ nằm trong KHUNG
+// BÀI ĐANG HỌC và đổi theo nguyên tắc được chọn. Vì vậy phải chọn “Đặt Mã lên tiền
+// đồn” trước rồi mới kiểm nội dung tiền đồn.
+await evaluate(`document.querySelector('[data-principle-id="outpost"]')?.click()`)
+await sleep(300)
 await expectTopic('positional:outpost', 'Tiền đồn', 'Chiến lược vị trí - Tiền đồn')
 
 // --- 4. Bảng nằm trọn màn hình và không làm trang tràn ngang.

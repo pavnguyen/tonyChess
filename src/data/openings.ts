@@ -14,7 +14,11 @@ import { OPENING_TREES } from './openingTrees.ts'
  * tự này). Xếp theo hai tiêu chí của phụ huynh:
  *   1. xác suất gặp trên bàn cờ thật (khai cuộc càng phổ biến càng học trước),
  *   2. dễ triển khai quân và mạnh về lâu dài (không cần thuộc nhiều biến).
- * Mỗi bài có `rankNote` - một nhãn 2-3 chữ nói vì sao nó đứng ở vị trí đó.
+ *
+ * LƯU Ý VỀ TÍNH TRUNG THỰC: đây là **lựa chọn sư phạm**, KHÔNG phải kết quả đo từ
+ * cơ sở dữ liệu nào. Vì vậy `rankNote` chỉ nói lý do DẠY HỌC ("Dễ chơi nhất",
+ * "Nhiều lý thuyết", "Học sau cùng"…) - không dùng chữ nghe như số liệu thống kê
+ * ("Gặp nhiều nhất", "Phổ biến") để phụ huynh không hiểu nhầm là có dẫn chứng.
  */
 interface OpeningMeta {
   id: string
@@ -40,8 +44,8 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇮🇹',
     tagline: 'Tốt e nhảy vọt, Tượng nhắm tim Vua Đen ở ô f7.',
-    goal: 'Tượng c4 nhắm ô f7 yếu nhất của Vua Đen; giữ trung tâm bằng c3-d3 rồi đẩy d4 đúng lúc - mục tiêu là f7, không phải ăn quân.',
-    rankNote: 'Gặp nhiều nhất',
+    goal: 'Tượng c4 nhắm ô f7 yếu của Vua Đen; giữ trung tâm bằng c3-d3 rồi đẩy d4 đúng lúc - nhắm f7, không ăn quân vội.',
+    rankNote: 'Dễ học, hay gặp',
   },
   {
     id: 'london',
@@ -51,8 +55,8 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇬🇧',
     tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
-    goal: 'Dựng khung c3-d4-e3 với Tượng f4 rồi nhập thành cho chắc; sau đó đổi Tượng ô đen của Đen và mở cánh Vua bằng h4-h5.',
-    rankNote: 'Hay nhất',
+    goal: 'Dựng khung c3-d4-e3 với Tượng f4 rồi nhập thành cho chắc; sau đó đổi Tượng ô đen của Đen và mở cột h bằng h4-h5.',
+    rankNote: 'Dễ chơi nhất',
   },
   {
     id: 'queens-gambit',
@@ -63,7 +67,7 @@ const META: OpeningMeta[] = [
     emoji: '🇭🇺',
     tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
     goal: 'Dâng Tốt c4 để đổi được Tốt d5 và lấy ô d4 làm bàn đạp; con đường tấn công chính là cột c, không phải ăn Tốt.',
-    rankNote: 'Phổ biến',
+    rankNote: 'Bài tiếp theo',
   },
   {
     id: 'ruy-lopez',
@@ -87,7 +91,7 @@ const META: OpeningMeta[] = [
     emoji: '🏝️',
     tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
     goal: 'Kiểm soát ô d5 từ xa bằng Tốt c4 rồi mới mở trung tâm: English dạy bé chơi theo Ô, không theo nước.',
-    rankNote: 'Ít gặp hơn',
+    rankNote: 'Học sau cùng',
   },
 
   // ── BÉ CẦM ĐEN ──────────────────────────────────────────────────────────
@@ -99,8 +103,8 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🌋',
     tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
-    goal: 'Đổi Tốt c5 lấy Tốt d4 để Trắng mất trung tâm, rồi phản công cánh Hậu bằng b5-b4 và cột c - Sicilian thắng bằng cột c.',
-    rankNote: 'Gặp nhiều nhất',
+    goal: 'Đổi Tốt c5 lấy Tốt d4 để Trắng mất trung tâm, rồi phản công cánh Hậu bằng b5-b4 và cột c.',
+    rankNote: 'Phản công mạnh',
   },
   {
     id: 'caro-kann',
@@ -110,8 +114,8 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
-    goal: 'Đưa Tượng c8 ra f5 trước khi đóng Tốt e6 để Tượng không bị nhốt, rồi mới đánh vào d4 bằng c5 - đó là cả bí quyết Caro-Kann.',
-    rankNote: 'Hay nhất',
+    goal: 'Đưa Tượng c8 ra f5 TRƯỚC khi đóng Tốt e6 để Tượng không bị nhốt, rồi đánh vào d4 bằng c5.',
+    rankNote: 'Dễ chơi nhất',
   },
   {
     id: 'french',
@@ -121,7 +125,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🇫🇷',
     tagline: 'Dựng hàng rào Tốt vững như thành rồi phản công vào chân đế d4.',
-    goal: 'Hàng rào e6-d5 giam Tốt e4 của Trắng, rồi đánh vào chân đế d4 bằng c5 - chấp nhận chật một chút để Trắng hết đường tiến.',
+    goal: 'Hàng rào e6-d5 giam Tốt e4 của Trắng, rồi đánh vào chân đế d4 bằng c5 - chật một chút nhưng Trắng hết đường tiến.',
     rankNote: 'Chắc, hơi chật',
   },
   {

@@ -47,7 +47,7 @@ export function TacticsPage() {
   const search = useSearch({ from: '/tactics' })
 
   const [theme, setTheme] = useState<BestMoveTheme>(() =>
-    isBestMoveTheme(search.theme) ? search.theme : 'attack',
+    isBestMoveTheme(search.theme) ? search.theme : 'win-material',
   )
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<'solve' | 'solved'>('solve')
@@ -87,7 +87,6 @@ export function TacticsPage() {
     () => (active ? [active.bestSan, ...(active.continuation ?? [])] : []),
     [active],
   )
-  const hasContinuation = solutionLine.length > 1
   const solved = phase === 'solved'
   /** Đang chờ máy đáp trả (nửa nước lẻ) → tạm khoá bàn cờ. */
   const waitingReply = !solved && !previewing && lineIndex % 2 === 1
@@ -282,8 +281,8 @@ export function TacticsPage() {
     setConfetti(true)
     if (soundOn) playWin()
     setResult({
-      emoji: hasContinuation ? '🏁' : '🎯',
-      title: hasContinuation ? 'Đánh tiếp tuyệt vời!' : 'Nước hay nhất!',
+      emoji: '🏁',
+      title: 'Đánh tiếp tuyệt vời!',
       message: `${active.explanation} Khẩu quyết: “${active.rhyme}”.`,
     })
   }
@@ -339,7 +338,7 @@ export function TacticsPage() {
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
-              {hasContinuation && !solved && (
+              {!solved && (
                 <span
                   id="kid-tactic-step"
                   className="rounded-full bg-info-100 px-3 py-1 text-xs font-extrabold text-info-700"
@@ -525,11 +524,10 @@ export function TacticsPage() {
                 </span>
               </div>
               <div className="text-base font-extrabold text-gold-900">{active.title}</div>
-              {hasContinuation && (
-                <div className="mt-1 text-xs font-bold text-gold-700">
-                  🏁 Thế này phải <b>đánh tiếp {kidPlies - 1}</b> nước nữa mới kết liễu đấy!
-                </div>
-              )}
+              <div className="mt-1 text-xs font-bold text-gold-700">
+                🏁 Cả thế này là chuỗi <b>{kidPlies} nước</b>: bé đi, máy đáp, rồi bé đi
+                tiếp mới thắng.
+              </div>
               {wrongTries > 0 && (
                 <div className="mt-1 text-xs font-bold text-gold-700">💡 {active.hint}</div>
               )}

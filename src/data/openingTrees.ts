@@ -50,9 +50,11 @@ const LONDON: OpeningTreeData = {
   plan: {
     title: 'Ba việc: dựng khung - đổi Tượng xấu - đánh cánh Vua',
     points: [
-      'Đưa Tượng f1 ra d3 (hoặc e2) rồi nhập thành - xong ba nước là có thế, không phải học thuộc.',
-      'Đổi Tượng f4 lấy Tượng g7: Đen mất Tượng ô đen thì các ô đen quanh Vua Đen thành mục tiêu.',
-      'Đen dồn sang cánh Hậu thì đẩy h4-h5 mở cột h rồi đưa Xe vào - cánh nào ít quân Đen hơn thì đánh.',
+      'Đưa Tượng f1 ra d3 rồi nhập thành: ba nước là xong khung.',
+      // Trong London Tượng ô đen của Đen đi ra d6 (không phải g7 như King's Indian),
+      // và Tượng của bé đã sang g3 - nên phải đổi ở d6 mới đúng thế cờ.
+      'Đổi Tượng g3 lấy Tượng d6: Đen mất Tượng ô đen thì các ô đen quanh Vua Đen thành mục tiêu.',
+      'Đen dồn sang cánh Hậu thì đẩy h4-h5, đổi Tốt mở cột h rồi đưa Xe sang đánh Vua.',
     ],
   },
 }
@@ -77,7 +79,9 @@ const ITALIAN: OpeningTreeData = {
     title: 'Ba việc: giữ ô f7 trong tầm ngắm',
     points: [
       'Đẩy d4 khi Mã f3 và Tốt c3 đã yểm trợ - mở trung tâm cho Tượng c4 nhắm f7.',
-      'Đưa Mã b1 lên d2 rồi sang f1: từ f1 Mã nhảy g3 tấn công cánh Vua.',
+      // `...Xe f1 sang e1 nhường chỗ` BẮT BUỘC phải có: nhập thành xong thì Xe đang
+      // đứng ở f1, nên câu “sang f1” mà không dọn Xe là nước không đi được.
+      'Đưa Mã b1 lên d2, cho Xe f1 sang e1 nhường chỗ, rồi Mã f1 nhảy g3 đánh cánh Vua.',
       'Giữ Tượng c4, đừng đổi vội: hễ Đen sơ hở ở f7 là có nước chiếu hoặc ăn quân.',
     ],
   },
@@ -130,7 +134,7 @@ const SICILIAN: OpeningTreeData = {
     points: [
       'Đánh cánh Hậu bằng ...b5 rồi đưa Tượng c8 lên b7: Tượng b7 nhắm ô g2 trước Vua Trắng.',
       'Đổi quân trên d4 rồi đưa Xe a8 sang cột c vừa mở - đó là đường tấn công chính.',
-      'Trắng nhập thành dài thì dồn Tốt b5-b4 đánh Vua: cánh Vua dài là yếu nhất.',
+      'Trắng nhập thành cánh Hậu thì dồn b5-b4, mở đường Tốt đánh thẳng vào Vua.',
     ],
   },
 }
@@ -158,7 +162,8 @@ const RUY_LOPEZ: OpeningTreeData = {
     points: [
       'Đẩy d3 rồi c3 trước, chỉ đẩy d4 khi Xe và Tượng đã sẵn - mở sớm là tự phá ghim.',
       'Giữ Tượng ở b3 nhắm f7, đừng để Đen đuổi về rồi khoá cánh Vua.',
-      'Đưa Xe e1 giữ cột e, Mã b1 lên d2 chuyển f1 - cả hai đều nhắm cánh Vua Đen.',
+      // Ở dòng này Tốt d2 còn nguyên nên Mã b1 CHƯA sang d2 được - phải đẩy d3 trước.
+      'Giữ Xe e1 ở cột e; sau khi đẩy d3 thì Mã b1 sang d2 - cả hai nhắm cánh Vua Đen.',
     ],
   },
 }
@@ -186,7 +191,8 @@ const QUEENS_GAMBIT: OpeningTreeData = {
     points: [
       'Đổi Tốt trên d5 hoặc đẩy e4 khi Mã và Tượng đã yểm trợ - giữ d4 làm bàn đạp.',
       'Đưa Tượng f1 ra d3 nhắm Vua Đen, nhưng chỉ khi Tốt e đã đứng vững.',
-      'Nhập thành rồi đưa Xe a1 sang cột c: cột c là đường tấn công chính.',
+      // Ở dòng này Mã b1 ĐÃ đi (Nc3), b1 và c1 đều trống nên Xe sang c1 được ngay.
+      'Nhập thành rồi đưa Xe a1 sang c1: cột c là đường tấn công chính.',
     ],
   },
 }
@@ -212,7 +218,8 @@ const FRENCH: OpeningTreeData = {
   plan: {
     title: 'Ba việc: hàng rào e6-d5 - đánh d4 - giữ Tượng',
     points: [
-      'Dồn Tốt c5-c4 tấn công chân đế d4 - chân đế gãy là cả trung tâm Trắng sụp.',
+      // Tốt c4 KHÔNG tấn công d4 (nó chỉ đánh b3/d3) - phải là c5 đánh thẳng d4.
+      'Đẩy c5 đánh thẳng vào chân đế d4; đổi cxd4 khi có lợi là trung tâm Trắng sụp.',
       'Đẩy f6 tấn công Tốt e5 ngay khi Trắng đẩy e5 - đừng để Trắng yên xây thế.',
       'Đưa Tượng f8 ra e7 rồi nhập thành; giữ Tượng c8, đừng để bị nhốt sau hàng rào.',
     ],
@@ -266,7 +273,8 @@ const ENGLISH: OpeningTreeData = {
     title: 'Ba việc: giữ d5 - rồi mới mở trung tâm',
     points: [
       'Đẩy b4-b5 đánh cánh Hậu và mở đường Tượng c1 ra b2 - English đánh bằng CÁNH.',
-      'Đưa Xe a1 vào cột b hoặc cột c để dồn sức ép lên cánh Hậu.',
+      // Mã b1 đã đi Nc3 từ nước 2 nên b1 trống: Xe a1 vào b1 được ngay.
+      'Đưa Xe a1 sang b1, dồn sức ép lên cánh Hậu.',
       'Giữ Tượng g2 quét đường chéo dài, đổi quân ở trung tâm khi có lợi.',
     ],
   },

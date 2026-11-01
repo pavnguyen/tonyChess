@@ -25,14 +25,24 @@ export interface InfoEntry {
 }
 
 export const INFO: Record<string, InfoEntry> = {
+  popularity: {
+    title: 'Số % xuất hiện của khai cuộc',
+    tag: '📊 Nguồn số liệu',
+    body: [
+      'Số **% ván** là tỉ lệ các ván trong cơ sở dữ liệu của **Lichess Opening Explorer** đi tới đúng thế cờ của khai cuộc đó (bộ lọc mặc định của Lichess: mức 1000-2500, mọi thể loại).',
+      'Cách tính: nhân xác suất từng nước trên dòng chính (ví dụ 1.e4 ≈ 59% số ván, sau đó 1...e5 ≈ 40% số ván của nhánh đó…), nên đây là con số **xấp xỉ**, chỉ dùng để so sánh khai cuộc nào hay gặp hơn.',
+      'Con số này **không** nói khai cuộc mạnh hay yếu: nhiều khai cuộc rất mạnh nhưng ít gặp. Thứ tự học trong app là lựa chọn sư phạm, còn % chỉ cho biết bé sẽ gặp bài đó nhiều hay ít trên bàn cờ thật.',
+    ],
+  },
+
   // ── Về chính app này ───────────────────────────────────────────────────────
   app: {
     title: 'Nam An - Cờ Vua',
     tag: '⚙️ Về app này',
     body: [
-      'App này được một người bố viết cho con trai mình là Nam An, để bé 7 tuổi học cờ vua theo đúng cách một kỳ thủ trẻ tiến bộ: khai cuộc → trung cuộc → tàn cuộc.',
+      'App này được một người ba viết cho con trai mình là Nam An, để bé học cờ vua theo đúng cách một kỳ thủ trẻ tiến bộ: khai cuộc → trung cuộc → tàn cuộc.',
       'Mọi lời giảng, khẩu quyết và câu đố trong app đều do app tự viết (không chép lời bình của sách). Các chuỗi nước đi là dữ kiện cờ vua nên ai cũng dùng được.',
-      'App chạy hoàn toàn trên máy - không tài khoản, không máy chủ, không gửi dữ liệu của bé đi đâu.',
+      'App chạy hoàn toàn trên máy - không tài khoản, không máy chủ, không gửi dữ liệu đi đâu.',
     ],
   },
   board: {
@@ -57,10 +67,10 @@ export const INFO: Record<string, InfoEntry> = {
     title: 'Chú Máy - đối thủ tập luyện',
     tag: '🧠 Ý tưởng',
     body: [
-      'App có hai "chú Máy": một **bộ máy cờ viết bằng JavaScript** (chạy ngay, ba mức: Vừa - Khó - Siêu) và **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới) dùng cho mức Siêu.',
-      'Ở mức Vừa, chú Máy **cố tình đi hơi bừa** cho ván cờ vui và vừa sức bé; từ mức Khó trở lên thì chơi hết sức. Mức Dễ nhất đã bỏ khỏi chế độ Đấu tập vì quá dễ - nhưng các bài Tàn cuộc vẫn dùng mức Dễ cho bé tập kỹ thuật.',
+      'App có hai "chú Máy": **Dễ** = bộ máy JavaScript tự viết (tính trước 3 nước, không đi bừa) và **Khá** = **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới, tính trước 4 nước).',
+      'Tên mức chỉ để động viên bé, đừng hiểu là máy chơi yếu: cả hai đều chơi hết sức (tương đương mức Khó ~1500 và mức Siêu ~1800). Các bài Tàn cuộc cũng dùng chính bộ máy đó để đỡ quân.',
       'Trong lúc đấu, bé có nút **💡 Gợi ý**: máy tìm nước mạnh nhất cho **chính bé** rồi vẽ mũi tên vàng + khoanh quân đi và ô đích. Mỗi ván bé chỉ được gợi ý **3 lần** (nút đếm ngược 3-2-1 rồi tự khoá) - để bé tập tự suy nghĩ, ván mới lại có đủ 3 lượt.',
-      'Stockfish được tải theo nhu cầu (chỉ khi bé thật sự chọn mức Siêu) nên mở app vẫn nhanh.',
+      'Stockfish được tải theo nhu cầu (chỉ khi bé chọn mức Khá) nên mở app vẫn nhanh.',
     ],
   },
   notation: {
@@ -73,7 +83,7 @@ export const INFO: Record<string, InfoEntry> = {
     ],
   },
   principles: {
-    title: '10 nguyên tắc vàng 🏅',
+    title: '7 nguyên tắc vàng 🏅',
     tag: '🧠 Ý tưởng',
     body: [
       'Mười thói quen dưới đây áp dụng được ở **mọi ván, mọi thế cờ** - không phải học thuộc lòng một dòng biến nào.',
@@ -284,16 +294,7 @@ export const INFO: Record<string, InfoEntry> = {
     ],
   },
 
-  // ── 4 chủ đề "Tìm nước hay nhất" ───────────────────────────────────────────────────
-  'theme:attack': {
-    title: 'Tấn công Vua 👑',
-    tag: '♟️ Thế cờ',
-    body: [
-      'Khi Vua địch đã **lộ liễu hoặc bị nhốt sau quân của chính nó**, cả ván cờ có thể kết thúc chỉ trong một nước.',
-      'Việc của bé là soi xem Vua địch còn **ô nào để chạy** - nếu hết ô, chỉ cần đưa quân tới chiếu theo đúng hàng/cột là xong.',
-      'Cách nhớ: **Vua hết cửa, quân giáng đòn**.',
-    ],
-  },
+  // ── 6 chủ đề "Tìm nước hay nhất" (mỗi thế cờ là chuỗi ≥ 3 nước) ─────────────────
   'theme:win-material': {
     title: 'Trừng phạt quân treo 🎯',
     tag: '♟️ Thế cờ',
@@ -312,24 +313,6 @@ export const INFO: Record<string, InfoEntry> = {
       'Cách nhớ: **Hậu rời tay, ván đổi chiều**.',
     ],
   },
-  'theme:passed-pawn': {
-    title: 'Tốt thông tiến ♟️',
-    tag: '♟️ Thế cờ',
-    body: [
-      '**Tốt thông** là Tốt không còn Tốt đối phương nào chặn trên cùng cột - nó có thể tiến thẳng tới phong Hậu.',
-      'Nước hay nhất nhiều khi rất đơn giản: **cứ đẩy Tốt thông lên**, càng gần hàng 8 càng buộc địch phải lo.',
-      'Cách nhớ: **Tốt thông, cứ tiến**.',
-    ],
-  },
-  'theme:fork': {
-    title: 'Đòn bắt đôi 🍴',
-    tag: '♟️ Thế cờ',
-    body: [
-      '**Bắt đôi** là một nước mà quân bé **tấn công hai quân địch cùng lúc** - địch chỉ kịp cứu một, bé ăn quân còn lại.',
-      'Mã là “vua bắt đôi” vì nó nhảy hình chữ L tới những ô mà quân khác không tới được; Tốt và Hậu cũng bắt đôi rất hay.',
-      'Cách nhớ: **Một nước, hai mũi**.',
-    ],
-  },
   'theme:pin': {
     title: 'Đòn ghim 📌',
     tag: '♟️ Thế cờ',
@@ -337,15 +320,6 @@ export const INFO: Record<string, InfoEntry> = {
       '**Ghim** là khi một quân địch đứng chắn giữa quân bé và Vua (hoặc Hậu) địch trên cùng một đường - nó **không dám nhúc nhích**.',
       'Vì quân ghim không chạy được, bé cứ **đưa thêm quân tới vây** là bắt gọn nó.',
       'Cách nhớ: **Ghim rồi thì vồ**.',
-    ],
-  },
-  'theme:mate-two': {
-    title: 'Chiếu bí 2 nước 🏁',
-    tag: '♟️ Thế cờ',
-    body: [
-      'Không phải chiếu bí lúc nào cũng trong một nước. **Chiếu bí 2 nước** nghĩa là nước đầu ép Vua vào thế kẹt, nước sau mới là chiếu bí.',
-      'Vì địch chỉ còn đúng một cách đáp trả, bé **tính trước cả hai nước** là thắng chắc.',
-      'Cách nhớ: **Ép trước, bí sau**.',
     ],
   },
 
@@ -438,13 +412,9 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
     (id) => `gm:${id}`,
   ),
   ...[
-    'attack',
     'win-material',
     'win-queen',
-    'passed-pawn',
-    'fork',
     'pin',
-    'mate-two',
   ].map((id) => `theme:${id}`),
   ...['outpost', 'open-file', 'bishop-pair', 'seventh-rank'].map((id) => `positional:${id}`),
 ]
