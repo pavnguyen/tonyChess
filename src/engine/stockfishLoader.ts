@@ -9,7 +9,7 @@
  *  - **Nối tiếp (serialize)**: các yêu cầu xếp hàng, tránh hai lệnh `go` chồng nhau.
  */
 import type { EngineMove } from './minimax'
-import { extractBestMove, isReady, uciToEngineMove } from './uci'
+import { extractBestMove, extractScoreInfo, isReady, uciToEngineMove } from './uci'
 
 const ENGINE_FILE = 'stockfish-19-lite-single.js'
 const BOOT_TIMEOUT_MS = 20_000
@@ -162,6 +162,43 @@ export function stockfishThink(fen: string, options: StockfishOptions = {}): Pro
   })
 
   // Giữ hàng đợi không bị "kẹt" bởi một yêu cầu lỗi.
+  chain = request.catch(() => null)
+  return request
+}
+
+export interface StockfishAnalysis {
+  /** Nước mạnh nhất dạng UCI (`g1f3`). */
+  bestUci: string
+  cp: number | null
+  mate: number | null
+  depth: number | null
+}
+
+/**
+ * Nhờ Stockfish **phân tích** một thế cờ: trả nước mạnh nhất + điểm đánh giá.
+ *
+ * Dùng cho HLV (xem `src/engine/analysis.ts`) - khác `stockfishThink` ở chỗ trả về
+ * cả `score` chứ không chỉ nước đi. Cũng đi qua hàng đợi chung nên không bao giờ có
+ * hai lệnh `go` chồng nhau.
+ */
+export function stockfishAnalyze(
+  fen: string,
+  options: StockfishOptions = {},
+): Promise<StockfishAnalysis | null> {
+  const depth = options.depth ?? 18
+  const movetime = options.movetime ?? 1500
+
+  const request = chain.then(async () => {
+    const lines = await run(
+      [`position fen ${fen}`, `go depth ${depth} movetime ${movetime}`],
+      movetime + 5000,
+    )
+    const uci = extractBestMove(lines)
+    if (!uci) return null
+    const score = extractScoreInfo(lines)
+    return { bestUci: uci, cp: score.cp, mate: score.mate, depth: score.depth }
+  })
+
   chain = request.catch(() => null)
   return request
 }

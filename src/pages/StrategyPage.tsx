@@ -6,7 +6,6 @@ import { InfoButton } from '../components/InfoPopover'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { GOLD_PRINCIPLES, PRINCIPLE_TONE_STYLES } from '../data/goldPrinciples'
 import { useEyeCheck } from '../hooks/useEyeCheck'
-import { useReportLesson } from '../store/lesson'
 import type { CSSProperties } from 'react'
 
 type DemoSide = 'good' | 'bad'
@@ -45,7 +44,6 @@ export function StrategyPage() {
   const board = activePrinciple[demoSide]
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang mở thẻ nguyên tắc nào.
-  useReportLesson(!hidingAnswer && openPrinciple ? `principle:${openPrinciple}` : null)
 
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {}

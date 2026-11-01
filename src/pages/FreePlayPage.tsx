@@ -22,6 +22,11 @@ import {
 } from '../lib/notation'
 import { playError, playMove, playPromote, playTick, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
+import { Chess } from 'chess.js'
+import { gradeMove } from '../engine/analysis'
+import { describeDanger, describeLoss, saveBlunder, worstOf } from '../lib/coach'
+import type { Blunder } from '../lib/coach'
+import { findHangingPieces } from '../lib/threats'
 import type { Side } from '../types'
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -95,7 +100,28 @@ export function FreePlayPage() {
   } | null>(null)
   const [gameKey, setGameKey] = useState(0)
 
-  const board = useChessGame(START_FEN, kidSide)
+  /**
+   * Thế cờ bắt đầu ván. Đổi giá trị này là bắt đầu ván mới từ một thế khác - dùng
+   * cho nút “▶ Luyện lại thế này” ở phần tổng kết của HLV.
+   */
+  const [startFen, setStartFen] = useState(START_FEN)
+  /** Câu nhận xét của HLV về nước bé VỪA đi (chỉ hiện khi mất ≥ 1 điểm). */
+  const [coach, setCoach] = useState<{
+    text: string
+    lossCp: number
+    san: string
+    bestFrom: string
+    bestTo: string
+  } | null>(null)
+  /** Cảnh báo TRƯỚC khi đi: nước sắp đi làm quân mình bị treo. */
+  const [danger, setDanger] = useState<{ from: string; to: string; warning: string } | null>(null)
+  /** Các lỗi của ván đang chơi, dùng cho phần tổng kết cuối ván. */
+  const [blunders, setBlunders] = useState<Blunder[]>([])
+  const [coachBusy, setCoachBusy] = useState(false)
+  /** Tăng mỗi lần bé đi lại / đổi ván → kết quả chấm cũ bị bỏ. */
+  const moveTokenRef = useRef(0)
+
+  const board = useChessGame(startFen, kidSide)
   const engineColor: 'w' | 'b' = kidSide === 'white' ? 'b' : 'w'
   const finishedRef = useRef(false)
 
@@ -174,13 +200,19 @@ export function FreePlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.fen, kidSide])
 
-  const newGame = (side: Side = kidSide) => {
+  const newGame = (side: Side = kidSide, fen: string = START_FEN) => {
+    moveTokenRef.current += 1
     finishedRef.current = false
+    setStartFen(fen)
     setKidSide(side)
     setResult(null)
     setThinking(false)
     setHint(null)
     setHintsLeft(HINT_LIMIT)
+    setCoach(null)
+    setDanger(null)
+    setBlunders([])
+    setCoachBusy(false)
     board.reset()
     setGameKey((value) => value + 1)
     if (soundOn) playTick()
@@ -257,15 +289,106 @@ export function FreePlayPage() {
     [hintMove],
   )
 
-  const handleDrop = (from: string, to: string): boolean => {
+  /**
+   * HLV chấm nước bé VỪA đi (chạy nền, không chặn bàn cờ).
+   *
+   * Có “vé”: mỗi lần bé đi lại / đổi ván, `moveTokenRef` tăng lên nên kết quả chấm
+   * của nước cũ bị bỏ - không bao giờ hiện nhận xét cho một thế cờ đã qua.
+   */
+  const runCoach = async (fenBefore: string, san: string, ply: number) => {
+    const token = moveTokenRef.current
+    setCoachBusy(true)
+    try {
+      const graded = await gradeMove(fenBefore, san)
+      if (!graded || token !== moveTokenRef.current) return
+      if (graded.lossCp < 100) return
+      setCoach({
+        text: describeLoss(graded.lossCp, formatSan(graded.bestSan, notation)),
+        lossCp: graded.lossCp,
+        san,
+        bestFrom: graded.bestFrom,
+        bestTo: graded.bestTo,
+      })
+      const blunder: Blunder = {
+        date: new Date().toISOString(),
+        fen: fenBefore,
+        san,
+        bestSan: graded.bestSan,
+        lossCp: graded.lossCp,
+        ply,
+      }
+      saveBlunder(blunder)
+      setBlunders((prev) => [...prev, blunder])
+    } catch {
+      /* HLV không bao giờ được làm hỏng ván cờ */
+    } finally {
+      if (token === moveTokenRef.current) setCoachBusy(false)
+    }
+  }
+
+  /** Thực hiện nước đi của bé (đã qua bước cảnh báo) rồi gọi HLV chấm. */
+  const applyKidMove = (from: string, to: string): boolean => {
+    const fenBefore = board.fen
+    const ply = board.history.length + 1
     const move = board.playMove(from, to, 'q')
     if (!move) {
       if (soundOn) playError()
       return false
     }
+    setDanger(null)
+    setCoach(null)
     if (move.promotion && soundOn) playPromote()
     else if (soundOn) playMove()
+    void runCoach(fenBefore, move.san, ply)
     return true
+  }
+
+  /**
+   * Bé thả quân: **cảnh báo trước** nếu nước này làm quân mình bị treo mới.
+   *
+   * Cách làm rẻ nhất (không gọi engine): mô phỏng nước đi trên bản sao thế cờ rồi so
+   * danh sách quân bị treo trước/sau bằng `findHangingPieces`. Chỉ báo những quân MỚI
+   * bị treo - nhờ vậy câu cảnh báo chỉ đúng lỗi của nước sắp đi.
+   */
+  const handleDrop = (from: string, to: string): boolean => {
+    let probe: Chess
+    try {
+      probe = new Chess(board.fen)
+      probe.move({ from, to, promotion: 'q' })
+    } catch {
+      if (soundOn) playError()
+      return false
+    }
+    const beforeHanging = new Set(
+      findHangingPieces(new Chess(board.fen), kidSide).map((item) => item.square),
+    )
+    const fresh = findHangingPieces(probe, kidSide).filter(
+      (item) => !beforeHanging.has(item.square),
+    )
+    if (fresh.length > 0) {
+      setDanger({
+        from,
+        to,
+        warning: describeDanger(
+          fresh.map((item) => `${PIECE_NAME_VI[item.piece]} ${item.square}`),
+        ),
+      })
+      if (soundOn) playError()
+      return false
+    }
+    return applyKidMove(from, to)
+  }
+
+  /** “◀ Đi lại” - bỏ kết quả chấm cũ để HLV không nhận xét nhầm thế cờ. */
+  const undoKid = () => {
+    moveTokenRef.current += 1
+    board.undoMoves(board.history.length % 2 === 0 ? 2 : 1)
+    finishedRef.current = false
+    setResult(null)
+    setHint(null)
+    setCoach(null)
+    setDanger(null)
+    setCoachBusy(false)
   }
 
   const statusText = gameOver
@@ -301,6 +424,11 @@ export function FreePlayPage() {
             <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
               Nước {board.history.length + 1}
             </span>
+            {coachBusy && !gameOver && (
+              <span id="kid-coach-busy" className="rounded-full bg-brand-50 px-2.5 py-1 text-[0.65rem] font-bold text-brand-500">
+                🧑‍🏫 đang chấm…
+              </span>
+            )}
             <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
           </>
         }
@@ -327,13 +455,7 @@ export function FreePlayPage() {
               variant="sky"
               size="sm"
               disabled={board.history.length === 0 || thinking}
-              onClick={() => {
-                // Lùi 2 nửa nước: nước của máy và nước của bé.
-                board.undoMoves(board.history.length % 2 === 0 ? 2 : 1)
-                finishedRef.current = false
-                setResult(null)
-                setHint(null)
-              }}
+              onClick={undoKid}
             >
               ↩️ Đi lại nước vừa rồi
             </KidButton>
@@ -354,6 +476,65 @@ export function FreePlayPage() {
                   : '💡 Hết gợi ý'}
             </KidButton>
           </div>
+
+          {/*
+            HLV: cảnh báo TRƯỚC khi đi (đỏ) và nhận xét SAU khi đi (vàng). Chỉ một
+            thẻ, một dòng, giọng trung tính - đúng như chốt trong spec.
+          */}
+          {danger && (
+            <div
+              id="kid-coach-danger"
+              className="animate-pop-in rounded-xl border-2 border-coral-300 bg-coral-50 px-2.5 py-2"
+            >
+              <p className="text-xs font-extrabold leading-snug text-coral-800">
+                ⚠️ {danger.warning}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <KidButton
+                  id="kid-coach-danger-go"
+                  variant="rose"
+                  size="sm"
+                  onClick={() => applyKidMove(danger.from, danger.to)}
+                >
+                  Vẫn đi
+                </KidButton>
+                <KidButton
+                  id="kid-coach-danger-cancel"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDanger(null)}
+                >
+                  Đổi nước khác
+                </KidButton>
+              </div>
+            </div>
+          )}
+
+          {coach && !danger && (
+            <div
+              id="kid-coach-loss"
+              className="animate-pop-in rounded-xl border-2 border-gold-300 bg-gold-50 px-2.5 py-2"
+            >
+              <p className="text-xs font-extrabold leading-snug text-gold-900">
+                🧑‍🏫 HLV: {coach.text}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <KidButton
+                  id="kid-coach-best"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setHint({ fen: board.fen, from: coach.bestFrom, to: coach.bestTo })
+                  }
+                >
+                  👁 Nước hay hơn
+                </KidButton>
+                <KidButton id="kid-coach-undo" variant="ghost" size="sm" onClick={undoKid}>
+                  ◀ Đi lại
+                </KidButton>
+              </div>
+            </div>
+          )}
 
           {/* Túi chiến lợi phẩm: hai dòng gọn để không chiếm chiều cao. */}
           <div className="grid gap-1 rounded-2xl bg-brand-50 px-2.5 py-2">
@@ -447,6 +628,42 @@ export function FreePlayPage() {
           Sách ghi ván cờ là phần TRA CỨU, không phải việc bé làm mỗi nước: trên
           điện thoại thu lại sau một dòng bấm-mở để trang không dài lê thê.
         */}
+        {gameOver && blunders.length > 0 && (
+          <Panel id="kid-coach-review" className="grid gap-1.5">
+            <SectionTitle
+              icon="🧑‍🏫"
+              title="Ván này của bé"
+              subtitle="Lỗi lớn nhất - bấm để luyện lại đúng thế cờ đó"
+            />
+            <p className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold text-brand-700">
+              {board.history.length} nước · {blunders.length} nước mất điểm · nặng nhất{' '}
+              {(Math.max(...blunders.map((item) => item.lossCp)) / 100).toFixed(1)} điểm
+            </p>
+            <div className="grid gap-1">
+              {worstOf(blunders, 3).map((blunder, index) => (
+                <div
+                  key={`${blunder.ply}-${blunder.san}`}
+                  className="flex items-center gap-1.5 rounded-xl border border-sand-200 bg-white px-2 py-1.5"
+                >
+                  <span className="min-w-0 flex-1 text-[0.72rem] font-extrabold leading-tight text-brand-800">
+                    Nước {Math.floor(blunder.ply / 2) + 1} ·{' '}
+                    {formatSan(blunder.san, notation)} · kém{' '}
+                    {(blunder.lossCp / 100).toFixed(1)} điểm
+                  </span>
+                  <button
+                    type="button"
+                    data-coach-retry={index}
+                    onClick={() => newGame(kidSide, blunder.fen)}
+                    className="shrink-0 rounded-lg bg-brand-700 px-2 py-1 text-[0.65rem] font-extrabold text-white active:translate-y-[1px]"
+                  >
+                    ▶ Luyện lại
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
+
         <FoldPanel id="kid-freeplay-book" icon="📜" title="Sách ghi ván cờ">
           <div className="hidden stage:block">
             <SectionTitle

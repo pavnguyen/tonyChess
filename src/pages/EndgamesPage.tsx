@@ -7,7 +7,7 @@ import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
 import { BoardStage } from '../components/BoardStage'
-import { KidButton, Panel, SectionTitle } from '../components/ui'
+import { Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
 import { useChessGame } from '../hooks/useChessGame'
@@ -39,9 +39,8 @@ const GROUPS: {
 }[] = [
   {
     goal: 'promote',
-    icon: '🛡️',
-    title: 'Đưa Tốt lên thành Hậu',
-    blurb: 'Vua đi trước che Tốt, Tốt cứ tiến tới hàng 8.',
+    icon: '🛡️',        title: 'Đưa Tốt lên thành Hậu',
+    blurb: 'Vua che Tốt, Tốt tiến tới hàng 8.',
   },
   {
     goal: 'checkmate',
@@ -52,6 +51,56 @@ const GROUPS: {
 ]
 
 const FILE_CHARS = 'abcdefgh'
+
+/**
+ * Nút nhỏ của thanh công cụ dưới bàn cờ: cao đúng 2rem, một dòng, không bóng đổ
+ * dày - nhờ vậy cả 4 nút nằm gọn một hàng trên điện thoại và bàn cờ không bị đẩy
+ * nhỏ lại. Trên máy tính hiện nhãn đầy đủ, trên điện thoại hiện nhãn ngắn.
+ */
+function ToolButton({
+  id,
+  icon,
+  label,
+  short,
+  title,
+  active = false,
+  disabled = false,
+  pressed,
+  onClick,
+}: {
+  id?: string
+  icon: string
+  label: string
+  short?: string
+  title: string
+  active?: boolean
+  disabled?: boolean
+  /** `aria-pressed` cho nút bật/tắt (bài kiểm trình duyệt đọc thuộc tính này). */
+  pressed?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      id={id}
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-pressed={pressed}
+      className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border px-1.5 text-[0.72rem] font-extrabold leading-none transition-all active:translate-y-[1px] disabled:opacity-40 stage:flex-none stage:px-2.5 ${
+        active
+          ? 'border-coral-500 bg-coral-500 text-white'
+          : 'border-sand-200 bg-white text-brand-700 hover:border-brand-300 hover:bg-brand-50'
+      }`}
+    >
+      <span className="shrink-0 text-[0.8rem] leading-none" aria-hidden>
+        {icon}
+      </span>
+      <span className="truncate stage:hidden">{short ?? label}</span>
+      <span className="hidden truncate stage:inline">{label}</span>
+    </button>
+  )
+}
 
 /**
  * Những ô Vua Đen có thể chạy tới ở thế cờ hiện tại.
@@ -92,7 +141,7 @@ export function EndgamesPage() {
   const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
-  const [challengeId, setChallengeId] = useState('promote-easy')
+  const [challengeId, setChallengeId] = useState('opposition')
   const [hintVisible, setHintVisible] = useState(false)
   /**
    * Bé bấm 🎯 “Soi mục tiêu” → bàn cờ tô tím đúng những ô bé cần nhắm tới:
@@ -384,40 +433,48 @@ export function EndgamesPage() {
         }
         under={
           <>
-            <div className="flex flex-wrap items-center gap-2">
-              <KidButton
-                variant="sky"
+            {/*
+              Thanh công cụ MỘT dòng, nút thấp 32px: bàn cờ giữ được gần hết bề
+              ngang, còn trên điện thoại cả 4 nút vẫn nằm gọn một hàng (trước đây
+              bốn nút to phải xuống hai hàng, chiếm gần nửa màn hình).
+              Nhãn dài ở máy tính, nhãn ngắn (1-2 chữ) ở điện thoại.
+            */}
+            <div className="flex flex-wrap items-center gap-1 rounded-2xl border border-sand-200 bg-white/85 p-1">
+              <ToolButton
+                icon="💡"
+                label="Gợi ý"
+                title="Gợi ý nước hay nhất ở thế cờ này"
                 onClick={() => {
                   setGoalFocus(false)
                   setHintVisible(true)
                 }}
                 disabled={hintVisible || Boolean(finished) || !board.playerToMove}
-              >
-                💡 Gợi ý
-              </KidButton>
-              <KidButton
+              />
+              <ToolButton
                 id="kid-endgame-goal"
-                variant={goalFocus ? 'rose' : 'grass'}
+                icon="🎯"
+                label={goalFocus ? 'Tắt mục tiêu' : 'Soi mục tiêu'}
+                short={goalFocus ? 'Tắt' : 'Mục tiêu'}
+                active={goalFocus}
+                pressed={goalFocus}
+                title="Tô tím những ô bé cần nhắm tới ở thế cờ này"
                 onClick={() => {
                   setHintVisible(false)
                   setGoalFocus((value) => !value)
                 }}
-                aria-pressed={goalFocus}
-                title="Tô tím những ô bé cần nhắm tới ở thế cờ này"
-              >
-                🎯 {goalFocus ? 'Tắt soi mục tiêu' : 'Soi mục tiêu'}
-              </KidButton>
-              <KidButton
+              />
+              <ToolButton
                 id="kid-endgame-takeback"
-                variant="ghost"
+                icon="◀"
+                label="Đi lại"
+                title="Lùi lại nước vừa rồi để đi lại"
                 onClick={takeBack}
                 disabled={board.history.length === 0}
-                title="Lùi lại nước vừa rồi để đi lại"
-              >
-                ◀ Đi lại
-              </KidButton>
-              <KidButton
-                variant="ghost"
+              />
+              <ToolButton
+                icon="🔄"
+                label="Làm lại"
+                title="Chơi lại bài này từ đầu"
                 onClick={() => {
                   board.reset()
                   setFinished(null)
@@ -426,28 +483,26 @@ export function EndgamesPage() {
                   setResult(null)
                   setConfetti(false)
                 }}
-              >
-                🔄 Làm lại
-              </KidButton>
+              />
             </div>
 
             {/* Đổi lời nhắc theo việc bé đang làm - không thêm dòng nào nên bàn cờ
                 không bị thu nhỏ (xem chú thích `reserve` của BoardStage). */}
             {!finished && (
-              <p className="text-[0.7rem] font-bold text-brand-400">
+              <p className="text-[0.65rem] font-bold leading-snug text-brand-400">
                 {goalFocus
-                  ? '🎯 Ô TÍM là những gì bé cần nhắm tới: Tốt + ô phong cấp, hoặc Vua Đen + các ô nó còn chạy được.'
+                  ? '🎯 Ô TÍM là chỗ bé cần nhắm tới (Tốt + ô phong cấp, hoặc Vua Đen + ô nó chạy được).'
                   : !board.playerToMove
-                    ? '🤖 Chờ máy đi một nước nhé. Bé có thể bấm Đi lại để sửa nước vừa đi.'
-                    : '🖐️ Kéo quân hoặc bấm quân rồi bấm ô đích · 💡 Gợi ý: viền vàng → viền xanh'}
+                    ? '🤖 Chờ máy đi một nước · ◀ Đi lại để sửa nước vừa đi.'
+                    : '🖐️ Kéo quân hoặc bấm quân rồi bấm ô đích · 💡 viền vàng → viền xanh'}
               </p>
             )}
 
             {finished && (
-              <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
+              <p className="animate-pop-in rounded-xl bg-leaf-50 px-2.5 py-1.5 text-center text-xs font-extrabold text-leaf-700">
                 {finished === 'success'
-                  ? '🎯 Bé đã đạt mục tiêu! Chọn bài khác để luyện tiếp nhé.'
-                  : '🌱 Ván đã kết thúc nhưng chưa đạt mục tiêu. Bấm Đi lại để sửa hoặc Làm lại nhé.'}
+                  ? '🎯 Đạt mục tiêu! Chọn bài khác để luyện tiếp nhé.'
+                  : '🌱 Chưa đạt mục tiêu. Bấm ◀ Đi lại để sửa hoặc 🔄 Làm lại nhé.'}
               </p>
             )}
           </>

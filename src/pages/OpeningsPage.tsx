@@ -27,7 +27,6 @@ import {
 import { isSideMoveLegal, parsePlanFocus } from '../lib/planFocus'
 import { playError, playMove, playWin } from '../lib/sound'
 import { speakOpening } from '../lib/speech'
-import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
 import type { MoveAnnotation, Opening, Side } from '../types'
@@ -107,7 +106,6 @@ export function OpeningsPage() {
   )
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học khai cuộc nào.
-  useReportLesson(opening ? `opening:${opening.id}` : null)
 
   /** Chỉ những khai cuộc của phe đang xem - chia rõ Trắng / Đen cho dễ chọn. */
   const sideOpenings = useMemo(

@@ -5,7 +5,6 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { primeSpeech } from './lib/speech'
 import { router } from './router'
-import { LessonProvider } from './store/lesson'
 import { KidProgressProvider } from './store/progress'
 
 // Nạp sẵn giọng đọc Mỹ cho “bàn cờ biết nói” (một số trình duyệt chỉ có giọng sau
@@ -27,9 +26,9 @@ createRoot(document.getElementById('root')!).render(
       <KidProgressProvider>
           {/* Khung “Gợi ý cho ba mẹ” nằm ngoài mọi trang nên cần một chỗ để
               trang bài học “báo lên” bài đang mở (§10). */}
-          <LessonProvider>
+          
             <RouterProvider router={router} />
-          </LessonProvider>
+          
       </KidProgressProvider>
     </QueryClientProvider>
   </StrictMode>,

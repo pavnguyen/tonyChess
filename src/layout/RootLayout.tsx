@@ -1,36 +1,53 @@
 import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
 import { HeaderOptions } from '../components/HeaderOptions'
 import { InfoButton } from '../components/InfoPopover'
-import { ParentTips } from '../components/ParentTips'
+import { GroupNav } from '../components/GroupNav'
+import { TodaySession } from '../components/TodaySession'
 
 /**
- * Sáu tab chính. `short` là nhãn dùng trên thanh tab ĐIỆN THOẠI (thanh dưới đáy
- * màn hình, 6 ô chia đều): chỉ 2 chữ mỗi ô nên bé/ba mẹ bấm trúng ngay, không
- * phải vuốt ngang tìm tab như trước.
+ * Bảy tab chính. `short` là nhãn dùng trên thanh tab ĐIỆN THOẠI (thanh dưới đáy
+ * màn hình, chia đều): chỉ 2 chữ mỗi ô nên bé/ba mẹ bấm trúng ngay, không phải
+ * vuốt ngang tìm tab như trước.
  */
 const TABS = [
-  { to: '/', label: 'Khai Cuộc', short: 'Khai Cuộc', full: 'Khai cuộc Grand Master', icon: '🛡️' },
   {
-    to: '/counters',
-    label: 'Đối Phó',
-    short: 'Đối Phó',
-    full: 'Đối phó khai cuộc - phá thế đối phương',
-    icon: '🧭',
+    to: '/',
+    match: ['/', '/counters', '/strategy'],
+    label: 'Học',
+    short: 'Học',
+    full: 'Học: khai cuộc, đối phó, nguyên tắc vàng',
+    icon: '📚',
   },
-  { to: '/tactics', label: 'Trung Cuộc', short: 'Trung Cuộc', full: 'Trung cuộc - Tìm nước hay nhất', icon: '⚔️' },
-  { to: '/endgames', label: 'Tàn Cuộc', short: 'Tàn Cuộc', full: 'Tàn cuộc cơ bản', icon: '👑' },
-  { to: '/strategy', label: 'Chiến Lược', short: 'Chiến Lược', full: 'Chiến lược - 10 nguyên tắc vàng', icon: '🏅' },
+  {
+    to: '/tactics',
+    match: ['/tactics', '/endgames'],
+    label: 'Luyện',
+    short: 'Luyện',
+    full: 'Luyện: trung cuộc và tàn cuộc',
+    icon: '🎯',
+  },
   {
     to: '/free-play',
-    label: 'Đấu với Robot',
-    short: 'Đấu Máy',
-    full: 'Đấu tập tự do với chú Máy',
+    match: ['/free-play', '/hazards'],
+    label: 'Chơi',
+    short: 'Chơi',
+    full: 'Chơi: đấu với máy và soi quân treo',
     icon: '🎮',
+  },
+  {
+    to: '/progress',
+    match: ['/progress'],
+    label: 'Tiến bộ',
+    short: 'Tiến bộ',
+    full: 'Tiến bộ: sổ lỗi và mức ước lượng',
+    icon: '📈',
   },
 ] as const
 
 export function RootLayout() {
   const matchRoute = useMatchRoute()
+  /** Trang Học là "nhà": chỉ ở đó mới bày buổi luyện hôm nay cho khỏi chật. */
+  const onLearnHome = Boolean(matchRoute({ to: '/' }))
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -49,15 +66,21 @@ export function RootLayout() {
 
           {/*
             MỘT thẻ `<nav>` cho cả hai kiểu:
-            - Điện thoại (mặc định): thanh tab CỐ ĐỊNH Ở ĐÁY màn hình, 6 ô chia
-              đều, mỗi ô icon + hai chữ - vừa tầm ngón tay cái, không phải vuốt
-              ngang để tìm tab như thanh cuộn trên đỉnh trước đây.
+            - Điện thoại (mặc định): thanh tab CỐ ĐỊNH Ở ĐÁY màn hình, chia đều
+              mỗi ô icon + hai chữ - vừa tầm ngón tay cái, không phải vuốt ngang
+              để tìm tab như thanh cuộn trên đỉnh trước đây.
             - Máy tính / cửa sổ rộng (`stage`): về lại hàng tab nằm ngang trong
               thanh tiêu đề như cũ.
           */}
-          <nav className="fixed inset-x-0 bottom-0 z-30 flex items-stretch gap-1 border-t border-white/10 bg-brand-900/95 px-1 pb-[max(0.3rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-8px_20px_-16px_rgba(13,32,24,0.9)] backdrop-blur stage:static stage:min-w-0 stage:flex-1 stage:items-center stage:gap-1 stage:overflow-x-auto stage:border-0 stage:bg-transparent stage:p-0 stage:shadow-none stage:backdrop-blur-none">
+          <nav
+            id="kid-tab-nav"
+            aria-label="Bốn nhóm chính"
+            className="fixed inset-x-0 bottom-0 z-30 flex items-stretch gap-1 border-t border-white/10 bg-brand-900/95 px-1 pb-[max(0.3rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-8px_20px_-16px_rgba(13,32,24,0.9)] backdrop-blur stage:static stage:min-w-0 stage:flex-1 stage:items-center stage:gap-1 stage:overflow-x-auto stage:border-0 stage:bg-transparent stage:p-0 stage:shadow-none stage:backdrop-blur-none">
             {TABS.map((tab) => {
-              const active = Boolean(matchRoute({ to: tab.to }))
+              // Nhóm "Học" gồm 3 trang nên phải sáng ở cả Khai cuộc lẫn Đối phó,
+              // Chiến lược - nếu chỉ so `to` thì bé đứng ở Đối phó sẽ thấy không tab nào
+              // được chọn.
+              const active = tab.match.some((path) => Boolean(matchRoute({ to: path })))
               return (
                 <Link
                   key={tab.to}
@@ -72,7 +95,14 @@ export function RootLayout() {
                   <span className="text-base leading-none stage:text-sm" aria-hidden>
                     {tab.icon}
                   </span>
-                  <span className="max-w-full truncate stage:hidden">{tab.short}</span>
+          {/*
+            Điện thoại: nhãn hai chữ được phép XUỐNG DÒNG thay vì cắt
+            (`truncate`) - ở máy 320px mỗi ô chỉ rộng ~42px nên "Chiến
+            Lược" phải nằm trên hai dòng mới đọc được đủ, không bị "Chiến…".
+          */}
+                  <span className="max-w-full text-center text-[0.6rem] leading-[1.05] break-words stage:hidden">
+                    {tab.short}
+                  </span>
                   <span className="hidden truncate stage:inline">{tab.label}</span>
                 </Link>
               )
@@ -91,6 +121,15 @@ export function RootLayout() {
         thêm một khoảng ở đáy để thanh tab cố định không che nội dung cuối trang.
       */}
       <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-1.5 pt-1.5 pb-[4.9rem] sm:px-3 sm:pt-2 stage:py-2">
+        {/*
+          Dải chuyển bài và buổi luyện hôm nay là hai dòng “phụ”. Khi màn hình thấp
+          (điện thoại nằm ngang 430px) chúng tự ẩn để khối bàn cờ vẫn nằm trọn một
+          màn hình - bé muốn sang bài khác thì dùng thanh tab dưới đáy.
+        */}
+        <div className="shrink-0 [@media(max-height:560px)]:hidden">
+          <GroupNav />
+          {onLearnHome && <TodaySession />}
+        </div>
         <Outlet />
       </main>
 
@@ -98,7 +137,6 @@ export function RootLayout() {
         Khung “Gợi ý cho ba mẹ” (§10) - nằm NGOÀI luồng bố cục (`position: fixed`)
         nên hiện ở mọi tab mà không làm trang phải cuộn thêm.
       */}
-      <ParentTips />
     </div>
   )
 }

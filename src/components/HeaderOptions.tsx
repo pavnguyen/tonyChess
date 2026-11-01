@@ -1,12 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NOTATION_LEGEND, NOTATION_OPTIONS, NOTATION_SYMBOLS } from '../lib/notation'
-import {
-  getSelectedVoiceName,
-  listEnglishVoices,
-  previewSpeech,
-  setSelectedVoice,
-  subscribeVoices,
-} from '../lib/speech'
 import { InfoButton } from './InfoPopover'
 import { useKidProgress } from '../store/progress'
 
@@ -14,21 +7,8 @@ import { useKidProgress } from '../store/progress'
  * Bánh răng ⚙️ trên thanh tiêu đề: gom hết tuỳ chọn của bé vào một bảng nhỏ,
  * để phần nội dung chính không bị chiếm mất chiều cao.
  */
-/** Câu đọc mẫu khi bé/ba mẹ bấm 🔊 ở mỗi dòng giọng. */
-const VOICE_SAMPLE = 'Knight F 3, check'
-
 export function HeaderOptions() {
   const [open, setOpen] = useState(false)
-  // Danh sách giọng đọc máy có - Chrome/Safari nạp BẤT ĐỒNG BỘ, nên vừa đọc lần
-  // đầu vừa nghe `voiceschanged` để cập nhật lại khi giọng về muộn.
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
-  const [voiceName, setVoiceName] = useState<string | null>(getSelectedVoiceName)
-
-  useEffect(() => {
-    const refresh = () => setVoices(listEnglishVoices())
-    refresh()
-    return subscribeVoices(refresh)
-  }, [])
   const { notation, setNotation, soundOn, toggleSound } = useKidProgress()
 
   return (
@@ -147,82 +127,15 @@ export function HeaderOptions() {
               ))}
             </div>
 
-            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-              🔈 Giọng đọc
-            </div>
-            {voices.length === 0 ? (
-              <p className="mt-1 text-[0.65rem] font-bold text-brand-400">
-                Máy này chưa có giọng tiếng Anh riêng - app sẽ đọc bằng giọng mặc định của trình duyệt.
-              </p>
-            ) : (
-              <div
-                id="kid-voice-list"
-                className="mt-1 grid max-h-44 gap-0.5 overflow-y-auto rounded-xl border-2 border-brand-100 p-1"
-              >
-                <div
-                  data-voice-name=""
-                  className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
-                    voiceName === null ? 'bg-brand-50' : ''
-                  }`}
-                >
-                  <button
-                    type="button"
-                    aria-pressed={voiceName === null}
-                    onClick={() => {
-                      setSelectedVoice(null)
-                      setVoiceName(null)
-                    }}
-                    className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[0.7rem] font-extrabold ${
-                      voiceName === null ? 'text-brand-800' : 'text-brand-500'
-                    }`}
-                  >
-                    ⭐ Tự động (giọng hay nhất)
-                  </button>
-                  <button
-                    type="button"
-                    title="Nghe thử giọng tự động"
-                    onClick={() => previewSpeech(VOICE_SAMPLE, '')}
-                    className="grid size-6 shrink-0 place-items-center rounded-lg bg-white text-[0.7rem] shadow-sm ring-1 ring-brand-100"
-                  >
-                    🔊
-                  </button>
-                </div>
-                {voices.map((voice) => {
-                  const active = voiceName === voice.name
-                  return (
-                    <div
-                      key={`${voice.name}-${voice.lang}`}
-                      data-voice-name={voice.name}
-                      className={`flex items-center gap-1 rounded-lg px-1 py-0.5 ${
-                        active ? 'bg-brand-50' : ''
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => {
-                          setSelectedVoice(voice.name)
-                          setVoiceName(voice.name)
-                        }}
-                        className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[0.7rem] font-extrabold ${
-                          active ? 'text-brand-800' : 'text-brand-500'
-                        }`}
-                      >
-                        {voice.name} <span className="text-brand-300">· {voice.lang}</span>
-                      </button>
-                      <button
-                        type="button"
-                        title={`Nghe thử: ${voice.name}`}
-                        onClick={() => previewSpeech(VOICE_SAMPLE, voice.name)}
-                        className="grid size-6 shrink-0 place-items-center rounded-lg bg-white text-[0.7rem] shadow-sm ring-1 ring-brand-100"
-                      >
-                        🔊
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+            {/*
+              KHÔNG còn bảng chọn giọng: app luôn tự chọn giọng Mỹ tự nhiên nhất máy có
+              (`autoVoice` trong `src/lib/speech.ts` - ưu tiên Google US / Aria / Jenny /
+              Samantha, bỏ qua giọng “đồ chơi” như Albert, Bells). Bảng dài 20 dòng chỉ
+              làm rối bảng tuỳ chọn mà bé 7 tuổi không dùng tới.
+            */}
+            <p className="mt-2.5 flex items-center gap-1.5 text-[0.68rem] font-bold text-brand-500">
+              🔈 Giọng đọc: tự chọn giọng hay nhất máy có
+            </p>
 
             <div className="mt-2.5 grid gap-1.5">
               <button

@@ -374,6 +374,7 @@ export const INFO_TAGS = [
   '🎮 Cách chơi',
   '⚙️ Về app',
   '⚙️ Về app này',
+  '📊 Nguồn số liệu',
 ] as const
 
 /** Lấy nội dung theo khoá; trả `undefined` nếu chưa có (UI sẽ không hiện nút ⓘ). */
@@ -386,6 +387,7 @@ export function infoById(topic: string): InfoEntry | undefined {
  * khai cuộc/đòn/bài giảng mới mà quên viết giải thích thì test báo ngay.
  */
 export const REQUIRED_INFO_IDS: readonly string[] = [
+  'popularity',
   'app',
   'board',
   'eye',

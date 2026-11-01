@@ -51,19 +51,21 @@ Biến thể Tailwind **`stage`** (`min-width: 60rem` **và** `min-aspect-ratio:
 | **Thấp mà rộng** (`shallow`: 640-959px **và** cao ≤ 544px) | **2 cột ngay trong thẻ bàn cờ** - đây là khổ điện thoại nằm ngang (iPhone 15 Pro Max ngang = 932×430) |
 
 `browser-layout-test.mjs` đo lại trên **10 khung nhìn** (1440×900 → cửa sổ vuông 1200×1200 → iPhone 15
-Pro Max dọc 430×932 **và** ngang 932×430) với cả 6 tab, và bắt buộc: **không tràn ngang**, **trang không
+Pro Max dọc 430×932 **và** ngang 932×430) với cả 8 trang, và bắt buộc: **không tràn ngang**, **trang không
 cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và **bàn cờ đủ to**.
 
-## 🗂️ Sáu tab học tập
+## 🗂️ Bốn nhóm, tám trang
 
 | Tab | Nội dung |
 | --- | --- |
-| 🛡️ **Khai cuộc Grand Master** (`/`) | Bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng chính** để xem trước, rồi **▶ Bắt đầu học từ đầu**. **10 khai cuộc** chia hai cột bé cầm Trắng / bé cầm Đen: Hệ thống London (Carlsen), Ván cờ Ý (Wesley So), Khai cuộc Tây Ban Nha (Fischer), Gambit Hậu (Polgár), Khai cuộc Anh (Tony Miles) · Phòng thủ King's Indian (Nakamura), Sicilian (Kasparov), Pháp (Botvinnik), Caro-Kann (Petrosian), Nimzo-Indian (Nimzowitsch). Có **Học từng bước** (bé **kéo-thả quân viền vàng** sang **ô viền xanh**, hoặc bấm nút / **phím ◀ ▶ ▲ ▼**) và **Luyện thuộc lòng** (nhận Cúp Vàng 🏆). Kèm **kế hoạch trung cuộc** (bấm từng câu để soi ô cờ), nút **🧩 Ôn mẫu hình cuối khai cuộc** mở **modal** xem ngay thế cờ CUỐI của bất kỳ khai cuộc nào, **bộ lọc theo nước mở đầu** (1.e4, 1.d4, 1...c5…) gom các bài cùng nước mở đầu, và nút **🧭 Đối thủ chơi khai cuộc này thì sao?** nhảy sang bài Đối phó tương ứng. |
+| 🛡️ **Khai cuộc Grand Master** (`/`) | Bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng chính** để xem trước, rồi **▶ Bắt đầu học từ đầu**. **10 khai cuộc** chia hai cột bé cầm Trắng / bé cầm Đen: Hệ thống London (Carlsen), Ván cờ Ý (Wesley So), Khai cuộc Tây Ban Nha (Fischer), Gambit Hậu (Polgár), Khai cuộc Anh (Tony Miles) · Phòng thủ King's Indian (Nakamura), Sicilian (Kasparov), Pháp (Botvinnik), Caro-Kann (Petrosian), Nimzo-Indian (Nimzowitsch). Có **Học từng bước** (bé **kéo-thả quân viền vàng** sang **ô viền xanh**, hoặc bấm nút / **phím ◀ ▶ ▲ ▼**). Kèm **kế hoạch trung cuộc** (bấm từng câu để soi ô cờ), **bộ lọc theo nước mở đầu** (1.e4, 1.d4, 1...c5…) gom các bài cùng nước mở đầu, và nút **🧭 Đối thủ chơi khai cuộc này thì sao?** nhảy sang bài Đối phó tương ứng. |
 | 🧭 **Đối phó khai cuộc** (`/counters`) | **16 bài “đối thủ chơi X → bé đáp Y”** (8 bài đối thủ cầm Trắng + 8 bài đối thủ cầm Đen, bé cầm màu ngược lại) - gồm 10 khai cuộc của app **và**6 nước mở đầu phổ biến (1.e4, 1.d4, 1.Nf3, ...d5, ...Nf6, ...c6). Mỗi bài là một dòng nước từ nước đầu, ghi rõ nước nào của đối thủ, nước nào bé đáp, kèm **"đối thủ đang định làm gì"**, **ý tưởng đối phó** và **3 việc bé cần làm**; **bộ lọc theo nước mở đầu** gom các bài cùng nước mở đầu để **phá thế khai cuộc** và **chặn triển khai quân** của bạn. Đi từng nước bằng nút hoặc **phím ◀ ▶ ▲ ▼**; nút **📖 Mở bài khai cuộc gốc** nhảy về đúng bài ở tab Khai cuộc (mở sẵn qua `/?opening=…` - và ngược lại qua `/counters?vs=…`). |
-| ⚔️ **Trung cuộc - Tìm nước hay nhất** (`/tactics`) | **20 thế cờ thật / 7 chủ đề**: 👑 Tấn công Vua · 🎯 Trừng phạt quân treo · 👸 Đòn hiểm ăn Hậu · ♟️ Tốt thông tiến · 🍴 Đòn bắt đôi · 📌 Đòn ghim · 🏁 Chiếu bí 2 nước. Bé tự tìm **nước mạnh nhất** trên thế cờ thật (không học thuộc tên đòn); mỗi lời giải đã được máy chấm điểm và **kiểm chứng** (`verify:bestmove`). Thế nào có **chuỗi “đánh tiếp”** thì sau nước hay nhất, **máy tự đáp trả** rồi bé đi nốt để kết liễu. Có 💡 Gợi ý, thẻ **“Khi nào dùng?”** và nút **🔁 Xem lại lời giải** phát lại đúng chuỗi nước kèm mũi tên. |
-| 👑 **Tàn cuộc cơ bản** (`/endgames`) | **12 thế luyện** (3 thế đưa Tốt phong Hậu + 9 thế chiếu bí Vua Đen) đấu với máy mức Dễ. Một dải chip gọn để đổi bài, kèm bảng chi tiết bài đang luyện. |
+| ⚔️ **Trung cuộc - Tìm nước hay nhất** (`/tactics`) | **3 thế cờ thật / 3 chủ đề**: 🎯 Trừng phạt quân treo · 👸 Đòn hiểm ăn Hậu · 📌 Đòn ghim. Bé tự tìm **nước mạnh nhất** trên thế cờ thật (không học thuộc tên đòn); mỗi lời giải đã được máy chấm điểm và **kiểm chứng** (`verify:bestmove`). Thế nào có **chuỗi “đánh tiếp”** thì sau nước hay nhất, **máy tự đáp trả** rồi bé đi nốt để kết liễu. Có 💡 Gợi ý, thẻ **“Khi nào dùng?”** và nút **🔁 Xem lại lời giải** phát lại đúng chuỗi nước kèm mũi tên. |
+| 👑 **Tàn cuộc cơ bản** (`/endgames`) | **5 thế kỹ thuật thật**: Vua–Tốt ô đối diện · Tốt thông · Xe + Tốt chọi Xe · Mã + Tượng chiếu bí · cặp Tượng chiếu bí. Đấu với máy mức Khó; kèm gợi ý, mục tiêu và nút đi lại. |
 | 🏅 **Chiến lược - 10 nguyên tắc vàng** (`/strategy`) | **10 nguyên tắc vàng** (chiếm trung tâm, phát triển quân, nhập thành, tránh quân treo, cột mở, tiền đồn, hàng 7, Tốt thông, cặp Tượng, trao đổi đúng). Mỗi nguyên tắc có **hai thế cờ đối chiếu tốt / chưa tốt** kèm ô cờ và nhãn soi. |
-| 🎮 **Đấu tập tự do với chú Máy** (`/free-play`) | Chơi trọn một ván cờ thật với engine (negamax + bảng điểm vị trí). **3 mức 🐰 Vừa / 🦊 Khó / 🦁 Siêu** (mức Dễ đã bỏ vì quá dễ; mức Siêu dùng Stockfish WASM), nút **💡 Gợi ý** (máy tìm nước mạnh nhất cho chính bé rồi vẽ mũi tên, **giới hạn 3 lần mỗi ván** - nút đếm ngược rồi tự khoá, ván mới cấp lại), chọn quân Trắng/Đen, nút đi lại nước vừa rồi, “Sách ghi ván cờ” và túi chiến lợi phẩm. |
+| 🎮 **Đấu tập tự do với chú Máy** (`/free-play`) | Chơi trọn một ván cờ thật với engine (negamax + bảng điểm vị trí). **2 mức 🐰 Dễ / 🦁 Khá** (nhãn thân thiện, bên dưới vẫn là engine mức Khó và Stockfish), nút **💡 Gợi ý** (máy tìm nước mạnh nhất cho chính bé rồi vẽ mũi tên, **giới hạn 3 lần mỗi ván** - nút đếm ngược rồi tự khoá, ván mới cấp lại), chọn quân Trắng/Đen, nút đi lại nước vừa rồi, “Sách ghi ván cờ” và túi chiến lợi phẩm. HLV **nói tiếng Việt** chỉ ra lỗi vừa đi. |
+| 🔍 **Soi quân treo** (`/hazards`) | Bé nhìn bàn cờ rồi **chỉ ra quân mình đang bị treo** trước khi đi; đúng/sai báo ngay, có mức thường và mức khó (nhiều quân hơn, có quân bị quân rẻ hơn tấn công, tính điểm theo chuỗi). |
+| 📈 **Tiến bộ** (`/progress`) | **Sổ lỗi** (nhóm những lỗi hay lặp lại, bấm là luyện lại) và **Elo ước lượng** theo ba mảng Khai cuộc / Trung cuộc / Tàn cuộc. |
 
 ## 🗺️ Bản đồ bài học
 
@@ -110,47 +112,41 @@ Mục tiêu: dạy bé thói quen nhìn toàn cảnh bàn cờ để không “c
 - **Xoay bàn cờ tự động**: chọn bài cờ Đen là bàn cờ tự lật 180° để hàng 7–8 nằm sát bé.
 - **Âm thanh**: tiếng đặt quân, “Ting!” khi đúng, nhạc thắng - tổng hợp bằng Web Audio, không cần file mp3.
 - **Bàn cờ biết nói**: chạm ô/quân hay kéo quân thì bé nghe tên ô + tên quân tiếng Anh ("Knight C 3")
-  qua Web Speech API. App **tự chọn giọng Mỹ nghe tự nhiên nhất** máy có (Samantha, Google US…, bỏ qua
-  giọng “đồ chơi” như Albert/Bells). Trong ⚙️ có **bảng chọn giọng**: mỗi giọng một dòng kèm nút **🔊**
-  nghe thử riêng, bấm tên để chọn và lựa chọn được nhớ lại.
+  qua Web Speech API. App **tự chọn giọng Mỹ nghe tự nhiên nhất** máy có (Google US, Microsoft Aria /
+  Jenny, Samantha…; bỏ qua giọng “đồ chơi” như Albert/Bells). ⚙️ **không có bảng chọn giọng**: bé không
+  phải chọn gì, và danh sách giọng dài hai chục dòng đã được gỡ khỏi bảng tuỳ chọn cho gọn.
 - **Không điểm số, không theo dõi**: app cố ý không chấm điểm, không đếm sao và không bắt bé học theo
   thứ tự - bé tự nhớ mình đã học tới đâu. Chỉ tuỳ chọn ghi nước đi + âm thanh được lưu trong `localStorage`.
 
-## 💬 Gợi ý cho ba mẹ
+## 📅 Buổi luyện hôm nay
 
-Ba mẹ ngồi cạnh bé thường không biết hỏi gì. Khung **“Gợi ý cho ba mẹ”** nằm ở **góc dưới bên phải,
-hiện ở MỌI tab**, mặc định mở, và **thu gọn được** (nút ▸/▾; trạng thái nhớ trong
-`localStorage` khoá `hoc-vien-co-vua-nhi.parent-tips.v1`). Khi thu gọn chỉ còn **một nút nhỏ**.
-
-- **Câu hỏi “đố con”** do app tự viết (`src/lib/parentTips.ts`): có **câu riêng cho từng bài** và
-  **mẫu chung cho từng tab** - mỗi câu hỏi gắn đúng việc bé vừa làm.
-- **Trang tự báo bài đang mở** qua `useReportLesson('opening:london')` (`src/store/lesson.tsx`) -
-  nhờ vậy khung đổi câu hỏi **ngay khi bé đổi bài**, không cần tải lại trang.
-- **Không phá bố cục “không cuộn”**: khung là khối `position: fixed` nên không tham gia luồng bố cục;
-  bề rộng/chiều cao đều bị chặn theo màn hình và phần thân tự cuộn bên trong. `npm run check:tips`
-  đo lại ở 1440×900 và 390×844.
+Tab Học có dải **“Hôm nay · 2/5”**: mỗi ngày app sinh một buổi 5 bài (khai cuộc → đối phó → trung
+cuộc → soi quân → tàn cuộc), bé bấm **▶ Bắt đầu** là đi liền mạch, bỏ dở mai mở lại vẫn đứng đúng
+bài đang dở. Buổi luyện sinh theo ngày và lưu trong `localStorage` (`src/lib/session.ts`); bé muốn
+học bài khác thì cứ bấm trên bản đồ, không bị khoá thứ tự.
 
 ## ♟️ Bộ máy cờ (engine)
 
 Có **hai** engine, phục vụ hai mục đích khác nhau:
 
 1. **Engine JS tự viết** (`src/engine/minimax.ts`) - negamax + alpha-beta + bảng điểm vị trí,
-   chạy trong Web Worker. Dùng cho các mức Dễ/Vừa/Khó, tab Tàn cuộc, tab Trung cuộc (`rankMoves`)
+   chạy trong Web Worker. Dùng cho mức Khó, tab Tàn cuộc, tab Trung cuộc (`rankMoves`)
    và làm phương án dự phòng.
-2. **Stockfish WASM** (bản `lite-single`, ~1.8 MB) - dùng riêng cho mức **Siêu** ở tab Đấu tập tự do.
+2. **Stockfish WASM** (bản `lite-single`, ~1.8 MB) - dùng cho mức **Khá** ở tab Đấu tập tự do.
 
 ### Các mức của engine JS
 
 | Mức | Độ sâu | Ngân sách | Đi bừa | Quiescence |
 | --- | --- | --- | --- | --- |
-| 🐣 Dễ | 1 | 200 ms | 35% | tắt (cố ý yếu) — *chỉ dùng ở Tàn cuộc, đã bỏ khỏi Đấu tập* |
-| 🐰 Vừa | 2 | 900 ms | 8% | tắt (cố ý yếu) |
-| 🦊 Khó | 3 | 1800 ms | 0 | **bật** |
-| 🦁 Siêu | → Stockfish | ~1.6 s | 0 | - |
+| 🐰 **Dễ** (nhãn cho bé) | 3 | 1800 ms | 0 | **bật** |
+| 🦁 **Khá** (nhãn cho bé) | → Stockfish | ~1.6 s | 0 | - |
+
+App **không còn mức nào dưới 1200 Elo**: hai nhãn Dễ / Khá chỉ để bé khỏi nản, sức máy thật vẫn
+là mức Khó và mức Stockfish.
 
 **Quiescence (mức Khó)** là bước tăng sức rõ nhất mà không thêm thư viện: khi hết độ sâu, máy chỉ
-xét tiếp các nước ăn quân / phong cấp cho tới khi thế cờ yên. Mức Dễ/Vừa cố tình tắt để bé vẫn có cơ
-hội thắng.
+xét tiếp các nước ăn quân / phong cấp cho tới khi thế cờ yên - nhờ vậy máy không còn “thí quân
+ngay trước mặt bé” như các mức yếu trước đây.
 
 **`rankMoves(fen, difficulty)`** chấm điểm **mọi nước hợp lệ** của một thế cờ rồi xếp hạng - dùng cho
 tab Trung cuộc (tìm nước hay nhất) và cho `verify:bestmove`. Mỗi nước gốc được chấm trên **một bàn cờ
@@ -159,7 +155,7 @@ mới** để việc tìm kiếm hết thời gian không làm hỏng bàn cờ 
 ### Stockfish WASM & giấy phép ⚠️
 
 - Chép tệp bằng `npm run setup:engine` (tự chạy trước `dev`/`build`) vào `public/stockfish/`.
-- **Nạp lười**: Worker chỉ được tạo khi bé chọn mức Siêu; tải không được thì tự rơi về engine JS.
+- **Nạp lười**: Worker chỉ được tạo khi bé chọn mức Khá; tải không được thì tự rơi về engine JS.
 - **Giấy phép: Stockfish là GPL-3.0.** App hiện là riêng tư nên dùng bình thường, **nhưng nếu sau
   này mở mã nguồn hoặc phát hành thì toàn bộ app phải theo GPL-3.0**. Phần ghi nguồn nằm ở
   `public/stockfish/NOTICE.txt` và `LICENSE.txt` (phải giữ nguyên khi phân phối).
@@ -171,10 +167,10 @@ mới** để việc tìm kiếm hết thời gian không làm hỏng bàn cờ 
   từng nước (lý do + vè) và **kế hoạch trung cuộc** (3 việc viết tay, có ô cờ + mũi tên để soi).
   Bấm một khai cuộc trên bản đồ là bàn cờ hiện **thế cờ mẫu hình cuối dòng chính** để xem trước; nút
   **🧩 Ôn mẫu hình cuối khai cuộc** mở modal xem thế cờ cuối của mọi khai cuộc.
-- **⚔️ 20 thế cờ Trung cuộc** (`src/data/bestMoves.ts`): 7 chủ đề. Mỗi thế có nước hay nhất
+- **⚔️ 3 thế cờ Trung cuộc** (`src/data/bestMoves.ts`): 3 chủ đề. Mỗi thế có nước hay nhất
   (`bestSan`) đã được **Stockfish kiểm chứng**; nhiều nước cùng tốt trong biên độ cho phép vẫn tính đúng.
-- **👑 12 thế luyện Tàn cuộc** (`src/data/endgames.ts`): 3 thế đưa Tốt phong Hậu + 9 thế chiếu bí
-  Vua Đen bằng Hậu / Xe / 2 Xe / Tượng đôi / Mã. Đối thủ đi mức Dễ để bé kịp thực hiện kỹ thuật.
+- **👑 5 thế luyện Tàn cuộc** (`src/data/endgames.ts`): Vua–Tốt ô đối diện, Tốt thông, Xe + Tốt
+  chọi Xe, Mã + Tượng chiếu bí, cặp Tượng chiếu bí. Đối thủ đi mức Khó.
 - **🧭 16 bài Đối phó khai cuộc** (`src/data/counters.ts`): 8 bài cho đối thủ cầm Trắng + 8 bài cho
   đối thủ cầm Đen, mỗi bài một dòng nước kèm **đối thủ đang định làm gì**, ý tưởng đối phó và 3 việc
   bé cần làm. 10 bài gắn `openingId` trỏ tới bài khai cuộc gốc (quy ước `id = vs-<openingId>`) để
@@ -187,14 +183,16 @@ mới** để việc tìm kiếm hết thời gian không làm hỏng bàn cờ 
 ## 🧱 Công nghệ
 
 - **React 19 + Vite + TypeScript**
-- **TanStack Router** (6 tab) + **TanStack Query** (lớp dữ liệu bài học, có cache)
+- **TanStack Router** (4 nhóm tab, 8 trang) + **TanStack Query** (lớp dữ liệu bài học, có cache)
 - **chess.js** (luật cờ, `attackers`/`isAttacked` cho bản đồ nguy hiểm)
 - **react-chessboard v5** (bàn cờ, mũi tên vàng đồng, kéo-thả & bấm-chọn-đi)
 - **Tailwind CSS v4** (theme hoạt hình, animation tự viết)
 - **Web Worker** cho bộ máy cờ (negamax + alpha-beta + piece-square table + **quiescence**), có 3
   lớp bảo hiểm chống “đứng hình”: worker lỗi → tự tính; worker im lâu → tự tính; trình duyệt chặn
   Worker → dùng luồng chính.
-- **Stockfish WASM** (bản `lite-single` ~1.8 MB) cho mức **Siêu**: nạp lười, có nhánh tự rơi về engine JS.
+- **Stockfish WASM** (bản `lite-single` ~1.8 MB) cho mức **Khá**: nạp lười, có nhánh tự rơi về engine JS.
+- **PWA** (`vite-plugin-pwa`): cài app ra màn hình chính và **luyện được khi mất mạng** - Workbox
+  precache cả `stockfish/*.wasm`, kiểm bằng `npm run check:pwa` sau `npm run build`.
 
 ## 🧩 Chia nhỏ bundle (lazy-load từng tab)
 
@@ -222,7 +220,7 @@ src/
 ├── engine/         # minimax.ts (pickMove, rankMoves) · engine.worker.ts · useChessEngine.ts ·
 │                   # stockfishLoader.ts · uci.ts
 ├── hooks/          # useChessGame (ván cờ SAN) · useArrowKeys · useEyeCheck
-├── layout/         # RootLayout: header, 6 tab, thanh tuỳ chọn của bé + khung gợi ý cho ba mẹ
+├── layout/         # RootLayout: header, 4 nhóm tab, dải bài trong nhóm, thanh tuỳ chọn của bé
 ├── lib/            # notation · speech (đọc to giọng Mỹ + chọn giọng) · coordinates · threats · hints ·
 │                   # planFocus · livePlan · parentTips · sound · info
 ├── pages/          # Openings · Counters · Tactics · Endgames · Strategy · FreePlay
@@ -315,18 +313,19 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-hint-drag-test.mjs` | Chưa bấm Gợi ý thì **không lộ đáp án**; bấm rồi thì đúng 1 quân vàng + 1 ô xanh + 1 mũi tên; sau đó **kéo-thả thật** và kiểm tra bài được tính là đã giải. Đo lại viền gợi ý để chứng minh **nhịp thở** chạy thật và tắt khi bật `prefers-reduced-motion`. |
 | `browser-strategy-drag-test.mjs` | Tab **Chiến lược**: kéo-thả thật một thế cờ tốt và xác nhận quân đứng đúng ô, không tự bật về như cũ. |
 | `browser-stockfish-test.mjs` | Mở một Worker Stockfish thật, chạy `uci → position → go depth 12`, xác nhận engine trả `bestmove` hợp lệ kèm dòng `info`. |
-| `browser-parent-tips-test.mjs` | Khung **“Gợi ý cho ba mẹ”** hiện ở **cả 6 đường dẫn**, thu gọn/mở lại được, và **không làm trang tràn ngang**. |
+| `browser-coach-test.mjs` | HLV tiếng Việt ở tab Đấu Máy: đi một nước **thí quân** thì HLV chỉ ra quân bị treo bằng lời Việt, và lỗi được ghi vào **sổ lỗi** của tab Tiến bộ. |
+| `check-pwa.mjs` | Bản dựng PWA: có manifest, service worker precache **cả engine Stockfish (JS + WASM)** và trang chủ để mở offline. |
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
 | `browser-coords-test.mjs` | Toạ độ bàn cờ (cột a-h, hàng 1-8) ở cả 4 mép, đọc tên ô + tên quân tiếng Anh, và xoay đúng khi bé cầm quân Đen. |
 | `browser-voice-test.mjs` | Mục **🔈 Giọng đọc** trong ⚙️: liệt kê giọng tiếng Anh máy có, **mỗi dòng có nút 🔊 nghe thử riêng**, chọn giọng thì lưu lại và còn nguyên sau khi tải lại. |
 | `browser-tactics-test.mjs` | Tab **Trung cuộc**: mở đúng chủ đề qua `/tactics?theme=…`, giải đúng một thế rồi phát lại **“Xem lại lời giải”** (quân đi lại đúng, có mũi tên, đọc to nước). |
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
-| `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 12 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |
-| `browser-openings-patterns-test.mjs` | Nút **🧩 Ôn mẫu hình cuối khai cuộc** mở **modal** thế cờ cuối của từng khai cuộc (bàn cờ modal có id riêng, không trùng bàn cờ chính), đổi khai cuộc/cột Trắng-Đen không cần đi lại, đóng được. Kiểm luôn: **bấm một khai cuộc trên bản đồ → bàn cờ hiện thế cờ mẫu hình cuối**, nút **▶ Bắt đầu học từ đầu** đưa về thế cờ gốc, và **bộ lọc theo nước mở đầu** gom đúng nhóm bài. |
+| `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |
+| `browser-openings-patterns-test.mjs` | **Bấm một khai cuộc trên bản đồ → bàn cờ hiện ngay thế cờ mẫu hình cuối** (cả 10 bài), nút **▶ Bắt đầu học từ đầu** đưa về thế cờ gốc, và **bộ lọc theo nước mở đầu** gom đúng nhóm bài. |
 | `browser-theme-test.mjs` | Ghim **bảng màu thật**: nền giấy ngà, thanh trên cùng xanh rừng, bàn cờ trắng + xanh lá đậm, mũi tên vàng đồng - và **không còn màu tím** sót lại. |
-| `browser-freeplay-hint-test.mjs` | Tab **Đấu tập tự do**: đủ **3 mức** (không còn mức Dễ), bấm **💡 Gợi ý** thì máy tìm nước cho bé và vẽ **mũi tên vàng**; **giới hạn 3 lần mỗi ván** (nút đếm ngược rồi tự khoá, ♟️ Ván mới cấp lại đủ 3). |
+| `browser-freeplay-hint-test.mjs` | Tab **Đấu tập tự do**: đủ **2 mức** Dễ / Khá, bấm **💡 Gợi ý** thì máy tìm nước cho bé và vẽ **mũi tên vàng**; **giới hạn 3 lần mỗi ván** (nút đếm ngược rồi tự khoá, ♟️ Ván mới cấp lại đủ 3). |
 | `browser-counters-test.mjs` | Tab **Đối phó khai cuộc**: đủ 8 bài cho đối thủ cầm Trắng và 8 bài cho đối thủ cầm Đen, hiện **“đối thủ đang định làm gì”** + ý tưởng + 3 việc, **bộ lọc theo nước mở đầu** (lọc 1.d4 gom đúng 3 bài), **phím ◀ ▶ tiến/lùi từng nước**, đổi màu đối thủ thì danh sách đổi theo, và **liên kết hai chiều**: `?vs=` mở sẵn đúng bài, **📖 Mở bài khai cuộc gốc** nhảy về đúng bài Khai cuộc, **🧭** nhảy ngược lại Đối phó. |
-| `browser-layout-test.mjs` | Duyệt cả 6 tab trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
+| `browser-layout-test.mjs` | Duyệt cả 8 trang trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
 | `generate-assets.mjs` | Sinh `og-image.png` (1200×630) và `apple-touch-icon.png` (180×180) bằng Chrome headless, rồi tự giải mã lại ảnh để kiểm tra kích thước và màu. |
 
 > Để chạy lẻ một bộ: `npm run check:layout`, `npm run check:tactics`, `npm run check:patterns`…

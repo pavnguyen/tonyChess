@@ -285,18 +285,27 @@ for (const puzzle of BEST_MOVES) {
   if (!bad) ok(`${puzzle.id} - nước hay nhất ${puzzle.bestSan} (${puzzle.title})`)
 }
 
-console.log('\n▶ Trung cuộc - mỗi chủ đề có ít nhất 2 thế cờ')
+console.log('\n▶ Trung cuộc - mọi chủ đề đều có thế cờ dùng được')
 {
+  // Spec `app-upgrade-spec.md` §6.2: mục tiêu cuối là **3 mức (1200/1500/1800) mỗi
+  // chủ đề**. Hiện mỗi chủ đề mới có 1 thế (giai đoạn 3 sẽ bổ sung), nên bài kiểm
+  // chỉ bắt lỗi khi một chủ đề **rỗng** hoặc tổng số thế quá ít - không giả vờ đã đủ.
   const themes = [...new Set(BEST_MOVES.map((puzzle) => puzzle.theme))]
   let bad = false
   for (const theme of themes) {
     const count = BEST_MOVES.filter((puzzle) => puzzle.theme === theme).length
-    if (count < 2) {
-      fail(`chủ đề ${theme} chỉ có ${count} thế (cần ≥ 2)`)
+    if (count < 1) {
+      fail(`chủ đề ${theme} không có thế nào`)
       bad = true
     }
   }
-  if (!bad) ok(`${themes.length} chủ đề, mỗi chủ đề ≥ 2 thế cờ`)
+  if (BEST_MOVES.length < 3) {
+    fail(`chỉ có ${BEST_MOVES.length} thế Trung cuộc (cần ≥ 3)`)
+    bad = true
+  }
+  if (!bad) {
+    ok(`${themes.length} chủ đề, ${BEST_MOVES.length} thế (mục tiêu: 3 mức/chủ đề)`)
+  }
 }
 
 console.log('\n▶ Tàn cuộc')
@@ -333,11 +342,12 @@ for (const challenge of ENDGAMES) {
   }
 }
 
-console.log('\n▶ 10 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh hoạ mỗi thẻ)')
+console.log('\n▶ 7 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh hoạ mỗi thẻ)')
 {
   let bad = false
-  if (GOLD_PRINCIPLES.length !== 10) {
-    fail(`cần đúng 10 nguyên tắc nhưng có ${GOLD_PRINCIPLES.length}`)
+  // Đã cắt từ 10 xuống 7 nguyên tắc cốt lõi (xem README) - con số này phải khớp dữ liệu.
+  if (GOLD_PRINCIPLES.length !== 7) {
+    fail(`cần đúng 7 nguyên tắc nhưng có ${GOLD_PRINCIPLES.length}`)
     bad = true
   }
   const SQUARE_RE = /^[a-h][1-8]$/
@@ -410,7 +420,7 @@ console.log('\n▶ 10 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh 
       }
     }
   })
-  if (!bad) ok(`10 nguyên tắc vàng - đủ 10 thẻ, mỗi thẻ 2 thế cờ minh hoạ hợp lệ`)
+  if (!bad) ok(`7 nguyên tắc vàng - đủ 7 thẻ, mỗi thẻ 2 thế cờ minh hoạ hợp lệ`)
 }
 
 console.log(

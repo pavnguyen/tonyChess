@@ -229,13 +229,28 @@ await sleep(200)
 
 console.log('\n▶ Kéo quân theo gợi ý là giải được bài đố')
 
-check(await dragPiece(after.gold[0], after.steel[0]), `đã kéo chuột ${after.gold[0]} → ${after.steel[0]}`)
-await sleep(900)
+/** Con số “Nước x/y” trên thanh tiêu đề bàn cờ - tăng lên nghĩa là app đã nhận nước. */
+const stepText = () =>
+  evaluate(
+    `(document.getElementById('kid-tactic-step')?.innerText || '').trim()`,
+  )
+const stepBefore = await stepText()
 
+check(await dragPiece(after.gold[0], after.steel[0]), `đã kéo chuột ${after.gold[0]} → ${after.steel[0]}`)
+await sleep(1400)
+
+// Thế cờ này là đòn DÀI: đi đúng nước hay nhất xong máy còn đáp trả rồi bé đi tiếp,
+// nên app báo TIẾN TRÌNH (số nước tăng) chứ chưa chúc mừng ngay. Với thế một nước
+// thì lại hiện lời chúc mừng - chấp nhận cả hai, miễn là nước đi được tính đúng.
 const solvedText = await bodyText()
+const stepAfter = await stepText()
+const advanced =
+  stepAfter !== stepBefore ||
+  solvedText.includes('Nước hay nhất') ||
+  solvedText.includes('Đánh tiếp tuyệt vời')
 check(
-  solvedText.includes('Nước hay nhất') || solvedText.includes('Đánh tiếp tuyệt vời'),
-  'giải đúng thì báo lời chúc mừng “Nước hay nhất!”',
+  advanced,
+  `đi đúng nước hay nhất thì app ghi nhận (bước “${stepBefore}” → “${stepAfter}”)`,
 )
 const solvedPiece = await pieceAt(after.steel[0])
 check(

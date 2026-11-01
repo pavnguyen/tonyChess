@@ -1,137 +1,70 @@
 import type { EndgameChallenge } from '../types'
 
+/**
+ * Năm thế tàn cuộc **kỹ thuật thật** cho mức 1500+.
+ *
+ * Mỗi thế đã được kiểm bằng tìm kiếm "thắng cưỡng bức" thuần chess.js (Trắng thắng
+ * dù Đen phòng thủ thế nào), không phải thế trang trí:
+ * - `opposition`, `passed-pawn`: phong cấp cưỡng bức trong 5 nửa nước.
+ * - `rook-pawn`: Xe Trắng lên a8 buộc đổi Xe rồi Tốt bắt chéo lên thành Hậu.
+ * - `bishop-pair`, `bishop-knight`: chiếu bí ngay được (Tượng canh đường chéo h8,
+ *   Vua giữ g7/g8, Mã giữ h7).
+ */
 export const ENDGAMES: EndgameChallenge[] = [
   {
-    id: 'promote-easy',
-    title: 'Tốt đua biến Hậu (dễ)',
+    id: 'opposition',
+    title: 'Vua–Tốt: ô đối diện',
     goal: 'promote',
-    fen: 'k7/8/3K4/4P3/8/8/8/8 w - - 0 1',
+    fen: '5k2/8/4KP2/8/8/8/8/8 w - - 0 1',
     playerSide: 'white',
-    hint: 'Vua Trắng đi trước dọn đường, Tốt cứ thế tiến thẳng lên hàng 8.',
-    explanation: 'Vua đi trước che chở cho Tốt, Tốt cứ tiến lên là thành Hậu!',
-    rhyme: 'Tốt lên thành Hậu',
+    hint: 'Vua Trắng đứng ngay sau Tốt để che. Đẩy Tốt lên f7, Vua Đen buộc phải nhường ô f8.',
+    explanation:
+      'Luật ô đối diện: hai Vua nhìn nhau cách một ô thì bên phải đi là bên phải nhường. Vua Trắng đứng đối diện Vua Đen nên Vua Đen không thể chui vào trước mặt Tốt — Tốt cứ tiến là thành Hậu.',
+    rhyme: 'Đối diện thì Vua kia phải nhường',
   },
   {
-    id: 'promote-medium',
-    title: 'Vua & Tốt đua biến Hậu',
+    id: 'rook-pawn',
+    title: 'Xe + Tốt chọi Xe',
     goal: 'promote',
-    fen: '8/5k2/3K4/4P3/8/8/8/8 w - - 0 1',
+    fen: 'r3k3/1P6/8/8/8/8/8/R3K3 w - - 0 1',
     playerSide: 'white',
-    hint: 'Đưa Vua lên trước bảo vệ Tốt, đừng để Vua Đen chặn đường.',
-    explanation: 'Vua phải đi trước làm lá chắn thì Tốt mới ung dung lên Hậu.',
-    rhyme: 'Vua che Tốt tiến',
-  },
-  {
-    id: 'mate-two-rooks',
-    title: 'Chiếu bí bằng 2 Xe',
-    goal: 'checkmate',
-    fen: '7k/R7/8/8/8/4K3/8/2R5 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Xe a7 đã canh hàng 7, chỉ cần đưa Xe kia lên hàng 8 chiếu bí.',
-    explanation: 'Hai Xe phối hợp: một Xe giữ hàng 7, một Xe chiếu bí trên hàng 8.',
-    rhyme: 'Thang Xe bí Vua',
-  },
-  {
-    id: 'mate-queen',
-    title: 'Chiếu bí bằng Hậu + Vua',
-    goal: 'checkmate',
-    fen: 'k7/2K1Q3/8/8/8/8/8/8 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Đưa Hậu xuống cột a để chiếu dọc; Vua Trắng đã canh chặt cửa b8, b7.',
-    explanation: 'Hậu chiếu dọc cột a, Vua Trắng khóa cửa b8 - Vua Đen hết đường chạy.',
-    rhyme: 'Hậu kề Vua bí',
-  },
-
-  // ── Bốn thế chiếu bí kinh điển - kỳ thủ nào cũng phải thuộc lòng ──
-  {
-    id: 'mate-rook-and-king',
-    title: 'Xe + Vua chiếu bí (thế cơ bản)',
-    goal: 'checkmate',
-    fen: 'k7/8/1K6/8/8/8/8/7R w - - 0 1',
-    playerSide: 'white',
-    hint: 'Vua Trắng ở b6 đã khóa hai cửa a7, b7. Chỉ cần Xe tràn xuống hàng 8.',
+    hint: 'Đừng phong Hậu ngay (Xe Đen đang canh b8). Đẩy Xe lên a8 trước để buộc Xe Đen đổi.',
     explanation:
-      'Vua Trắng canh a7 và b7, Xe xuống hàng 8 chiếu từ xa - Vua Đen hết đường chạy. Đây là cách kết thúc ván đấu chỉ bằng Xe + Vua.',
-    rhyme: 'Vua khóa, Xe chiếu',
+      'Xe Đen canh đúng ô phong cấp b8 nên Tốt không lên được. Đưa Xe lên a8: nếu Xe Đen ăn, Tốt bắt chéo lên a8 thành Hậu; nếu Xe Đen tránh, bé ăn luôn Xe rồi ung dung phong Hậu.',
+    rhyme: 'Đổi Xe mở đường cho Tốt',
   },
   {
-    id: 'mate-back-rank',
-    title: 'Chiếu bí hàng cuối',
+    id: 'bishop-knight',
+    title: 'Mã + Tượng chiếu bí',
     goal: 'checkmate',
-    fen: '6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1',
+    fen: '7k/5K2/8/6N1/8/8/8/2B5 w - - 0 1',
     playerSide: 'white',
-    hint: 'Ba Tốt f7, g7, h7 của Đen đang tự chặn đường Vua. Đưa Xe lên hàng 8.',
+    hint: 'Vua Trắng giữ g7 và g8, Mã g5 đã canh ô h7. Còn thiếu một nước Tượng chiếu vào h8.',
     explanation:
-      'Bẫy hàng cuối: Vua Đen tự nhốt mình sau hàng Tốt, chỉ một nước Xe lên hàng 8 là chiếu bí. Phải luôn để mắt tới nó.',
-    rhyme: 'Coi chừng hàng cuối',
+      'Mã và Tượng chia nhau hai màu ô: Mã giữ ô h7 (ô Vua Đen muốn chạy), Tượng chiếu vào h8 theo đường chéo. Vua Đen hết cả ba ô — đây là cách Mã + Tượng phối hợp chiếu bí.',
+    rhyme: 'Mã giữ h7, Tượng chiếu h8',
   },
   {
-    id: 'mate-two-bishops',
+    id: 'bishop-pair',
     title: 'Tượng đôi chiếu bí',
     goal: 'checkmate',
-    fen: '7k/5K2/7B/8/8/8/2B5/8 w - - 0 1',
+    fen: '7k/5K2/8/8/8/B7/8/1B6 w - - 0 1',
     playerSide: 'white',
-    hint: 'Một Tượng canh ô h7, Vua Trắng canh g7 và g8. Còn lại là dùng Tượng ở h6.',
+    hint: 'Một Tượng đang canh h7. Đưa Tượng còn lại vào b2 để chiếu dọc đường chéo dài tới h8.',
     explanation:
-      'Tượng h6 sang g7 chiếu bí: Vua Trắng giữ g8, Tượng còn lại giữ h7. Hai Tượng hợp lại mạnh hơn hẳn một con số cộng.',
-    rhyme: 'Hai Tượng đan lưới',
+      'Tượng đôi phủ kín hai màu ô: một con giữ ô h7, một con chiếu vào h8, Vua Trắng giữ g7 và g8. Vua Đen ở góc hết đường chạy — nhớ đừng đi nước không chiếu kẻo hòa cờ.',
+    rhyme: 'Hai Tượng đan lưới kín',
   },
   {
-    id: 'mate-smothered-knight',
-    title: 'Chiếu bí ngạt bằng Mã',
-    goal: 'checkmate',
-    fen: '6rk/6pp/3N4/8/8/8/8/4K3 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Vua Đen bị Xe và hai Tốt của chính mình bưng kín. Mã đang ở d6, nhảy về đâu?',
-    explanation:
-      'Mã nhảy f7 chiếu bí: Vua Đen ở h8 không còn ô nào vì Xe g8, Tốt g7 và h7 đều là quân nhà. Đây là thế “chiếu bí ngạt” nổi tiếng.',
-    rhyme: 'Ngạt vì quân nhà',
-  },
-
-  // ── Bốn thế luyện thêm: Xe/Hậu chiếu bí ở mép & hàng cuối, và Tốt bàn mở ──
-  {
-    id: 'mate-rook-edge',
-    title: 'Xe + Vua chiếu bí ở mép',
-    goal: 'checkmate',
-    fen: '7k/8/6K1/8/8/8/8/R7 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Vua Trắng ở g6 đã khóa g7 và h7. Chỉ cần đưa Xe lên hàng 8 chiếu từ xa.',
-    explanation:
-      'Xe chiếu dọc cả hàng 8, Vua Trắng canh g7 và h7 - Vua Đen ở mép hết đường chạy. Chỉ Xe + Vua là đủ kết thúc ván đấu.',
-    rhyme: 'Vua khóa Xe chiếu xa',
-  },
-  {
-    id: 'mate-queen-corner',
-    title: 'Hậu + Vua chiếu bí ở góc',
-    goal: 'checkmate',
-    fen: '7k/8/6K1/8/8/8/1Q6/8 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Vua Trắng ở g6 đã khóa g7, h7. Hậu lên hàng 8 hoặc áp sát g7 đều chiếu bí.',
-    explanation:
-      'Hậu tràn xuống hàng 8 chiếu, Vua Trắng giữ g7 và h7 - Vua Đen ở góc bị nhốt kín, hết nước đi.',
-    rhyme: 'Hậu chặn hàng bí ngay',
-  },
-  {
-    id: 'mate-queen-back-rank',
-    title: 'Chiếu bí hàng cuối bằng Hậu',
-    goal: 'checkmate',
-    fen: '6k1/5ppp/8/8/8/8/8/3Q2K1 w - - 0 1',
-    playerSide: 'white',
-    hint: 'Ba Tốt f7, g7, h7 của Đen tự nhốt Vua. Hậu chỉ cần tràn xuống hàng 8.',
-    explanation:
-      'Bẫy hàng cuối: Vua Đen tự chặn sau hàng Tốt của mình, nên Hậu xuống d8 là chiếu bí ngay. Nhớ để mắt tới hàng cuối!',
-    rhyme: 'Hàng cuối Hậu tràn',
-  },
-  {
-    id: 'promote-open',
-    title: 'Vua & Tốt đua biến Hậu (bàn mở)',
+    id: 'passed-pawn',
+    title: 'Tốt thông hành + Vua theo sau',
     goal: 'promote',
-    fen: '8/5k2/8/3K4/4P3/8/8/8 w - - 0 1',
+    fen: '7k/8/8/1P6/8/1K6/8/8 w - - 0 1',
     playerSide: 'white',
-    hint: 'Vua Trắng đi trước làm lá chắn, Tốt cột e cứ tiến thẳng lên hàng 8.',
+    hint: 'Tốt b5 không còn Tốt nào chặn. Vua Trắng đi theo sau che, Tốt cứ tiến thẳng lên b8.',
     explanation:
-      'Vua che Tốt trên đường tiến, Tốt cứ bước từng ô tới tận cùng là phong Hậu. Chậm mà chắc.',
-    rhyme: 'Vua dẫn Tốt lên',
+      'Tốt thông hành là Tốt không còn Tốt địch chặn trên đường. Vua Đen ở tận h8 không kịp chạy về, nên việc của bé chỉ là đẩy Tốt tiến đều — càng nhanh càng tốt.',
+    rhyme: 'Tốt thông hành cứ tiến',
   },
 ]
 

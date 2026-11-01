@@ -49,6 +49,18 @@ const endgamesRoute = createRoute({
   component: lazyRouteComponent(() => import('./pages/EndgamesPage'), 'EndgamesPage'),
 })
 
+const hazardsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/hazards',
+  component: lazyRouteComponent(() => import('./pages/HazardsPage'), 'HazardsPage'),
+})
+
+const progressRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/progress',
+  component: lazyRouteComponent(() => import('./pages/ProgressPage'), 'ProgressPage'),
+})
+
 const strategyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/strategy',
@@ -65,7 +77,9 @@ const routeTree = rootRoute.addChildren([
   openingsRoute,
   countersRoute,
   tacticsRoute,
+  hazardsRoute,
   endgamesRoute,
+  progressRoute,
   strategyRoute,
   freePlayRoute,
 ])

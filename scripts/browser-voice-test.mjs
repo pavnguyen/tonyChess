@@ -1,15 +1,40 @@
 /**
- * Kiểm tra mục **🔈 Giọng đọc** trong ⚙️ Tùy chọn của bé:
- *   1. Danh sách giọng tiếng Anh máy có hiện ra (hoặc lời nhắc nếu máy không có).
- *   2. MỖI dòng có nút 🔊 nghe thử riêng, bấm được và không gây lỗi.
- *   3. Chọn một giọng thì lưu vào `localStorage` và còn nguyên sau khi tải lại.
+ * Kiểm tra **giọng đọc** sau khi bỏ bảng chọn giọng trong ⚙️:
+ *   1. ⚙️ KHÔNG còn danh sách giọng / nút 🔊 nghe thử (bảng đã được gỡ cho gọn).
+ *   2. Vẫn còn một dòng cho biết app tự chọn giọng hay nhất.
+ *   3. App thật sự đọc bằng **giọng Mỹ tự nhiên** (không phải giọng “đồ chơi”
+ *      kiểu Albert / Bells / Bad News): bắt lấy utterance khi bé chạm một ô cờ.
  *
  * Chạy: node scripts/browser-voice-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
-const VOICE_STORAGE_KEY = 'hoc-vien-co-vua-nhi.voice.v1'
+
+/** Giọng "đồ chơi" của macOS - nếu app tự chọn phải tránh. */
+const NOVELTY = [
+  'Albert',
+  'Bad News',
+  'Bahh',
+  'Bells',
+  'Boing',
+  'Bubbles',
+  'Cellos',
+  'Deranged',
+  'Good News',
+  'Grandma',
+  'Grandpa',
+  'Hysterical',
+  'Jester',
+  'Junior',
+  'Organ',
+  'Pipe Organ',
+  'Superstar',
+  'Trinoids',
+  'Whisper',
+  'Wobble',
+  'Zarvox',
+]
 
 const { skipped, failedToConnect, evaluate, close } = await openPage(APP_URL, {
   port: 9381,
@@ -40,92 +65,91 @@ const openGear = () =>
     })()
   `)
 
-const voiceState = () =>
-  evaluate(`
-    (() => {
-      const list = document.getElementById('kid-voice-list')
-      const note = [...document.querySelectorAll('p')].find((p) =>
-        p.innerText.includes('chưa có giọng tiếng Anh'),
-      )
-      const rows = list ? [...list.querySelectorAll('[data-voice-name]')] : []
-      return {
-        hasList: Boolean(list),
-        rowCount: rows.length,
-        previewButtons: rows.filter((r) => (r.innerText || '').includes('🔊')).length,
-        hasNote: Boolean(note),
-        selected: rows
-          .filter((r) => r.querySelector('button[aria-pressed="true"]'))
-          .map((r) => r.getAttribute('data-voice-name')),
-      }
-    })()
-  `)
-
-await sleep(2200)
-await evaluate(`localStorage.removeItem(${JSON.stringify(VOICE_STORAGE_KEY)})`)
-await evaluate('location.reload()')
 await sleep(2200)
 
-console.log('\n▶ Mục “Giọng đọc” trong ⚙️')
+console.log('\n▶ ⚙️ gọn: không còn bảng chọn giọng')
+
 check(await openGear(), 'mở được bảng ⚙️ Tùy chọn của bé')
 await sleep(400)
 
-const state = await voiceState()
+const panel = await evaluate(`
+  (() => {
+    const list = document.getElementById('kid-voice-list')
+    return {
+      hasList: Boolean(list),
+      rows: document.querySelectorAll('[data-voice-name]').length,
+      previewButtons: [...document.querySelectorAll('#kid-voice-list button')].length,
+      hasNote: [...document.querySelectorAll('p')].some((p) =>
+        p.innerText.includes('Giọng đọc'),
+      ),
+      text: (document.body.innerText || '').replace(/\\s+/g, ' '),
+    }
+  })()
+`)
+
+check(!panel.hasList, 'không còn danh sách giọng đọc trong ⚙️')
+check(panel.rows === 0, `không còn dòng chọn giọng nào (${panel.rows})`)
+check(panel.previewButtons === 0, 'không còn nút 🔊 nghe thử từng giọng')
+check(panel.hasNote, 'vẫn có một dòng cho biết app tự chọn giọng hay nhất')
 check(
-  state.hasList || state.hasNote,
-  state.hasList
-    ? 'hiện danh sách giọng đọc tiếng Anh'
-    : 'máy không có giọng tiếng Anh → hiện lời nhắc thay vì ô trống',
+  !NOVELTY.some((name) => panel.text.includes(`· ${name}`)),
+  'không hiện tên các giọng “đồ chơi” trong bảng tuỳ chọn',
 )
 
-if (!state.hasList || state.rowCount <= 1) {
-  console.log('  (bỏ qua phần chọn giọng: máy này không có giọng tiếng Anh nào)')
-  close()
-  finish('BROWSER VOICE')
-}
+console.log('\n▶ App đọc bằng giọng Mỹ tự nhiên (không phải giọng đồ chơi)')
 
-check(state.rowCount >= 2, `có ít nhất 2 dòng giọng (Tự động + ${state.rowCount - 1} giọng máy có)`)
-check(state.previewButtons === state.rowCount, `MỖI dòng đều có nút 🔊 nghe thử riêng (${state.previewButtons}/${state.rowCount})`)
-check(state.selected.length === 1, 'đúng một dòng đang được chọn (mặc định là “Tự động”)')
-
-// --- Bấm 🔊 ở một dòng bất kỳ: phải không gây lỗi. ---
-const previewed = await evaluate(`
+// Chặn hẳn việc phát âm thanh thật, chỉ ghi lại utterance để kiểm.
+await evaluate(`
   (() => {
-    const list = document.getElementById('kid-voice-list')
-    const rows = [...list.querySelectorAll('[data-voice-name]')]
-    const row = rows[1]
-    if (!row) return 'no-row'
-    const buttons = [...row.querySelectorAll('button')]
-    buttons[buttons.length - 1].click()
-    return row.getAttribute('data-voice-name')
+    window.__spoken = []
+    const synth = window.speechSynthesis
+    if (!synth) return
+    synth.speak = (utterance) => {
+      window.__spoken.push({
+        text: utterance.text || '',
+        lang: utterance.lang || '',
+        voice: utterance.voice ? utterance.voice.name : null,
+      })
+    }
   })()
 `)
-check(typeof previewed === 'string' && previewed !== 'no-row', `bấm “🔊 Nghe thử” riêng của giọng “${previewed}” không lỗi`)
 
-// --- Chọn chính dòng đó (bấm tên) rồi kiểm tra lưu lại. ---
-const picked = await evaluate(`
+// Đóng ⚙️ rồi chạm một ô cờ ở tab Khai cuộc → app đọc tên ô.
+await evaluate(`
   (() => {
-    const list = document.getElementById('kid-voice-list')
-    const row = [...list.querySelectorAll('[data-voice-name]')].find(
-      (r) => r.getAttribute('data-voice-name') === ${JSON.stringify(previewed)},
+    const closeBtn = [...document.querySelectorAll('button')].find(
+      (b) => (b.getAttribute('title') || '') === 'Tùy chọn của bé',
     )
-    if (!row) return null
-    row.querySelector('button').click()
-    return row.getAttribute('data-voice-name')
+    if (closeBtn) closeBtn.click()
   })()
 `)
-check(picked === previewed, `chọn được giọng “${picked}” bằng cách bấm tên`)
-const stored = await evaluate(`localStorage.getItem(${JSON.stringify(VOICE_STORAGE_KEY)})`)
-check(stored === picked, `lựa chọn được lưu vào localStorage (“${stored}”)`)
+await sleep(300)
 
-console.log('\n▶ Nhớ lựa chọn qua lần tải lại')
-await evaluate('location.reload()')
-await sleep(2200)
-await openGear()
-await sleep(400)
-const after = await voiceState()
+const tapped = await evaluate(`
+  (() => {
+    const square = document.getElementById('kid-board-square-e2')
+    if (!square) return 'no-square'
+    square.click()
+    return 'e2'
+  })()
+`)
+check(tapped === 'e2', 'chạm được ô cờ e2 trên bàn cờ')
+
+await sleep(600)
+const spoken = await evaluate(`window.__spoken || []`)
+check(Array.isArray(spoken) && spoken.length > 0, `app có đọc toạ độ ô cờ (${spoken?.length} câu)`)
+
+const first = (spoken ?? []).find((item) => item.text) ?? null
+check(Boolean(first), `câu đọc đầu tiên: “${first?.text ?? ''}”`)
+check(first?.lang === 'en-US', `đọc bằng giọng Mỹ (lang=${first?.lang})`)
+
+const voiceName = first?.voice ?? ''
+const isNovelty = NOVELTY.some((name) => voiceName === name || voiceName.startsWith(`${name} (`))
 check(
-  after.selected.length === 1 && after.selected[0] === picked,
-  `tải lại trang vẫn giữ giọng đã chọn (${after.selected[0]})`,
+  !voiceName || !isNovelty,
+  voiceName
+    ? `giọng tự chọn không phải giọng đồ chơi (“${voiceName}”)`
+    : 'máy không có giọng tiếng Anh riêng → dùng giọng mặc định của trình duyệt',
 )
 
 close()

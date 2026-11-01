@@ -31,6 +31,38 @@ export function extractDepth(lines: readonly string[]): number | null {
   return null
 }
 
+/** Điểm mà Stockfish báo ở dòng `info ... score cp/mate` cuối cùng. */
+export interface ScoreInfo {
+  /** Điểm centipawn - luôn tính từ phía BÊN ĐANG ĐI (dương = bên đi đang hơn). */
+  cp: number | null
+  /** Số nước tới chiếu bí (dương = bên đi chiếu bí, âm = bên đi bị chiếu bí). */
+  mate: number | null
+  depth: number | null
+}
+
+/**
+ * Lấy điểm đánh giá mới nhất trong các dòng `info` của Stockfish.
+ *
+ * Quy ước của UCI: điểm luôn nhìn từ phía **bên đang đi**. Muốn so sánh hai thế cờ
+ * khác lượt đi thì nơi gọi phải tự đổi dấu (xem `src/engine/analysis.ts`).
+ */
+export function extractScoreInfo(lines: readonly string[]): ScoreInfo {
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    const line = lines[i]
+    if (!line.startsWith('info')) continue
+    const mate = /\bscore\s+mate\s+(-?\d+)/.exec(line)
+    const cp = /\bscore\s+cp\s+(-?\d+)/.exec(line)
+    if (!mate && !cp) continue
+    const depth = /\bdepth\s+(\d+)/.exec(line)
+    return {
+      cp: cp ? Number(cp[1]) : null,
+      mate: mate ? Number(mate[1]) : null,
+      depth: depth ? Number(depth[1]) : null,
+    }
+  }
+  return { cp: null, mate: null, depth: null }
+}
+
 /** Stockfish đã sẵn sàng chưa (đã trả `uciok`). */
 export function isReady(lines: readonly string[]): boolean {
   return lines.some((line) => line.trim() === 'uciok')

@@ -27,7 +27,6 @@ import {
   pieceFromSan,
 } from '../lib/notation'
 import { playError, playMove, playWin } from '../lib/sound'
-import { useReportLesson } from '../store/lesson'
 import { useKidProgress } from '../store/progress'
 import type { CounterLesson, MoveAnnotation, Side } from '../types'
 
@@ -173,7 +172,6 @@ export function CountersPage() {
     visibleList.find((item) => item.id === lessonId) ?? visibleList[0]
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học bài đối phó nào.
-  useReportLesson(lesson ? `counter:${lesson.id}` : null)
 
   /** Bé cầm màu ngược với đối thủ. */
   const kidSide: Side = lesson?.opponentSide === 'white' ? 'black' : 'white'

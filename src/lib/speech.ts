@@ -38,9 +38,6 @@ export function speechSupported(): boolean {
 
 let cachedVoice: SpeechSynthesisVoice | null = null
 
-/** Khoá lưu giọng bé/ba mẹ đã chọn. */
-const VOICE_STORAGE_KEY = 'hoc-vien-co-vua-nhi.voice.v1'
-
 /**
  * Các giọng tiếng Anh nghe tự nhiên nhất trên máy phổ thông, xếp theo mức ưu
  * tiên (giọng Mỹ trước). Khi bé **chưa tự chọn** giọng, ta duyệt theo thứ tự
@@ -68,8 +65,7 @@ const PREFERRED_VOICE_HINTS = [
 
 /**
  * Giọng "đồ chơi" của macOS (Albert, Bad News, Bells…) - nghe rất vui nhưng
- * không dùng để dạy cờ được. Ta chỉ tránh chúng khi **tự chọn** giọng mặc định;
- * bé vẫn chọn được trong ⚙️ nếu muốn.
+ * không dùng để dạy cờ được, nên app **luôn tránh** khi tự chọn giọng.
  */
 const NOVELTY_VOICES = new Set([
   'Albert',
@@ -104,67 +100,9 @@ function isNovelty(name: string): boolean {
   return NOVELTY_VOICES.has(name.split(' (')[0])
 }
 
-function loadSelectedVoiceName(): string | null {
-  try {
-    return typeof localStorage === 'undefined'
-      ? null
-      : localStorage.getItem(VOICE_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
-let selectedVoiceName: string | null = loadSelectedVoiceName()
-
-/** Giọng đang được chọn trong ⚙️ (null = để app tự chọn giọng tốt nhất). */
-export function getSelectedVoiceName(): string | null {
-  return selectedVoiceName
-}
-
 /**
- * Đặt giọng bé/ba mẹ chọn (`null` = quay về tự động). Lưu vào `localStorage` và
- * xoá bộ nhớ đệm để lần đọc kế tiếp dùng đúng giọng mới.
- */
-export function setSelectedVoice(name: string | null) {
-  selectedVoiceName = name
-  cachedVoice = null
-  try {
-    if (typeof localStorage === 'undefined') return
-    if (name) localStorage.setItem(VOICE_STORAGE_KEY, name)
-    else localStorage.removeItem(VOICE_STORAGE_KEY)
-  } catch {
-    /* trình duyệt chặn lưu trữ thì thôi, giọng vẫn dùng được trong phiên này */
-  }
-}
-
-/** Danh sách giọng TIẾNG ANH máy có, xếp en-US trước rồi theo tên. */
-export function listEnglishVoices(): SpeechSynthesisVoice[] {
-  if (!speechSupported()) return []
-  const voices = window.speechSynthesis.getVoices() ?? []
-  return voices
-    .filter((voice) => (voice.lang ?? '').toLowerCase().startsWith('en'))
-    .sort((a, b) => {
-      const usA = a.lang?.toLowerCase() === 'en-us' ? 0 : 1
-      const usB = b.lang?.toLowerCase() === 'en-us' ? 0 : 1
-      if (usA !== usB) return usA - usB
-      return a.name.localeCompare(b.name)
-    })
-}
-
-/**
- * Nghe khi danh sách giọng thay đổi. Chrome/Safari trả danh sách RỖNG ở lần gọi
- * đầu nên giao diện cần cập nhật lại sau sự kiện `voiceschanged`.
- */
-export function subscribeVoices(listener: () => void): () => void {
-  if (!speechSupported()) return () => {}
-  const synth = window.speechSynthesis
-  synth.addEventListener?.('voiceschanged', listener)
-  return () => synth.removeEventListener?.('voiceschanged', listener)
-}
-
-/**
- * Giọng “hay nhất máy có” khi bé KHÔNG tự chọn: các giọng quen thuộc trước, rồi
- * giọng Mỹ thật (bỏ qua giọng “đồ chơi”), rồi tới bất kỳ giọng tiếng Anh nào.
+ * Giọng “hay nhất máy có”: các giọng quen thuộc trước, rồi giọng Mỹ thật (bỏ
+ * qua giọng “đồ chơi”), rồi tới bất kỳ giọng tiếng Anh nào.
  */
 function autoVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   for (const hint of PREFERRED_VOICE_HINTS) {
@@ -181,15 +119,11 @@ function autoVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
 }
 
 /**
- * Chọn giọng để đọc: ưu tiên giọng bé đã chọn → nếu không thì tới giọng tự động.
+ * Chọn giọng để đọc - **luôn tự động**: bé không phải chọn gì trong ⚙️.
  */
 function pickVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices() ?? []
   if (voices.length === 0) return null
-  if (selectedVoiceName) {
-    const chosen = voices.find((voice) => voice.name === selectedVoiceName)
-    if (chosen) return chosen
-  }
   return autoVoice(voices)
 }
 
@@ -226,26 +160,6 @@ function usVoice(): SpeechSynthesisVoice | null {
  */
 export function speak(text: string) {
   utter(text, false)
-}
-
-/**
- * Nghe thử một giọng trong ⚙️. **Bỏ qua nút tắt âm thanh**: bé/ba mẹ vừa bấm
- * “Nghe thử” thì phải nghe được, nếu không nút trông như hỏng.
- *
- * - `voiceName` bỏ trống  → đọc bằng giọng đang dùng.
- * - `voiceName = ''`      → đọc bằng giọng “tự động” (hay nhất máy có).
- * - `voiceName = tên`     → đọc đúng giọng đó (dùng cho từng dòng trong bảng chọn).
- */
-export function previewSpeech(text: string, voiceName?: string) {
-  if (!text || !speechSupported()) return
-  const voices = window.speechSynthesis.getVoices() ?? []
-  const voice =
-    voiceName === undefined
-      ? usVoice()
-      : voiceName === ''
-        ? autoVoice(voices)
-        : (voices.find((item) => item.name === voiceName) ?? null)
-  utter(text, true, voice)
 }
 
 function utter(text: string, force: boolean, voiceOverride?: SpeechSynthesisVoice | null) {

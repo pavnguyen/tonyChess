@@ -199,9 +199,69 @@ for (const viewport of VIEWPORTS) {
     check(reading.present && reading.count > 0 && reading.small === 0,
       `${route.name}: câu hướng dẫn trong vùng đọc ít nhất 16px`)
 
-    // Thanh tab phải hiển thị đủ 6 tab, không bị cắt mất tab nào.
-    const tabCount = await evaluate(`document.querySelectorAll('nav a').length`)
-    check(tabCount === 6, `${route.name}: thanh tab có đủ 6 tab (${tabCount})`)
+    // Thanh tab ĐÁY phải có đủ 4 nhóm, không bị cắt mất nhóm nào. Chỉ đo thanh tab
+    // chính (#kid-tab-nav): dải chuyển bài trong nhóm (#kid-group-nav) là phụ, có
+    // mặt ở vài trang và không được tính vào con số 4.
+    const tabCount = await evaluate(
+      `document.querySelectorAll('#kid-tab-nav a').length`,
+    )
+    check(tabCount === 4, `${route.name}: thanh tab có đủ 4 nhóm (${tabCount})`)
+
+    // Từng tab phải: có chữ (không phải ô trống), không bị cắt chữ, đủ to để bấm,
+    // và nằm trọn trong màn hình. Ở 320px mỗi ô chỉ rộng ~42px nên nhãn hai chữ
+    // phải xuống dòng - nếu ai đó quay lại dùng `truncate` thì bấm kiểm này báo lỗi.
+    const tabs = await evaluate(`(() => {
+      const width = window.innerWidth
+      return [...document.querySelectorAll('#kid-tab-nav a')].map((a) => {
+        const r = a.getBoundingClientRect()
+        const labels = [...a.querySelectorAll('span')].filter(
+          (s) => (s.innerText || '').trim() && s.getClientRects().length,
+        )
+        // Chỉ nhãn có overflow ẩn mới CẮT được chữ. Nhãn overflow visible thì chữ tràn
+        // ra ngoài - chuyện đó đã bị bắt bởi phép đo "không tràn ngang" ở trên.
+        // (Đo scrollHeight ở đây sẽ báo oan vì dấu tiếng Việt thò xuống dưới dòng.)
+        const clipped = labels.some((s) => {
+          const style = getComputedStyle(s)
+          if (style.overflow === 'visible') return false
+          return s.scrollWidth > s.clientWidth + 1
+        })
+        return {
+          text: labels.map((s) => s.innerText.trim()).join(' '),
+          width: Math.round(r.width),
+          height: Math.round(r.height),
+          left: Math.round(r.left),
+          right: Math.round(r.right),
+          clipped,
+          innerW: width,
+        }
+      })
+    })()`)
+    const blank = tabs.filter((tab) => !tab.text)
+    check(blank.length === 0, `${route.name}: cả 4 nhóm đều có chữ (trống: ${blank.length})`)
+    const truncated = tabs.filter((tab) => tab.clipped || tab.text.includes('…'))
+    check(
+      truncated.length === 0,
+      `${route.name}: không tab nào bị cắt chữ (${truncated.map((t) => t.text).join(', ') || 'kh\u00f4ng c\u00f3'})`,
+    )
+    // Luật “nút phải ≥ 40px” chỉ áp cho thanh tab ĐÁY màn hình (điện thoại). Trên
+    // máy tính tab nằm trong thanh tiêu đề, cao ~26px là đúng thiết kế.
+    if (viewport.width < 960) {
+      const small = tabs.filter((tab) => tab.width < 38 || tab.height < 40)
+      check(
+        small.length === 0,
+        `${route.name}: mọi tab đủ lớn để bấm (nhỏ nhất ${Math.min(
+          ...tabs.map((t) => Math.min(t.width, t.height)),
+        )}px)`,
+      )
+    }
+    const outside = tabs.filter((tab) => tab.left < -1 || tab.right > tabs[0].innerW + 1)
+    check(outside.length === 0, `${route.name}: cả 4 nhóm nằm trọn trong màn hình`)
+    if (route.path === '/' && viewport.width < 400) {
+      console.log(
+        `     \u2139 4 nhóm tab \u1edf ${viewport.width}px: ` +
+          tabs.map((tab) => `${tab.text} ${tab.width}\u00d7${tab.height}`).join(' \u00b7 '),
+      )
+    }
 
     if (route.path === '/strategy') {
       // Cả 20 thế minh họa và trạng thái thử thách ở mọi cỡ màn hình:

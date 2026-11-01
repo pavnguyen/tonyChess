@@ -55,32 +55,40 @@ const clickSquare = async (square) => {
 
 await sleep(2500)
 
-console.log('\n▶ Chế độ “đánh tiếp” (chiếu bí 2 nước)')
+console.log('\n▶ Chế độ “đánh tiếp” (3 nước của bé, máy đáp ở giữa)')
 
-await evaluate(`window.location.href = ${JSON.stringify(APP_URL + '/tactics?theme=mate-two')}`)
+// Th�� cờ `material-1` (chủ đề Trừng phạt quân treo) là thế có chuỗi đánh tiếp:
+// Nd6 → máy Kf8 → Nxc8 → máy f6 → Nxa7.
+await evaluate(`window.location.href = ${JSON.stringify(APP_URL + '/tactics?theme=win-material')}`)
 await sleep(2000)
-check(await waitForText('Thang Xe đuổi Vua'), 'mở đúng thế “Chiếu bí 2 nước” đầu tiên')
+check(await waitForText('Mã bắt đôi hai Xe rồi ăn tiếp'), 'mở đúng thế có chuỗi đánh tiếp đầu tiên')
 check(await waitFor('#kid-tactic-step'), 'hiện bộ đếm nước trong chuỗi đánh tiếp')
 
-// Nước 1: Xe a1 → a8 (chiếu), rồi máy tự đáp Kh7.
-await clickSquare('a1')
+// Nước 1: Mã c4 → d6 (đòn đôi), rồi máy tự đáp Kf8.
+await clickSquare('c4')
 await sleep(220)
-await clickSquare('a8')
+await clickSquare('d6')
 await sleep(1400)
 check(
-  await evaluate(`Boolean(document.getElementById('kid-board-piece-bK-h7'))`),
-  'máy tự đáp trả: Vua Đen chạy lên h7',
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-bK-f8'))`),
+  'máy tự đáp trả: Vua Đen lùi về f8',
 )
 check(
   !String(await bodyText()).includes('Đánh tiếp tuyệt vời!'),
   'chưa đi nốt thì chưa báo hoàn thành',
 )
 
-// Nước 2: Xe b2 → h2 (chiếu bí).
-await clickSquare('b2')
+// Nước 2: Mã ăn Xe c8, máy đáp f6.
+await clickSquare('d6')
 await sleep(220)
-await clickSquare('h2')
-check(await waitForText('Đánh tiếp tuyệt vời!'), 'đi nốt nước chiếu bí → báo “Đánh tiếp tuyệt vời!”')
+await clickSquare('c8')
+await sleep(1400)
+
+// Nước 3: Mã ăn nốt Tốt a7 → hết chuỗi.
+await clickSquare('c8')
+await sleep(220)
+await clickSquare('a7')
+check(await waitForText('Đánh tiếp tuyệt vời!'), 'đi nốt chuỗi → báo “Đánh tiếp tuyệt vời!”')
 
 close()
 finish('BROWSER TACTICS CONTINUATION')

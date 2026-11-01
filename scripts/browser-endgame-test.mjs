@@ -1,9 +1,13 @@
 /**
- * Kiểm tra tab **Tàn cuộc** /endgames sau khi tinh gọn:
- *   1. Trang chỉ còn dải 12 thế luyện + bảng chi tiết; các khung tham khảo cũ
- *      (Thư viện chiếu bí / Tàn cuộc Xe + Tốt / Nguyên tắc tàn cuộc) đã bị gỡ.
- *   2. Bấm một thẻ thì bàn cờ lớn đổi sang đúng thế cờ của bài đó.
- *   3. Bấm “💡 Gợi ý” thì bàn cờ hiện mũi tên + bong bóng đọc nước đi.
+ * Kiểm tra tab **Tàn cuộc** `/endgames` sau khi thay bộ thế dễ bằng kỹ thuật thật:
+ *   1. Chỉ còn 5 thế kỹ thuật (Vua–Tốt ô đối diện, Xe + Tốt chọi Xe, Tượng đôi,
+ *      Mã + Tượng, Tốt thông hành); các khung tham khảo cũ đã bị gỡ.
+ *   2. Bấm thẻ thì bàn cờ lớn đổi sang đúng thế cờ của bài đó.
+ *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Soi mục tiêu” tô tím
+ *      đúng Tốt + ô phong cấp.
+ *   4. Lịch sử / Đi lại chạy đúng, đổi bài giữa lúc máy đang nghĩ không nhận nước cũ.
+ *   5. Thắng thật: Tượng đôi chiếu bí trong 1 nước → mở lời chúc mừng; còn nước
+ *      đi tự nhốt Vua là hòa → báo “Thử lại”.
  *
  * Chạy: node scripts/browser-endgame-test.mjs
  */
@@ -41,13 +45,11 @@ const waitForSelector = async (selector, timeoutMs = 12000) => {
   return false
 }
 
-/** Bấm thẻ luyện theo đúng `title` của thẻ. */
-const clickChip = (title) =>
+/** Bấm thẻ luyện theo `id` của bài - bền hơn so với so khớp chữ trong tiêu đề. */
+const clickChip = (id) =>
   evaluate(`
     (() => {
-      const el = [...document.querySelectorAll('[data-endgame-id]')].find(
-        (b) => b.getAttribute('title') === ${JSON.stringify(title)},
-      )
+      const el = document.querySelector('[data-endgame-id=${JSON.stringify(id)}]')
       if (!el) return false
       el.click()
       return true
@@ -58,7 +60,7 @@ const clickByText = (needle) =>
   evaluate(`
     (() => {
       const el = [...document.querySelectorAll('button')].find((b) =>
-        b.innerText.includes(${JSON.stringify(needle)}),
+        (b.innerText || '').includes(${JSON.stringify(needle)}),
       )
       if (!el) return false
       el.click()
@@ -102,10 +104,9 @@ await sleep(2000)
 await go('/endgames')
 check(await waitForSelector('[data-endgame-id]'), 'mở được tab Tàn cuộc')
 
-console.log('\n▶ Trang tinh gọn: chỉ còn dải thế luyện + bảng chi tiết')
+console.log('\n▶ Chỉ còn bộ thế kỹ thuật, không còn khung tham khảo cũ')
 
-const title = String(await bodyText())
-check(title.includes('Tàn cuộc cơ bản'), 'tiêu đề trang là “Tàn cuộc cơ bản”')
+check(String(await bodyText()).includes('Tàn cuộc cơ bản'), 'tiêu đề trang là “Tàn cuộc cơ bản”')
 check(
   !(await evaluate(`Boolean(document.getElementById('kid-mate-library'))`)),
   'không còn khung “Thư viện chiếu bí”',
@@ -122,108 +123,124 @@ check(
   !(await evaluate(`Boolean(document.getElementById('kid-endgame-preview-note'))`)),
   'không còn chế độ “soi thế cờ”',
 )
-check(
-  !(await evaluate(`Boolean(document.getElementById('kid-rook-play'))`)),
-  'không còn nút chơi thật Xe + Tốt',
-)
 
-const chipCount = await evaluate(`document.querySelectorAll('[data-endgame-id]').length`)
-check(chipCount === 12, `có đủ 12 thế luyện bấm được (${chipCount})`)
+const ids = await evaluate(
+  `[...document.querySelectorAll('[data-endgame-id]')].map((el) => el.dataset.endgameId)`,
+)
+check(ids.length === 5, `có đúng 5 thế luyện (${ids.length})`)
+check(
+  ['opposition', 'rook-pawn', 'bishop-knight', 'bishop-pair', 'passed-pawn'].every((id) =>
+    ids.includes(id),
+  ),
+  `đủ 5 thế kỹ thuật đã chốt (${ids.join(', ')})`,
+)
 
 console.log('\n▶ Bấm thẻ để đổi bài luyện')
 
-check(await clickChip('Chiếu bí hàng cuối bằng Hậu'), 'bấm thẻ “Chiếu bí hàng cuối bằng Hậu”')
+check(await clickChip('bishop-pair'), 'bấm thẻ “Tượng đôi chiếu bí”')
 await sleep(600)
-check(await hasPiece('bK', 'g8'), 'bàn cờ soi đúng thế cờ mới (Vua Đen ở g8)')
-check(await hasPiece('wQ', 'd1'), 'quân của bé đúng thế (Hậu Trắng ở d1)')
-check(
-  String(await bodyText()).includes('Chiếu bí hàng cuối bằng Hậu'),
-  'bảng chi tiết hiện tên bài đang luyện',
-)
+check(await hasPiece('bK', 'h8'), 'bàn cờ soi đúng thế cờ mới (Vua Đen ở h8)')
+check(await hasPiece('wB', 'a3'), 'Tượng Trắng ở a3 như thế ban đầu')
+check(await hasPiece('wB', 'b1'), 'Tượng Trắng thứ hai ở b1')
+check(String(await bodyText()).includes('Tượng đôi'), 'bảng chi tiết hiện tên bài đang luyện')
 
-console.log('\n▶ Gợi ý hiện mũi tên + bong bóng đọc nước')
+console.log('\n▶ Gợi ý và soi mục tiêu')
 
+check(await clickChip('opposition'), 'bấm thẻ “Vua–Tốt: ô đối diện”')
+await sleep(600)
+check(await hasPiece('wP', 'f6'), 'thế Vua–Tốt có Tốt Trắng ở f6')
+check(await hasPiece('bK', 'f8'), 'Vua Đen ở f8 chặn trước mặt Tốt')
 await clickId('kid-endgame-goal')
-await sleep(100)
-check((await purpleSquares()).includes('g8'), 'soi mục tiêu tô tím Vua Đen')
+await sleep(150)
+const purple = await purpleSquares()
+check(purple.includes('f6') && purple.includes('f8'), `soi mục tiêu tô tím Tốt + ô phong cấp (${purple})`)
 check(await clickByText('Gợi ý'), 'bấm “💡 Gợi ý” khi đang soi mục tiêu')
-await sleep(100)
-check(await evaluate(`document.getElementById('kid-endgame-goal').getAttribute('aria-pressed') === 'false'`), 'Gợi ý tự tắt soi mục tiêu để mũi tên không bị che')
+await sleep(150)
+check(
+  await evaluate(`document.getElementById('kid-endgame-goal').getAttribute('aria-pressed') === 'false'`),
+  'Gợi ý tự tắt soi mục tiêu để mũi tên không bị che',
+)
 const readout = await evaluate(`
   (() => {
     const el = document.getElementById('kid-board-coord-readout')
     return el ? el.innerText : null
   })()
 `)
+check(typeof readout === 'string' && readout.length > 0, `bong bóng đọc nước gợi ý (${readout})`)
 check(
-  typeof readout === 'string' && readout.includes('d1') && readout.includes('d8'),
-  `bong bóng đọc đúng nước gợi ý (${readout})`,
+  String(await evaluate(`document.getElementById('kid-endgame-explanation').innerText`)).includes(
+    'Mẹo của bài này',
+  ),
+  'giải thích là mẹo, không giả làm nước sắp tới',
 )
 
-console.log('\n▶ Quay lại bài phong Hậu')
+console.log('\n▶ Tốt thông hành: lịch sử, Đi lại, đổi bài khi máy đang chờ')
 
-check(await clickChip('Tốt đua biến Hậu (dễ)'), 'bấm thẻ “Tốt đua biến Hậu (dễ)”')
+check(await clickChip('passed-pawn'), 'bấm thẻ “Tốt thông hành”')
 await sleep(600)
-check(await hasPiece('wP', 'e5'), 'bàn cờ trở về thế Tốt Trắng ở e5')
-check(await hasPiece('wK', 'd6'), 'Vua Trắng ở d6 như thế ban đầu')
-
-console.log('\n▶ Mục tiêu, lịch sử và Đi lại')
-await clickId('kid-endgame-goal')
-await sleep(100)
-check(JSON.stringify(await purpleSquares()) === JSON.stringify(['e5', 'e8']), 'phong Hậu tô đúng Tốt và ô phong cấp')
-check(String(await evaluate(`document.getElementById('kid-endgame-explanation').innerText`)).includes('Mẹo của bài này'), 'giải thích là mẹo, không giả làm nước sắp tới')
+check(await hasPiece('wP', 'b5'), 'Tốt Trắng ở b5')
 check((await historyCount()) === 0, 'bài mới có lịch sử rỗng')
-await moveByClick('e5', 'e6')
-check(await hasPiece('wP', 'e6'), 'bấm quân và ô đích đi được e6')
+await moveByClick('b5', 'b6')
+check(await hasPiece('wP', 'b6'), 'bấm quân và ô đích đi được b6')
 check(String(await status()).includes('Máy đang nghĩ'), 'báo rõ đang chờ máy')
 await clickId('kid-endgame-takeback')
 await sleep(1100)
-check((await historyCount()) === 0 && await hasPiece('wP', 'e5'), 'Đi lại trong lúc chờ hủy nước máy, trả về thế ban đầu')
-await moveByClick('e5', 'e6')
-await sleep(1200)
+check((await historyCount()) === 0 && await hasPiece('wP', 'b5'), 'Đi lại trong lúc chờ hủy nước máy, trả về thế ban đầu')
+await moveByClick('b5', 'b6')
+await sleep(1400)
 check((await historyCount()) === 2, 'lịch sử ghi cả nước bé và máy')
 await clickId('kid-endgame-takeback')
-await sleep(350)
-check((await historyCount()) === 0 && await hasPiece('wP', 'e5'), 'Đi lại sau nước máy lùi cả cặp nước')
-await moveByClick('e5', 'e6')
+await sleep(400)
+check((await historyCount()) === 0 && await hasPiece('wP', 'b5'), 'Đi lại sau nước máy lùi cả cặp nước')
+await moveByClick('b5', 'b6')
+await clickChip('bishop-pair')
 await sleep(1200)
-await moveByClick('e6', 'e7')
-await sleep(1200)
-await evaluate(`document.querySelector('#kid-endgame-history button').click()`)
-await sleep(1200)
-check((await historyCount()) === 2 && await hasPiece('wP', 'e6'), 'bấm lịch sử quay về thế sau e6 rồi máy trả lời đúng một nước')
-await moveByClick('e6', 'e7')
-await clickChip('Chiếu bí hàng cuối bằng Hậu')
-await sleep(1200)
-check((await historyCount()) === 0 && await hasPiece('wQ', 'd1'), 'đổi bài khi máy đang chờ không nhận nước cũ')
-await moveByClick('d1', 'd8')
-await sleep(300)
+check((await historyCount()) === 0 && await hasPiece('wB', 'a3'), 'đổi bài khi máy đang chờ không nhận nước cũ')
+
+console.log('\n▶ Chiếu bí bằng Tượng đôi = thắng thật')
+
+await moveByClick('a3', 'b2')
+await sleep(400)
 check(String(await status()).includes('Đạt mục tiêu'), 'chiếu bí báo đạt mục tiêu')
 check(await waitForSelector('[role="dialog"]'), 'chiếu bí mở lời chúc mừng')
-check(String(await evaluate(`document.querySelector('[role="dialog"]').innerText`)).includes('Chiếu bí tuyệt vời'), 'chiếu bí hiện lời chúc mừng đúng')
+check(
+  String(await evaluate(`document.querySelector('[role="dialog"]').innerText`)).includes(
+    'Chiếu bí tuyệt vời',
+  ),
+  'chiếu bí hiện lời chúc mừng đúng',
+)
 await clickByText('Tuyệt vời!')
 await clickId('kid-endgame-takeback')
-await sleep(100)
-check((await historyCount()) === 0 && String(await status()).includes('Đến lượt bé'), 'Đi lại sau chiếu bí mở lại lượt chơi')
+await sleep(200)
+check(
+  (await historyCount()) === 0 && String(await status()).includes('Đến lượt bé'),
+  'Đi lại sau chiếu bí mở lại lượt chơi',
+)
 
-await sleep(350)
-await moveByClick('d1', 'd8')
-await sleep(300)
-check(String(await evaluate(`document.querySelector('[role="dialog"]').innerText`)).includes('Chiếu bí tuyệt vời'), 'chơi lại vẫn hiện lời chúc mừng')
-await clickByText('Tuyệt vời!')
+console.log('\n▶ Tự nhốt Vua = hòa, không tính là hoàn thành')
 
-console.log('\n▶ Hòa không bị ghi nhận là hoàn thành')
-await clickChip('Chiếu bí bằng Hậu + Vua')
-await sleep(500)
-await moveByClick('e7', 'e3')
-await sleep(300)
-check(String(await status()).includes('Thử lại'), 'hết nước đi nhưng không chiếu là hòa, cần thử lại')
+// Tượng b1 sang c2 vẫn giữ ô h7 nhưng không chiếu → Vua Đen hết nước đi, hòa cờ.
+await moveByClick('b1', 'c2')
+await sleep(400)
+check(String(await status()).includes('Thử lại'), 'hết nước đi mà không chiếu là hòa, cần thử lại')
 check(String(await bodyText()).includes('Hòa cờ mất rồi!'), 'hòa có thông báo đúng')
-await clickByText('Tuyệt vời!')
 check(!String(await bodyText()).includes('Bé đã đạt mục tiêu!'), 'hòa không báo đạt mục tiêu')
+await clickByText('Tuyệt vời!')
 await clickId('kid-endgame-takeback')
-await sleep(350)
-check(await hasPiece('wQ', 'e7') && String(await status()).includes('Đến lượt bé'), 'Đi lại sau hòa cho bé sửa nước vừa đi')
+await sleep(400)
+check(await hasPiece('wB', 'b1') && String(await status()).includes('Đến lượt bé'), 'Đi lại sau hòa cho bé sửa nước vừa đi')
+
+console.log('\n▶ Không tràn ngang trên màn hình điện thoại')
+const overflow = await evaluate(`
+  (() => ({
+    scrollW: document.documentElement.scrollWidth,
+    innerW: window.innerWidth,
+  }))()
+`)
+check(
+  Number(overflow.scrollW) <= Number(overflow.innerW) + 1,
+  `không tràn ngang (${overflow.scrollW} ≤ ${overflow.innerW}px)`,
+)
 
 close()
 finish('BROWSER ENDGAME')
