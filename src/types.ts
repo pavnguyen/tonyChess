@@ -60,7 +60,7 @@ export interface Opening {
   goal: string
   /**
    * Nhãn 2-3 chữ nói vì sao khai cuộc này đứng ở vị trí đó trong thứ tự ưu tiên
-   * học ("Gặp nhiều nhất", "Dễ nhất", "Khó nhất"…). Hiện ngay dưới tên trên bản đồ.
+   * học ("Gặp nhiều nhất", "Hay nhất", "Khó nhất"…). Hiện ngay dưới tên trên bản đồ.
    */
   rankNote?: string
   /** Một dòng chính duy nhất, đủ cho cả hai bên (xen kẽ nước bé và nước đối thủ). */

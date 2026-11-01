@@ -245,7 +245,17 @@ check(
 
 console.log('\n▶ Từ Khai cuộc nhảy ngược lại Đối phó')
 
-check(await clickInBody('Đối thủ chơi khai cuộc này thì sao'), 'bấm nút nhảy sang Đối phó')
+check(
+  await evaluate(`
+    (() => {
+      const el = document.getElementById('kid-opening-vs')
+      if (!el) return false
+      el.click()
+      return true
+    })()
+  `),
+  'bấm nút nhảy sang Đối phó',
+)
 await sleep(1800)
 const urlVs = String(await evaluate(`location.pathname + location.search`))
 check(

@@ -8,42 +8,46 @@ interface Props {
   className?: string
 }
 
-/** Nút "Mắt Thần Cờ Vua" + bảng chú giải màu ô cờ. */
+/**
+ * Nút **“Mắt Thần Cờ Vua”** + bảng chú giải màu ô cờ.
+ *
+ * Bản gọn: chỉ còn 👁️ + BẬT/TẮT (tên đầy đủ nằm ở `title`/`aria-label`). Trước
+ * đây nút chiếm gần 1/3 bề ngang và cao 2 dòng chữ “Mắt Thần Cờ Vua” nên đẩy bàn
+ * cờ nhỏ lại trên điện thoại.
+ */
 export function EyeToggle({ on, onToggle, className = '' }: Props) {
   const [showLegend, setShowLegend] = useState(false)
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-1 ${className}`}>
       <button
         id="kid-eye-toggle"
         type="button"
         onClick={onToggle}
         aria-pressed={on}
-        title="Mắt Thần Cờ Vua: nhìn toàn cảnh nguy hiểm"
-        className={`flex items-center gap-2 rounded-full border-[3px] border-white px-3 py-2 text-xs font-extrabold shadow-lg transition-all active:translate-y-[2px] sm:text-sm ${
+        aria-label="Mắt Thần Cờ Vua: nhìn toàn cảnh nguy hiểm"
+        title={
           on
-            ? 'bg-gradient-to-br from-brand-700 to-leaf-500 text-white animate-pulse-ring'
+            ? 'Mắt Thần Cờ Vua đang BẬT - bấm để tắt'
+            : 'Mắt Thần Cờ Vua đang TẮT - bấm để xem ô nguy hiểm'
+        }
+        className={`flex items-center gap-1 rounded-full border-2 border-white px-2 py-1 text-[0.65rem] font-extrabold shadow transition-all active:translate-y-[1px] ${
+          on
+            ? 'bg-gradient-to-br from-brand-700 to-leaf-500 text-white'
             : 'bg-white text-brand-600'
         }`}
       >
-        <span className={`text-xl ${on ? '' : 'grayscale'}`} aria-hidden>
+        <span className={`text-base leading-none ${on ? '' : 'grayscale'}`} aria-hidden>
           👁️
         </span>
-        <span className="whitespace-nowrap">Mắt Thần Cờ Vua</span>
-        <span
-          className={`grid size-5 place-items-center rounded-full text-[0.6rem] ${
-            on ? 'bg-white text-leaf-600' : 'bg-brand-100 text-brand-500'
-          }`}
-        >
-          {on ? 'BẬT' : 'TẮT'}
-        </span>
+        <span className="whitespace-nowrap">{on ? 'BẬT' : 'TẮT'}</span>
       </button>
 
       <button
         type="button"
         onClick={() => setShowLegend((value) => !value)}
         aria-expanded={showLegend}
-        className="grid size-9 place-items-center rounded-full border-[3px] border-white bg-white text-sm font-extrabold text-brand-600 shadow-lg"
+        className="grid size-7 place-items-center rounded-full border-2 border-white bg-white text-xs font-extrabold text-brand-600 shadow"
         title="Xem chú giải màu"
       >
         ?

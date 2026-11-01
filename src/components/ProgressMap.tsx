@@ -34,7 +34,8 @@ interface Props {
   nodes: ProgressNode[]
   activeId?: string
   onSelect: (id: string) => void
-  title: string
+  /** Tiêu đề bản đồ. Bỏ trống thì không vẽ hàng tiêu đề (trang tự đặt tiêu đề gọn). */
+  title?: string
   /** Nhãn hiện dưới ô đang chọn, ví dụ "Cấp 3 · Phòng thủ King's Indian". */
   levelLabel?: string
   /** Khoá nội dung cho nút ⓘ cạnh tiêu đề bản đồ (xem `src/lib/info.ts`). */
@@ -52,6 +53,9 @@ interface Props {
 /**
  * Bản đồ chọn bài dạng ô vuông gọn gàng: mọi trạm đều bấm được ngay, bé muốn học bài
  * nào lúc nào cũng được - app không khoá theo thứ tự và không theo dõi đã học tới đâu.
+ *
+ * KHÔNG vẽ thêm dòng “Cấp 1 · tên bài · màu quân · GM” bên dưới: trang đã có hàng
+ * tên khai cuộc ngay trên, thêm nữa chỉ tốn một dòng mà lặp lại y hệt.
  */
 export function ProgressMap({
   nodes,
@@ -62,19 +66,19 @@ export function ProgressMap({
   info,
   showNames = false,
 }: Props) {
-  const active = nodes.find((node) => node.id === activeId)
-
   return (
-    <div className="grid gap-2">
-      <div className="flex items-center gap-2">
-        <p className="shrink-0 text-[0.7rem] font-extrabold uppercase tracking-wide text-brand-500">
-          🗺️ {title}
-        </p>
-        <InfoButton topic={info} />
-      </div>
+    <div className="grid gap-1.5">
+      {title && (
+        <div className="flex items-center gap-2">
+          <p className="min-w-0 flex-1 truncate text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            🗺️ {title}
+          </p>
+          <InfoButton topic={info} />
+        </div>
+      )}
 
       <div
-        className={showNames ? 'grid grid-cols-2 gap-1.5 sm:grid-cols-3' : 'grid gap-1.5'}
+        className={showNames ? 'grid min-w-0 grid-cols-2 gap-1.5 sm:grid-cols-3' : 'grid gap-1.5'}
         style={
           showNames ? undefined : { gridTemplateColumns: 'repeat(auto-fit, minmax(2.7rem, 1fr))' }
         }
@@ -97,28 +101,30 @@ export function ProgressMap({
                 onClick={() => onSelect(node.id)}
                 aria-current={isActive}
                 aria-label={tooltip}
-                className={`flex min-h-11 items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-left transition-all active:translate-y-[1px] ${stateClass}`}
+                className={`flex min-h-9 min-w-0 items-center gap-1.5 rounded-lg border-2 px-1.5 py-1 text-left transition-all active:translate-y-[1px] ${stateClass}`}
               >
                 <span
-                  className={`grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[0.6rem] font-extrabold text-white ${
+                  className={`grid size-4 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[0.55rem] font-extrabold text-white ${
                     isActive ? 'animate-pulse-ring' : ''
                   }`}
                 >
                   {node.level}
                 </span>
-                <span className="text-base leading-none" aria-hidden>
+                <span className="text-xs leading-none" aria-hidden>
                   {node.emoji}
                 </span>
                 <span className="min-w-0 flex-1">
+                  {/* `line-clamp-1` thay `truncate`: tên dài (King's Indian Defense…)
+                      xuống dòng được nên không đẩy thẻ rộng quá khung. */}
                   <span
-                    className={`block text-[0.72rem] font-extrabold leading-tight ${
+                    className={`line-clamp-1 text-[0.7rem] font-extrabold leading-tight ${
                       isActive ? 'text-brand-900' : 'text-brand-800'
                     }`}
                   >
                     {node.title}
                   </span>
                   {node.tag && (
-                    <span className="mt-0.5 block truncate text-[0.62rem] font-bold text-brand-500">
+                    <span className="line-clamp-1 text-[0.58rem] font-bold leading-tight text-brand-500">
                       {node.tag}
                     </span>
                   )}
@@ -137,11 +143,11 @@ export function ProgressMap({
               onClick={() => onSelect(node.id)}
               aria-current={isActive}
               aria-label={tooltip}
-              className={`group relative flex h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-2 transition-all active:translate-y-[1px] ${stateClass}`}
+              className={`group relative flex h-10 flex-col items-center justify-center gap-0.5 rounded-lg border-2 transition-all active:translate-y-[1px] ${stateClass}`}
             >
               <Tooltip text={tooltip} />
               <span
-                className={`grid size-5 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[0.6rem] font-extrabold text-white ${
+                className={`grid size-4 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[0.55rem] font-extrabold text-white ${
                   isActive ? 'animate-pulse-ring' : ''
                 }`}
               >
@@ -154,12 +160,6 @@ export function ProgressMap({
           )
         })}
       </div>
-
-      <p className="text-[0.7rem] font-bold text-brand-500">
-        {active
-          ? `${levelLabel} ${active.level} · ${active.emoji} ${active.title} - ${active.subtitle}`
-          : 'Bé bấm vào một ô để bắt đầu nhé!'}
-      </p>
     </div>
   )
 }

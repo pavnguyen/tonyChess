@@ -12,7 +12,7 @@ export const PIECE_NAME_VI: Record<PieceCode, string> = {
 }
 
 /** Ký hiệu hình con cờ (dễ nhất cho bé 7 tuổi). */
-const FIGURINE: Record<PieceCode, string> = {
+export const FIGURINE: Record<PieceCode, string> = {
   k: '♔',
   q: '♕',
   r: '♖',

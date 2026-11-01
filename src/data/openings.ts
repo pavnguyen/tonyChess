@@ -52,7 +52,7 @@ const META: OpeningMeta[] = [
     emoji: '🇬🇧',
     tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
     goal: 'Dựng khung c3-d4-e3 với Tượng f4 rồi nhập thành cho chắc; sau đó đổi Tượng ô đen của Đen và mở cánh Vua bằng h4-h5.',
-    rankNote: 'Dễ nhất',
+    rankNote: 'Hay nhất',
   },
   {
     id: 'queens-gambit',
@@ -111,7 +111,7 @@ const META: OpeningMeta[] = [
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
     goal: 'Đưa Tượng c8 ra f5 trước khi đóng Tốt e6 để Tượng không bị nhốt, rồi mới đánh vào d4 bằng c5 - đó là cả bí quyết Caro-Kann.',
-    rankNote: 'Dễ nhất',
+    rankNote: 'Hay nhất',
   },
   {
     id: 'french',

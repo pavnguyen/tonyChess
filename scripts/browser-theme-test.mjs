@@ -14,7 +14,11 @@ import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 
-const { skipped, failedToConnect, evaluate, close } = await openPage(`${APP_URL}#theme`, {
+// Ghim London: mở tab bằng đường dẫn thường thì app hiện sẵn thế cờ mẫu hình nên
+// bàn cờ không còn mũi tên vàng của nước đang học.
+const { skipped, failedToConnect, evaluate, close } = await openPage(
+  `${APP_URL}?opening=london#theme`,
+  {
   port: 9347,
   windowSize: '1440,900',
 })
@@ -145,10 +149,28 @@ const buttonColors = await evaluate(`
 `)
 const hasColor = (value) => buttonColors.includes(value)
 check(hasColor('rgb(217, 169, 63)'), 'có nút vàng đồng #d9a93f (nút “Tiến ▶”)')
-check(hasColor('rgb(58, 117, 71)'), 'có nút xanh non #3a7547 (nút “Tự chạy”, “Bắt đầu 30s”)')
 check(
   !buttonColors.some((color) => /rgb\(109, 40, 217\)|rgb\(124, 58, 237\)|rgb\(236, 72, 153\)/.test(color)),
   `không còn nút tím/hồng của bản cũ (các màu nút: ${buttonColors.join(', ')})`,
+)
+
+// --- 7. Nút xanh non #3a7547 (kiểu `grass`).
+// Tab Khai cuộc đã bỏ nút “Đấu tập” cho gọn nên không còn nút xanh non ở đó; nút
+// này giờ nằm ở tab Đấu với Robot (“Ván mới”). Kiểm ở đúng trang còn dùng.
+await evaluate(`location.href = ${JSON.stringify(`${APP_URL}free-play`)}`)
+await sleep(2400)
+const freePlayColors = await evaluate(`
+  (() => {
+    const unique = new Set()
+    for (const button of document.querySelectorAll('button')) {
+      unique.add(getComputedStyle(button).backgroundColor)
+    }
+    return [...unique]
+  })()
+`)
+check(
+  freePlayColors.includes('rgb(58, 117, 71)'),
+  `có nút xanh non #3a7547 ở tab Đấu với Robot (nút “♟️ Ván mới”) - nhận ${freePlayColors.join(', ')}`,
 )
 
 close()

@@ -106,7 +106,9 @@ const squareLabels = () =>
 console.log('\n▶ Toạ độ bàn cờ (cột a-h, hàng 1-8)')
 
 // --- 1. Bàn Trắng: đủ nhãn, đúng thứ tự.
-await navigate('/')
+// Ghim London: mở tab bằng đường dẫn thường thì app hiện sẵn thế cờ mẫu hình (bàn
+// cờ không cho bấm quân); đường dẫn có ?opening= thì vào thẳng bài để chạm quân.
+await navigate('/?opening=london')
 check(await waitFor('#kid-board-coords'), 'có khung toạ độ trên bàn cờ')
 const white = await labels()
 check(

@@ -10,7 +10,7 @@ import { HangingWarnings } from '../components/HangingWarnings'
 import { ProgressMap } from '../components/ProgressMap'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { KidButton, Panel, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -81,8 +81,13 @@ export function OpeningsPage() {
   /**
    * Bé vừa bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng
    * chính** của khai cuộc đó để nhìn trước, rồi bấm “▶ Bắt đầu học” mới vào bài.
+   *
+   * MẶC ĐỊNH BẬT khi mở tab bằng đường dẫn thường: bài đã được chọn sẵn trên bản đồ
+   * mà bàn cờ lại để thế ban đầu thì bé phải bấm lại đúng thẻ đó mới thấy mẫu hình -
+   * nên giờ mở tab là thấy luôn thế cờ cuối của bài đang chọn. Riêng đường dẫn mang
+   * `?opening=…` (nhảy từ tab Đối phó) thì vào thẳng bài, không chen mẫu hình.
    */
-  const [openingPreview, setOpeningPreview] = useState(false)
+  const [openingPreview, setOpeningPreview] = useState(() => !search.opening)
   const [result, setResult] = useState<{
     emoji: string
     title: string
@@ -165,7 +170,8 @@ export function OpeningsPage() {
   /** Đổi phe: nhảy luôn sang bài đầu tiên của phe đó. */
   const changeSide = (next: Side) => {
     setSide(next)
-    setOpeningPreview(false)
+    // Đổi phe = chọn bài đầu của phe đó → hiện luôn mẫu hình, giống lúc bấm thẻ.
+    setOpeningPreview(true)
     setMoveFilter(null)
     const first = openingList.find((item) => item.side === next)
     if (first) setOpeningId(first.id)
@@ -762,24 +768,19 @@ export function OpeningsPage() {
             ) : openingPreview ? (
               <div
                 id="kid-opening-preview"
-                className="grid gap-2 rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 p-2.5 text-center"
+                className="flex flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 px-2.5 py-1.5 text-center"
               >
-                <p className="text-sm font-extrabold text-brand-800">
-                  {opening.emoji} {opening.englishName} · thế cờ mẫu hình của {opening.gm}
+                <p className="min-w-0 text-xs font-extrabold text-brand-800">
+                  {opening.emoji} {opening.englishName} · thế cờ cuối (mẫu hình)
                 </p>
-                <p className="text-[0.7rem] font-bold text-brand-500">
-                  Đây là thế cờ cuối dòng chính — bé nhìn cho quen rồi bắt đầu học từ nước đầu nhé.
-                </p>
-                <div className="flex justify-center">
-                  <KidButton
-                    id="kid-opening-preview-start"
-                    variant="primary"
-                    size="sm"
-                    onClick={startLearning}
-                  >
-                    ▶ Bắt đầu học từ đầu
-                  </KidButton>
-                </div>
+                <KidButton
+                  id="kid-opening-preview-start"
+                  variant="primary"
+                  size="sm"
+                  onClick={startLearning}
+                >
+                  ▶ Bắt đầu học
+                </KidButton>
               </div>
             ) : bannerState ? (
               <ExplanationBanner
@@ -807,7 +808,7 @@ export function OpeningsPage() {
           liếc xem có những kiểu khai cuộc nào. Trước đây khung này nằm dưới cả
           chế độ lẫn mục tiêu, trên điện thoại phải cuộn thêm gần một màn hình.
         */}
-        <Panel className="grid gap-2">
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
           {/* Tên khai cuộc đang học + ⓘ lịch sử: đủ để tra cứu, không cần khung riêng. */}
           <div className="flex min-w-0 items-center justify-between gap-2">
             {/*
@@ -869,7 +870,8 @@ export function OpeningsPage() {
                   aria-pressed={active}
                   onClick={() => {
                     setMoveFilter(move)
-                    setOpeningPreview(false)
+                    // Lọc xong là mở bài đầu tiên của nhóm → hiện mẫu hình của bài đó.
+                    setOpeningPreview(true)
                     const first = sideOpenings.find((item) => kidFirstMove(item) === move)
                     if (first) setOpeningId(first.id)
                   }}
@@ -884,6 +886,40 @@ export function OpeningsPage() {
               )
             })}
           </div>
+          {/* Một hàng gọn: tên bảng chọn + lối tắt Đối phó + mở “tham khảo thêm”. */}
+          <div className="flex items-center gap-1.5">
+            {/* `line-clamp-2`: trên điện thoại hàng này còn hai chip (+2, Đối phó) nên
+                một dòng không đủ - cắt còn “KHAI CUỘC QUÂN…” thì bé mất chữ. Hai dòng
+                vẫn gọn hơn một dòng bị cắt cụt. */}
+            <p className="min-w-0 flex-1 line-clamp-2 text-[0.65rem] font-extrabold uppercase leading-tight tracking-wide text-brand-500">
+              🗺️ {side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
+            </p>
+            {extraOpenings.length > 0 && (
+              <button
+                type="button"
+                id="kid-opening-extras"
+                aria-expanded={extrasOpen}
+                aria-label={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
+                title={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
+                onClick={() => setShowExtras((open) => !open)}
+                className="flex shrink-0 items-center gap-0.5 rounded-full border-2 border-dashed border-brand-200 px-2 py-0.5 text-[0.62rem] font-extrabold text-brand-600 hover:border-brand-400"
+              >
+                📚 +{extraOpenings.length}
+                <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              id="kid-opening-vs"
+              onClick={() =>
+                navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
+              }
+              title="Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào"
+              className="shrink-0 rounded-full border-2 border-leaf-300 bg-leaf-50 px-2 py-0.5 text-[0.62rem] font-extrabold text-leaf-800 hover:border-leaf-500"
+            >
+              🧭 Đối phó
+            </button>
+          </div>
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
               id: item.id,
@@ -897,21 +933,10 @@ export function OpeningsPage() {
             }))}
             activeId={opening.id}
             onSelect={selectOpening}
-            title={side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
             showNames
           />
           {extraOpenings.length > 0 && (
             <div className="grid gap-1.5">
-              <button
-                type="button"
-                id="kid-opening-extras"
-                aria-expanded={extrasOpen}
-                onClick={() => setShowExtras((open) => !open)}
-                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1.5 text-left text-[0.7rem] font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
-              >
-                <span>📚 Tham khảo thêm {extraOpenings.length} kiểu khác</span>
-                <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
-              </button>
               {/*
                 Vẫn giữ trong DOM khi đóng (chỉ ẩn bằng CSS) để bàn phím và các bài
                 kiểm vẫn thấy đủ danh sách khai cuộc.
@@ -950,19 +975,6 @@ export function OpeningsPage() {
               </div>
             </div>
           )}
-          <div className="flex flex-wrap gap-1.5">
-            <KidButton
-              id="kid-opening-vs"
-              variant="grass"
-              size="sm"
-              onClick={() =>
-                navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
-              }
-              title="Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào"
-            >
-              🧭 Đối thủ chơi khai cuộc này thì sao?
-            </KidButton>
-          </div>
         </Panel>
 
         {/*
@@ -971,53 +983,68 @@ export function OpeningsPage() {
           Đọc một mạch: mục tiêu (câu lớn) → 3 việc cụ thể. Không phải học thuộc
           chuỗi nước đi.
         */}
-        <Panel id="kid-opening-goal" className="grid gap-2">
-          <div className="hidden stage:block">
-            <SectionTitle
-              icon="🧠"
-              title="Mindset khai cuộc"
-              subtitle={
-                previewing
-                  ? 'Đang xem thế cờ cuối khai cuộc'
-                  : 'Mục tiêu + ba việc cần nhớ - nhớ Ý, không nhớ nước'
-              }
-              info="goal"
-            />
+        <Panel id="kid-opening-goal" className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
+          {/*
+            Bỏ khối tiêu đề to (icon 44px + 2 dòng mô tả): nội dung bên dưới đã tự
+            nói rõ “Mục tiêu + ba việc”, nên chỉ cần một dòng nhãn mỏng.
+          */}
+          <div className="flex items-center gap-1.5">
+            {/* `line-clamp-1` (không phải `truncate`): vẫn cắt gọn 1 dòng nhưng chữ
+                được phép xuống dòng nên không kéo cả khung rộng quá màn hình. */}
+            <p className="min-w-0 flex-1 line-clamp-1 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+              🧠 Mindset khai cuộc
+            </p>
+            <InfoButton topic="goal" />
           </div>
           <button
             type="button"
             data-opening-goal
             aria-pressed={goalFocus && !previewing}
             onClick={toggleGoalFocus}
-            className={`grid gap-1.5 rounded-2xl border-2 px-3 py-2.5 text-left transition-all active:translate-y-[1px] ${
+            title={
+              goalFocusInfo.squares.length > 0
+                ? goalFocus && !previewing
+                  ? 'Bấm để tắt các ô tím trên bàn cờ'
+                  : 'Bấm để tô sáng các ô mục tiêu trên bàn cờ'
+                : 'Mục tiêu của khai cuộc này'
+            }
+            className={`grid gap-1 rounded-xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
               goalFocus && !previewing
                 ? 'border-[#6d5bc7] bg-[rgba(126,106,209,0.14)]'
                 : 'border-gold-300 bg-gold-50 hover:border-gold-400'
             }`}
           >
-            <span className="flex flex-wrap items-center gap-1.5">
-              <span className="text-lg" aria-hidden>
+            <span className="block text-[0.82rem] font-extrabold leading-snug text-brand-900">
+              <span aria-hidden className="mr-1">
                 🎯
-              </span>
-              <span className="text-sm font-extrabold text-brand-900">
-                <MoveText text={opening.goal} />
-              </span>
-            </span>
-            <span className="text-[0.7rem] font-bold text-brand-500">
-              {goalFocusInfo.squares.length > 0
-                ? goalFocus && !previewing
-                  ? '👆 Bấm để tắt các ô tím'
-                  : '👆 Bấm để tô sáng các ô bé muốn nhắm trên bàn cờ'
-                : '💡 Đọc câu này trước khi học từng nước nhé'}
+              </span>{' '}
+              <span className="text-brand-500">Mục tiêu: </span>
+              <MoveText text={opening.goal} />
             </span>
           </button>
 
           {opening.plan.points.length > 0 && (
             <>
               <div className="flex items-center gap-1.5">
-                <p className="min-w-0 text-[0.68rem] font-extrabold uppercase tracking-wide text-brand-500">
+                {/* Tên khối ba việc là chính cái “mindset” ("Giữ ô f7 trong tầm ngắm"),
+                    nên không được cắt cụt - cho xuống tối đa 2 dòng. */}
+                <p className="min-w-0 flex-1 line-clamp-2 text-[0.65rem] font-extrabold uppercase leading-tight tracking-wide text-brand-500">
                   🧠 {opening.plan.title}
                 </p>
+                {/* Chỉ hiện khi bàn cờ đang ở thế cuối - thay cho dòng gợi ý dài cũ. */}
+                {previewing && (
+                  <button
+                    type="button"
+                    id="kid-plan-preview-off"
+                    onClick={() => {
+                      setPlanFocusIdx(null)
+                      setOpeningPreview(false)
+                    }}
+                    className="shrink-0 rounded-full border-2 border-brand-100 px-1.5 py-0.5 text-[0.62rem] font-extrabold text-brand-500 hover:border-brand-300"
+                  >
+                    ↩ Quay lại bài học
+                  </button>
+                )}
                 <InfoButton topic="plan" />
               </div>
               <ul className="grid gap-1">
@@ -1077,23 +1104,6 @@ export function OpeningsPage() {
                 )
               })}
             </ul>
-            {planFocusList.some((focus) => focus.squares.length > 0) && (
-              <p className="flex flex-wrap items-center gap-1.5 text-[0.7rem] font-bold text-brand-400">
-                {previewing
-                  ? '📍 Bàn cờ đang xem thế cờ cuối khai cuộc - ô tím là việc của câu này'
-                  : '👆 Bấm một việc để xem thế cờ cuối khai cuộc và soi ô trên bàn'}
-                {previewing && (
-                  <button
-                    type="button"
-                    id="kid-plan-preview-off"
-                    onClick={() => setPlanFocusIdx(null)}
-                    className="rounded-full border-2 border-brand-100 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-500 hover:border-brand-300"
-                  >
-                    Quay lại bài học
-                  </button>
-                )}
-              </p>
-            )}
             </>
           )}          <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-sand-200 pt-2">
             <KidButton

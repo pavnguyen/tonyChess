@@ -179,7 +179,16 @@ check(await present('#kid-board-board'), 'bàn cờ chính vẫn hoạt động 
 
 console.log('\n▶ Bấm một khai cuộc → bàn cờ hiện thế cờ mẫu hình')
 
-check(!(await present('#kid-opening-preview')), 'lúc chưa bấm gì thì chưa có bàn xem trước')
+// Mở tab bằng đường dẫn thường thì bàn cờ đã hiện SẴN mẫu hình của bài mặc định
+// (Italian Game) - bé không phải bấm lại đúng thẻ đang được chọn sẵn.
+check(
+  await present('#kid-opening-preview'),
+  'mở tab là đã có bàn xem trước của bài mặc định',
+)
+check(
+  await present('#kid-board-piece-wB-c4'),
+  'bàn xem trước đúng thế cờ cuối Ván cờ Ý (Tượng Trắng ở c4)',
+)
 
 const clickedLevel = await evaluate(`
   (() => {
