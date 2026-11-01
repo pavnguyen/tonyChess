@@ -322,6 +322,24 @@ export const INFO: Record<string, InfoEntry> = {
       'Cách nhớ: **Ghim rồi thì vồ**.',
     ],
   },
+  'theme:mate': {
+    title: 'Chiếu bí 3 nước 🏁',
+    tag: '♟️ Thế cờ',
+    body: [
+      'Chiếu bí trong 3 nước nghĩa là: **bé đi, đối thủ đỡ một nước, bé chiếu bí** - bài chỉ cho đúng một đường thắng nên bé phải tính hết chuỗi, không đoán.',
+      'Mẹo tìm: đếm **ô Vua địch còn chạy được** rồi tìm nước lấy hết các ô ấy. Nước chiếu bí thường là nước **thu hẹp** chứ không phải nước ăn quân.',
+      'Cách nhớ: **Đếm ô, rồi khóa dần**.',
+    ],
+  },
+  'theme:sacrifice': {
+    title: 'Hy sinh mở đường 💥',
+    tag: '♟️ Thế cờ',
+    body: [
+      'Có lúc nước mạnh nhất là **cho đối thủ ăn quân của mình**: quân ấy đang đứng chắn đúng đường mà Hậu/Xe cần để chiếu bí.',
+      'Cách nhận ra: Vua địch gần như hết đường chạy, chỉ còn **một quân địch** đứng chặn - ăn hoặc mồi nó đi là hết chặn.',
+      'Cách nhớ: **Mất quân, được ván**.',
+    ],
+  },
 
   // ── 4 khái niệm chiến lược vị trí ─────────────────────────────────────────
   'positional:outpost': {
@@ -413,10 +431,6 @@ export const REQUIRED_INFO_IDS: readonly string[] = [
   ...['carlsen', 'so', 'nakamura', 'kasparov', 'fischer', 'polgar', 'botvinnik', 'petrosian'].map(
     (id) => `gm:${id}`,
   ),
-  ...[
-    'win-material',
-    'win-queen',
-    'pin',
-  ].map((id) => `theme:${id}`),
+  ...['win-material', 'win-queen', 'pin', 'mate', 'sacrifice'].map((id) => `theme:${id}`),
   ...['outpost', 'open-file', 'bishop-pair', 'seventh-rank'].map((id) => `positional:${id}`),
 ]

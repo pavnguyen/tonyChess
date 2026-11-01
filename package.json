@@ -36,6 +36,7 @@
     "check:endgames": "node scripts/browser-endgame-test.mjs",
     "check:assets": "node scripts/generate-assets.mjs",
     "check:pwa": "node scripts/check-pwa.mjs",
+    "check:pwa-offline": "node scripts/browser-pwa-offline-test.mjs",
     "check:patterns": "node scripts/browser-openings-patterns-test.mjs",
     "check:counters": "node scripts/browser-counters-test.mjs",
     "check:freeplay": "node scripts/browser-freeplay-hint-test.mjs",

@@ -103,6 +103,10 @@ export type BestMoveTheme =
   | 'win-material'
   | 'win-queen'
   | 'pin'
+  /** Chiếu bí trong 3 nước: bé đi, đối thủ đỡ một nước, bé chiếu bí. */
+  | 'mate'
+  /** Hy sinh quân để mở đường cho Hậu/Xe chiếu bí. */
+  | 'sacrifice'
 
 /**
  * Một thế cờ trung cuộc để bé "tìm nước hay nhất".
