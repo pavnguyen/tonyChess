@@ -21,6 +21,10 @@ const tokens = new Map<string, string>()
 for (const match of css.matchAll(/--color-([a-z]+)-(\d{2,3}):\s*(#[0-9a-f]{6})/gi)) {
   tokens.set(`${match[1]}-${match[2]}`, match[3].toLowerCase())
 }
+// Token đặt tên theo VAI TRÒ thay vì theo thang độ đậm, ví dụ `--color-board-dark`.
+for (const match of css.matchAll(/--color-([a-z]+(?:-[a-z]+)+):\s*(#[0-9a-f]{6})/gi)) {
+  tokens.set(match[1], match[2].toLowerCase())
+}
 
 function token(name: string): string {
   const value = tokens.get(name)
@@ -79,9 +83,12 @@ const PAIRS: Pair[] = [
   { label: 'tab đang chọn: navy-800 / trắng', fg: token('brand-800'), bg: '#ffffff', min: TEXT },
 
   // --- Graphic: hình khối mang thông tin (ngưỡng 3:1)
-  { label: 'ô navy-800 / ô gỗ sand-200', fg: token('brand-800'), bg: token('sand-200'), min: GRAPHIC },
-  { label: 'viền ô gợi ý navy-800 / ô gỗ sand-200', fg: token('brand-800'), bg: token('sand-200'), min: GRAPHIC },
-  { label: 'vòng lỗi coral-500 / ô navy-800', fg: token('coral-500'), bg: token('brand-800'), min: GRAPHIC },
+  // Quân cờ nằm TRỰC TIẾP trên ô, nên đây mới là cặp quyết định “bé có nhìn ra quân
+  // không”. Quân Đen là hình bóng đen tuyền: ô đậm mà tối quá là quân biến mất.
+  { label: 'quân Đen / ô đậm của bàn cờ', fg: '#000000', bg: token('board-dark'), min: GRAPHIC },
+  { label: 'quân Trắng / ô đậm của bàn cờ', fg: '#ffffff', bg: token('board-dark'), min: GRAPHIC },
+  { label: 'viền ô gợi ý navy-800 / ô sáng', fg: token('brand-800'), bg: token('board-light'), min: GRAPHIC },
+  { label: 'vòng lỗi coral-500 / ô sáng', fg: token('coral-500'), bg: token('board-light'), min: GRAPHIC },
   // Viền thẻ (sand-300) là TRANG TRÍ, không phải biên của điều khiển: thẻ phân biệt
   // với nền nhờ bóng đổ + bo góc, nên không đưa vào ngưỡng 3:1 (muốn đạt 3:1 thì
   // viền phải sẫm như chữ, trông nặng nề).
@@ -89,18 +96,18 @@ const PAIRS: Pair[] = [
 
 /**
  * Vòng gợi ý trên bàn cờ: KHÔNG thể có một màu duy nhất đạt 3:1 trên cả ô gỗ sáng
- * (#efe1c7) lẫn ô navy (#24334f) - dải độ sáng thoả mãn cả hai chỉ rộng ~0.02, và
+ * (#efe1c7) lẫn ô navy sáng (#475a7f) - dải độ sáng thoả mãn cả hai chỉ rộng ~0.02, và
  * không màu nào có nghĩa (vàng / xanh thép) nằm trong đó. Yêu cầu thật của bé là
  * "nhìn ra vòng này trên ô đang đứng", nên mỗi vòng chỉ cần nổi trên MỘT trong hai
  * loại ô; phần nền phủ (alpha 0.3-0.42) và nhịp "thở" dày viền lo phần còn lại.
  */
 const HINT_RINGS: { label: string; ring: string; squares: string[] }[] = [
-  { label: 'vòng quân cần đi gold-500', ring: token('gold-500'), squares: [token('brand-800'), token('sand-200')] },
-  { label: 'vòng ô đích info-500', ring: token('info-500'), squares: [token('brand-800'), token('sand-200')] },
-  { label: 'vòng kế hoạch info-600', ring: token('info-600'), squares: [token('brand-800'), token('sand-200')] },
-  { label: 'vòng ô bé bấm info-600', ring: token('info-600'), squares: [token('brand-800'), token('sand-200')] },
-  { label: 'vòng nước sai coral-500', ring: token('coral-500'), squares: [token('brand-800'), token('sand-200')] },
-  { label: 'vòng nước đúng leaf-600', ring: token('leaf-600'), squares: [token('brand-800'), token('sand-200')] },
+  { label: 'vòng quân cần đi gold-300', ring: token('gold-300'), squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng ô đích info-500', ring: token('info-500'), squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng kế hoạch info-600', ring: token('info-600'), squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng ô bé bấm info-600', ring: token('info-600'), squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng nước sai coral-500', ring: token('coral-500'), squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng nước đúng leaf-600', ring: token('leaf-600'), squares: [token('board-dark'), token('board-light')] },
 ]
 
 let failed = 0

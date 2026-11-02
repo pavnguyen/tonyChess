@@ -2,11 +2,12 @@
  * Hiển thị trong lúc chờ file JS của một tab đang được tải về (code-splitting).
  *
  * Cố tình giữ thật nhẹ: chỉ vài thẻ div + emoji, không kéo theo thư viện nào.
- * Bàn cờ xương (skeleton) dùng đúng 2 màu ô của bàn cờ thật (#24334f / #efe1c7) và
- * đúng tỉ lệ 8×8 nên khi bàn cờ thật hiện ra bé gần như không thấy "nhảy" bố cục.
+ * Bàn cờ xương (skeleton) dùng đúng 2 màu ô của bàn cờ thật (`board-dark` /
+ * `board-light` trong `src/index.css`) và đúng tỉ lệ 8×8 nên khi bàn cờ thật hiện ra
+ * bé gần như không thấy "nhảy" bố cục.
  */
-const DARK_SQUARE = '#24334f'
-const LIGHT_SQUARE = '#ffffff'
+const DARK_SQUARE = 'var(--color-board-dark)'
+const LIGHT_SQUARE = 'var(--color-board-light)'
 
 // 64 ô, ô trên-trái là a8 (sáng). Cùng công thức (file + rank) % 2 như bàn cờ thật.
 const SKELETON_SQUARES = Array.from({ length: 64 }, (_, index) => {

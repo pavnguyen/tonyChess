@@ -32,12 +32,15 @@ export interface ChessBoardPanelProps {
 }
 
 //
-// Bàn cờ theo gam mới: ô GỖ SÁNG + ô NAVY, viền ngoài navy đậm. Chọn cặp này vì
-// ô gỗ ấm ăn với nền giấy kem, còn ô navy đủ đậm để quân trắng lẫn quân đen đều
-// nổi (tương phản quân trắng / ô sáng ~1.9:1 nhưng có viền quân, còn quân đen
-// trên ô gỗ ~9:1).
-const DARK_SQUARE: CSSProperties = { backgroundColor: '#24334f' }
-const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#efe1c7' }
+// Bàn cờ theo gam mới: ô GỖ SÁNG + ô NAVY SÁNG, viền ngoài navy đậm.
+//
+// Ô đậm KHÔNG dùng navy-800 nữa: quân Đen (hình bóng đen tuyền) trên navy đậm
+// chỉ đạt 1.7:1 nên bé nhìn không ra quân. `board-dark` = #475a7f đưa quân Đen
+// lên 3:1 - đúng ngưỡng đọc được cho hình khối - mà vẫn đủ tối để mũi tên vàng
+// đồng nổi 3.2:1. Hai màu ô lấy từ token trong `src/index.css` để bài kiểm tương
+// phản đọc đúng giá trị đang dùng.
+const DARK_SQUARE: CSSProperties = { backgroundColor: 'var(--color-board-dark)' }
+const LIGHT_SQUARE: CSSProperties = { backgroundColor: 'var(--color-board-light)' }
 
 /**
  * Bàn cờ hoạt hình dành cho bé: kéo-thả hoặc bấm-chọn-đi,
@@ -88,7 +91,7 @@ export function ChessBoardPanel({
       Object.assign(styles, legalTargets(game, selected))
       styles[selected] = {
         ...(styles[selected] ?? {}),
-        boxShadow: 'inset 0 0 0 4px #d9a83f',
+        boxShadow: 'inset 0 0 0 4px #e8c471',
       }
     }
     if (extraSquareStyles) Object.assign(styles, extraSquareStyles)
@@ -182,7 +185,7 @@ export function ChessBoardPanel({
             squareStyles,
             darkSquareStyle: DARK_SQUARE,
             lightSquareStyle: LIGHT_SQUARE,
-            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #d9a83f' },
+            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #e8c471' },
             // Tự vẽ khung toạ độ bên dưới thay cho nhãn mặc định của thư viện.
             showNotation: false,
             animationDurationInMs: 280,

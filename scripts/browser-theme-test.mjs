@@ -2,7 +2,7 @@
  * Ghim bảng màu thật của app trong trình duyệt (gam "Navy – Gỗ sáng – Đỏ son"):
  *   - nền trang màu gỗ sáng #fbf8f1, KHÔNG còn tím cũng không còn vệt xanh lá;
  *   - thanh trên cùng gradient navy đậm;
- *   - bàn cờ: ô gỗ sáng #efe1c7 + ô navy #24334f;
+ *   - bàn cờ: ô gỗ sáng #efe1c7 + ô navy sáng #475a7f;
  *   - mũi tên gợi ý màu vàng đồng, không phải tím/xanh dương.
  *
  * Bài này chống việc "đổi gam rồi lỡ tay để sót màu cũ" - đúng loại lỗi đã xảy
@@ -107,8 +107,8 @@ check(
 )
 const boardColors = [palette.a1?.own, palette.b1?.own]
 check(
-  boardColors.includes('rgb(36, 51, 79)'),
-  `có ô navy #24334f (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
+  boardColors.includes('rgb(71, 90, 127)'),
+  `có ô navy sáng #475a7f (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
 )
 check(
   boardColors.includes('rgb(239, 225, 199)'),
@@ -135,10 +135,10 @@ const arrow = await evaluate(`
   })()
 `)
 check(
-  arrow?.stroke === 'rgb(217, 168, 63)',
-  `thân mũi tên màu vàng đồng #d9a83f (nhận ${arrow?.stroke})`,
+  arrow?.stroke === 'rgb(232, 196, 113)',
+  `thân mũi tên màu vàng đồng sáng #e8c471 (nhận ${arrow?.stroke})`,
 )
-check(arrow?.head === 'rgb(217, 168, 63)', `đầu mũi tên cũng vàng đồng (nhận ${arrow?.head})`)
+check(arrow?.head === 'rgb(232, 196, 113)', `đầu mũi tên cũng vàng đồng sáng (nhận ${arrow?.head})`)
 
 // --- 6. Bộ nút dùng đúng gam mới và không còn bóng/màu tím.
 const buttonColors = await evaluate(`

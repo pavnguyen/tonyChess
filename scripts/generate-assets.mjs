@@ -109,10 +109,11 @@ const OG_HTML = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
   }
   .board { display: grid; grid-template-columns: repeat(8, 1fr); border-radius: 14px; overflow: hidden; }
   .sq { aspect-ratio: 1 / 1; display: grid; place-items: center; font-size: 34px; line-height: 1; }
-  .light { background: #ffffff; }
-  .dark { background: #24334f; }
+  .light { background: #efe1c7; }
+  .dark { background: #475a7f; }
   .wp { color: #fbf8f1; -webkit-text-stroke: 1.4px #1b2639; }
-  .bp { color: #1b2639; -webkit-text-stroke: 1.4px rgba(251, 249, 244, 0.55); }
+  /* Quân Đen: gần đen tuyền + viền sáng mảnh để không chìm vào ô đậm. */
+  .bp { color: #101720; -webkit-text-stroke: 1.2px rgba(255, 255, 255, 0.45); }
 </style></head><body>
   <div class="left">
     <div class="brand">
@@ -284,22 +285,23 @@ for (const target of TARGETS) {
     check(near(image.pixel(600, 620), [251, 248, 241], 40), `nền gỗ sáng ở đáy ảnh (${hex(image.pixel(600, 620))})`)
     // Khung bàn cờ nhỏ nằm sát mép phải: viền trang 56px, khung dày 12px.
     check(near(image.pixel(1138, 315), [47, 66, 102], 60), `khung bàn cờ navy (${hex(image.pixel(1138, 315))})`)
-    // Đếm xem có đủ ô trắng, ô navy và chi tiết vàng đồng không.
-    let white = 0
-    let navy = 0
+    // Đếm xem có đủ ô sáng, ô đậm và chi tiết vàng đồng không.
+    let light = 0
+    let dark = 0
     let gold = 0
     for (let y = 0; y < image.height; y += 3) {
       for (let x = 0; x < image.width; x += 3) {
         const [r, g, b] = image.pixel(x, y)
-        if (r > 245 && g > 245 && b > 245) white += 1
-        else if (Math.abs(r - 36) < 30 && Math.abs(g - 51) < 30 && Math.abs(b - 79) < 30) navy += 1
+        // Ô sáng #efe1c7 (239, 225, 199) - khác nền trắng của thẻ ở kênh xanh dương.
+        if (Math.abs(r - 239) < 16 && Math.abs(g - 225) < 16 && Math.abs(b - 199) < 16) light += 1
+        else if (Math.abs(r - 71) < 26 && Math.abs(g - 90) < 26 && Math.abs(b - 127) < 26) dark += 1
         // Vàng đồng: ngả vàng rõ (kênh xanh dương thấp hơn hẳn đỏ) - bắt được
         // chữ vàng #9c711a ở dòng chân ảnh cùng các emoji ⭐ 👁️.
         if (r - b > 80 && r > 120) gold += 1
       }
     }
-    check(white > 400, `có ô cờ trắng trên bàn cờ nhỏ (${white} điểm)`)
-    check(navy > 900, `có ô cờ navy (${navy} điểm)`)
+    check(light > 400, `có ô cờ sáng trên bàn cờ nhỏ (${light} điểm)`)
+    check(dark > 900, `có ô cờ đậm (${dark} điểm)`)
     check(gold > 150, `có chi tiết vàng đồng (dòng chân ảnh) (${gold} điểm)`)
   } else {
     check(near(image.pixel(4, 4), [58, 82, 125], 40), `nền icon navy ở góc (${hex(image.pixel(4, 4))})`)

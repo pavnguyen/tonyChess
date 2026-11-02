@@ -260,7 +260,12 @@ Quy ước bắt buộc: **vàng** chỉ dùng cho “quân cần đi / phần t
 hiểm” - hai màu này không bao giờ dùng lẫn ý. Mọi cặp chữ/nền được ghim bằng
 `npm run check:contrast` (ngưỡng WCAG AA 4.5:1).
 
-**Bàn cờ**: ô gỗ sáng `#efe1c7` + ô navy `#24334f`, viền ngoài navy đậm `#1b2639`.
+**Bàn cờ**: ô gỗ sáng `#efe1c7` + ô navy sáng `#475a7f`, viền ngoài navy đậm `#1b2639`.
+Hai màu ô là token riêng `--color-board-light` / `--color-board-dark`. Ô đậm cố ý **sáng hơn**
+navy-800: quân Đen là hình bóng đen tuyền, trên navy `#24334f` chỉ đạt 1.7:1 nên bé không nhìn ra
+quân; `#475a7f` đưa quân Đen lên 3:1 và quân Trắng lên 6.9:1. Đổi theo, mũi tên / vòng “quân cần
+đi” trên bàn cờ dùng vàng đồng sáng `#e8c471` (`ARROW_COLOR`) - vàng đậm cũ chỉ còn 2.3:1 trên ô
+này, còn vàng sáng đạt 4.6:1.
 
 ## 🔤 Font chữ (tự host)
 

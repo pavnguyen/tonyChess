@@ -201,6 +201,17 @@
   --color-wood-800: #644a2c;
   --color-wood-900: #4a3722;
 
+  /**
+   * Ô CỜ - cặp màu của bàn cờ, KHÔNG theo vai trò giao diện.
+   *
+   * Ô đậm cố ý sáng hơn navy-800: quân Đen là hình bóng đen tuyền, trên navy
+   * #24334f chỉ đạt 1.7:1 nên gần như biến mất. #475a7f đưa quân Đen lên 3:1
+   * (mức đọc được cho hình khối) mà vẫn đủ tối để mũi tên vàng đồng #d9a83f nổi
+   * 3.2:1 - sáng hơn nữa là vàng mất hút, tối hơn nữa là quân Đen lại chìm.
+   */
+  --color-board-light: #efe1c7;
+  --color-board-dark: #475a7f;
+
   /* ĐỎ SON (vai trò: coral) */
   --color-coral-50: #fdf3f2;
   --color-coral-100: #fbe4e1;

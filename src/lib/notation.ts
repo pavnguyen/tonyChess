@@ -56,7 +56,12 @@ const VIETNAMESE: Record<PieceCode, string> = {
 }
 
 /** Màu vàng đồng của mũi tên chỉ nước đi kế tiếp. */
-export const ARROW_COLOR = '#d9a83f'
+/**
+ * Vàng đồng của mũi tên gợi ý trên bàn cờ - cố ý SÁNG hơn `gold-500` (#d9a83f):
+ * ô đậm của bàn cờ đã được nâng lên #475a7f để quân Đen không chìm, nên vàng
+ * đậm cũ chỉ còn 2.3:1. #e8c471 đạt 4.6:1 trên ô đậm và vẫn rõ trên ô gỗ sáng.
+ */
+export const ARROW_COLOR = '#e8c471'
 
 /**
  * Màu đỏ son của mũi tên báo **nước sắp tới CỦA ĐỐI THỦ** trong tab Đối phó.
