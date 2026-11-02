@@ -87,11 +87,11 @@ export function ExplanationBanner({
         <div className="grid content-start gap-1.5">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[0.7rem] font-extrabold ${style.chip}`}
+              className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${style.chip}`}
             >
               {style.icon} {style.label}
             </span>
-            <span className="rounded-full bg-sand-100 px-2.5 py-0.5 text-[0.7rem] font-bold text-brand-700 ring-1 ring-sand-200">
+            <span className="rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-bold text-brand-700 ring-1 ring-sand-200">
               {moveLabel(plyIndex, annotation.san, notation)}
             </span>
           </div>
@@ -107,7 +107,7 @@ export function ExplanationBanner({
               <div className="text-xl font-extrabold tracking-tight sm:text-2xl">
                 {shownNotation}
               </div>
-              <div className="truncate text-[0.7rem] font-bold text-white/85 sm:text-xs">
+              <div className="truncate text-xs font-bold text-white/85 sm:text-xs">
                 Quân {PIECE_NAME_VI[piece]} · {info.action}
               </div>
             </div>
@@ -117,7 +117,7 @@ export function ExplanationBanner({
         {/* 2. Lý do + 3. Khẩu quyết vè */}
         <div className="grid content-start gap-1.5">
           <div className="rounded-2xl bg-brand-50 px-2.5 py-1.5">
-            <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
               💡 Vì sao?
             </div>
             <p className="text-sm font-bold text-brand-900">
@@ -130,7 +130,7 @@ export function ExplanationBanner({
                 🎵
               </span>
               <div className="min-w-0">
-                <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-gold-600">
+                <div className="text-xs font-extrabold uppercase tracking-wide text-gold-600">
                   Khẩu quyết vè - đọc to lên nhé!
                 </div>
                 <div className="text-base font-extrabold text-gold-900 sm:text-lg">
@@ -145,7 +145,7 @@ export function ExplanationBanner({
                   🎯
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-info-600">
+                  <div className="text-xs font-extrabold uppercase tracking-wide text-info-600">
                     Nguyên tắc
                   </div>
                   <div className="text-sm font-extrabold text-info-900">

@@ -56,30 +56,34 @@ const VIETNAMESE: Record<PieceCode, string> = {
 }
 
 /** Màu vàng đồng của mũi tên chỉ nước đi kế tiếp. */
-export const ARROW_COLOR = '#d9a93f'
+export const ARROW_COLOR = '#d9a83f'
 
 /**
- * Màu san hô của mũi tên báo **nước sắp tới CỦA ĐỐI THỦ** trong tab Đối phó.
+ * Màu đỏ son của mũi tên báo **nước sắp tới CỦA ĐỐI THỦ** trong tab Đối phó.
  * Khác hẳn vàng đồng của nước bé, để bé phân biệt "đối thủ sắp đi" với "mình sắp đi".
  */
-export const OPPONENT_ARROW_COLOR = '#c8553d'
+export const OPPONENT_ARROW_COLOR = '#cc5847'
 
-/** Màu tím của mũi tên chỉ tới **ô bé muốn nhắm** (mục tiêu khai cuộc). */
-export const GOAL_ARROW_COLOR = '#6d5bc7'
+/**
+ * Màu NAVY của mũi tên chỉ tới **ô bé muốn nhắm** (mục tiêu khai cuộc). Gam mới
+ * không còn tím, nên ô mục tiêu dùng navy - tách hẳn khỏi vàng (nước của bé) và
+ * đỏ son (nước của đối thủ).
+ */
+export const GOAL_ARROW_COLOR = '#2f4266'
 
 /**
  * Ô QUÂN SẮP ĐI của đối thủ (viền san hô) trong tab Đối phó - đối xứng với
  * `HINT_FROM_STYLE` (vàng) dành cho nước của bé.
  */
 export const OPPONENT_FROM_STYLE: CSSProperties = {
-  backgroundColor: 'rgba(200, 85, 61, 0.30)',
-  boxShadow: 'inset 0 0 0 4px #c8553d',
+  backgroundColor: 'rgba(204, 88, 71, 0.30)',
+  boxShadow: 'inset 0 0 0 4px #cc5847',
 }
 
 /** Ô ĐÍCH sắp tới của đối thủ (viền san hô mảnh hơn) - nổi rõ trên cả hai màu ô. */
 export const OPPONENT_TO_STYLE: CSSProperties = {
-  backgroundColor: 'rgba(200, 85, 61, 0.18)',
-  boxShadow: 'inset 0 0 0 3px #c8553d',
+  backgroundColor: 'rgba(204, 88, 71, 0.18)',
+  boxShadow: 'inset 0 0 0 3px #cc5847',
 }
 
 /**
@@ -89,11 +93,17 @@ export const OPPONENT_TO_STYLE: CSSProperties = {
  * - **Nước vừa đi**: viền xám nhạt (thông tin, không tranh sự chú ý).
  * - **Quân bé cần đi**: viền VÀNG ĐỒNG đậm + nền vàng nhạt.
  * - **Ô đích**: viền XANH THÉP + nền xanh nhạt (khác hẳn màu quân cần đi).
- * - **Ô trong kế hoạch / mục tiêu**: viền TÍM + nền tím nhạt - màu riêng để bé phân
- *   biệt "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch trung cuộc" hay "ô
- *   mình cần nhắm tới" (tab Khai cuộc, Trung cuộc, Tàn cuộc dùng chung màu này).
- * - **Ô bé vừa bấm trong bài** (`focusFill`/`focusRing`): cũng tím nhưng viền dầy hơn -
- *   để bé tra cứu "quân này đứng đâu" bằng cách bấm vào chữ, không phải dò toạ độ.
+ * - **Ô trong kế hoạch / mục tiêu**: viền XANH THÉP đậm + nền xanh nhạt - màu
+ *   riêng để bé phân biệt "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch
+ *   trung cuộc" hay "ô mình cần nhắm tới" (tab Khai cuộc, Trung cuộc, Tàn cuộc
+ *   dùng chung màu này).
+ * - **Ô bé vừa bấm trong bài** (`focusFill`/`focusRing`): cùng xanh thép nhưng
+ *   viền dầy hơn - để bé tra cứu "quân này đứng đâu" bằng cách bấm vào chữ,
+ *   không phải dò toạ độ.
+ *
+ * Gam Navy - Gỗ sáng - Đỏ son không còn tím, nên TẤT CẢ màu tím cũ đã được thay
+ * bằng xanh thép (thông tin) - đúng quy ước "vàng = quân cần đi, xanh = thông tin,
+ * đỏ = nguy hiểm".
  * - **Ô NÊN làm**: nền XANH LÁ + viền xanh đậm (thế minh hoạ ở tab Chiến lược).
  * - **Ô KHÔNG NÊN**: nền ĐỎ ĐẤT + viền đỏ đậm (thế minh hoạ ở tab Chiến lược).
  *
@@ -103,21 +113,21 @@ export const OPPONENT_TO_STYLE: CSSProperties = {
  * Vàng đồng và xanh thép đều nổi rõ trên cả ô trắng lẫn ô xanh lá đậm của bàn cờ.
  */
 export const BOARD_MARKS = {
-  lastMoveFrom: 'inset 0 0 0 3px rgba(110, 120, 114, 0.5)',
-  lastMoveTo: 'inset 0 0 0 4px rgba(110, 120, 114, 0.62)',
-  hintFromFill: 'rgba(217, 169, 63, 0.4)',
-  hintFromRing: 'inset 0 0 0 5px #c08e22',
+  lastMoveFrom: 'inset 0 0 0 3px rgba(91, 102, 117, 0.5)',
+  lastMoveTo: 'inset 0 0 0 4px rgba(91, 102, 117, 0.62)',
+  hintFromFill: 'rgba(217, 168, 63, 0.42)',
+  hintFromRing: 'inset 0 0 0 5px #bf8c22',
   hintToFill: 'rgba(147, 192, 205, 0.42)',
-  hintToRing: 'inset 0 0 0 4px #5f9faf',
-  planFill: 'rgba(126, 106, 209, 0.42)',
-  planRing: 'inset 0 0 0 4px #6d5bc7',
-  /** Ô bé vừa bấm trong nội dung bài ("♗ Tượng c5") - cùng gam tím của ô cần nhìn. */
-  focusFill: 'rgba(126, 106, 209, 0.30)',
-  focusRing: 'inset 0 0 0 5px #6d5bc7',
-  goodFill: 'rgba(104, 174, 119, 0.55)',
-  goodRing: 'inset 0 0 0 4px #3a7547',
-  badFill: 'rgba(160, 74, 59, 0.5)',
-  badRing: 'inset 0 0 0 4px #a04a3b',
+  hintToRing: 'inset 0 0 0 4px #3f748f',
+  planFill: 'rgba(51, 96, 111, 0.42)',
+  planRing: 'inset 0 0 0 4px #33606f',
+  /** Ô bé vừa bấm trong nội dung bài ("♗ Tượng c5") - cùng gam xanh thép của ô cần nhìn. */
+  focusFill: 'rgba(63, 116, 143, 0.30)',
+  focusRing: 'inset 0 0 0 5px #33606f',
+  goodFill: 'rgba(104, 174, 139, 0.55)',
+  goodRing: 'inset 0 0 0 4px #256349',
+  badFill: 'rgba(204, 88, 71, 0.5)',
+  badRing: 'inset 0 0 0 4px #ad4235',
 } as const
 
 /**
@@ -145,8 +155,9 @@ export const HINT_TO_STYLE: CSSProperties = {
 /**
  * Style cho những ô cờ thuộc **câu kế hoạch trung cuộc** bé vừa bấm vào (§4.4).
  *
- * Tím là màu duy nhất chưa dùng trên bàn cờ (vàng = quân cần đi, xanh = ô đích,
- * xám = nước vừa đi) nên bé nhìn là biết ngay "ô này thuộc kế hoạch".
+ * Xanh thép đậm là màu của "thông tin / kế hoạch" (vàng = quân cần đi, xanh
+ * thép nhạt = ô đích, xám = nước vừa đi) nên bé nhìn là biết ngay "ô này thuộc
+ * kế hoạch".
  */
 export const PLAN_FOCUS_STYLE: CSSProperties = {
   backgroundColor: BOARD_MARKS.planFill,

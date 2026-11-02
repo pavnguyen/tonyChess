@@ -87,13 +87,13 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-pressed={pressed}
-      className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border px-1.5 text-[0.72rem] font-extrabold leading-none transition-all active:translate-y-[1px] disabled:opacity-40 stage:flex-none stage:px-2.5 ${
+      className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border px-1.5 text-xs font-extrabold leading-none transition-all active:translate-y-[1px] disabled:opacity-40 stage:flex-none stage:px-2.5 ${
         active
           ? 'border-coral-500 bg-coral-500 text-white'
           : 'border-sand-200 bg-white text-brand-700 hover:border-brand-300 hover:bg-brand-50'
       }`}
     >
-      <span className="shrink-0 text-[0.8rem] leading-none" aria-hidden>
+      <span className="shrink-0 text-sm leading-none" aria-hidden>
         {icon}
       </span>
       <span className="truncate stage:hidden">{short ?? label}</span>
@@ -489,7 +489,7 @@ export function EndgamesPage() {
             {/* Đổi lời nhắc theo việc bé đang làm - không thêm dòng nào nên bàn cờ
                 không bị thu nhỏ (xem chú thích `reserve` của BoardStage). */}
             {!finished && (
-              <p className="text-[0.65rem] font-bold leading-snug text-brand-400">
+              <p className="text-xs font-bold leading-snug text-ink-600">
                 {goalFocus
                   ? '🎯 Ô TÍM là chỗ bé cần nhắm tới (Tốt + ô phong cấp, hoặc Vua Đen + ô nó chạy được).'
                   : !board.playerToMove
@@ -533,7 +533,7 @@ export function EndgamesPage() {
               if (items.length === 0) return null
               return (
                 <div key={group.goal} className="grid gap-1">
-                  <span className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+                  <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
                     {group.icon} {group.title} · {items.length} bài
                   </span>
                   <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
@@ -554,7 +554,7 @@ export function EndgamesPage() {
                           }`}
                         >
                           <span
-                            className={`line-clamp-2 text-[0.7rem] font-extrabold leading-tight ${
+                            className={`line-clamp-2 text-xs font-extrabold leading-tight ${
                               active ? 'text-brand-900' : 'text-brand-700'
                             }`}
                           >
@@ -575,31 +575,31 @@ export function EndgamesPage() {
             <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
               🧭 {challenge?.title ?? ''}
             </span>
-            <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-[0.65rem] font-extrabold text-brand-600 ring-1 ring-sand-200">
+            <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-xs font-extrabold text-brand-600 ring-1 ring-sand-200">
               {board.history.length} nước
             </span>
           </div>
           <p className="text-xs font-bold text-brand-600">{challenge?.hint}</p>
-          <p className="rounded-2xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold leading-snug text-brand-700">
+          <p className="rounded-2xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-brand-700">
             🧠 {mindset}
           </p>
 
           <div id="kid-endgame-explanation" className="grid gap-1 border-t border-brand-100 pt-1.5">
-            <span className="text-[0.7rem] font-extrabold tracking-wide text-brand-500">
+            <span className="text-xs font-extrabold tracking-wide text-brand-500">
               💡 Mẹo của bài này
             </span>
             <p className="text-xs font-bold text-brand-700">{challenge?.explanation}</p>
-            <p className="rounded-xl bg-gold-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-gold-800">
+            <p className="rounded-xl bg-gold-50 px-2.5 py-1.5 text-xs font-extrabold text-gold-800">
               🎵 “{challenge?.rhyme}”
             </p>
           </div>
 
           <div id="kid-endgame-history" className="grid gap-1 border-t border-brand-100 pt-1.5">
-            <span className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
               📜 Nước đi của ván · bấm một nước để quay lại
             </span>
             {playedMoves.length === 0 ? (
-              <p className="text-[0.7rem] font-bold text-brand-400">
+              <p className="text-xs font-bold text-ink-600">
                 🐣 Bé kéo một quân trên bàn cờ để bắt đầu - từng nước sẽ hiện ở đây.
               </p>
             ) : (

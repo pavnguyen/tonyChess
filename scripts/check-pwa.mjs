@@ -46,7 +46,7 @@ if (manifest) {
   check(manifest.display === 'standalone', `chạy toàn màn hình khi cài (${manifest.display})`)
   check(Boolean(manifest.name && manifest.short_name), 'có tên đầy đủ và tên ngắn')
   check(Array.isArray(manifest.icons) && manifest.icons.length > 0, 'có icon để cài ra màn hình chính')
-  check(manifest.theme_color === '#1f4132', 'theme_color đúng màu xanh của app')
+  check(manifest.theme_color === '#1b2639', 'theme_color đúng màu navy của app')
 }
 
 const sw = read('dist/sw.js')

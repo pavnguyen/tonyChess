@@ -453,7 +453,7 @@ export function TacticsPage() {
                 🎉 Chuẩn rồi! Bé bấm ➡️ Thế cờ tiếp để sang thế mới nhé.
               </p>
             ) : (
-              <p className="text-[0.7rem] font-bold text-brand-400">
+              <p className="text-xs font-bold text-ink-600">
                 🖐️ Kéo quân của bé vào ô bé muốn · 💡 bí quá thì bấm Gợi ý · ⌨️ ◀ ▶ ▲ ▼ để
                 đổi thế cờ
               </p>
@@ -519,7 +519,7 @@ export function TacticsPage() {
                 </span>
                 {/* Nhắc lại đúng số thế cờ đang làm để bé nối ô sáng trên bản đồ
                     với con số trên thanh tiêu đề bàn cờ (không phải dò lại). */}
-                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold text-gold-700 ring-1 ring-gold-200">
+                <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-extrabold text-gold-700 ring-1 ring-gold-200">
                   Thế cờ {safeIndex + 1}/{list.length}
                 </span>
               </div>

@@ -119,7 +119,18 @@ await send('Page.reload')
 await sleep(2500)
 
 const navOffline = await waitFor(`Boolean(document.getElementById('kid-tab-nav'))`)
-check(navOffline, 'tắt mạng rồi tải lại: app vẫn mở (thanh 4 nhóm hiện ra)')
+check(navOffline, 'tắt mạng rồi tải lại: app vẫn mở (thanh 3 nhóm hiện ra)')
+
+// Font TỰ HOST phải nằm trong precache: mất mạng mà font rơi về font hệ thống thì
+// dấu tiếng Việt đổi dáng và cả thiết kế lệch - đúng lỗi đã gặp khi còn dùng Google Fonts.
+const offlineFont = await evaluate(
+  `document.fonts.check('16px "Be Vietnam Pro"')`,
+  true,
+)
+check(
+  offlineFont === true,
+  'tắt mạng vẫn có font Be Vietnam Pro (chữ không rơi về font hệ thống)',
+)
 
 // Mở đúng tab Đấu ván khi đang offline.
 await evaluate(`window.location.href = ${JSON.stringify(`${APP_URL}/free-play`)}`)

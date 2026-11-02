@@ -66,6 +66,39 @@ export const ENDGAMES: EndgameChallenge[] = [
       'Tốt thông hành là Tốt không còn Tốt địch chặn trên đường. Vua Đen ở tận h8 không kịp chạy về, nên việc của bé chỉ là đẩy Tốt tiến đều — càng nhanh càng tốt.',
     rhyme: 'Tốt thông hành cứ tiến',
   },
+  {
+    id: 'two-pawns',
+    title: 'Hai Tốt sát nhau cùng tiến',
+    goal: 'promote',
+    fen: '8/8/8/1PP5/8/1K6/8/7k w - - 0 1',
+    playerSide: 'white',
+    hint: 'Hai Tốt đứng cạnh nhau không Tốt nào cản được. Đẩy một Tốt lên trước, Vua Đen chỉ đuổi được một con.',
+    explanation:
+      'Hai Tốt sát nhau là cặp không thể chặn: Tốt nào bị ăn thì Tốt kia đi tiếp. Vua Đen ở tận h1 nên chỉ kịp chặn một cột — bé đẩy Tốt bên kia lên thành Hậu.',
+    rhyme: 'Hai Tốt cùng tiến lên',
+  },
+  {
+    id: 'pawn-escort',
+    title: 'Vua đi sau che Tốt',
+    goal: 'promote',
+    fen: '8/8/8/8/3P4/3K4/8/6k1 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Vua Trắng đứng ngay sau Tốt d4. Đẩy Tốt lên, Vua theo sau từng bước để không mất Tốt.',
+    explanation:
+      'Tốt muốn lên Hậu thì phải có Vua đi sau che lưng: Tốt tiến một bước, Vua tiến theo một bước. Vua Đen từ g1 không kịp vòng ra trước mặt Tốt.',
+    rhyme: 'Vua theo sau che Tốt',
+  },
+  {
+    id: 'queen-mate',
+    title: 'Hậu + Vua chiếu bí',
+    goal: 'checkmate',
+    fen: '7k/5Q2/6K1/8/8/8/8/8 w - - 0 1',
+    playerSide: 'white',
+    hint: 'Vua Trắng đã đứng ngay trước mặt Vua Đen (ô g6). Đẩy Hậu xuống f8 là chiếu bí.',
+    explanation:
+      'Cách chiếu bí bằng Hậu: Vua mình tiến sát để giữ ô chạy, Hậu chiếu từ xa. Hậu f8 vừa chiếu vừa khóa hàng 8, Vua Đen không còn ô nào — hết ván.',
+    rhyme: 'Hậu chiếu, Vua đã giữ',
+  },
 ]
 
 export function getEndgame(id: string): EndgameChallenge | undefined {

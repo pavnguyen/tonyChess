@@ -1,9 +1,10 @@
 /**
  * Kiểm tra tab **Tàn cuộc** `/endgames` sau khi thay bộ thế dễ bằng kỹ thuật thật:
- *   1. Chỉ còn 5 thế kỹ thuật (Vua–Tốt ô đối diện, Xe + Tốt chọi Xe, Tượng đôi,
- *      Mã + Tượng, Tốt thông hành); các khung tham khảo cũ đã bị gỡ.
+ *   1. Chỉ còn 8 thế kỹ thuật (Vua–Tốt ô đối diện, Xe + Tốt chọi Xe, Tượng đôi,
+ *      Mã + Tượng, Tốt thông hành, hai Tốt, Vua che Tốt, Hậu + Vua); các khung tham
+ *      khảo cũ đã bị gỡ.
  *   2. Bấm thẻ thì bàn cờ lớn đổi sang đúng thế cờ của bài đó.
- *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Soi mục tiêu” tô tím
+ *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Soi mục tiêu” tô xanh thép
  *      đúng Tốt + ô phong cấp.
  *   4. Lịch sử / Đi lại chạy đúng, đổi bài giữa lúc máy đang nghĩ không nhận nước cũ.
  *   5. Thắng thật: Tượng đôi chiếu bí trong 1 nước → mở lời chúc mừng; còn nước
@@ -95,7 +96,7 @@ const historyCount = () => evaluate(`document.querySelectorAll('#kid-endgame-his
 const status = () => evaluate(`document.getElementById('kid-endgame-status').innerText`)
 const purpleSquares = () => evaluate(`
   [...document.querySelectorAll('[data-square]')].filter(el =>
-    [...el.querySelectorAll('div')].some(child => child.style.backgroundColor === 'rgba(126, 106, 209, 0.42)')
+    [...el.querySelectorAll('div')].some(child => child.style.backgroundColor === 'rgba(51, 96, 111, 0.42)')
   ).map(el => el.dataset.square).sort()
 `)
 const clickId = (id) => evaluate(`document.getElementById(${JSON.stringify(id)}).click()`)
@@ -127,12 +128,19 @@ check(
 const ids = await evaluate(
   `[...document.querySelectorAll('[data-endgame-id]')].map((el) => el.dataset.endgameId)`,
 )
-check(ids.length === 5, `có đúng 5 thế luyện (${ids.length})`)
+check(ids.length === 8, `có đúng 8 thế luyện (${ids.length})`)
 check(
-  ['opposition', 'rook-pawn', 'bishop-knight', 'bishop-pair', 'passed-pawn'].every((id) =>
-    ids.includes(id),
-  ),
-  `đủ 5 thế kỹ thuật đã chốt (${ids.join(', ')})`,
+  [
+    'opposition',
+    'rook-pawn',
+    'bishop-knight',
+    'bishop-pair',
+    'passed-pawn',
+    'two-pawns',
+    'pawn-escort',
+    'queen-mate',
+  ].every((id) => ids.includes(id)),
+  `đủ 8 thế kỹ thuật (${ids.join(', ')})`,
 )
 
 console.log('\n▶ Bấm thẻ để đổi bài luyện')
@@ -153,7 +161,7 @@ check(await hasPiece('bK', 'f8'), 'Vua Đen ở f8 chặn trước mặt Tốt')
 await clickId('kid-endgame-goal')
 await sleep(150)
 const purple = await purpleSquares()
-check(purple.includes('f6') && purple.includes('f8'), `soi mục tiêu tô tím Tốt + ô phong cấp (${purple})`)
+check(purple.includes('f6') && purple.includes('f8'), `soi mục tiêu tô xanh thép Tốt + ô phong cấp (${purple})`)
 check(await clickByText('Gợi ý'), 'bấm “💡 Gợi ý” khi đang soi mục tiêu')
 await sleep(150)
 check(

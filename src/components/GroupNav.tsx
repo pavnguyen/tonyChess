@@ -3,8 +3,8 @@ import { Link, useMatchRoute } from '@tanstack/react-router'
 /**
  * Thanh chuyển bài **trong cùng một nhóm**.
  *
- * Vì sao cần: thanh tab dưới đáy màn hình đã rút từ 7 xuống **4 nhóm** (Học · Luyện ·
- * Chơi · Tiến bộ) cho bé bấm trúng, nên các bài trong nhóm được chuyển bằng dải
+ * Vì sao cần: thanh tab dưới đáy màn hình đã rút từ 7 xuống **3 nhóm** (Học · Luyện ·
+ * Chơi) cho bé bấm trúng, nên các bài trong nhóm được chuyển bằng dải
  * pill này - vẫn tới được mọi trang cũ mà không nhồi lại 7 ô nhỏ.
  */
 const GROUPS: { id: string; items: { to: string; label: string; icon: string }[] }[] = [
@@ -30,13 +30,12 @@ const GROUPS: { id: string; items: { to: string; label: string; icon: string }[]
       { to: '/hazards', label: 'Soi quân', icon: '🔍' },
     ],
   },
-  { id: 'progress', items: [{ to: '/progress', label: 'Tiến bộ', icon: '📈' }] },
 ]
 
 export function GroupNav() {
   const matchRoute = useMatchRoute()
   const group = GROUPS.find((item) => item.items.some((link) => matchRoute({ to: link.to })))
-  // Nhóm chỉ có một trang (Tiến bộ) thì không cần dải chuyển - đỡ một dòng thừa.
+  // Trang nằm ngoài danh sách nhóm (không có) thì không vẽ dải - đỡ một dòng thừa.
   if (!group || group.items.length < 2) return null
 
   return (
@@ -52,10 +51,10 @@ export function GroupNav() {
             key={item.to}
             to={item.to}
             aria-current={active}
-            className={`inline-flex min-h-8 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-[0.72rem] font-extrabold transition-all active:translate-y-[1px] ${
+            className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
               active
                 ? 'border-brand-600 bg-brand-700 text-white'
-                : 'border-sand-200 bg-white text-brand-700 hover:border-brand-300'
+                : 'border-sand-300 bg-white text-brand-700 hover:border-brand-300'
             }`}
           >
             <span aria-hidden>{item.icon}</span>

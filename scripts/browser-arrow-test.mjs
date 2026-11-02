@@ -407,12 +407,12 @@ if (!flipped || flipped.error) {
 }
 
 // ----------------------------------------------------------------
-// Kịch bản 3: bấm một câu kế hoạch trung cuộc → tô tím đúng ô mà câu đó nhắc tới.
+// Kịch bản 3: bấm một câu kế hoạch trung cuộc → tô xanh thép đúng ô mà câu đó nhắc tới.
 // Đây là bài kiểm chứng cho cách biến "Kế hoạch trung cuộc" thành trực quan.
 // ----------------------------------------------------------------
 console.log('\n▶ Bấm câu kế hoạch → tô sáng ô trên bàn cờ')
 
-const PLAN_FILL = 'rgba(126, 106, 209, 0.42)'
+const PLAN_FILL = 'rgba(51, 96, 111, 0.42)'
 
 // Thư viện bàn cờ vẽ màu ô lên **lớp phủ con** của ô (không phải chính ô), nên phải
 // đọc style của phần tử con đầu tiên chứ không phải của `#kid-board-square-*`.
@@ -436,7 +436,7 @@ check(
 )
 
 // Ô mục tiêu khai cuộc giờ BẬT MẶC ĐỊNH, mà câu `goal` của Sicilian cũng nhắc b5,
-// nên tắt trước khi đo cảnh “chưa bấm câu kế hoạch” - nếu không b5 đã tím sẵn.
+// nên tắt trước khi đo cảnh “chưa bấm câu kế hoạch” - nếu không b5 đã tô sẵn.
 await evaluate(`document.querySelector('[data-opening-goal]')?.click()`)
 await sleep(200)
 
@@ -469,10 +469,10 @@ check(
     (() => {
       const el = document.getElementById('kid-board-square-b5')
       const shadow = el?.firstElementChild ? getComputedStyle(el.firstElementChild).boxShadow : ''
-      return String(shadow).includes('109, 91, 199')
+      return String(shadow).includes('51, 96, 111')
     })()
   `),
-  'ô b5 có thêm viền tím của kế hoạch',
+  'ô b5 có thêm viền xanh thép của kế hoạch',
 )
 check(
   beforeB5 !== PLAN_FILL,
@@ -542,7 +542,7 @@ check(
   !(await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-d4'))`)),
   'bấm “Quay lại bài học” → bàn cờ trở về đúng nước đang học',
 )
-check((await readPlanSquare('b5')) !== PLAN_FILL, 'quay lại bài học thì bỏ tô ô kế hoạch (b5 hết tím)')
+check((await readPlanSquare('b5')) !== PLAN_FILL, 'quay lại bài học thì bỏ tô ô kế hoạch (b5 hết tô)')
 
 // ----------------------------------------------------------------
 // Kịch bản 3b: câu kế hoạch có nước “từ ô nào sang ô nào” → vẽ mũi tên vàng.

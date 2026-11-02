@@ -425,7 +425,7 @@ export function FreePlayPage() {
               Nước {board.history.length + 1}
             </span>
             {coachBusy && !gameOver && (
-              <span id="kid-coach-busy" className="rounded-full bg-brand-50 px-2.5 py-1 text-[0.65rem] font-bold text-brand-500">
+              <span id="kid-coach-busy" className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-500">
                 🧑‍🏫 đang chấm…
               </span>
             )}
@@ -544,7 +544,7 @@ export function FreePlayPage() {
               </span>
               <span className="flex flex-wrap items-center gap-0.5 text-lg">
                 {captures.byKid.length === 0 ? (
-                  <span className="text-[0.7rem] font-bold text-brand-400">
+                  <span className="text-xs font-bold text-ink-600">
                     chưa ăn được quân nào
                   </span>
                 ) : (
@@ -562,7 +562,7 @@ export function FreePlayPage() {
               </span>
               <span className="flex flex-wrap items-center gap-0.5 text-lg opacity-80">
                 {captures.byEngine.length === 0 ? (
-                  <span className="text-[0.7rem] font-bold text-coral-300">
+                  <span className="text-xs font-bold text-coral-300">
                     chưa mất quân nào, giỏi quá!
                   </span>
                 ) : (
@@ -635,7 +635,7 @@ export function FreePlayPage() {
               title="Ván này của bé"
               subtitle="Lỗi lớn nhất - bấm để luyện lại đúng thế cờ đó"
             />
-            <p className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-[0.7rem] font-bold text-brand-700">
+            <p className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold text-brand-700">
               {board.history.length} nước · {blunders.length} nước mất điểm · nặng nhất{' '}
               {(Math.max(...blunders.map((item) => item.lossCp)) / 100).toFixed(1)} điểm
             </p>
@@ -645,7 +645,7 @@ export function FreePlayPage() {
                   key={`${blunder.ply}-${blunder.san}`}
                   className="flex items-center gap-1.5 rounded-xl border border-sand-200 bg-white px-2 py-1.5"
                 >
-                  <span className="min-w-0 flex-1 text-[0.72rem] font-extrabold leading-tight text-brand-800">
+                  <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-brand-800">
                     Nước {Math.floor(blunder.ply / 2) + 1} ·{' '}
                     {formatSan(blunder.san, notation)} · kém{' '}
                     {(blunder.lossCp / 100).toFixed(1)} điểm
@@ -654,7 +654,7 @@ export function FreePlayPage() {
                     type="button"
                     data-coach-retry={index}
                     onClick={() => newGame(kidSide, blunder.fen)}
-                    className="shrink-0 rounded-lg bg-brand-700 px-2 py-1 text-[0.65rem] font-extrabold text-white active:translate-y-[1px]"
+                    className="shrink-0 rounded-lg bg-brand-700 px-2 py-1 text-xs font-extrabold text-white active:translate-y-[1px]"
                   >
                     ▶ Luyện lại
                   </button>
@@ -675,7 +675,7 @@ export function FreePlayPage() {
           </div>
           <div className="mt-2 max-h-56 overflow-y-auto rounded-2xl bg-brand-50 p-2">
             {moveRows.length === 0 ? (
-              <p className="px-2 py-4 text-center text-sm font-bold text-brand-400">
+              <p className="px-2 py-4 text-center text-sm font-bold text-ink-600">
                 Ván cờ chưa bắt đầu. Bé đi nước đầu tiên nào! 🚀
               </p>
             ) : (
@@ -683,7 +683,7 @@ export function FreePlayPage() {
                 <tbody>
                   {moveRows.map((row) => (
                     <tr key={row.no} className="odd:bg-white/70">
-                      <td className="w-8 rounded-l-lg px-2 py-1 text-right font-extrabold text-brand-400">
+                      <td className="w-8 rounded-l-lg px-2 py-1 text-right font-extrabold text-ink-600">
                         {row.no}.
                       </td>
                       <td className="px-2 py-1 font-extrabold text-brand-900">
@@ -718,11 +718,11 @@ export function FreePlayPage() {
               3️⃣ Đừng quên nhập thành để giấu Vua vào lều an toàn!
             </li>
           </ul>
-          <p className="mt-2 rounded-xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5 text-[0.7rem] font-extrabold text-gold-800">
+          <p className="mt-2 rounded-xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5 text-xs font-extrabold text-gold-800">
             🎵 Khẩu quyết vè: “Nhìn kỹ trước khi đi - ăn quân không bị mất quân!”
           </p>
           {board.history.length > 0 && (
-            <p className="mt-2 text-center text-xs font-bold text-brand-400">
+            <p className="mt-2 text-center text-xs font-bold text-ink-600">
               Nước vừa rồi:{' '}
               <span className="font-extrabold text-brand-700">
                 {formatSan(board.history[board.history.length - 1].san, notation)}

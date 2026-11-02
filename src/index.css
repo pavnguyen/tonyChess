@@ -27,96 +27,251 @@
  */
 @custom-variant shallow (@media (min-width: 40rem) and (max-width: 59.9375rem) and (max-height: 34rem));
 
+/* ---------------------------------------------------------------------------
+ * FONT TỰ HOST
+ *
+ * Trước đây font tải từ Google Fonts; app là PWA **chơi được khi mất mạng**, mà
+ * mất mạng thì font rơi về font hệ thống → sai thiết kế và chữ tiếng Việt bị
+ * đổi dáng giữa chừng. Vì vậy hai họ font được tải về `public/fonts/` và khai
+ * báo tại đây (Workbox precache luôn nhờ `globPatterns` có `woff2`).
+ *
+ * - `Be Vietnam Pro` cho phần ĐỌC (câu hướng dẫn, giải thích): bộ dấu tiếng Việt
+ *   được thiết kế riêng nên dấu không bị chồng, mắt bé đỡ mỏi.
+ * - `Baloo 2` cho TIÊU ĐỀ / NÚT / NHÃN: đậm, tròn, thân thiện.
+ *
+ * Chỉ 5 cấp độ đạm × 2 bộ ký tự (vietnamese + latin) - subset theo `unicode-range`
+ * nên trình duyệt chỉ tải phần thật sự dùng.
+ * ------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-400-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-600-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-700-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: url('/fonts/be-vietnam-pro-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 600 750;
+  font-display: swap;
+  src: url('/fonts/baloo-2-700-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 600 750;
+  font-display: swap;
+  src: url('/fonts/baloo-2-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 751 900;
+  font-display: swap;
+  src: url('/fonts/baloo-2-800-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0,
+    U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 751 900;
+  font-display: swap;
+  src: url('/fonts/baloo-2-800-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /**
- * Bảng màu "Sồi & Ngọc": xanh rừng sâu là màu chủ đạo (trùng với bàn cờ), nền
- * giấy ngà ấm, điểm nhấn vàng đồng cho sao/cúp, và hai màu chức năng dịu mắt
- * (đất nung cho lỗi, xanh thép cho thông tin) - không còn tím.
+ * Bảng màu mới: NAVY – GỖ SÁNG – ĐỎ SON.
  *
  * Đặt tên theo VAI TRÒ chứ không theo màu, để đổi gam sau này chỉ cần sửa ở đây:
- *   brand  → xanh rừng: thanh điều hướng, nút chính, viền nhấn
- *   sand   → giấy ngà: nền trang, viền thẻ, vùng chờ
- *   leaf   → xanh non: trạng thái đúng / an toàn (Mắt Thần)
+ *   brand  → navy: thanh điều hướng, nút chính, viền nhấn, chữ chính
+ *   sand   → gỗ sáng: nền giấy, viền thẻ, vùng chờ, ô sáng của bàn cờ
+ *   leaf   → xanh ngọc: trạng thái đúng / an toàn (Mắt Thần)
  *   gold   → vàng đồng: cúp 🏆, nút "mặt trời", mũi tên gợi ý
- *   coral  → đất nung: nước sai, cảnh báo quân bị treo
- *   info   → xanh thép: nước của đối thủ, ô đích gợi ý, túi chiến lợi phẩm
- *   ink    → xám ngả xanh: chữ phụ, đường kẻ
+ *   coral  → đỏ son: nước sai, cảnh báo quân bị treo
+ *   info   → xanh thép: nước của đối thủ, ô đích gợi ý
+ *   ink    → xám ngả navy: chữ phụ, đường kẻ
+ *
+ * Bộ alias `navy` / `wood` / `son` được khai báo kèm để code mới đọc đúng nghĩa
+ * màu; code cũ vẫn dùng tên vai trò nên không phải sửa hàng trăm className.
  */
 @theme {
-  --font-sans: 'Baloo 2', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  /* Phần ĐỌC dùng Be Vietnam Pro; tiêu đề / nút / nhãn dùng Baloo 2 (xem `@layer base`). */
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Baloo 2', 'Be Vietnam Pro', system-ui, sans-serif;
 
-  --color-brand-50: #f2f7f4;
-  --color-brand-100: #e3efe8;
-  --color-brand-200: #c7dfd1;
-  --color-brand-300: #9fc6ae;
-  --color-brand-400: #6fa687;
-  --color-brand-500: #4a8767;
-  --color-brand-600: #356c4f;
-  --color-brand-700: #295640;
-  --color-brand-800: #1f4132;
-  --color-brand-900: #163125;
-  --color-brand-950: #0d2018;
+  /* NAVY (vai trò: brand) */
+  --color-brand-50: #f2f5fa;
+  --color-brand-100: #e3eaf4;
+  --color-brand-200: #c6d4e8;
+  --color-brand-300: #9db3d3;
+  --color-brand-400: #7590bb;
+  --color-brand-500: #4f6c9e;
+  --color-brand-600: #3c5480;
+  --color-brand-700: #2f4266;
+  --color-brand-800: #24334f;
+  --color-brand-900: #1b2639;
+  --color-brand-950: #121a28;
 
-  --color-sand-50: #fcfaf5;
-  --color-sand-100: #f6f2e9;
-  --color-sand-200: #ebe5d7;
-  --color-sand-300: #dcd4c1;
-  --color-sand-400: #c4baa2;
+  --color-navy-50: #f2f5fa;
+  --color-navy-100: #e3eaf4;
+  --color-navy-200: #c6d4e8;
+  --color-navy-300: #9db3d3;
+  --color-navy-400: #7590bb;
+  --color-navy-500: #4f6c9e;
+  --color-navy-600: #3c5480;
+  --color-navy-700: #2f4266;
+  --color-navy-800: #24334f;
+  --color-navy-900: #1b2639;
+  --color-navy-950: #121a28;
 
-  --color-leaf-50: #f1f8f2;
-  --color-leaf-100: #e0f0e3;
-  --color-leaf-200: #c2e1c8;
-  --color-leaf-300: #96cba1;
-  --color-leaf-400: #68ae77;
-  --color-leaf-500: #4a9159;
-  --color-leaf-600: #3a7547;
-  --color-leaf-700: #2e5c39;
-  --color-leaf-800: #24482d;
-  --color-leaf-900: #1c3823;
+  /* GỖ SÁNG (vai trò: sand) */
+  --color-sand-50: #fdfaf3;
+  --color-sand-100: #f8f1e2;
+  --color-sand-200: #efe1c7;
+  --color-sand-300: #e3cda3;
+  --color-sand-400: #d3b47e;
+  --color-sand-500: #c19a5d;
+  --color-sand-600: #a67d44;
+  --color-sand-700: #856236;
+  --color-sand-800: #644a2c;
+  --color-sand-900: #4a3722;
 
+  --color-wood-50: #fdfaf3;
+  --color-wood-100: #f8f1e2;
+  --color-wood-200: #efe1c7;
+  --color-wood-300: #e3cda3;
+  --color-wood-400: #d3b47e;
+  --color-wood-500: #c19a5d;
+  --color-wood-600: #a67d44;
+  --color-wood-700: #856236;
+  --color-wood-800: #644a2c;
+  --color-wood-900: #4a3722;
+
+  /* ĐỎ SON (vai trò: coral) */
+  --color-coral-50: #fdf3f2;
+  --color-coral-100: #fbe4e1;
+  --color-coral-200: #f6c9c3;
+  --color-coral-300: #eda49a;
+  --color-coral-400: #e07c6e;
+  --color-coral-500: #cc5847;
+  --color-coral-600: #ad4235;
+  --color-coral-700: #8c342a;
+  --color-coral-800: #6d2a23;
+  --color-coral-900: #54211c;
+
+  --color-son-50: #fdf3f2;
+  --color-son-100: #fbe4e1;
+  --color-son-200: #f6c9c3;
+  --color-son-300: #eda49a;
+  --color-son-400: #e07c6e;
+  --color-son-500: #cc5847;
+  --color-son-600: #ad4235;
+  --color-son-700: #8c342a;
+  --color-son-800: #6d2a23;
+  --color-son-900: #54211c;
+
+  /* XANH NGỌC (vai trò: leaf) */
+  --color-leaf-50: #f1f8f4;
+  --color-leaf-100: #e0f0e8;
+  --color-leaf-200: #c2e1d1;
+  --color-leaf-300: #96cbaf;
+  --color-leaf-400: #68ae8b;
+  --color-leaf-500: #2f7d5f;
+  --color-leaf-600: #256349;
+  --color-leaf-700: #1d4f3a;
+  --color-leaf-800: #17392c;
+  --color-leaf-900: #122c22;
+
+  /* VÀNG ĐỒNG (vai trò: gold) */
   --color-gold-50: #fdf8ec;
   --color-gold-100: #faefd3;
   --color-gold-200: #f3dca6;
   --color-gold-300: #e8c471;
-  --color-gold-400: #d9a93f;
-  --color-gold-500: #c08e22;
-  --color-gold-600: #9c711a;
+  --color-gold-400: #d9a83f;
+  --color-gold-500: #bf8c22;
+  --color-gold-600: #9a7018;
   --color-gold-700: #7c5914;
   --color-gold-800: #5f4410;
   --color-gold-900: #46330c;
   --color-gold-950: #2f2208;
 
-  --color-coral-50: #fcf3f1;
-  --color-coral-100: #f8e4e0;
-  --color-coral-200: #f0c9c1;
-  --color-coral-300: #e3a79b;
-  --color-coral-400: #d07f70;
-  --color-coral-500: #bc5f4e;
-  --color-coral-600: #a04a3b;
-  --color-coral-700: #823c30;
-  --color-coral-800: #673028;
-  --color-coral-900: #52271f;
-
+  /* XANH THÉP (vai trò: info) */
   --color-info-50: #f1f7f9;
   --color-info-100: #e0edf1;
   --color-info-200: #c0dbe3;
   --color-info-300: #93c0cd;
   --color-info-400: #5f9faf;
-  --color-info-500: #417f91;
-  --color-info-600: #336675;
-  --color-info-700: #2a535f;
+  --color-info-500: #3f748f;
+  --color-info-600: #33606f;
+  --color-info-700: #294e5a;
   --color-info-800: #22434c;
   --color-info-900: #1b363d;
 
-  --color-ink-50: #f7f8f7;
-  --color-ink-100: #eef0ee;
-  --color-ink-200: #dde1de;
-  --color-ink-300: #c2c8c4;
-  --color-ink-400: #98a19b;
-  --color-ink-500: #6e7872;
-  --color-ink-600: #525b55;
-  --color-ink-700: #404741;
-  --color-ink-800: #2e332f;
-  --color-ink-900: #1f2320;
+  /* XÁM NGẢ NAVY (vai trò: ink) */
+  --color-ink-50: #f7f8f9;
+  --color-ink-100: #eef0f2;
+  --color-ink-200: #dde1e6;
+  --color-ink-300: #c2c8d2;
+  --color-ink-400: #98a1ae;
+  --color-ink-500: #5b6675;
+  --color-ink-600: #47515e;
+  --color-ink-700: #333c47;
+  --color-ink-800: #2a3340;
+  --color-ink-900: #1f2631;
 }
 
 @layer base {
@@ -128,42 +283,69 @@
     margin: 0;
     min-height: 100vh;
     font-family: var(--font-sans);
-    color: #1f2a24;
-    /* Nền giấy ngà với hai vệt sáng rất nhẹ: vàng đồng ở góc trên trái, xanh
-       ngọc ở góc trên phải - đủ để bề mặt không phẳng lì mà vẫn dịu mắt. */
+    color: #1b2639;
+    /*
+     * Nền giấy gỗ sáng với hai vệt rất nhẹ: vàng đồng góc trên trái, navy góc
+     * trên phải - đủ để bề mặt không phẳng lì mà vẫn dịu mắt, không tranh với
+     * bàn cờ. Không còn vệt xanh lá của gam cũ.
+     */
     background:
-      radial-gradient(circle at 12% 6%, rgba(217, 169, 63, 0.16) 0%, transparent 42%),
-      radial-gradient(circle at 88% 4%, rgba(63, 130, 97, 0.14) 0%, transparent 40%),
-      radial-gradient(circle at 50% 100%, rgba(192, 142, 34, 0.1) 0%, transparent 55%),
-      #fbf9f4;
+      radial-gradient(circle at 12% 6%, rgba(217, 168, 63, 0.15) 0%, transparent 42%),
+      radial-gradient(circle at 88% 4%, rgba(47, 66, 102, 0.13) 0%, transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(191, 140, 34, 0.09) 0%, transparent 55%),
+      #fbf8f1;
     background-attachment: fixed;
   }
 
+  /*
+   * Tiêu đề, nút và nhãn dùng Baloo 2; phần đọc dùng Be Vietnam Pro. Khai báo
+   * MỘT chỗ thay vì rải `font-display` khắp component.
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  th,
+  label,
+  summary {
+    font-family: var(--font-display);
+  }
+
   button {
-    font-family: inherit;
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Bàn phím: viền nhấn navy rõ ràng cho bé thấy mình đang ở đâu. */
+  :focus-visible {
+    outline-color: var(--color-brand-700);
+  }
+
   ::selection {
-    background: rgba(74, 135, 103, 0.24);
+    background: rgba(47, 66, 102, 0.22);
   }
 }
 
 /**
- * Thẻ nội dung: viền mảnh màu giấy ngà và bóng đổ mềm nhiều lớp - thay cho kiểu
- * bóng cứng màu tím của bản cũ, nên nhìn "chìm" và trang nhã hơn.
+ * Thẻ nội dung: viền mảnh màu gỗ sáng và bóng đổ mềm nhiều lớp, bóng ngả navy
+ * để thẻ "nổi" trên nền kem mà không bị viền đen cứng.
  */
 @utility card-pop {
   background: #ffffff;
   border-radius: 1.25rem;
-  border: 1px solid #ebe5d7;
+  border: 1px solid #efe1c7;
   box-shadow:
-    0 1px 2px rgb(31 42 36 / 0.04),
-    0 14px 30px -20px rgb(31 42 36 / 0.45);
+    0 1px 2px rgb(27 38 57 / 0.05),
+    0 14px 30px -20px rgb(27 38 57 / 0.4);
 }
 
-/* Vùng đọc bài tách khỏi bàn cờ: tăng chữ mà không đổi rem toàn trang hay
-   kích thước quân cờ. Nhãn nhỏ 14px, câu hướng dẫn 16px, giãn dòng cho dấu Việt. */
+/*
+ * Vùng đọc bài tách khỏi bàn cờ: tăng chữ mà không đổi rem toàn trang hay kích
+ * thước quân cờ. Nhãn nhỏ 14px, câu hướng dẫn 16px, giãn dòng cho dấu Việt.
+ * Be Vietnam Pro có bộ dấu thấp hơn Baloo 2 nên line-height 1.6 là vừa mắt.
+ */
 .lesson-reader :is(.text-xs, [class*='text-[0.']) {
   font-size: 0.875rem;
   line-height: 1.5;
@@ -175,7 +357,7 @@
   line-height: 1.6;
 }
 
-.lesson-reader :is(.text-brand-400, .text-brand-500) {
+.lesson-reader :is(.text-ink-600, .text-brand-500) {
   color: var(--color-brand-700);
 }
 
@@ -245,11 +427,11 @@
 @keyframes hint-breathe-gold {
   0%,
   100% {
-    background-color: rgba(217, 169, 63, 0.36);
-    box-shadow: inset 0 0 0 4px #c08e22;
+    background-color: rgba(217, 168, 63, 0.4);
+    box-shadow: inset 0 0 0 4px #bf8c22;
   }
   50% {
-    background-color: rgba(217, 169, 63, 0.62);
+    background-color: rgba(217, 168, 63, 0.66);
     box-shadow: inset 0 0 0 7px #e8c471;
   }
 }
@@ -258,20 +440,20 @@
   0%,
   100% {
     background-color: rgba(147, 192, 205, 0.34);
-    box-shadow: inset 0 0 0 4px #5f9faf;
+    box-shadow: inset 0 0 0 4px #3f748f;
   }
   50% {
-    background-color: rgba(147, 192, 205, 0.54);
+    background-color: rgba(147, 192, 205, 0.56);
     box-shadow: inset 0 0 0 6px #93c0cd;
   }
 }
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgb(217 169 63 / 0.7);
+    box-shadow: 0 0 0 0 rgb(217 168 63 / 0.7);
   }
   100% {
-    box-shadow: 0 0 0 18px rgb(217 169 63 / 0);
+    box-shadow: 0 0 0 18px rgb(217 168 63 / 0);
   }
 }
 

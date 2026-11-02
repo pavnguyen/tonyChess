@@ -30,8 +30,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'any',
-        background_color: '#fbf7ee',
-        theme_color: '#1f4132',
+        background_color: '#fbf8f1',
+        theme_color: '#1b2639',
         icons: [
           { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
           { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },

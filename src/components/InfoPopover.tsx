@@ -29,7 +29,7 @@ function inline(text: string): ReactNode[] {
       return (
         <code
           key={index}
-          className="rounded bg-brand-50 px-1 py-0.5 font-mono text-[0.72rem] font-bold text-brand-700"
+          className="rounded bg-brand-50 px-1 py-0.5 font-mono text-xs font-bold text-brand-700"
         >
           {part.slice(1, -1)}
         </code>
@@ -68,7 +68,7 @@ export function InfoButton({
         aria-label={`Giải thích: ${entry.title}`}
         title="Bấm để đọc giải thích"
         onClick={() => setOpen(true)}
-        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${TONES[tone]}`}
+        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 text-xs font-extrabold transition-all active:translate-y-[1px] ${TONES[tone]}`}
       >
         ⓘ
       </button>
@@ -90,7 +90,7 @@ export function InfoButton({
             className="animate-pop-in fixed left-1/2 top-1/2 z-50 max-h-[80dvh] w-[min(22rem,90vw)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border-[3px] border-white bg-white p-3 text-left shadow-2xl"
           >
             <div className="flex items-start justify-between gap-2">
-              <span className="rounded-full bg-info-50 px-2 py-0.5 text-[0.65rem] font-extrabold text-info-700">
+              <span className="rounded-full bg-info-50 px-2 py-0.5 text-xs font-extrabold text-info-700">
                 {entry.tag}
               </span>
               <button
@@ -105,7 +105,7 @@ export function InfoButton({
             <h3 className="mt-1.5 text-base font-extrabold text-brand-900">{entry.title}</h3>
             <div className="mt-1.5 grid gap-1.5">
               {entry.body.map((paragraph, index) => (
-                <p key={index} className="text-[0.78rem] font-bold leading-snug text-ink-600">
+                <p key={index} className="text-sm font-bold leading-snug text-ink-600">
                   {inline(paragraph)}
                 </p>
               ))}

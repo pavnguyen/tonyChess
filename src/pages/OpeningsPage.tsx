@@ -664,7 +664,7 @@ export function OpeningsPage() {
                     data-pattern-id={item.id}
                     aria-pressed={active}
                     onClick={() => setPatternId(item.id)}
-                    className={`flex items-center gap-1 rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[2px] ${
+                    className={`flex items-center gap-1 rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[2px] ${
                       active
                         ? 'border-brand-600 bg-brand-50 text-brand-800 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
                         : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
@@ -692,14 +692,14 @@ export function OpeningsPage() {
               <div className="text-sm font-extrabold text-brand-900">
                 {patternOpening.emoji} {patternOpening.englishName}
               </div>
-              <div className="text-[0.7rem] font-bold text-brand-600">{patternOpening.name}</div>
+              <div className="text-xs font-bold text-brand-600">{patternOpening.name}</div>
               <div className="text-xs font-bold text-brand-500">
                 {patternOpening.gm}
                 {patternOpening.side === 'white' ? ' · ⬜ Bé cầm Trắng' : ' · ⬛ Bé cầm Đen'}
               </div>
               <div
                 id="kid-pattern-line"
-                className="rounded-2xl bg-brand-50 px-2.5 py-1.5 font-mono text-[0.7rem] font-bold leading-relaxed text-brand-700"
+                className="rounded-2xl bg-brand-50 px-2.5 py-1.5 font-mono text-xs font-bold leading-relaxed text-brand-700"
               >
                 {patternOpening.moves.map((move) => move.san).join(' ')}
               </div>
@@ -710,7 +710,7 @@ export function OpeningsPage() {
                 <b className="text-brand-800">{patternOpening.plan.title}</b>
                 <ul className="mt-1 grid gap-0.5">
                   {patternOpening.plan.points.map((point) => (
-                    <li key={point} className="flex gap-1.5 text-[0.7rem]">
+                    <li key={point} className="flex gap-1.5 text-xs">
                       <span aria-hidden className="text-gold-500">
                         ◆
                       </span>
@@ -759,7 +759,7 @@ export function OpeningsPage() {
             {planPreview ? (
               <div
                 id="kid-plan-preview-note"
-                className="rounded-2xl border-2 border-dashed border-[#6d5bc7] bg-[rgba(126,106,209,0.10)] p-2.5 text-center text-sm font-bold text-brand-800"
+                className="rounded-2xl border-2 border-dashed border-info-600 bg-info-50 p-2.5 text-center text-sm font-bold text-brand-800"
               >
                 📍 Bé đang xem thế cờ CUỐI khai cuộc — ô tím là việc của câu vừa bấm
               </div>
@@ -817,7 +817,7 @@ export function OpeningsPage() {
               <span className="block truncate text-sm font-extrabold text-brand-800">
                 {opening.emoji} {opening.englishName}
               </span>
-              <span className="block truncate text-[0.68rem] font-bold text-brand-500">
+              <span className="block truncate text-xs font-bold text-brand-500">
                 {opening.name} · {opening.gm}
               </span>
               {/*
@@ -829,7 +829,7 @@ export function OpeningsPage() {
                 <span className="mt-0.5 flex items-center gap-0.5">
                   <span
                     title={`${opening.popularity.source} · đo ở thế ${opening.popularity.position}`}
-                    className="shrink-0 rounded-full border border-brand-100 bg-brand-50 px-1.5 py-px text-[0.6rem] font-extrabold leading-tight text-brand-600"
+                    className="shrink-0 rounded-full border border-brand-100 bg-brand-50 px-1.5 py-px text-xs font-extrabold leading-tight text-brand-600"
                   >
                     📊 ≈
                     {opening.popularity.percent.toLocaleString('vi-VN', {
@@ -870,7 +870,7 @@ export function OpeningsPage() {
               data-opening-move-filter="all"
               aria-pressed={moveFilter === null}
               onClick={() => setMoveFilter(null)}
-              className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+              className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                 moveFilter === null
                   ? 'border-brand-600 bg-brand-50 text-brand-800'
                   : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
@@ -893,7 +893,7 @@ export function OpeningsPage() {
                     const first = sideOpenings.find((item) => kidFirstMove(item) === move)
                     if (first) setOpeningId(first.id)
                   }}
-                  className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                  className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                     active
                       ? 'border-brand-600 bg-brand-50 text-brand-800'
                       : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
@@ -909,7 +909,7 @@ export function OpeningsPage() {
             {/* `line-clamp-2`: trên điện thoại hàng này còn hai chip (+2, Đối phó) nên
                 một dòng không đủ - cắt còn “KHAI CUỘC QUÂN…” thì bé mất chữ. Hai dòng
                 vẫn gọn hơn một dòng bị cắt cụt. */}
-            <p className="min-w-0 flex-1 line-clamp-2 text-[0.65rem] font-extrabold uppercase leading-tight tracking-wide text-brand-500">
+            <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
               🗺️ {side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
             </p>
             {extraOpenings.length > 0 && (
@@ -920,7 +920,7 @@ export function OpeningsPage() {
                 aria-label={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
                 title={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
                 onClick={() => setShowExtras((open) => !open)}
-                className="flex shrink-0 items-center gap-0.5 rounded-full border-2 border-dashed border-brand-200 px-2 py-0.5 text-[0.62rem] font-extrabold text-brand-600 hover:border-brand-400"
+                className="flex shrink-0 items-center gap-0.5 rounded-full border-2 border-dashed border-brand-200 px-2 py-0.5 text-xs font-extrabold text-brand-600 hover:border-brand-400"
               >
                 📚 +{extraOpenings.length}
                 <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
@@ -933,7 +933,7 @@ export function OpeningsPage() {
                 navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
               }
               title="Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào"
-              className="shrink-0 rounded-full border-2 border-leaf-300 bg-leaf-50 px-2 py-0.5 text-[0.62rem] font-extrabold text-leaf-800 hover:border-leaf-500"
+              className="shrink-0 rounded-full border-2 border-leaf-300 bg-leaf-50 px-2 py-0.5 text-xs font-extrabold text-leaf-800 hover:border-leaf-500"
             >
               🧭 Đối phó
             </button>
@@ -986,10 +986,10 @@ export function OpeningsPage() {
                         {item.emoji}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[0.72rem] font-extrabold leading-tight text-brand-800">
+                        <span className="block truncate text-xs font-extrabold leading-tight text-brand-800">
                           {item.englishName}
                         </span>
-                        <span className="block truncate text-[0.62rem] font-bold text-brand-500">
+                        <span className="block truncate text-xs font-bold text-brand-500">
                           {item.rankNote}
                         </span>
                       </span>
@@ -1015,7 +1015,7 @@ export function OpeningsPage() {
           <div className="flex items-center gap-1.5">
             {/* `line-clamp-1` (không phải `truncate`): vẫn cắt gọn 1 dòng nhưng chữ
                 được phép xuống dòng nên không kéo cả khung rộng quá màn hình. */}
-            <p className="min-w-0 flex-1 line-clamp-1 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <p className="min-w-0 flex-1 line-clamp-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
               🧠 Mindset khai cuộc
             </p>
             <InfoButton topic="goal" />
@@ -1034,11 +1034,11 @@ export function OpeningsPage() {
             }
             className={`grid gap-1 rounded-xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
               goalFocus && !previewing
-                ? 'border-[#6d5bc7] bg-[rgba(126,106,209,0.14)]'
+                ? 'border-info-600 bg-info-100'
                 : 'border-gold-300 bg-gold-50 hover:border-gold-400'
             }`}
           >
-            <span className="block text-[0.82rem] font-extrabold leading-snug text-brand-900">
+            <span className="block text-sm font-extrabold leading-snug text-brand-900">
               <span aria-hidden className="mr-1">
                 🎯
               </span>{' '}
@@ -1052,7 +1052,7 @@ export function OpeningsPage() {
               <div className="flex items-center gap-1.5">
                 {/* Tên khối ba việc là chính cái “mindset” ("Giữ ô f7 trong tầm ngắm"),
                     nên không được cắt cụt - cho xuống tối đa 2 dòng. */}
-                <p className="min-w-0 flex-1 line-clamp-2 text-[0.65rem] font-extrabold uppercase leading-tight tracking-wide text-brand-500">
+                <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
                   🧠 {opening.plan.title}
                 </p>
                 {/* Chỉ hiện khi bàn cờ đang ở thế cuối - thay cho dòng gợi ý dài cũ. */}
@@ -1064,7 +1064,7 @@ export function OpeningsPage() {
                       setPlanFocusIdx(null)
                       setOpeningPreview(false)
                     }}
-                    className="shrink-0 rounded-full border-2 border-brand-100 px-1.5 py-0.5 text-[0.62rem] font-extrabold text-brand-500 hover:border-brand-300"
+                    className="shrink-0 rounded-full border-2 border-brand-100 px-1.5 py-0.5 text-xs font-extrabold text-brand-500 hover:border-brand-300"
                   >
                     ↩ Quay lại bài học
                   </button>
@@ -1101,15 +1101,15 @@ export function OpeningsPage() {
                       title="Bấm để xem thế cờ cuối khai cuộc và soi ô của việc này"
                       className={`flex w-full items-start gap-1.5 rounded-xl px-2 py-1 text-left text-xs font-bold transition-all active:translate-y-[1px] ${
                         active
-                          ? 'border-2 border-[#6d5bc7] bg-[rgba(126,106,209,0.14)] text-brand-900'
+                          ? 'border-2 border-info-600 bg-info-100 text-brand-900'
                           : 'border-2 border-transparent text-brand-700 hover:bg-brand-50'
                       }`}
                     >
                       {/* Số thứ tự việc: bé nhớ “việc 1, việc 2…” dễ hơn nhớ cả câu. */}
                       <span
                         aria-hidden
-                        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[0.65rem] font-extrabold ${
-                          active ? 'bg-[#6d5bc7] text-white' : 'bg-brand-100 text-brand-600'
+                        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-xs font-extrabold ${
+                          active ? 'bg-info-600 text-white' : 'bg-brand-100 text-brand-600'
                         }`}
                       >
                         {index + 1}
@@ -1118,7 +1118,7 @@ export function OpeningsPage() {
                         <MoveText text={point} />
                         {/* Nước “từ ô này sang ô kia” - chỉ hiện khi nước đó đi được thật. */}
                         {active && planArrow && (
-                          <b className="ml-1 inline-block rounded-md bg-[rgba(126,106,209,0.18)] px-1 py-0.5 text-[0.65rem] font-extrabold text-brand-700">
+                          <b className="ml-1 inline-block rounded-md bg-info-200/60 px-1 py-0.5 text-xs font-extrabold text-brand-700">
                             {planArrow.from} → {planArrow.to}
                           </b>
                         )}

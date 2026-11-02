@@ -189,6 +189,92 @@ export const BEST_MOVES: BestMovePuzzle[] = [
       'Xe e1 sang g1 chiếu, Tượng e8 chỉ còn nước chắn vào h5; Xe h1 ăn Tượng h5 chiếu bí, còn Xe g1 giữ cột g.',
     rhyme: 'Hai Xe dồn Vua vào góc',
   },
+
+  // ── Bổ sung: thêm đòn hy sinh + chiếu bí cho kho luyện dày hơn ─────────────
+  {
+    id: 'sac-4',
+    theme: 'sacrifice',
+    title: 'Hiến Xe f8, Xe còn lại kết liễu',
+    fen: '1r5k/6pp/8/8/8/5R2/8/5R1K w - - 0 1',
+    side: 'white',
+    bestSan: 'Rf8+',
+    goodMoves: ['Rf8+'],
+    continuation: ['Rxf8', 'Rxf8#'],
+    hint: 'Hai Xe cùng nhìn cột f. Hiến một Xe chiếu vào f8, Xe còn lại ăn lại là chiếu bí.',
+    explanation:
+      'Xe f3 lên f8 chiếu; Xe Đen buộc phải ăn, Xe f1 ăn lại trên f8 chiếu bí vì hai Tốt g7 và h7 đã khóa kín đường chạy của Vua.',
+    rhyme: 'Hiến Xe, Xe kia bí',
+  },
+  {
+    id: 'sac-5',
+    theme: 'sacrifice',
+    title: 'Hiến Xe h7, Hậu vào h3',
+    fen: '1b1r3k/5p1p/4Q3/8/8/7R/6R1/2K5 w - - 0 1',
+    side: 'white',
+    bestSan: 'Rxh7+',
+    goodMoves: ['Rxh7+'],
+    continuation: ['Kxh7', 'Qh3#'],
+    hint: 'Đừng mơ chiếu nhanh: Tượng b8 và Xe d8 đang canh hàng 8. Hiến Xe ăn h7 kéo Vua lên rồi Hậu sang h3.',
+    explanation:
+      'Xe h3 ăn h7 chiếu; Vua Đen buộc ăn Xe, Hậu e6 theo đường chéo sang h3 chiếu bí, Xe g2 giữ cột g nên Vua không còn ô chạy.',
+    rhyme: 'Hiến Xe rồi Hậu vào',
+  },
+  {
+    id: 'mate-4',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Hậu sang d7',
+    fen: '7k/8/7p/8/8/3Q4/1R6/1K6 w - - 0 1',
+    side: 'white',
+    bestSan: 'Qd7',
+    goodMoves: ['Qd7'],
+    continuation: ['Kg8', 'Rb8#'],
+    hint: 'Đưa Hậu sang d7 khóa hàng 7. Vua Đen lên g8 thì Xe b2 lên b8 chiếu bí.',
+    explanation:
+      'Hậu d3 sang d7 khóa hàng 7; Vua Đen chỉ còn g8, Xe b2 lên b8 chiếu bí vì Hậu đã giữ sẵn g7 và h7.',
+    rhyme: 'Hậu khóa, Xe vào bí',
+  },
+  {
+    id: 'mate-5',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Hậu sang f7',
+    fen: '6k1/8/6p1/3Q4/8/5R2/8/7K w - - 0 1',
+    side: 'white',
+    bestSan: 'Qf7+',
+    goodMoves: ['Qf7+'],
+    continuation: ['Kh8', 'Rh3#'],
+    hint: 'Chiếu Hậu sang f7; Vua Đen lùi h8 thì Xe f3 sang h3 chiếu bí.',
+    explanation:
+      'Hậu d5 sang f7 chiếu; Vua Đen chỉ còn h8, Xe f3 sang h3 chiếu bí vì Hậu f7 đã giữ g8 và hàng 7.',
+    rhyme: 'Hậu ép, Xe kết liễu',
+  },
+  {
+    id: 'mate-6',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Xe lùi về f2',
+    fen: '7k/5Q2/5p2/8/8/8/8/5RK1 w - - 0 1',
+    side: 'white',
+    bestSan: 'Rf2',
+    goodMoves: ['Rf2'],
+    continuation: ['f5', 'Rh2#'],
+    hint: 'Nước lặng: lùi Xe về f2. Đen hết nước đỡ, Tốt f6 đi đâu cũng không cứu được cột h.',
+    explanation:
+      'Xe f1 lùi về f2 chờ sẵn; Đen chỉ còn nước đẩy Tốt f6, Xe f2 sang h2 chiếu bí vì Hậu f7 đã giữ g8 và hàng 7.',
+    rhyme: 'Xe chờ, rồi sang h2',
+  },
+  {
+    id: 'mate-7',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Hậu lên h5',
+    fen: '8/5Qpk/8/8/8/8/8/4R2K w - - 0 1',
+    side: 'white',
+    bestSan: 'Qh5+',
+    goodMoves: ['Qh5+'],
+    continuation: ['Kg8', 'Re8#'],
+    hint: 'Chiếu Hậu lên h5; Vua Đen xuống g8 thì Xe e1 lên e8 chiếu bí.',
+    explanation:
+      'Hậu f7 lên h5 chiếu; Vua Đen chỉ còn g8, Xe e1 lên e8 chiếu bí vì Hậu h5 đã giữ h7 và g6.',
+    rhyme: 'Hậu ép, Xe lên e8',
+  },
 ]
 
 export function bestMovesByTheme(theme: BestMoveTheme): BestMovePuzzle[] {

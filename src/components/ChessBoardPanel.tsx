@@ -31,9 +31,13 @@ export interface ChessBoardPanelProps {
   className?: string
 }
 
-// Bàn cờ kiểu giải đấu: ô trắng ngà + ô xanh lá đậm, viền ngoài xanh rừng.
-const DARK_SQUARE: CSSProperties = { backgroundColor: '#2f6b4f' }
-const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#ffffff' }
+//
+// Bàn cờ theo gam mới: ô GỖ SÁNG + ô NAVY, viền ngoài navy đậm. Chọn cặp này vì
+// ô gỗ ấm ăn với nền giấy kem, còn ô navy đủ đậm để quân trắng lẫn quân đen đều
+// nổi (tương phản quân trắng / ô sáng ~1.9:1 nhưng có viền quân, còn quân đen
+// trên ô gỗ ~9:1).
+const DARK_SQUARE: CSSProperties = { backgroundColor: '#24334f' }
+const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#efe1c7' }
 
 /**
  * Bàn cờ hoạt hình dành cho bé: kéo-thả hoặc bấm-chọn-đi,
@@ -84,7 +88,7 @@ export function ChessBoardPanel({
       Object.assign(styles, legalTargets(game, selected))
       styles[selected] = {
         ...(styles[selected] ?? {}),
-        boxShadow: 'inset 0 0 0 4px #d9a93f',
+        boxShadow: 'inset 0 0 0 4px #d9a83f',
       }
     }
     if (extraSquareStyles) Object.assign(styles, extraSquareStyles)
@@ -129,8 +133,8 @@ export function ChessBoardPanel({
         bàn cờ mà KHÔNG làm bàn cờ nhỏ đi - nhãn a-h / 1-8 nằm gọn trong khung, ngoài
         các ô, không đè lên quân nào.
       */}
-      <div className="-m-3 relative rounded-[1.1rem] bg-brand-800 p-3 shadow-[0_18px_34px_-18px_rgba(13,32,24,0.7)]">
-        <div className="relative aspect-square w-full overflow-hidden rounded-[0.7rem] bg-white">
+      <div className="-m-3 relative rounded-[1.1rem] bg-brand-900 p-3 shadow-[0_18px_34px_-18px_rgba(27,38,57,0.6)]">
+        <div className="relative aspect-square w-full overflow-hidden rounded-[0.7rem] bg-sand-200">
         <Chessboard
           options={{
             id: boardId,
@@ -178,7 +182,7 @@ export function ChessBoardPanel({
             squareStyles,
             darkSquareStyle: DARK_SQUARE,
             lightSquareStyle: LIGHT_SQUARE,
-            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #d9a93f' },
+            dropSquareStyle: { boxShadow: 'inset 0 0 0 5px #d9a83f' },
             // Tự vẽ khung toạ độ bên dưới thay cho nhãn mặc định của thư viện.
             showNotation: false,
             animationDurationInMs: 280,
@@ -220,7 +224,7 @@ export function ChessBoardPanel({
                     <span
                       data-square-coord={square}
                       className="select-none text-[0.5rem] font-extrabold sm:text-[0.55rem]"
-                      style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(31,42,36,0.42)' }}
+                      style={{ color: dark ? 'rgba(239,225,199,0.62)' : 'rgba(27,38,57,0.42)' }}
                     >
                       {square}
                     </span>
@@ -243,8 +247,8 @@ export function ChessBoardPanel({
                   key={`${edge}-${file}`}
                   data-coord={file}
                   data-coord-side={edge}
-                  className={`grid place-items-center text-[0.6rem] font-extrabold leading-none ${
-                    activeFiles.has(file) ? 'text-gold-300' : 'text-white/55'
+                  className={`grid place-items-center text-xs font-extrabold leading-none ${
+                    activeFiles.has(file) ? 'text-gold-300' : 'text-sand-200/70'
                   }`}
                 >
                   {file}
@@ -266,8 +270,8 @@ export function ChessBoardPanel({
                   key={`${edge}-${rank}`}
                   data-coord={rank}
                   data-coord-side={edge}
-                  className={`grid place-items-center text-[0.6rem] font-extrabold leading-none ${
-                    activeRanks.has(rank) ? 'text-gold-300' : 'text-white/55'
+                  className={`grid place-items-center text-xs font-extrabold leading-none ${
+                    activeRanks.has(rank) ? 'text-gold-300' : 'text-sand-200/70'
                   }`}
                 >
                   {rank}

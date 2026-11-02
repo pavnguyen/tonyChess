@@ -51,10 +51,10 @@ Biến thể Tailwind **`stage`** (`min-width: 60rem` **và** `min-aspect-ratio:
 | **Thấp mà rộng** (`shallow`: 640-959px **và** cao ≤ 544px) | **2 cột ngay trong thẻ bàn cờ** - đây là khổ điện thoại nằm ngang (iPhone 15 Pro Max ngang = 932×430) |
 
 `browser-layout-test.mjs` đo lại trên **10 khung nhìn** (1440×900 → cửa sổ vuông 1200×1200 → iPhone 15
-Pro Max dọc 430×932 **và** ngang 932×430) với cả 8 trang, và bắt buộc: **không tràn ngang**, **trang không
+Pro Max dọc 430×932 **và** ngang 932×430) với cả 7 trang, và bắt buộc: **không tràn ngang**, **trang không
 cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và **bàn cờ đủ to**.
 
-## 🗂️ Bốn nhóm, tám trang
+## 🗂️ Ba nhóm, bảy trang
 
 | Tab | Nội dung |
 | --- | --- |
@@ -65,7 +65,6 @@ cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và
 | 🏅 **Chiến lược - 10 nguyên tắc vàng** (`/strategy`) | **10 nguyên tắc vàng** (chiếm trung tâm, phát triển quân, nhập thành, tránh quân treo, cột mở, tiền đồn, hàng 7, Tốt thông, cặp Tượng, trao đổi đúng). Mỗi nguyên tắc có **hai thế cờ đối chiếu tốt / chưa tốt** kèm ô cờ và nhãn soi. |
 | 🎮 **Đấu tập tự do với chú Máy** (`/free-play`) | Chơi trọn một ván cờ thật với engine (negamax + bảng điểm vị trí). **2 mức 🐰 Dễ / 🦁 Khá** (nhãn thân thiện, bên dưới vẫn là engine mức Khó và Stockfish), nút **💡 Gợi ý** (máy tìm nước mạnh nhất cho chính bé rồi vẽ mũi tên, **giới hạn 3 lần mỗi ván** - nút đếm ngược rồi tự khoá, ván mới cấp lại), chọn quân Trắng/Đen, nút đi lại nước vừa rồi, “Sách ghi ván cờ” và túi chiến lợi phẩm. HLV **nói tiếng Việt** chỉ ra lỗi vừa đi. |
 | 🔍 **Soi quân treo** (`/hazards`) | Bé nhìn bàn cờ rồi **chỉ ra quân mình đang bị treo** trước khi đi; đúng/sai báo ngay, có mức thường và mức khó (nhiều quân hơn, có quân bị quân rẻ hơn tấn công, tính điểm theo chuỗi). |
-| 📈 **Tiến bộ** (`/progress`) | **Sổ lỗi** (nhóm những lỗi hay lặp lại, bấm là luyện lại) và **Elo ước lượng** theo ba mảng Khai cuộc / Trung cuộc / Tàn cuộc. |
 
 ## 🗺️ Bản đồ bài học
 
@@ -185,7 +184,7 @@ mới** để việc tìm kiếm hết thời gian không làm hỏng bàn cờ 
 ## 🧱 Công nghệ
 
 - **React 19 + Vite + TypeScript**
-- **TanStack Router** (4 nhóm tab, 8 trang) + **TanStack Query** (lớp dữ liệu bài học, có cache)
+- **TanStack Router** (3 nhóm tab, 7 trang) + **TanStack Query** (lớp dữ liệu bài học, có cache)
 - **chess.js** (luật cờ, `attackers`/`isAttacked` cho bản đồ nguy hiểm)
 - **react-chessboard v5** (bàn cờ, mũi tên vàng đồng, kéo-thả & bấm-chọn-đi)
 - **Tailwind CSS v4** (theme hoạt hình, animation tự viết)
@@ -222,7 +221,7 @@ src/
 ├── engine/         # minimax.ts (pickMove, rankMoves) · engine.worker.ts · useChessEngine.ts ·
 │                   # stockfishLoader.ts · uci.ts
 ├── hooks/          # useChessGame (ván cờ SAN) · useArrowKeys · useEyeCheck
-├── layout/         # RootLayout: header, 4 nhóm tab, dải bài trong nhóm, thanh tuỳ chọn của bé
+├── layout/         # RootLayout: header, 3 nhóm tab, dải bài trong nhóm, thanh tuỳ chọn của bé
 ├── lib/            # notation · speech (đọc to giọng Mỹ + chọn giọng) · coordinates · threats · hints ·
 │                   # planFocus · livePlan · parentTips · sound · info
 ├── pages/          # Openings · Counters · Tactics · Endgames · Strategy · FreePlay
@@ -240,23 +239,43 @@ ecosystem.config.cjs  # cấu hình PM2 cho production (pm2 serve + SPA fallback
 vercel.json           # cấu hình Vercel (SPA rewrite)
 ```
 
-## 🎨 Bảng màu “Sồi & Ngọc”
+## 🎨 Bảng màu “Navy – Gỗ sáng – Đỏ son”
 
-Gam màu đã được thay từ **tím** sang **xanh rừng + giấy ngà + vàng đồng**. Toàn bộ token khai báo ở
-`src/index.css` (`@theme`) đặt tên theo **vai trò**, không theo tên màu - sau này muốn đổi gam chỉ cần
-sửa một chỗ:
+Gam màu hiện tại: **navy** (xanh biển đậm) làm màu chủ đạo, **gỗ sáng** làm nền giấy, **đỏ son** cho
+lỗi/nguy hiểm, cộng hai màu chức năng vàng đồng và xanh ngọc. Không còn tím ở bất kỳ đâu.
+Toàn bộ token khai báo ở `src/index.css` (`@theme`), đặt tên theo **vai trò**, không theo tên màu -
+sau này muốn đổi gam chỉ cần sửa một chỗ (bộ alias `navy-*` / `wood-*` / `son-*` trỏ cùng giá trị):
 
 | Token | Vai trò | Màu |
 | --- | --- | --- |
-| `brand-*` | Màu chủ đạo: thanh trên cùng, nút chính, tiêu đề | xanh rừng `#356c4f` → `#163125` |
-| `sand-*` | Nền trang, viền thẻ, vùng chờ | giấy ngà `#fbf9f4` → `#dcd4c1` |
-| `leaf-*` | Trạng thái đúng, vùng an toàn | xanh non `#4a9159` |
-| `gold-*` | Cúp Vàng 🏆, nút “mặt trời”, mũi tên gợi ý | vàng đồng `#d9a93f` |
-| `coral-*` | Nước sai, cảnh báo quân bị treo ⚠️ | đất nung `#bc5f4e` |
-| `info-*` | Nước của đối thủ, túi chiến lợi phẩm | xanh thép `#417f91` |
-| `ink-*` | Chữ phụ, đường kẻ | xám ngả xanh `#6e7872` |
+| `brand-*` (`navy-*`) | Màu chủ đạo: thanh trên cùng, nút chính, chữ chính | navy `#3c5480` → `#1b2639` |
+| `sand-*` (`wood-*`) | Nền trang, viền thẻ, vùng chờ, ô sáng của bàn cờ | gỗ sáng `#fbf8f1` → `#e3cda3` |
+| `leaf-*` | Trạng thái đúng, vùng an toàn | xanh ngọc `#2f7d5f` |
+| `gold-*` | Cúp Vàng 🏆, nút “mặt trời”, mũi tên gợi ý | vàng đồng `#d9a83f` |
+| `coral-*` (`son-*`) | Nước sai, cảnh báo quân bị treo ⚠️ | đỏ son `#cc5847` |
+| `info-*` | Nước của đối thủ, ô đích gợi ý, ô kế hoạch | xanh thép `#3f748f` |
+| `ink-*` | Chữ phụ, đường kẻ | xám ngả navy `#5b6675` |
 
-**Bàn cờ kiểu giải đấu**: ô trắng `#ffffff` + ô xanh lá đậm `#2f6b4f`, viền ngoài xanh rừng `#1f4132`.
+Quy ước bắt buộc: **vàng** chỉ dùng cho “quân cần đi / phần thưởng”, **đỏ son** chỉ cho “sai / nguy
+hiểm” - hai màu này không bao giờ dùng lẫn ý. Mọi cặp chữ/nền được ghim bằng
+`npm run check:contrast` (ngưỡng WCAG AA 4.5:1).
+
+**Bàn cờ**: ô gỗ sáng `#efe1c7` + ô navy `#24334f`, viền ngoài navy đậm `#1b2639`.
+
+## 🔤 Font chữ (tự host)
+
+| Họ font | Dùng cho | Cấp độ đạm |
+| --- | --- | --- |
+| **Be Vietnam Pro** | Phần ĐỌC: câu hướng dẫn, giải thích, ghi chú | 400 · 600 · 700 |
+| **Baloo 2** | TIÊU ĐỀ, nút, nhãn (đậm, tròn, thân thiện) | 700 · 800 |
+
+Cả hai được tải về `public/fonts/` (10 tệp `woff2`, ~168 kB, có `unicode-range` riêng cho tiếng Việt)
+và khai báo `@font-face` trong `src/index.css` - **không** dùng Google Fonts, vì app phải chơi được
+khi mất mạng (mất mạng mà rơi về font hệ thống thì dấu tiếng Việt đổi dáng). Ba tệp nặng nhất được
+`preload` trong `index.html`; Workbox precache luôn nhờ `globPatterns` có `woff2`.
+
+Cỡ chữ: câu hướng dẫn **16px**, nhãn phụ **14px** (12px chỉ cho huy hiệu đánh số trong vòng tròn
+16px), không có chữ nào nhỏ hơn.
 
 **Ngôn ngữ màu trên bàn cờ** - khai báo một chỗ ở `BOARD_MARKS` trong `src/lib/notation.ts`:
 
@@ -315,7 +334,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-hint-drag-test.mjs` | Chưa bấm Gợi ý thì **không lộ đáp án**; bấm rồi thì đúng 1 quân vàng + 1 ô xanh + 1 mũi tên; sau đó **kéo-thả thật** và kiểm tra bài được tính là đã giải. Đo lại viền gợi ý để chứng minh **nhịp thở** chạy thật và tắt khi bật `prefers-reduced-motion`. |
 | `browser-strategy-drag-test.mjs` | Tab **Chiến lược**: kéo-thả thật một thế cờ tốt và xác nhận quân đứng đúng ô, không tự bật về như cũ. |
 | `browser-stockfish-test.mjs` | Mở một Worker Stockfish thật, chạy `uci → position → go depth 12`, xác nhận engine trả `bestmove` hợp lệ kèm dòng `info`. |
-| `browser-coach-test.mjs` | HLV tiếng Việt ở tab Đấu Máy: đi một nước **thí quân** thì HLV chỉ ra quân bị treo bằng lời Việt, và lỗi được ghi vào **sổ lỗi** của tab Tiến bộ. |
+| `browser-coach-test.mjs` | HLV tiếng Việt ở tab Đấu Máy: đi một nước **thí quân** thì HLV chỉ ra quân bị treo bằng lời Việt, và câu nhận xét có số điểm, kèm nút “◀ Đi lại”. |
 | `check-pwa.mjs` | Bản dựng PWA: có manifest, service worker precache **cả engine Stockfish (JS + WASM)** và trang chủ để mở offline. |
 | `browser-pwa-offline-test.mjs` | Khung điện thoại 390×844: manifest + service worker cài xong, **tắt mạng bằng DevTools** rồi tải lại và mở tab Đấu ván - bàn cờ, hai mức máy và **engine vẫn chạy** từ cache. |
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
@@ -325,10 +344,11 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
 | `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |
 | `browser-openings-patterns-test.mjs` | **Bấm một khai cuộc trên bản đồ → bàn cờ hiện ngay thế cờ mẫu hình cuối** (cả 10 bài), nút **▶ Bắt đầu học từ đầu** đưa về thế cờ gốc, và **bộ lọc theo nước mở đầu** gom đúng nhóm bài. |
-| `browser-theme-test.mjs` | Ghim **bảng màu thật**: nền giấy ngà, thanh trên cùng xanh rừng, bàn cờ trắng + xanh lá đậm, mũi tên vàng đồng - và **không còn màu tím** sót lại. |
+| `check-contrast.ts` | Tính **tương phản WCAG AA** trực tiếp từ token đọc trong `src/index.css`: 25 cặp chữ/nền và vòng gợi ý trên bàn cờ - chữ dưới 4.5:1 là fail. Chạy trong `npm run check`. |
+| `browser-theme-test.mjs` | Ghim **bảng màu thật**: nền gỗ sáng, thanh trên cùng navy, bàn cờ ô gỗ + ô navy, mũi tên vàng đồng - và **không còn màu tím** sót lại. |
 | `browser-freeplay-hint-test.mjs` | Tab **Đấu tập tự do**: đủ **2 mức** Dễ / Khá, bấm **💡 Gợi ý** thì máy tìm nước cho bé và vẽ **mũi tên vàng**; **giới hạn 3 lần mỗi ván** (nút đếm ngược rồi tự khoá, ♟️ Ván mới cấp lại đủ 3). |
 | `browser-counters-test.mjs` | Tab **Đối phó khai cuộc**: đủ 8 bài cho đối thủ cầm Trắng và 8 bài cho đối thủ cầm Đen, hiện **“đối thủ đang định làm gì”** + ý tưởng + 3 việc, **bộ lọc theo nước mở đầu** (lọc 1.d4 gom đúng 3 bài), **phím ◀ ▶ tiến/lùi từng nước**, đổi màu đối thủ thì danh sách đổi theo, và **liên kết hai chiều**: `?vs=` mở sẵn đúng bài, **📖 Mở bài khai cuộc gốc** nhảy về đúng bài Khai cuộc, **🧭** nhảy ngược lại Đối phó. |
-| `browser-layout-test.mjs` | Duyệt cả 8 trang trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
+| `browser-layout-test.mjs` | Duyệt cả 7 trang trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
 | `generate-assets.mjs` | Sinh `og-image.png` (1200×630) và `apple-touch-icon.png` (180×180) bằng Chrome headless, rồi tự giải mã lại ảnh để kiểm tra kích thước và màu. |
 
 > Để chạy lẻ một bộ: `npm run check:layout`, `npm run check:tactics`, `npm run check:patterns`…

@@ -81,7 +81,7 @@ export function describeDanger(pieces: readonly string[]): string {
   return `Nước này để ${pieces.join(', ')} bị bắt. Bé vẫn đi được, nhưng hãy nhìn kỹ trước đã.`
 }
 
-/* ── Sổ lỗi: lưu lại để tab Tiến bộ (giai đoạn 2) dùng ─────────────────────── */
+/* ── Sổ lỗi: giữ lại để “Tổng kết ván” ở tab Đấu Máy đọc lại lỗi nặng nhất ─── */
 
 export function loadBlunders(): Blunder[] {
   if (typeof localStorage === 'undefined') return []

@@ -199,13 +199,13 @@ for (const viewport of VIEWPORTS) {
     check(reading.present && reading.count > 0 && reading.small === 0,
       `${route.name}: câu hướng dẫn trong vùng đọc ít nhất 16px`)
 
-    // Thanh tab ĐÁY phải có đủ 4 nhóm, không bị cắt mất nhóm nào. Chỉ đo thanh tab
+    // Thanh tab ĐÁY phải có đủ 3 nhóm, không bị cắt mất nhóm nào. Chỉ đo thanh tab
     // chính (#kid-tab-nav): dải chuyển bài trong nhóm (#kid-group-nav) là phụ, có
-    // mặt ở vài trang và không được tính vào con số 4.
+    // mặt ở vài trang và không được tính vào con số 3.
     const tabCount = await evaluate(
       `document.querySelectorAll('#kid-tab-nav a').length`,
     )
-    check(tabCount === 4, `${route.name}: thanh tab có đủ 4 nhóm (${tabCount})`)
+    check(tabCount === 3, `${route.name}: thanh tab có đủ 3 nhóm (${tabCount})`)
 
     // Từng tab phải: có chữ (không phải ô trống), không bị cắt chữ, đủ to để bấm,
     // và nằm trọn trong màn hình. Ở 320px mỗi ô chỉ rộng ~42px nên nhãn hai chữ
@@ -237,7 +237,7 @@ for (const viewport of VIEWPORTS) {
       })
     })()`)
     const blank = tabs.filter((tab) => !tab.text)
-    check(blank.length === 0, `${route.name}: cả 4 nhóm đều có chữ (trống: ${blank.length})`)
+    check(blank.length === 0, `${route.name}: cả 3 nhóm đều có chữ (trống: ${blank.length})`)
     const truncated = tabs.filter((tab) => tab.clipped || tab.text.includes('…'))
     check(
       truncated.length === 0,
@@ -255,10 +255,10 @@ for (const viewport of VIEWPORTS) {
       )
     }
     const outside = tabs.filter((tab) => tab.left < -1 || tab.right > tabs[0].innerW + 1)
-    check(outside.length === 0, `${route.name}: cả 4 nhóm nằm trọn trong màn hình`)
+    check(outside.length === 0, `${route.name}: cả 3 nhóm nằm trọn trong màn hình`)
     if (route.path === '/' && viewport.width < 400) {
       console.log(
-        `     \u2139 4 nhóm tab \u1edf ${viewport.width}px: ` +
+        `     \u2139 3 nhóm tab \u1edf ${viewport.width}px: ` +
           tabs.map((tab) => `${tab.text} ${tab.width}\u00d7${tab.height}`).join(' \u00b7 '),
       )
     }

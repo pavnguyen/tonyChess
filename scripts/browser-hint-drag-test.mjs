@@ -31,8 +31,8 @@ if (failedToConnect) {
 const { check, finish } = makeChecker()
 
 // Màu lấy từ `BOARD_MARKS` (src/lib/notation.ts); trình duyệt trả về dạng rgb().
-const GOLD_RING = '192, 142, 34' // #c08e22 - quân cần đi
-const STEEL_RING = '95, 159, 175' // #5f9faf - ô đích
+const GOLD_RING = '191, 140, 34' // #bf8c22 - quân cần đi
+const STEEL_RING = '63, 116, 143' // #3f748f - ô đích
 
 console.log('\n▶ Tab Trung cuộc: gợi ý chỉ hiện khi bé hỏi')
 
@@ -221,7 +221,7 @@ check(
   `bật “giảm chuyển động” thì tắt nhịp thở (nhận ${reduced?.name})`,
 )
 check(
-  String(reduced?.shadow).includes('192, 142, 34'),
+  String(reduced?.shadow).includes('191, 140, 34'),
   `vẫn giữ viền vàng tĩnh để bé thấy quân cần đi (${reduced?.shadow})`,
 )
 await send('Emulation.setEmulatedMedia', { features: [] })

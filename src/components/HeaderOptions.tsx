@@ -50,7 +50,7 @@ export function HeaderOptions() {
               </div>
             </div>
 
-            <div className="mt-2.5 flex items-center gap-1.5 text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <div className="mt-2.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500">
               ✍️ Cách ghi nước đi
               <InfoButton topic="notation" />
             </div>
@@ -79,13 +79,13 @@ export function HeaderOptions() {
 
             {/* Bảng đối chiếu để bé học ánh xạ: hình cờ = ký hiệu FIDE = tiếng Việt. */}
             <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
-              <div className="text-[0.6rem] font-extrabold uppercase tracking-wide text-brand-500">
+              <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
                 🔤 Bảng đối chiếu ký hiệu
               </div>
               {NOTATION_LEGEND.map((row) => (
                 <div
                   key={row.piece}
-                  className="flex items-center gap-1.5 text-[0.7rem] font-bold text-brand-700"
+                  className="flex items-center gap-1.5 text-xs font-bold text-brand-700"
                 >
                   <span className="w-4 text-center text-base leading-none" aria-hidden>
                     {row.glyph}
@@ -109,20 +109,20 @@ export function HeaderOptions() {
               ván) - nhờ vậy bé đọc được trọn một biên bản cờ chứ không chỉ tên quân.
             */}
             <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
-              <div className="text-[0.6rem] font-extrabold uppercase tracking-wide text-brand-500">
+              <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
                 ✍️ Ký hiệu đặc biệt trên biên bản
               </div>
               {NOTATION_SYMBOLS.map((row) => (
                 <div
                   key={row.glyph}
-                  className="flex items-center gap-1.5 text-[0.7rem] font-bold text-brand-700"
+                  className="flex items-center gap-1.5 text-xs font-bold text-brand-700"
                 >
                   <span className="w-10 shrink-0 text-center text-xs leading-none font-extrabold text-brand-900">
                     {row.glyph}
                   </span>
                   <span className="text-brand-300">=</span>
                   <span className="min-w-0 flex-1 truncate">{row.meaning}</span>
-                  <span className="shrink-0 font-bold text-brand-400">{row.sample}</span>
+                  <span className="shrink-0 font-bold text-ink-600">{row.sample}</span>
                 </div>
               ))}
             </div>
@@ -133,7 +133,7 @@ export function HeaderOptions() {
               Samantha, bỏ qua giọng “đồ chơi” như Albert, Bells). Bảng dài 20 dòng chỉ
               làm rối bảng tuỳ chọn mà bé 7 tuổi không dùng tới.
             */}
-            <p className="mt-2.5 flex items-center gap-1.5 text-[0.68rem] font-bold text-brand-500">
+            <p className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-brand-500">
               🔈 Giọng đọc: tự chọn giọng hay nhất máy có
             </p>
 
@@ -145,7 +145,7 @@ export function HeaderOptions() {
               >
                 <span>🔊 Âm thanh</span>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[0.65rem] ${
+                  className={`rounded-full px-2 py-0.5 text-xs ${
                     soundOn ? 'bg-leaf-100 text-leaf-700' : 'bg-ink-100 text-ink-500'
                   }`}
                 >
@@ -154,7 +154,7 @@ export function HeaderOptions() {
               </button>
             </div>
 
-            <p className="mt-2 text-[0.65rem] font-bold text-brand-400">
+            <p className="mt-2 text-xs font-bold text-ink-600">
               🔄 Bài cờ Đen tự xoay bàn cờ 180°
             </p>
           </div>

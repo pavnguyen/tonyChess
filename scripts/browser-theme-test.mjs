@@ -1,8 +1,8 @@
 /**
- * Ghim bảng màu thật của app trong trình duyệt (gam "Sồi & Ngọc"):
- *   - nền trang màu giấy ngà, KHÔNG còn tím;
- *   - thanh trên cùng màu xanh rừng đậm;
- *   - bàn cờ đúng kiểu giải đấu: ô trắng #ffffff + ô xanh lá đậm #2f6b4f;
+ * Ghim bảng màu thật của app trong trình duyệt (gam "Navy – Gỗ sáng – Đỏ son"):
+ *   - nền trang màu gỗ sáng #fbf8f1, KHÔNG còn tím cũng không còn vệt xanh lá;
+ *   - thanh trên cùng gradient navy đậm;
+ *   - bàn cờ: ô gỗ sáng #efe1c7 + ô navy #24334f;
  *   - mũi tên gợi ý màu vàng đồng, không phải tím/xanh dương.
  *
  * Bài này chống việc "đổi gam rồi lỡ tay để sót màu cũ" - đúng loại lỗi đã xảy
@@ -75,8 +75,8 @@ check(palette.squareCount === 64, `bàn cờ có đủ 64 ô (nhận ${palette.s
 
 // --- 1. Nền trang: giấy ngà, tuyệt đối không phải tím.
 check(
-  palette.bodyBg === 'rgb(251, 249, 244)',
-  `nền trang màu giấy ngà #fbf9f4 (nhận ${palette.bodyBg})`,
+  palette.bodyBg === 'rgb(251, 248, 241)',
+  `nền trang màu gỗ sáng #fbf8f1 (nhận ${palette.bodyBg})`,
 )
 check(
   !/rgba?\(1[0-9]{2}, [0-9]{1,2}|purple|violet|#6d28d9/i.test(palette.bodyBg + palette.headerImage),
@@ -84,16 +84,19 @@ check(
 )
 
 // --- 2. Chữ chính dùng tông xanh đen, không phải tím.
-check(palette.bodyColor === 'rgb(31, 42, 36)', `chữ chính màu xanh đen #1f2a24 (nhận ${palette.bodyColor})`)
-
-// --- 3. Thanh trên cùng: gradient xanh rừng đậm.
 check(
-  palette.headerImage.includes('rgb(22, 49, 37)') || palette.headerImage.includes('linear-gradient'),
-  `thanh trên cùng có gradient xanh rừng (${palette.headerImage.slice(0, 72)}…)`,
+  palette.bodyColor === 'rgb(27, 38, 57)',
+  `chữ chính màu navy đậm #1b2639 (nhận ${palette.bodyColor})`,
+)
+
+// --- 3. Thanh trên cùng: gradient navy đậm.
+check(
+  palette.headerImage.includes('linear-gradient'),
+  `thanh trên cùng có gradient (${palette.headerImage.slice(0, 72)}…)`,
 )
 check(
-  palette.headerImage.includes('rgb(22, 49, 37)'),
-  'gradient bắt đầu từ xanh rừng đậm nhất #163125',
+  palette.headerImage.includes('rgb(27, 38, 57)'),
+  'gradient bắt đầu từ navy đậm nhất #1b2639',
 )
 
 // --- 4. Bàn cờ: trắng + xanh lá đậm (a1 là ô xanh, b1 là ô trắng).
@@ -104,12 +107,12 @@ check(
 )
 const boardColors = [palette.a1?.own, palette.b1?.own]
 check(
-  boardColors.includes('rgb(47, 107, 79)'),
-  `có ô xanh lá đậm #2f6b4f (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
+  boardColors.includes('rgb(36, 51, 79)'),
+  `có ô navy #24334f (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
 )
 check(
-  boardColors.includes('rgb(255, 255, 255)'),
-  `có ô trắng #ffffff (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
+  boardColors.includes('rgb(239, 225, 199)'),
+  `có ô gỗ sáng #efe1c7 (nhận ${palette.a1?.own} / ${palette.b1?.own})`,
 )
 check(
   !boardColors.some((color) => /rgb\(126, 166, 245\)|rgb\(253, 243, 216\)/.test(color ?? '')),
@@ -132,10 +135,10 @@ const arrow = await evaluate(`
   })()
 `)
 check(
-  arrow?.stroke === 'rgb(217, 169, 63)',
-  `thân mũi tên màu vàng đồng #d9a93f (nhận ${arrow?.stroke})`,
+  arrow?.stroke === 'rgb(217, 168, 63)',
+  `thân mũi tên màu vàng đồng #d9a83f (nhận ${arrow?.stroke})`,
 )
-check(arrow?.head === 'rgb(217, 169, 63)', `đầu mũi tên cũng vàng đồng (nhận ${arrow?.head})`)
+check(arrow?.head === 'rgb(217, 168, 63)', `đầu mũi tên cũng vàng đồng (nhận ${arrow?.head})`)
 
 // --- 6. Bộ nút dùng đúng gam mới và không còn bóng/màu tím.
 const buttonColors = await evaluate(`
@@ -148,13 +151,13 @@ const buttonColors = await evaluate(`
   })()
 `)
 const hasColor = (value) => buttonColors.includes(value)
-check(hasColor('rgb(217, 169, 63)'), 'có nút vàng đồng #d9a93f (nút “Tiến ▶”)')
+check(hasColor('rgb(217, 168, 63)'), 'có nút vàng đồng #d9a83f (nút “Tiến ▶”)')
 check(
   !buttonColors.some((color) => /rgb\(109, 40, 217\)|rgb\(124, 58, 237\)|rgb\(236, 72, 153\)/.test(color)),
   `không còn nút tím/hồng của bản cũ (các màu nút: ${buttonColors.join(', ')})`,
 )
 
-// --- 7. Nút xanh non #3a7547 (kiểu `grass`).
+// --- 7. Nút xanh ngọc #256349 (kiểu `grass`).
 // Tab Khai cuộc đã bỏ nút “Đấu tập” cho gọn nên không còn nút xanh non ở đó; nút
 // này giờ nằm ở tab Đấu với Robot (“Ván mới”). Kiểm ở đúng trang còn dùng.
 await evaluate(`location.href = ${JSON.stringify(`${APP_URL}free-play`)}`)
@@ -169,8 +172,8 @@ const freePlayColors = await evaluate(`
   })()
 `)
 check(
-  freePlayColors.includes('rgb(58, 117, 71)'),
-  `có nút xanh non #3a7547 ở tab Đấu với Robot (nút “♟️ Ván mới”) - nhận ${freePlayColors.join(', ')}`,
+  freePlayColors.includes('rgb(37, 99, 73)'),
+  `có nút xanh ngọc #256349 ở tab Đấu với Robot (nút “♟️ Ván mới”) - nhận ${freePlayColors.join(', ')}`,
 )
 
 close()

@@ -32,7 +32,7 @@ export function TodaySession() {
       id="kid-today-session"
       className="mb-1 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-sand-200 bg-white/80 px-2 py-1"
     >
-      <span className="shrink-0 text-[0.68rem] font-extrabold text-brand-700">
+      <span className="shrink-0 text-xs font-extrabold text-brand-700">
         📅 Hôm nay · {done}/{items.length}
       </span>
       <div className="flex shrink-0 items-center gap-0.5" aria-hidden>
@@ -45,14 +45,14 @@ export function TodaySession() {
           />
         ))}
       </div>
-      <span className="min-w-0 flex-1 truncate text-[0.68rem] font-bold text-brand-500">
+      <span className="min-w-0 flex-1 truncate text-xs font-bold text-brand-500">
         {finished ? 'Xong buổi hôm nay 🎉' : `Tiếp: ${nextItem?.label ?? ''}`}
       </span>
       <button
         id="kid-session-start"
         type="button"
         onClick={finished ? () => { resetSession(); setDone(0) } : start}
-        className="min-h-7 shrink-0 rounded-lg bg-brand-700 px-2 text-[0.66rem] font-extrabold text-white active:translate-y-[1px]"
+        className="min-h-7 shrink-0 rounded-lg bg-brand-700 px-2 text-xs font-extrabold text-white active:translate-y-[1px]"
       >
         {finished ? '↺ Luyện lại' : done === 0 ? '▶ Bắt đầu' : '▶ Làm tiếp'}
       </button>

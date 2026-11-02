@@ -13,7 +13,7 @@
     <!-- Icon: SVG cho trình duyệt + PNG cho iOS khi bé "Thêm vào màn hình chính". -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content="#1f4132" />
+    <meta name="theme-color" content="#1b2639" />
     <meta name="color-scheme" content="light" />
     <meta name="apple-mobile-web-app-title" content="Cờ Vua Nhí" />
 
@@ -44,12 +44,18 @@
     />
     <meta name="twitter:image" content="/og-image.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <!--
+      Font TỰ HOST (khai báo trong `src/index.css`): app là PWA chơi được khi mất
+      mạng, nên không thể phụ thuộc Google Fonts - mất mạng là chữ rơi về font hệ
+      thống, sai thiết kế và dấu tiếng Việt đổi dáng.
+
+      Preload đúng 3 file nặng nhất mà màn hình đầu tiên cần: câu hướng dẫn (400),
+      chữ đậm (700) và tiêu đề/nút (Baloo 800). Tất cả file đều nằm trong bản
+      precache của Workbox nhờ `globPatterns` có `woff2`.
+    -->
+    <link rel="preload" href="/fonts/be-vietnam-pro-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/be-vietnam-pro-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/baloo-2-800-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

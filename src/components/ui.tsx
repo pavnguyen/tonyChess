@@ -5,19 +5,29 @@ import { InfoButton } from './InfoPopover'
 type Variant = 'primary' | 'sun' | 'grass' | 'rose' | 'sky' | 'ghost'
 
 /**
- * Bóng đổ dùng tông XANH RỪNG đậm thay cho tím như bản cũ, và độ dày giảm từ
- * 5px xuống 4px - vẫn giữ cảm giác "bấm được" cho bé nhưng bớt nặng nề.
+ * Bóng "3D" dày 3px, màu bóng là bản ĐẬM HƠN 2 BẬC của nền nút - nhờ vậy nút
+ * vẫn "bấm được" cho bé mà không nặng nề như bản 4-5px trước đây.
+ *
+ * Ánh xạ sang gam Navy - Gỗ sáng - Đỏ son:
+ *   primary → navy 700 (chữ trắng)   sun → vàng đồng 400 (chữ nâu đậm)
+ *   grass   → xanh ngọc 600          rose → đỏ son 500
+ *   sky     → xanh thép 500          ghost → trắng + viền gỗ 200
+ *
+ * ⚠️ Vàng CHỈ dùng cho "phần thưởng / quân cần đi"; đỏ son CHỈ cho "sai / nguy
+ * hiểm". Không trộn hai màu này cho cùng một ý.
  */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-brand-700 text-white shadow-[0_4px_0_#163125] hover:bg-brand-600 active:shadow-[0_2px_0_#163125]',
-  sun: 'bg-gold-400 text-gold-950 shadow-[0_4px_0_#9c711a] hover:bg-gold-300 active:shadow-[0_2px_0_#9c711a]',
+    'bg-brand-700 text-white shadow-[0_3px_0_#1b2639] hover:bg-brand-600 hover:shadow-[0_3px_0_#24334f] active:shadow-[0_2px_0_#1b2639]',
+  sun: 'bg-gold-400 text-gold-950 shadow-[0_3px_0_#9a7018] hover:bg-gold-300 hover:shadow-[0_3px_0_#bf8c22] active:shadow-[0_2px_0_#9a7018]',
   grass:
-    'bg-leaf-600 text-white shadow-[0_4px_0_#24482d] hover:bg-leaf-500 active:shadow-[0_2px_0_#24482d]',
-  rose: 'bg-coral-500 text-white shadow-[0_4px_0_#823c30] hover:bg-coral-400 active:shadow-[0_2px_0_#823c30]',
-  sky: 'bg-info-500 text-white shadow-[0_4px_0_#2a535f] hover:bg-info-400 active:shadow-[0_2px_0_#2a535f]',
+    'bg-leaf-600 text-white shadow-[0_3px_0_#17392c] hover:bg-leaf-500 hover:shadow-[0_3px_0_#1d4f3a] active:shadow-[0_2px_0_#17392c]',
+  // `rose` dùng coral-600 (không phải 500) vì chữ trắng trên #cc5847 chỉ đạt
+  // 4.15:1 - dưới ngưỡng đọc của bé. #ad4235 cho 5.9:1 (xem `scripts/check-contrast.ts`).
+  rose: 'bg-coral-600 text-white shadow-[0_3px_0_#54211c] hover:bg-coral-500 hover:shadow-[0_3px_0_#6d2a23] active:shadow-[0_2px_0_#54211c]',
+  sky: 'bg-info-500 text-white shadow-[0_3px_0_#294e5a] hover:bg-info-400 hover:shadow-[0_3px_0_#33606f] active:shadow-[0_2px_0_#294e5a]',
   ghost:
-    'border border-sand-200 bg-white text-brand-700 shadow-[0_3px_0_#dcd4c1] hover:bg-brand-50 active:shadow-[0_2px_0_#dcd4c1]',
+    'border border-sand-300 bg-white text-brand-700 shadow-[0_3px_0_#e3cda3] hover:bg-brand-50 active:shadow-[0_2px_0_#e3cda3]',
 }
 
 /**
@@ -25,8 +35,9 @@ const VARIANTS: Record<Variant, string> = {
  * hàng nút nằm gọn một dòng, bé không phải cuộn và bàn cờ được rộng hơn.
  */
 const SIZES = {
+  // `md` luôn ≥ 44px chiều cao: ngón tay bé 7 tuổi bấm trúng, không phải nhắm.
   md: 'min-h-11 px-4 py-2.5 text-base',
-  sm: 'min-h-9 px-2.5 py-1.5 text-sm',
+  sm: 'min-h-10 px-2.5 py-1.5 text-sm',
 } as const
 
 interface KidButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -74,9 +85,14 @@ export function Segmented<T extends string>({
   className = '',
 }: SegmentedProps<T>) {
   return (
+    /*
+     * MỘT HÀNG cuộn ngang trên điện thoại (thay vì `flex-wrap`): 5 chủ đề Trung
+     * cuộc trước đây làm vỡ thành 2-3 hàng, chiếm mất chỗ của bàn cờ. Mục đang
+     * chọn nền trắng + chữ navy đậm, mục thường chữ xám navy.
+     */
     <div
       role="tablist"
-      className={`inline-flex flex-wrap gap-1 rounded-2xl border border-sand-200 bg-sand-100 p-1 ${className}`}
+      className={`flex flex-nowrap items-stretch gap-1 overflow-x-auto rounded-2xl border border-sand-300 bg-sand-100 p-0.5 ${className}`}
     >
       {options.map((option) => {
         const active = option.value === value
@@ -86,12 +102,12 @@ export function Segmented<T extends string>({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(option.value)}
-            className={`flex items-center gap-1.5 rounded-xl font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 transition-all ${
-              size === 'sm' ? 'min-h-9 px-2.5 py-1.5 text-sm' : 'min-h-11 px-3 py-2 text-base'
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 transition-all ${
+              size === 'sm' ? 'min-h-10 px-2.5 py-1.5 text-sm' : 'min-h-11 px-3 py-2 text-base'
             } ${
               active
-                ? 'bg-white text-brand-700 shadow-[0_2px_4px_rgba(31,42,36,0.16)]'
-                : 'text-ink-500 hover:bg-white/70 hover:text-brand-700'
+                ? 'border border-brand-200 bg-white text-brand-800 shadow-[0_2px_4px_rgba(27,38,57,0.16)]'
+                : 'text-ink-600 hover:bg-white/70 hover:text-brand-700'
             }`}
           >
             {option.icon && <span aria-hidden>{option.icon}</span>}
@@ -145,7 +161,32 @@ export function FoldPanel({
   /** Mở sẵn trên điện thoại (dùng cho khung MIND-SET - thứ bé cần thấy ngay). */
   defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  /*
+   * Nhớ trạng thái mở/đóng trong PHIÊN (không phải localStorage): ba mẹ đang tra
+   * cứu mà chuyển tab rồi quay lại thì khung vẫn mở như lúc rời đi, nhưng mở app
+   * lần sau lại gọn như mặc định. Khoá theo `id` nên mỗi khung nhớ riêng.
+   */
+  const storageKey = `kid-fold:${id ?? title}`
+  const [open, setOpen] = useState(() => {
+    try {
+      const saved = window.sessionStorage.getItem(storageKey)
+      if (saved === 'open') return true
+      if (saved === 'closed') return false
+    } catch {
+      /* chế độ riêng tư chặn sessionStorage - rơi về mặc định */
+    }
+    return defaultOpen
+  })
+
+  const toggle = () =>
+    setOpen((value) => {
+      try {
+        window.sessionStorage.setItem(storageKey, value ? 'closed' : 'open')
+      } catch {
+        /* không lưu được thì thôi, khung vẫn mở/đóng bình thường */
+      }
+      return !value
+    })
 
   return (
     // `minmax(0,1fr)` chặn cột phình theo nội dung: một câu dài trong khung không
@@ -154,8 +195,8 @@ export function FoldPanel({
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-xl border-2 border-brand-100 bg-brand-50 px-2.5 py-1.5 text-left text-sm font-extrabold text-brand-700 active:translate-y-[1px] stage:hidden"
+        onClick={toggle}
+        className="flex min-h-10 w-full items-center justify-between gap-2 rounded-xl border-2 border-brand-200 bg-brand-50 px-2.5 py-1.5 text-left text-sm font-extrabold text-brand-700 active:translate-y-[1px] stage:hidden"
       >
         <span className="min-w-0 truncate">
           <span aria-hidden>{icon}</span> {title}
@@ -193,7 +234,8 @@ export function SectionTitle({
       </span>
       <div className="min-w-0">
         <h2 className="truncate text-lg font-extrabold text-brand-900 sm:text-xl">{title}</h2>
-        {subtitle && <p className="truncate text-xs font-bold text-brand-500 sm:text-sm">{subtitle}</p>}
+        {/* Phụ đề 14px chữ xám-navy: đủ đậm để đọc (≥ 4.5:1), không dùng brand-500 nhạt nữa. */}
+        {subtitle && <p className="truncate text-sm font-bold text-ink-600">{subtitle}</p>}
       </div>
       <InfoButton topic={info} />
     </div>

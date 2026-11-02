@@ -323,7 +323,7 @@ export function HazardsPage() {
           </p>
 
           <div className="flex items-center gap-1.5 rounded-2xl bg-white px-1.5 py-1.5 ring-2 ring-sand-200">
-            <span className="shrink-0 px-1 text-[0.68rem] font-extrabold text-brand-500">
+            <span className="shrink-0 px-1 text-xs font-extrabold text-brand-500">
               Mức
             </span>
             <div id="kid-hazard-levels" className="flex min-w-0 flex-1 gap-1.5">
@@ -351,7 +351,7 @@ export function HazardsPage() {
           </div>
           <p
             id="kid-hazard-level-hint"
-            className="text-[0.7rem] font-bold leading-snug text-brand-500"
+            className="text-xs font-bold leading-snug text-brand-500"
           >
             {LEVELS[level].description}{' '}
             {level === 'hard'
@@ -407,7 +407,7 @@ export function HazardsPage() {
             </KidButton>
           </div>
 
-          <p className="text-[0.7rem] font-bold leading-snug text-brand-400">
+          <p className="text-xs font-bold leading-snug text-ink-600">
             Đúng liên tiếp thì điểm nhân lên (10 → 20 → 30...), sai là chuỗi về 0.
             {tries > 0 ? ` Số lần chưa đúng: ${tries}.` : ''} Cứ chậm mà chắc: đếm quân
             bị tấn công trước rồi mới bấm.

@@ -31,7 +31,7 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
             ? 'Mắt Thần Cờ Vua đang BẬT - bấm để tắt'
             : 'Mắt Thần Cờ Vua đang TẮT - bấm để xem ô nguy hiểm'
         }
-        className={`flex items-center gap-1 rounded-full border-2 border-white px-2 py-1 text-[0.65rem] font-extrabold shadow transition-all active:translate-y-[1px] ${
+        className={`flex items-center gap-1 rounded-full border-2 border-white px-2 py-1 text-xs font-extrabold shadow transition-all active:translate-y-[1px] ${
           on
             ? 'bg-gradient-to-br from-brand-700 to-leaf-500 text-white'
             : 'bg-white text-brand-600'
@@ -62,7 +62,7 @@ export function EyeToggle({ on, onToggle, className = '' }: Props) {
           <ul className="space-y-1.5 text-xs font-bold text-brand-700">
             <li className="flex items-center gap-2">
               <span
-                className="grid size-5 shrink-0 place-items-center rounded-md text-[0.6rem] font-extrabold text-white"
+                className="grid size-5 shrink-0 place-items-center rounded-md text-xs font-extrabold text-white"
                 style={{ backgroundColor: HEATMAP_COLORS.hanging }}
               >
                 !

@@ -13,7 +13,7 @@ function Tooltip({ text }: { text: string }) {
     <span
       aria-hidden
       role="tooltip"
-      className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-max max-w-[15rem] -translate-x-1/2 rounded-lg bg-brand-900 px-2 py-1 text-center text-[0.62rem] font-bold leading-tight text-white shadow-[0_6px_14px_rgba(13,32,24,0.45)] group-hover:block group-focus-visible:block"
+      className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-max max-w-[15rem] -translate-x-1/2 rounded-lg bg-brand-900 px-2 py-1 text-center text-xs font-bold leading-tight text-white shadow-[0_6px_14px_rgba(13,32,24,0.45)] group-hover:block group-focus-visible:block"
     >
       {text}
     </span>
@@ -70,7 +70,7 @@ export function ProgressMap({
     <div className="grid gap-1.5">
       {title && (
         <div className="flex items-center gap-2">
-          <p className="min-w-0 flex-1 truncate text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+          <p className="min-w-0 flex-1 truncate text-xs font-extrabold uppercase tracking-wide text-brand-500">
             🗺️ {title}
           </p>
           <InfoButton topic={info} />
@@ -117,14 +117,14 @@ export function ProgressMap({
                   {/* `line-clamp-1` thay `truncate`: tên dài (King's Indian Defense…)
                       xuống dòng được nên không đẩy thẻ rộng quá khung. */}
                   <span
-                    className={`line-clamp-1 text-[0.7rem] font-extrabold leading-tight ${
+                    className={`line-clamp-1 text-xs font-extrabold leading-tight ${
                       isActive ? 'text-brand-900' : 'text-brand-800'
                     }`}
                   >
                     {node.title}
                   </span>
                   {node.tag && (
-                    <span className="line-clamp-1 text-[0.58rem] font-bold leading-tight text-brand-500">
+                    <span className="line-clamp-1 text-xs font-bold leading-tight text-ink-600">
                       {node.tag}
                     </span>
                   )}

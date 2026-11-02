@@ -101,7 +101,7 @@ export function StrategyPage() {
                 <div className="truncate text-sm font-extrabold text-brand-900 sm:text-base">
                   {activePrinciple.order}. {activePrinciple.title}
                 </div>
-                <div className="hidden truncate text-[0.7rem] font-bold text-ink-500 sm:block">
+                <div className="hidden truncate text-xs font-bold text-ink-500 sm:block">
                   {hidingAnswer
                     ? '🔎 Bé đang xem quân Trắng'
                     : demoSide === 'good'
@@ -215,7 +215,7 @@ export function StrategyPage() {
                     {principle.emoji}
                   </span>
                   <span
-                    className={`line-clamp-2 min-w-0 flex-1 text-[0.72rem] font-extrabold leading-tight ${
+                    className={`line-clamp-2 min-w-0 flex-1 text-xs font-extrabold leading-tight ${
                       open ? 'text-brand-900' : 'text-brand-800'
                     }`}
                   >
@@ -248,7 +248,7 @@ export function StrategyPage() {
             Ẩn khi bé đang làm thử thách để không lộ đáp án.
           */}
           {!hidingAnswer && (
-            <p className="rounded-xl bg-gold-50 px-2.5 py-1 text-[0.72rem] font-extrabold text-gold-800 ring-1 ring-gold-200">
+            <p className="rounded-xl bg-gold-50 px-2.5 py-1 text-xs font-extrabold text-gold-800 ring-1 ring-gold-200">
               🎵 Khẩu quyết: “{activePrinciple.rhyme}”
             </p>
           )}
@@ -284,7 +284,7 @@ export function StrategyPage() {
 
           {!hidingAnswer && (
             <>
-              <p className="text-[0.72rem] font-bold leading-snug text-brand-600">
+              <p className="text-xs font-bold leading-snug text-brand-600">
                 <b className="text-brand-800">Vì sao?</b> {activePrinciple.why}
               </p>
 
@@ -311,10 +311,10 @@ export function StrategyPage() {
                     {legend.map((entry) => (
                       <li
                         key={entry.label}
-                        className="flex items-center gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-[0.68rem] font-bold"
+                        className="flex items-center gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-xs font-bold"
                       >
                         <span
-                          className={`shrink-0 rounded px-1 font-mono text-[0.62rem] font-extrabold text-white ${
+                          className={`shrink-0 rounded px-1 font-mono text-xs font-extrabold text-white ${
                             demoSide === 'good' ? 'bg-leaf-600' : 'bg-coral-600'
                           }`}
                         >
@@ -328,7 +328,7 @@ export function StrategyPage() {
               </div>
 
               {activePrinciple.tips && activePrinciple.tips.length > 0 && (
-                <p className="rounded-xl bg-info-50 px-2.5 py-1 text-[0.72rem] font-bold leading-snug text-info-800 ring-1 ring-info-200">
+                <p className="rounded-xl bg-info-50 px-2.5 py-1 text-xs font-bold leading-snug text-info-800 ring-1 ring-info-200">
                   <span aria-hidden>{activePrinciple.emoji} </span>
                   {activePrinciple.tips.join(' · ')}
                 </p>

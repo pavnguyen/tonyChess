@@ -35,11 +35,11 @@ if (failedToConnect) {
 const { check, finish } = makeChecker()
 
 // Màu lấy đúng từ `BOARD_MARKS` trong src/lib/notation.ts:
-//   quân cần đi → nền rgba(217,169,63,.4) + viền #c08e22
-//   ô đích      → nền rgba(147,192,205,.42) + viền #5f9faf
+//   quân cần đi → nền rgba(217,168,63,.42) + viền #bf8c22
+//   ô đích      → nền rgba(147,192,205,.42) + viền #3f748f
 // (trình duyệt đổi hex sang rgb() khi đọc lại thuộc tính style)
-const FROM_MARKS = ['217, 169, 63', '192, 142, 34']
-const TO_MARKS = ['147, 192, 205', '95, 159, 175']
+const FROM_MARKS = ['217, 168, 63', '191, 140, 34']
+const TO_MARKS = ['147, 192, 205', '63, 116, 143']
 
 console.log('\n▶ Chế độ “Học từng bước”: tô sáng quân cần đi')
 

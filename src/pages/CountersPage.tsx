@@ -430,18 +430,18 @@ export function CountersPage() {
           <span className="block truncate text-xs font-extrabold text-brand-900">
             {item.englishName}
           </span>
-          <span className="block truncate text-[0.7rem] font-bold text-brand-500">
+          <span className="block truncate text-xs font-bold text-brand-500">
             {item.opponentOpening} · <MoveText text={item.counterName} />
           </span>
           {/* Ý đồ ngắn để tra cứu nhanh: đọc một dòng là hiểu vì sao đáp như vậy. */}
           {/* Ý đồ gói trong 2 dòng ngắn: đọc hết câu, không bị cắt giữa chừng. */}
           {!compact && (
-            <span className="mt-0.5 line-clamp-2 block text-[0.66rem] font-bold leading-snug text-brand-400">
+            <span className="mt-0.5 line-clamp-2 block text-xs font-bold leading-snug text-ink-600">
               <MoveText text={item.idea} />
             </span>
           )}
         </span>
-        <span className="shrink-0 rounded-lg bg-brand-100 px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-700">
+        <span className="shrink-0 rounded-lg bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold text-brand-700">
           {openingMoveLabel(item)}
         </span>
       </button>
@@ -490,14 +490,14 @@ export function CountersPage() {
               {hintMove?.from} → {hintMove?.to}
             </b>
           </span>
-          <span className="text-[0.7rem] font-bold text-brand-500">
+          <span className="text-xs font-bold text-brand-500">
             {nextIsKid
               ? 'Quân viền VÀNG sắp đi tới ô viền xanh'
               : 'Quân viền SAN HÔ là quân đối thủ sắp di chuyển'}
           </span>
         </>
       ) : (
-        <span className="text-[0.7rem] font-bold text-brand-500">
+        <span className="text-xs font-bold text-brand-500">
           {nextIsKid
             ? 'Bé tự tìm quân và ô đáp trả nhé - bấm 💡 nếu cần gợi ý'
             : 'Đối thủ sắp đi - bé chuẩn bị đáp trả'}
@@ -555,7 +555,7 @@ export function CountersPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <BoardStage
-        reserve={248}
+        reserve={244}
         top={
           <>
             <div className="flex flex-wrap items-center gap-2">
@@ -650,7 +650,7 @@ export function CountersPage() {
           </p>
           <div
             id="kid-counter-name"
-            className="rounded-2xl border-2 border-[#6d5bc7] bg-[rgba(126,106,209,0.12)] px-2.5 py-1.5 text-sm font-extrabold text-brand-900"
+            className="rounded-2xl border-2 border-info-600 bg-info-100 px-2.5 py-1.5 text-sm font-extrabold text-brand-900"
           >
             🛡️ Cách của bé:{' '}
             <MoveText
@@ -663,7 +663,7 @@ export function CountersPage() {
             <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
           </p>
           <div className="grid gap-1">
-            <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
               ✅ Ba việc cần nhớ
             </div>
             <ul id="kid-counter-points" className="grid gap-1">
@@ -671,7 +671,7 @@ export function CountersPage() {
                 <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
                   <span
                     aria-hidden
-                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-[0.65rem] font-extrabold text-brand-600"
+                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-extrabold text-brand-600"
                   >
                     {index + 1}
                   </span>
@@ -686,7 +686,7 @@ export function CountersPage() {
               ))}
             </ul>
           </div>
-          <p className="text-[0.62rem] font-bold text-brand-400">
+          <p className="text-xs font-bold text-ink-600">
             👆 Bấm vào “♗ Tượng c5” trong bài để bàn cờ tô sáng ô đó.
           </p>
           {lesson.openingId && (
@@ -719,7 +719,7 @@ export function CountersPage() {
               data-move-filter="all"
               aria-pressed={moveFilter === null}
               onClick={() => setMoveFilter(null)}
-              className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+              className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                 moveFilter === null
                   ? 'border-brand-600 bg-brand-50 text-brand-800'
                   : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
@@ -740,7 +740,7 @@ export function CountersPage() {
                     const first = list.find((item) => opponentFirstMove(item) === move)
                     if (first) setLessonId(first.id)
                   }}
-                  className={`rounded-full border-2 px-2.5 py-1 text-[0.7rem] font-extrabold transition-all active:translate-y-[1px] ${
+                  className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
                     active
                       ? 'border-brand-600 bg-brand-50 text-brand-800'
                       : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
@@ -763,7 +763,7 @@ export function CountersPage() {
                 id="kid-counter-extras"
                 aria-expanded={extrasOpen}
                 onClick={() => setShowExtras((open) => !open)}
-                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1.5 text-left text-[0.7rem] font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
+                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1.5 text-left text-xs font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
               >
                 <span>📚 Tham khảo thêm {extraList.length} bài khác</span>
                 <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
@@ -838,7 +838,7 @@ export function CountersPage() {
               </>
             )}
           </div>
-          <p className="text-[0.7rem] font-bold text-brand-400">
+          <p className="text-xs font-bold text-ink-600">
             {mode === 'practice'
               ? atLeaf
                 ? '✅ Bé đã tự đáp trả trọn dòng này!'
