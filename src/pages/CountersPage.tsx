@@ -645,7 +645,15 @@ export function CountersPage() {
           `gap-1` (4px) thay 6px: ở cửa sổ thấp 980×720 cột phải chỉ thiếu đúng 5px
           mới hết cuộn - bóp khoảng cách giữa 4 hàng là đủ, không phải cắt chữ nào.
         */}
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 stage:p-2">
+        {/*
+          `stage:mt-auto`: trên máy tính, khung điều khiển bám ĐÁY cột. Trước đây hai
+          khung dồn hết lên trên nên ở 1440×900 còn 309px trống dưới đáy (1920×1080 là
+          489px) - cột phải lơ lửng, không cùng đường đáy với khối bàn cờ. Bám đáy thì
+          khung điều khiển kết thúc đúng hàng với bàn cờ, khoảng trống dư dồn vào một
+          nhịp nghỉ giữa phần đọc và phần điều khiển. Cửa sổ thấp thì `mt-auto` không
+          có tác dụng (không còn chỗ dư) nên cột vẫn cuộn như cũ.
+        */}
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 stage:mt-auto stage:p-2">
           <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
 
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
