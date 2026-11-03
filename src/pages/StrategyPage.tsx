@@ -3,7 +3,7 @@ import { BoardStage } from '../components/BoardStage'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
-import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { KidButton, Panel, SectionTitle } from '../components/ui'
 import { GOLD_PRINCIPLES, PRINCIPLE_TONE_STYLES } from '../data/goldPrinciples'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import type { CSSProperties } from 'react'
@@ -126,7 +126,7 @@ export function StrategyPage() {
         under={
           <div className="grid gap-2">
             {quiz ? (
-              <div className="flex flex-wrap gap-2" aria-label="Chọn câu trả lời">
+              <div className="flex flex-wrap items-stretch gap-1.5" aria-label="Chọn câu trả lời">
                 <KidButton
                   id="kid-principle-answer-good"
                   size="sm"
@@ -157,13 +157,32 @@ export function StrategyPage() {
                 </KidButton>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                <Segmented
-                  options={DEMO_OPTIONS}
-                  value={demoSide}
-                  onChange={setDemoSide}
-                  size="sm"
-                />
+              /*
+                MỘT hàng ba nút CÙNG CỠ (40px, bo 16px, bóng đáy 3px): hai nút chọn
+                thế cờ minh hoạ + nút mời làm thử thách. Trước đây dãy chọn nằm trong
+                một thanh nền cát cao 34px còn nút thử thách cao 40px, lại khác bo
+                góc, nên nhìn lệch hẳn và nút vàng trông như dán đè lên thanh kia.
+                Nút đang chọn tự đổi màu: xanh ngọc = thế NÊN làm, đỏ son = KHÔNG NÊN.
+              */
+              <div
+                role="group"
+                aria-label="Chọn thế cờ minh hoạ"
+                className="flex flex-wrap items-stretch gap-1.5"
+              >
+                {DEMO_OPTIONS.map((option) => {
+                  const active = demoSide === option.value
+                  return (
+                    <KidButton
+                      key={option.value}
+                      size="sm"
+                      variant={active ? (option.value === 'good' ? 'grass' : 'rose') : 'ghost'}
+                      aria-pressed={active}
+                      onClick={() => setDemoSide(option.value)}
+                    >
+                      {option.icon} {option.label}
+                    </KidButton>
+                  )
+                })}
                 <KidButton id="kid-principle-quiz" variant="sun" size="sm" onClick={startQuiz}>
                   🔎 Thử xem bé hiểu chưa
                 </KidButton>
