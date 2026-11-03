@@ -9,7 +9,7 @@ import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { FoldPanel, KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { FoldPanel, KidButton, Panel, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { OPENINGS } from '../data/openings'
@@ -416,14 +416,15 @@ export function CountersPage() {
         data-counter-id={item.id}
         data-counter-extra={compact ? '1' : undefined}
         aria-pressed={active}
+        title={`${item.opponentOpening} · ${item.counterName} - ${item.idea}`}
         onClick={() => selectLesson(item.id)}
-        className={`flex min-w-0 items-center gap-2 rounded-2xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
+        className={`flex min-w-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1 text-left transition-all active:translate-y-[1px] ${
           active
             ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
             : 'border-brand-100 bg-white hover:border-brand-300'
         }`}
       >
-        <span className="text-lg" aria-hidden>
+        <span className="text-base leading-none" aria-hidden>
           {item.emoji}
         </span>
         <span className="min-w-0 flex-1">
@@ -433,10 +434,12 @@ export function CountersPage() {
           <span className="block truncate text-xs font-bold text-brand-500">
             {item.opponentOpening} · <MoveText text={item.counterName} />
           </span>
-          {/* Ý đồ ngắn để tra cứu nhanh: đọc một dòng là hiểu vì sao đáp như vậy. */}
-          {/* Ý đồ gói trong 2 dòng ngắn: đọc hết câu, không bị cắt giữa chừng. */}
-          {!compact && (
-            <span className="mt-0.5 line-clamp-2 block text-xs font-bold leading-snug text-ink-600">
+          {/*
+            Ý đồ chỉ mở ở bài ĐANG CHỌN (2 dòng): 8 bài mà bài nào cũng mở ý đồ thì
+            danh sách cao gấp đôi, bé phải cuộn. Bài khác rê chuột là thấy trong tooltip.
+          */}
+          {active && !compact && (
+            <span className="mt-0.5 line-clamp-1 block text-xs font-bold leading-snug text-ink-600">
               <MoveText text={item.idea} />
             </span>
           )}
@@ -468,15 +471,14 @@ export function CountersPage() {
   const nextTurnStrip = nextMove ? (
     <div
       id="kid-counter-turn"
-      className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border-2 p-2.5 text-center ${
+      className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-xl border-2 px-2 py-1 text-center ${
         nextIsKid ? 'border-gold-300 bg-gold-50' : 'border-coral-200 bg-coral-50'
       }`}
-    >
-      <span
-        className={`text-sm font-extrabold ${nextIsKid ? 'text-gold-900' : 'text-coral-800'}`}
-      >
-        {nextIsKid ? '👉 Lượt BÉ sắp đi' : '🤖 Lượt ĐỐI THỦ sắp đi'}
-      </span>
+    >          <span
+            className={`truncate text-sm font-extrabold ${nextIsKid ? 'text-gold-900' : 'text-coral-800'}`}
+          >
+            {nextIsKid ? '👉 Lượt BÉ sắp đi' : '🤖 Lượt ĐỐI THỦ sắp đi'}
+          </span>
       {showHint ? (
         <>
           <span
@@ -490,10 +492,8 @@ export function CountersPage() {
               {hintMove?.from} → {hintMove?.to}
             </b>
           </span>
-          <span className="text-xs font-bold text-brand-500">
-            {nextIsKid
-              ? 'Quân viền VÀNG sắp đi tới ô viền xanh'
-              : 'Quân viền SAN HÔ là quân đối thủ sắp di chuyển'}
+          <span className="hidden text-xs font-bold text-brand-500 stage:inline">
+            {nextIsKid ? 'viền vàng → ô xanh' : 'viền san hô là quân đối thủ'}
           </span>
         </>
       ) : (
@@ -623,36 +623,11 @@ export function CountersPage() {
           dòng: tên quốc tế, tên Việt, nước đối thủ đi trước, bé cầm màu nào - và
           nút nhảy xuống danh sách để đổi bài.
         */}
-        <div
-          id="kid-counter-topic"
-          className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border-2 border-brand-200 bg-white px-2.5 py-2"
-        >
-          <span className="text-xl leading-none" aria-hidden>
-            {lesson.emoji}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-extrabold text-brand-900">
-              🧭 Đang đối phó: {lesson.englishName}
-            </span>
-            <span className="block truncate text-xs font-bold text-brand-500">
-              {lesson.opponentOpening} · đối thủ đi {openingMoveLabel(lesson)} · bé cầm{' '}
-              {sideLabel(kidSide)}
-            </span>
-          </span>
-          <button
-            type="button"
-            id="kid-counter-switch"
-            onClick={() =>
-              document
-                .getElementById('kid-counter-list')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }
-            title="Nhảy xuống danh sách để chọn khai cuộc khác"
-            className="shrink-0 rounded-full border-2 border-brand-200 bg-brand-50 px-2 py-0.5 text-xs font-extrabold text-brand-700 transition-all hover:border-brand-400 active:translate-y-[1px]"
-          >
-            🔁 Đổi khai cuộc
-          </button>
-        </div>
+        {/*
+          KHÔNG còn thẻ “đang đối phó khai cuộc nào” riêng: nó tốn 60px mà thông tin
+          ấy đã có trên chip cạnh bàn cờ. Phần tên + nước đối thủ đi + màu bé cầm
+          được gộp vào ĐẦU khung chọn bài bên dưới, một dòng, đúng chỗ bé chọn.
+        */}
 
         {nextTurnStrip}
 
@@ -664,18 +639,26 @@ export function CountersPage() {
         */}
         <FoldPanel
           id="kid-counter-detail"
+          className="stage:p-2"
           icon="🧠"
           title={`Đối phó ${lesson.englishName}`}
           defaultOpen
         >
-          {/* Tiêu đề + nút ⓘ chỉ hiện trên máy tính: điện thoại đã có dòng “Mindset”. */}
-          <div className="hidden stage:block">
-            <SectionTitle
-              icon="🧭"
-              title="Đối phó khai cuộc"
-              subtitle="Đối thủ chơi gì - bé phá lại thế nào"
-              info="counter"
-            />
+          {/*
+            Chỉ còn MỘT dòng có nút ⓘ (bỏ tiêu đề to + dòng phụ): tên bài đã nằm
+            trong thanh tiêu đề của khung này, thêm nữa chỉ tốn 44px chiều cao.
+          */}
+          {/*
+            Dòng đầu của khung phải NÓI RÕ đang phá khai cuộc nào: trên máy tính
+            thanh tiêu đề của FoldPanel bị ẩn, nên nếu không có dòng này bé chỉ thấy
+            “Đối thủ muốn…” mà không biết của bài nào.
+          */}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="min-w-0 flex-1 truncate text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              🧭 Cách phá <b className="normal-case text-brand-900">{lesson.englishName}</b>{' '}
+              <span className="normal-case text-brand-600">({lesson.opponentOpening})</span>
+            </span>
+            <InfoButton topic="counter" />
           </div>
           <p
             id="kid-counter-opponent-plan"
@@ -699,14 +682,15 @@ export function CountersPage() {
               pickedSquare={pickedSquare}
             />
           </div>
-          <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
+          <p id="kid-counter-idea" className="text-xs font-bold text-brand-700">
             <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
           </p>
-          <div className="grid gap-1">
-            <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              ✅ Ba việc cần nhớ
-            </div>
-            <ul id="kid-counter-points" className="grid gap-1">
+          {/*
+            Bỏ nhãn “✅ Ba việc cần nhớ”: danh sách đã đánh số 1-2-3, tự hiểu, và mỗi
+            nhãn thừa là một dòng chiều cao trong cột phải.
+          */}
+          <div className="grid gap-0.5">
+            <ul id="kid-counter-points" className="grid gap-0.5">
               {lesson.points.map((point, index) => (
                 <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
                   <span
@@ -726,42 +710,40 @@ export function CountersPage() {
               ))}
             </ul>
           </div>
-          <p className="text-xs font-bold text-ink-600">
-            👆 Bấm vào “♗ Tượng c5” trong bài để bàn cờ tô sáng ô đó.
-          </p>
-          {lesson.openingId && (
-            <KidButton
-              id="kid-counter-opening"
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate({ to: '/', search: { opening: lesson.openingId } })}
-              title="Mở bài khai cuộc gốc ở tab Khai cuộc"
-            >
-              📖 Mở bài khai cuộc gốc
-            </KidButton>
-          )}
+
         </FoldPanel>
 
         {/*
           Chọn khai cuộc của đối thủ: mỗi dòng là TÊN khai cuộc + cách bé đáp lại +
           nước mở đầu, để bé dò nhanh các kiểu khai cuộc mà không phải mở từng bài.
         */}
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 stage:p-2">
           {/* Nhãn khung: nói rõ đây là chỗ CHỌN khai cuộc của đối thủ (trước đây
               khung mở bằng hai nút Trắng/Đen nên khó hiểu đang chọn cái gì). */}
-          <p className="flex min-w-0 items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-            🗂️ Chọn khai cuộc của đối thủ
-            <span className="shrink-0 rounded-full bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold normal-case tracking-normal text-brand-600">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-900">
+              🧭 <b>{lesson.englishName}</b> · {lesson.opponentOpening} · đối thủ đi{' '}
+              {openingMoveLabel(lesson)} · bé cầm {sideLabel(kidSide)}
+            </span>
+            {lesson.openingId && (
+              <button
+                type="button"
+                id="kid-counter-opening"
+                onClick={() => navigate({ to: '/', search: { opening: lesson.openingId } })}
+                title="Mở bài khai cuộc gốc ở tab Khai cuộc"
+                className="shrink-0 rounded-full border-2 border-brand-200 bg-brand-50 px-2 py-0.5 text-xs font-extrabold text-brand-700 transition-all hover:border-brand-400 active:translate-y-[1px]"
+              >
+                📖 Mở bài khai cuộc gốc
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
+            <span className="shrink-0 rounded-full bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold text-brand-600">
               {list.length} bài
             </span>
-          </p>
-          <Segmented
-            options={SIDE_OPTIONS}
-            value={viewSide}
-            onChange={changeSide}
-            size="sm"
-          />
-          <div id="kid-counter-move-filter" className="flex flex-wrap gap-1.5">
+            {/* Bộ lọc nước mở đầu nằm CHUNG hàng với chọn phe: hai thứ cùng là “lọc bài”. */}
+            <div id="kid-counter-move-filter" className="flex flex-wrap gap-1">
             <button
               type="button"
               data-move-filter="all"
@@ -798,8 +780,13 @@ export function CountersPage() {
                 </button>
               )
             })}
+            </div>
           </div>
-          <div id="kid-counter-list" className="grid min-w-0 gap-1.5">
+          {/*
+            Danh sách xếp 2 CỘT ở máy tính: 8 bài vẫn đọc được tên + cách đáp, mà
+            chiều cao giảm một nửa - đây là chỗ chiếm nhiều nhất trong cột phải.
+          */}
+          <div id="kid-counter-list" className="grid min-w-0 gap-1 sm:grid-cols-2">
             {mainList.map((item) => (
               <LessonRow key={item.id} item={item} />
             ))}
@@ -811,22 +798,26 @@ export function CountersPage() {
                 id="kid-counter-extras"
                 aria-expanded={extrasOpen}
                 onClick={() => setShowExtras((open) => !open)}
-                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1.5 text-left text-xs font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
+                className="flex items-center justify-between gap-2 rounded-xl border-2 border-dashed border-brand-200 bg-white px-2.5 py-1 text-left text-xs font-extrabold text-brand-600 transition-all active:translate-y-[1px] hover:border-brand-400"
               >
-                <span>📚 Tham khảo thêm {extraList.length} bài khác</span>
+                <span>📚 {extraList.length} bài khác</span>
                 <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
               </button>
               {/* Vẫn giữ trong DOM khi đóng (chỉ ẩn CSS) để điều hướng và bài kiểm vẫn thấy đủ. */}
-              <div className={extrasOpen ? 'grid gap-1.5' : 'hidden'}>
+              <div className={extrasOpen ? 'grid gap-1 sm:grid-cols-2' : 'hidden'}>
                 {extraList.map((item) => (
                   <LessonRow key={item.id} item={item} compact />
                 ))}
               </div>
             </div>
           )}
-        </Panel>
 
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+          {/*
+            Điều khiển nằm CHUNG khung với danh sách (một đường kẻ thay vì một khung
+            nữa): tiết kiệm padding + khoảng cách, và bé thấy “chọn bài → đi nước”
+            liền một mạch.
+          */}
+          <div className="grid gap-1.5 border-t border-sand-200 pt-1.5">
           <Segmented
             options={MODES}
             value={mode}
@@ -886,18 +877,21 @@ export function CountersPage() {
               </>
             )}
           </div>
-          <p className="text-xs font-bold text-ink-600">
-            {mode === 'practice'
-              ? atLeaf
-                ? '✅ Bé đã tự đáp trả trọn dòng này!'
-                : reviewing
-                  ? '👀 Đang xem lại nước vừa đi · ▶ để tiến, hoặc kéo quân đúng để đi tiếp'
-                  : '🖐️ Kéo quân hoặc bấm quân rồi ô đích - đối thủ sẽ tự đáp lại'
-              : atLeaf && ply > 0
-                ? '✅ Bé đã xem trọn dòng đối phó này!'
-                : `👀 Đang xem nước ${kidStep} · ⌨️ hoặc bấm ◀ ▶ ▲ ▼`}
+          {/*
+            Một dòng trạng thái duy nhất (cắt gọn bằng `truncate`) thay cho đoạn 3 dòng
+            trước đây; các câu “đã đáp trả trọn dòng” đã có ô xanh dưới bàn cờ.
+          */}
+          <p className="flex min-w-0 items-center gap-1.5 text-xs font-bold text-ink-600">
+            <span className="min-w-0 flex-1 truncate">
+              {mode === 'practice'
+                ? reviewing
+                  ? '👀 Đang xem lại · ▶ để tiến hoặc kéo quân đúng'
+                  : '🖐️ Kéo quân đáp trả · đối thủ tự đi'
+                : `👀 Đang xem nước ${kidStep} · ⌨️ hoặc ◀ ▶ ▲ ▼`}
+            </span>
             <InfoButton topic="board" />
           </p>
+          </div>
         </Panel>
 
       </div>
