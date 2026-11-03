@@ -80,8 +80,87 @@ export const PRINCIPLE_TONE_STYLES: Record<
 
 export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   {
-    id: 'hanging',
+    id: 'center',
     order: 1,
+    title: 'Chiếm trung tâm bằng Tốt',
+    emoji: '🎯',
+    ask: 'Hai Tốt d và e của mình đã ra giữa bàn chưa?',
+    why: 'Bốn ô d4-e4-d5-e5 là chỗ mọi quân đều muốn đi qua. Chiếm trung tâm trước thì quân mình có đường, quân địch bị bó trong nhà.',
+    rhyme: 'Hai Tốt ra giữa',
+    piece: 'p',
+    good: {
+      fen: 'rnbqkbnr/pppp1ppp/8/4p3/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3',
+      note: 'Hai Tốt d4-e4 đứng giữa bàn: mỗi Tốt kiểm soát hai ô trung tâm, mở đường cho cả Hậu lẫn Tượng.',
+      marks: [
+        { square: 'd4', tone: 'good', label: 'Tốt giữ ô trung tâm' },
+        { square: 'e4', tone: 'good', label: 'Tốt giữ ô trung tâm' },
+      ],
+    },
+    bad: {
+      fen: 'rnbqkbnr/pppppppp/8/7p/7P/P7/1PPPPPP1/RNBQKBNR w KQkq - 0 3',
+      note: 'Tốt chỉ nhích ở hai rìa a4 và h4, còn d2-e2 vẫn nằm nhà: trung tâm trống hoàn toàn, quân nặng không có đường vào.',
+      marks: [
+        { square: 'd2', tone: 'bad', label: 'Tốt trung tâm còn nhà' },
+        { square: 'e2', tone: 'bad', label: 'Tốt trung tâm còn nhà' },
+      ],
+    },
+  },
+  {
+    id: 'develop',
+    order: 2,
+    title: 'Phát triển quân nhanh',
+    emoji: '🚀',
+    ask: 'Còn mấy quân mình vẫn đang nằm ở hàng cuối?',
+    why: 'Mỗi nước nên đưa ra một quân MỚI. Quân còn ở nhà là quân chưa tham chiến - ra sớm thì có thêm lực và sớm nhập thành được.',
+    rhyme: 'Mã Tượng ra trước',
+    piece: 'n',
+    good: {
+      fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 7 5',
+      note: 'Cả hai Mã và một Tượng đã ra trận, Tượng c1 còn một nước là ra: phát triển xong rồi mới mở cánh.',
+      marks: [
+        { square: 'c3', tone: 'good', label: 'Mã đã ra trận' },
+        { square: 'c4', tone: 'good', label: 'Tượng đã ra trận' },
+        { square: 'f3', tone: 'good', label: 'Mã đã ra trận' },
+      ],
+    },
+    bad: {
+      fen: 'rnbqkbnr/pppp1ppp/8/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 4 3',
+      note: 'Mới một Tượng ra ngoài, cả hai Mã vẫn ở hàng cuối: quân không ra trận thì không có thế tấn công nào.',
+      marks: [
+        { square: 'b1', tone: 'bad', label: 'Mã chưa ra trận' },
+        { square: 'g1', tone: 'bad', label: 'Mã chưa ra trận' },
+      ],
+    },
+  },
+  {
+    id: 'castle',
+    order: 3,
+    title: 'Nhập thành sớm, giấu Vua',
+    emoji: '🏰',
+    ask: 'Vua mình còn đứng giữa bàn không? Nhập thành được chưa?',
+    why: 'Vua đứng giữa bàn là mục tiêu to nhất. Nhập thành đưa Vua vào góc sau hàng Tốt, đồng thời đưa Xe ra giữa tham chiến.',
+    rhyme: 'Vua vào trong lều',
+    piece: 'k',
+    good: {
+      fen: 'r1bqk2r/ppp1pppp/2np1n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQR1K1 w kq - 2 6',
+      note: 'Vua g1 ngồi sau hàng Tốt, Xe f1 đã ra giữa: nhập thành xong là Vua an toàn, Xe nhập cuộc.',
+      marks: [
+        { square: 'g1', tone: 'good', label: 'Vua trong lều' },
+        { square: 'f1', tone: 'good', label: 'Xe ra giữa' },
+      ],
+    },
+    bad: {
+      fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 5 5',
+      note: 'Vua e1 vẫn đứng giữa cột e, Xe h1 còn kẹt trong góc: chậm nhập thành là tự trao mục tiêu cho đối thủ.',
+      marks: [
+        { square: 'e1', tone: 'bad', label: 'Vua còn giữa bàn' },
+        { square: 'h1', tone: 'bad', label: 'Xe còn kẹt góc' },
+      ],
+    },
+  },
+  {
+    id: 'hanging',
+    order: 4,
     title: 'Coi chừng quân treo',
     emoji: '🪝',
     ask: 'Quân mình vừa định để đó có ai che không? Có quân địch nào đang chĩa vào nó không?',
@@ -107,7 +186,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'open-file',
-    order: 2,
+    order: 5,
     title: 'Đưa Xe vào cột mở',
     emoji: '📏',
     ask: 'Có cột nào hết Tốt để Xe mình tràn xuống không?',
@@ -134,7 +213,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'outpost',
-    order: 3,
+    order: 6,
     title: 'Đặt Mã lên tiền đồn',
     emoji: '🐴',
     ask: 'Có ô nào Tốt địch không đuổi được Mã mình không?',
@@ -161,7 +240,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'seventh-rank',
-    order: 4,
+    order: 7,
     title: 'Xe lên hàng 7',
     emoji: '7️⃣',
     ask: 'Xe mình có thể lên hàng Tốt của địch không?',
@@ -188,7 +267,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'passed-pawn',
-    order: 5,
+    order: 8,
     title: 'Tạo và đẩy Tốt thông',
     emoji: '🌱',
     ask: 'Có Tốt nào của mình mà không còn Tốt địch nào cản đường không?',
@@ -211,7 +290,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'bishop-pair',
-    order: 6,
+    order: 9,
     title: 'Giữ cặp Tượng',
     emoji: '⛪',
     ask: 'Tượng mình đang nhắm ô nào - và mình có đang giữ được cả hai Tượng không?',
@@ -241,7 +320,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
   },
   {
     id: 'trade',
-    order: 7,
+    order: 10,
     title: 'Đổi quân đúng lúc',
     emoji: '⚖️',
     ask: 'Mình đang hơn quân hay kém quân? Nếu hơn thì có nên đổi bớt cho gọn không?',

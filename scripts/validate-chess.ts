@@ -394,12 +394,12 @@ for (const challenge of ENDGAMES) {
   }
 }
 
-console.log('\n▶ 7 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh hoạ mỗi thẻ)')
+console.log('\n▶ 10 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh hoạ mỗi thẻ)')
 {
   let bad = false
-  // Đã cắt từ 10 xuống 7 nguyên tắc cốt lõi (xem README) - con số này phải khớp dữ liệu.
-  if (GOLD_PRINCIPLES.length !== 7) {
-    fail(`cần đúng 7 nguyên tắc nhưng có ${GOLD_PRINCIPLES.length}`)
+  // Đúng 10 nguyên tắc cốt lõi (xem README) - con số này phải khớp dữ liệu.
+  if (GOLD_PRINCIPLES.length !== 10) {
+    fail(`cần đúng 10 nguyên tắc nhưng có ${GOLD_PRINCIPLES.length}`)
     bad = true
   }
   const SQUARE_RE = /^[a-h][1-8]$/
@@ -472,7 +472,7 @@ console.log('\n▶ 7 nguyên tắc vàng (thẻ thói quen + 2 thế cờ minh h
       }
     }
   })
-  if (!bad) ok(`7 nguyên tắc vàng - đủ 7 thẻ, mỗi thẻ 2 thế cờ minh hoạ hợp lệ`)
+  if (!bad) ok(`10 nguyên tắc vàng - đủ 10 thẻ, mỗi thẻ 2 thế cờ minh hoạ hợp lệ`)
 }
 
 console.log(

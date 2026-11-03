@@ -60,7 +60,7 @@ await sleep(2500)
 
 console.log('\n▶ Chiến lược: một module “10 nguyên tắc vàng” có thế cờ minh hoạ')
 
-check(await waitForText('7 nguyên tắc vàng'), 'khung “7 nguyên tắc vàng” đã hiện')
+check(await waitForText('10 nguyên tắc vàng'), 'khung “10 nguyên tắc vàng” đã hiện')
 
 // Mỗi thẻ là một nút bấm mở ra nội dung - đếm theo thuộc tính aria-expanded.
 const cardCount = await evaluate(`
@@ -68,12 +68,12 @@ const cardCount = await evaluate(`
     /^\\s*\\d+\\s*$/.test(b.querySelector('span')?.textContent ?? ''),
   ).length
 `)
-check(cardCount === 7, `có đủ 7 nguyên tắc mức khá/giỏi (đếm được ${cardCount})`)
+check(cardCount === 10, `có đủ 10 nguyên tắc mức khá/giỏi (đếm được ${cardCount})`)
 
 // Mặc định bàn cờ soi thế “NÊN” của nguyên tắc đầu tiên (Tốt d4/e4 giữ trung tâm).
 check(
-  (await hasPiece('wN', 'd5')) && (await hasPiece('wP', 'e4')),
-  'bàn cờ mặc định soi thế minh hoạ của nguyên tắc đầu tiên (Mã d5 có Tốt đỡ)',
+  (await hasPiece('wP', 'd4')) && (await hasPiece('wP', 'e4')),
+  'bàn cờ mặc định soi thế minh hoạ của nguyên tắc đầu tiên (Tốt d4-e4 giữ trung tâm)',
 )
 
 // Bấm thẻ đầu tiên → phải lộ câu hỏi tự vấn + cả hai thế + khẩu quyết.

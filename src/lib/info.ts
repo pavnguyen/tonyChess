@@ -83,7 +83,7 @@ export const INFO: Record<string, InfoEntry> = {
     ],
   },
   principles: {
-    title: '7 nguyên tắc vàng 🏅',
+    title: '10 nguyên tắc vàng 🏅',
     tag: '🧠 Ý tưởng',
     body: [
       'Mười thói quen dưới đây áp dụng được ở **mọi ván, mọi thế cờ** - không phải học thuộc lòng một dòng biến nào.',

@@ -208,8 +208,8 @@ export function StrategyPage() {
         <Panel id="kid-gold-principles">
           <SectionTitle
             icon="🏅"
-            title="7 nguyên tắc vàng"
-            subtitle="Bấm một ô để học · cả 7 nằm gọn một màn"
+            title="10 nguyên tắc vàng"
+            subtitle="Bấm một ô để học · cả 10 nằm gọn một màn"
             info="principles"
           />
           <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
