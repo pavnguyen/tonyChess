@@ -294,5 +294,46 @@ check(
   `bỏ lọc thì bản đồ chính vẫn gọn 3 thẻ (${await mainCount()})`,
 )
 
+console.log('\n▶ Biến phụ: gặp đối thủ đi khác dòng chính')
+
+// Bài số 1 (Ván cờ Ý) phải có sẵn chip biến phụ, và bấm vào là bàn cờ đi lại từ
+// nước 1 theo đúng dòng đó - kèm một câu “ý đồ” để bé biết cần nhớ gì.
+const sidelineChip = '[data-sideline-id="italian-two-knights"]'
+check(await present(sidelineChip), 'có chip biến phụ “Đen đi 3...Nf6” ngay dưới bàn cờ')
+check(
+  !(await present('#kid-opening-line-idea')),
+  'mặc định ở dòng chính: chưa hiện câu ý đồ của biến phụ',
+)
+check(
+  await evaluate(`
+    (() => {
+      const el = document.querySelector('[data-sideline-id="italian-two-knights"]')
+      if (!el) return false
+      el.click()
+      return true
+    })()
+  `),
+  'bấm được chip biến phụ',
+)
+await sleep(450)
+check(await present('#kid-opening-line-idea'), 'hiện câu “ý đồ” của biến phụ')
+check(
+  await evaluate(
+    `(document.querySelector('[data-sideline-id="italian-two-knights"]')?.getAttribute('aria-pressed')) === 'true'`,
+  ),
+  'chip biến phụ đang chọn được đánh dấu (aria-pressed)',
+)
+check(
+  await evaluate(`
+    (() => {
+      document.getElementById('kid-opening-line-main')?.click()
+      return true
+    })()
+  `),
+  'bấm “Dòng chính” để quay lại',
+)
+await sleep(400)
+check(!(await present('#kid-opening-line-idea')), 'quay lại dòng chính thì câu ý đồ tự ẩn')
+
 close()
 finish('BROWSER OPENINGS-PATTERNS')

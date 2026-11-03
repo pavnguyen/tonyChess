@@ -12,6 +12,13 @@ import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BEST_MOVE_THEMES } from '../data/bestMoves'
 import { useTacticsQuery } from '../data/queries'
+import {
+  duePuzzleIds,
+  freshPuzzleIds,
+  loadRecords,
+  recordResult,
+  saveRecords,
+} from '../lib/tacticsProgress'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useChessGame } from '../hooks/useChessGame'
 import {
@@ -50,6 +57,11 @@ export function TacticsPage() {
     isBestMoveTheme(search.theme) ? search.theme : 'win-material',
   )
   const [index, setIndex] = useState(0)
+  /**
+   * Lịch ôn từng thế (localStorage). Nhờ nó 50 thế không “giải xong là hết”: thế
+   * đã giải đúng sẽ quay lại sau 3 / 7 / 21 ngày, thế đi sai thì hẹn mai.
+   */
+  const [records, setRecords] = useState(() => loadRecords())
   const [phase, setPhase] = useState<'solve' | 'solved'>('solve')
   /**
    * Số nửa nước của **lời giải** đã đi xong. Bé đi các nửa nước ở vị trí chẵn
@@ -79,6 +91,20 @@ export function TacticsPage() {
   )
   const safeIndex = list.length ? Math.min(index, list.length - 1) : 0
   const active: BestMovePuzzle | undefined = list[safeIndex]
+
+  /** Toàn bộ thế theo đúng thứ tự trong dữ liệu (mỗi chủ đề đã xếp dễ → khó). */
+  const orderedIds = useMemo(() => (puzzles ?? []).map((item) => item.id), [puzzles])
+  const dueIds = useMemo(() => duePuzzleIds(records, orderedIds), [records, orderedIds])
+  /**
+   * Việc hôm nay: ưu tiên thế tới hạn ôn, thiếu thì lấy thế mới (dễ trước) cho đủ 8.
+   * Giới hạn 8 để một phiên luyện không kéo dài quá sức bé 7 tuổi.
+   */
+  const todayIds = useMemo(() => {
+    const due = dueIds.slice(0, 8)
+    if (due.length >= 3) return due
+    const fresh = freshPuzzleIds(records, orderedIds).slice(0, 8 - due.length)
+    return [...due, ...fresh]
+  }, [dueIds, records, orderedIds])
 
   const board = useChessGame(active?.fen ?? '8/8/8/8/8/8/8/K6k w - - 0 1', active?.side ?? 'white')
 
@@ -277,6 +303,13 @@ export function TacticsPage() {
 
   const finishSolved = () => {
     if (!active) return
+    // Giải sạch (không gợi ý, không đi sai) mới được coi là “thuộc”: hẹn xa hơn.
+    const outcome = hint || wrongTries > 0 ? 'solved-with-help' : 'solved-clean'
+    setRecords((current) => {
+      const next = recordResult(current, active.id, outcome)
+      saveRecords(next)
+      return next
+    })
     setPhase('solved')
     setConfetti(true)
     if (soundOn) playWin()
@@ -513,6 +546,36 @@ export function TacticsPage() {
           đang ở đâu. Trước đây hai thứ này bị đẩy cách xa nhau nên khó theo dõi.
         */}
         <Panel id="kid-tactic-map" className="grid gap-2">
+          {/*
+            Dải “Hôm nay”: thế đã tới hạn ôn (theo lịch 3/7/21 ngày) và thế mới, gộp
+            trong một dòng. Bé không cần chọn chủ đề trước - bấm “Ôn ngay” là app tự
+            mở đúng thế đang tới hạn.
+          */}
+          <div
+            id="kid-tactic-today"
+            className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5"
+          >
+            <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-gold-800">
+              🎯 Hôm nay: {todayIds.length} thế{' '}
+              {dueIds.length > 0
+                ? `· ${dueIds.length} thế đã tới hạn ôn`
+                : '· thế mới cho bé làm quen'}
+            </span>
+            <button
+              type="button"
+              id="kid-tactic-today-go"
+              disabled={todayIds.length === 0}
+              onClick={() => {
+                const target = (puzzles ?? []).find((item) => item.id === todayIds[0])
+                if (!target) return
+                goTo(target.theme, target)
+                setPreviewing(false)
+              }}
+              className="shrink-0 rounded-full border-2 border-gold-500 bg-white px-2 py-0.5 text-xs font-extrabold text-gold-800 transition-all hover:bg-gold-100 active:translate-y-[1px] disabled:opacity-50"
+            >
+              ▶ Ôn ngay
+            </button>
+          </div>
           <ProgressMap
             nodes={list.map((item, index) => ({
               id: item.id,

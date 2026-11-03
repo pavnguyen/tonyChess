@@ -247,7 +247,22 @@ export function OpeningsPage() {
     setGoalFocus((value) => !value)
   }, [])
 
-  const moves = useMemo(() => opening?.moves ?? [], [opening])
+  /**
+   * Biến phụ bé đang xem (`main` = dòng chính). Chọn biến phụ thì bàn cờ đi lại từ
+   * nước 1 theo đúng dòng đó - bé gặp đối thủ chơi khác vẫn có bài để theo.
+   */
+  const [lineId, setLineId] = useState('main')
+  const activeLine = useMemo(
+    () => opening?.sidelines?.find((line) => line.id === lineId),
+    [opening, lineId],
+  )
+  useEffect(() => {
+    setLineId('main')
+  }, [opening?.id])
+  const moves = useMemo(
+    () => activeLine?.moves ?? opening?.moves ?? [],
+    [opening, activeLine],
+  )
   const totalPlies = moves.length
   const atLeaf = ply >= totalPlies
 
@@ -777,7 +792,7 @@ export function OpeningsPage() {
 
       {/* Cột trái CHỈ có bàn cờ + băng giải thích → bàn cờ luôn to hết cỡ. */}
       <BoardStage
-        reserve={268}
+        reserve={296}
         board={
           // Không tự bung gì khi rê chuột: trước đây chỉ cần đưa chuột ngang bàn cờ là
           // khung mẫu hình bật lên, dễ bấm nhầm và che mất thế cờ bé đang học. Giờ bé
@@ -799,6 +814,69 @@ export function OpeningsPage() {
         }
         under={
           <div className="grid gap-2">
+            {/*
+              Chọn biến phụ ngay dưới bàn cờ: gặp đối thủ đi khác dòng chính (ví dụ
+              London mà Đen đẩy ...c5 sớm) bé bấm một chip là có bài đúng dòng ấy.
+            */}
+            {opening.sidelines && opening.sidelines.length > 0 && (
+              <div id="kid-opening-lines" className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-extrabold text-brand-500">
+                  🔀 Đối thủ đi khác:
+                </span>
+                <button
+                  type="button"
+                  id="kid-opening-line-main"
+                  aria-pressed={lineId === 'main'}
+                  onClick={() => {
+                    setLineId('main')
+                    setPly(0)
+                    setOpeningPreview(false)
+                    setWrongInfo(null)
+                    setFinished(false)
+                    openingReplyRef.current = true
+                  }}
+                  className={`rounded-full border-2 px-2 py-0.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
+                    lineId === 'main'
+                      ? 'border-brand-600 bg-brand-700 text-white'
+                      : 'border-sand-300 bg-white text-brand-700 hover:border-brand-300'
+                  }`}
+                >
+                  Dòng chính
+                </button>
+                {opening.sidelines.map((line) => (
+                  <button
+                    key={line.id}
+                    type="button"
+                    data-sideline-id={line.id}
+                    aria-pressed={lineId === line.id}
+                    title={line.idea}
+                    onClick={() => {
+                      setLineId(line.id)
+                      setPly(0)
+                      setOpeningPreview(false)
+                      setWrongInfo(null)
+                      setFinished(false)
+                      openingReplyRef.current = true
+                    }}
+                    className={`rounded-full border-2 px-2 py-0.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
+                      lineId === line.id
+                        ? 'border-info-600 bg-info-500 text-white'
+                        : 'border-sand-300 bg-white text-brand-700 hover:border-brand-300'
+                    }`}
+                  >
+                    {line.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {activeLine && (
+              <p
+                id="kid-opening-line-idea"
+                className="rounded-2xl bg-info-50 px-2.5 py-1.5 text-xs font-bold text-info-700"
+              >
+                🧭 {activeLine.idea}
+              </p>
+            )}
             {/* Banner Giải Thích Siêu Ngắn luôn nằm NGAY DƯỚI bàn cờ. */}
             {planPreview ? (
               <div

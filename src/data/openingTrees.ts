@@ -15,11 +15,13 @@
  *  - nước của đối thủ thì KHÔNG được có `annotation`;
  *  - dòng chính phải đủ dài (≥ 10 ply) để phần "kế hoạch trung cuộc" có nghĩa.
  */
-import type { MoveAnnotation, OpeningMove, OpeningPlan } from '../types'
+import type { MoveAnnotation, OpeningMove, OpeningPlan, OpeningSideLine } from '../types'
 
 interface OpeningTreeData {
   main: OpeningMove[]
   plan: OpeningPlan
+  /** Biến phụ hay gặp - xem `OpeningSideLine` trong `src/types.ts`. */
+  sidelines?: OpeningSideLine[]
 }
 
 const ann = (
@@ -57,6 +59,23 @@ const LONDON: OpeningTreeData = {
       'Đen dồn sang cánh Hậu thì đẩy h4-h5, đổi Tốt mở cột h rồi đưa Xe sang đánh Vua.',
     ],
   },
+  sidelines: [
+    {
+      id: 'london-early-c5',
+      label: 'Đen đi ...c5 sớm',
+      idea: 'Đen đánh ngay vào d4 - bé cứ dựng kim tự tháp e3-c3 rồi mới tính đổi quân, đừng vội đẩy e4.',
+      moves: [
+        { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm, mở đường Tượng.', 'Dâng Tốt trung tâm') },
+        { san: 'd5' },
+        { san: 'Bf4', annotation: ann('Bf4', 'b', 'Đưa Tượng ra trước khi đóng Tốt.', 'Tượng phi ra trước') },
+        { san: 'c5' },
+        { san: 'e3', annotation: ann('e3', 'p', 'Chèn Tốt e làm chân đế cho d4.', 'Chèn Tốt làm đế') },
+        { san: 'Nc6' },
+        { san: 'c3', annotation: ann('c3', 'p', 'Dựng nốt kim tự tháp c3-d4-e3.', 'Lô-kốt thật kiên cố') },
+        { san: 'Nf6' },
+      ],
+    },
+  ],
 }
 
 // ── Ván cờ Ý (bé cầm Trắng) ─────────────────────────────────────────────────
@@ -85,6 +104,23 @@ const ITALIAN: OpeningTreeData = {
       'Giữ Tượng c4, đừng đổi vội: hễ Đen sơ hở ở f7 là có nước chiếu hoặc ăn quân.',
     ],
   },
+  sidelines: [
+    {
+      id: 'italian-two-knights',
+      label: 'Đen đi 3...Nf6',
+      idea: 'Đen ra Mã trước khi đóng Tốt - bé vẫn d3 rồi nhập thành, chưa vội Ng5 ăn Tốt.',
+      moves: [
+        { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
+        { san: 'e5' },
+        { san: 'Nf3', annotation: ann('Nf3', 'n', 'Nhảy Mã tấn công Tốt e5 của Đen.', 'Mã ra dọa Tốt') },
+        { san: 'Nc6' },
+        { san: 'Bc4', annotation: ann('Bc4', 'b', 'Tượng nhắm thẳng vào điểm yếu f7.', 'Tượng nhắm tim Vua') },
+        { san: 'Nf6' },
+        { san: 'd3', annotation: ann('d3', 'p', 'Chèn Tốt d3 mở đường cho Tượng c1.', 'Mở cửa Tượng nhà') },
+        { san: 'Bc5' },
+      ],
+    },
+  ],
 }
 
 // ── Phòng thủ King’s Indian (bé cầm Đen) ────────────────────────────────────
@@ -111,6 +147,23 @@ const KINGS_INDIAN: OpeningTreeData = {
       'Đưa Xe f8 lên e8 giữ ô e5 - mất e5 là Tượng g7 hết đất.',
     ],
   },
+  sidelines: [
+    {
+      id: 'kid-vs-center',
+      label: 'Trắng chơi 4.e4',
+      idea: 'Trắng chiếm trung tâm - bé giữ pháo đài g7, đẩy d6 rồi e5, về sau mới mở cánh Vua.',
+      moves: [
+        { san: 'd4' },
+        { san: 'Nf6', annotation: ann('Nf6', 'n', 'Nhảy Mã chặn Trắng đẩy Tốt e4.', 'Mã chặn trung tâm') },
+        { san: 'c4' },
+        { san: 'g6', annotation: ann('g6', 'p', 'Mở ô g7 đưa Tượng vào góc.', 'Mở cửa lều Tượng') },
+        { san: 'Nc3' },
+        { san: 'Bg7', annotation: ann('Bg7', 'b', 'Đưa Tượng vào pháo đài chờ phản công.', 'Tượng giấu trong lều') },
+        { san: 'e4' },
+        { san: 'd6', annotation: ann('d6', 'p', 'Chống đỡ ô e5, chuẩn bị đẩy e5.', 'Tốt d giữ ô e5') },
+      ],
+    },
+  ],
 }
 
 // ── Phòng thủ Sicilian (bé cầm Đen) ─────────────────────────────────────────
@@ -137,6 +190,23 @@ const SICILIAN: OpeningTreeData = {
       'Trắng nhập thành cánh Hậu thì dồn b5-b4, mở đường Tốt đánh thẳng vào Vua.',
     ],
   },
+  sidelines: [
+    {
+      id: 'sicilian-closed',
+      label: 'Trắng đi 2.Nc3',
+      idea: 'Trắng chơi kín - bé cứ Nc6 rồi Bg7, giữ chặt d4 và chờ đẩy b5-b4 phản công.',
+      moves: [
+        { san: 'e4' },
+        { san: 'c5', annotation: ann('c5', 'p', 'Khống chế ô d4 của Trắng từ cánh.', 'Tốt c ngáng đường') },
+        { san: 'Nc3' },
+        { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã ra giữ ô d4, tăng sức ép trung tâm.', 'Mã giữ trung tâm') },
+        { san: 'g3' },
+        { san: 'g6', annotation: ann('g6', 'p', 'Mở đường cho Tượng vào pháo đài g7.', 'Mở cửa lều Tượng') },
+        { san: 'Bg2' },
+        { san: 'Bg7', annotation: ann('Bg7', 'b', 'Tượng vào g7 canh đường chéo dài.', 'Tượng giấu trong lều') },
+      ],
+    },
+  ],
 }
 
 // ── Khai cuộc Tây Ban Nha / Ruy López (bé cầm Trắng) ────────────────────────
@@ -166,6 +236,25 @@ const RUY_LOPEZ: OpeningTreeData = {
       'Giữ Xe e1 ở cột e; sau khi đẩy d3 thì Mã b1 sang d2 - cả hai nhắm cánh Vua Đen.',
     ],
   },
+  sidelines: [
+    {
+      id: 'ruy-berlin',
+      label: 'Đen đi 3...Nf6',
+      idea: 'Đen ra Mã thay vì đóng Tốt - bé nhập thành trước, rồi đuổi Mã đang ăn Tốt e4 bằng Re1.',
+      moves: [
+        { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
+        { san: 'e5' },
+        { san: 'Nf3', annotation: ann('Nf3', 'n', 'Nhảy Mã tấn công Tốt e5 của Đen.', 'Mã ra dọa Tốt') },
+        { san: 'Nc6' },
+        { san: 'Bb5', annotation: ann('Bb5', 'b', 'Tượng ghim Mã c6 - quân đang giữ Tốt e5.', 'Tượng ghim Mã Đen') },
+        { san: 'Nf6' },
+        { san: 'O-O', annotation: ann('O-O', 'k', 'Giấu Vua vào góc an toàn.', 'Vua chui vào lều') },
+        { san: 'Nxe4' },
+        { san: 'Re1', annotation: ann('Re1', 'r', 'Xe vào cột e đuổi Mã đang ăn Tốt e4.', 'Xe vào cột e') },
+        { san: 'Nd6' },
+      ],
+    },
+  ],
 }
 
 // ── Gambit Hậu (bé cầm Trắng) ───────────────────────────────────────────────
@@ -195,6 +284,23 @@ const QUEENS_GAMBIT: OpeningTreeData = {
       'Nhập thành rồi đưa Xe a1 sang c1: cột c là đường tấn công chính.',
     ],
   },
+  sidelines: [
+    {
+      id: 'qg-accepted',
+      label: 'Đen ăn Tốt c4',
+      idea: 'Đen giữ Tốt c4 - bé đòi lại bằng e3 rồi Bxc4, chưa đẩy e4 khi Tượng chưa ra.',
+      moves: [
+        { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm bằng Tốt Hậu.', 'Dâng Tốt Hậu trước') },
+        { san: 'd5' },
+        { san: 'c4', annotation: ann('c4', 'p', 'Gambit: dâng Tốt c để giành thế chủ động.', 'Dâng Tốt c mời') },
+        { san: 'dxc4' },
+        { san: 'e3', annotation: ann('e3', 'p', 'Chèn Tốt e mở đường Tượng f1 đòi lại c4.', 'Mở cửa Tượng nhà') },
+        { san: 'Nf6' },
+        { san: 'Bxc4', annotation: ann('Bxc4', 'b', 'Tượng ăn lại Tốt c4, nhắm thẳng f7.', 'Đòi lại quân ngay') },
+        { san: 'e6' },
+      ],
+    },
+  ],
 }
 
 // ── Phòng thủ Pháp (bé cầm Đen) ─────────────────────────────────────────────
@@ -224,6 +330,23 @@ const FRENCH: OpeningTreeData = {
       'Đưa Tượng f8 ra e7 rồi nhập thành; giữ Tượng c8, đừng để bị nhốt sau hàng rào.',
     ],
   },
+  sidelines: [
+    {
+      id: 'french-advance',
+      label: 'Trắng đẩy 3.e5',
+      idea: 'Trắng tiến e5 - bé đánh ngay vào chân đế bằng c5, rồi Nc6 và Qb6 ép Tốt d4.',
+      moves: [
+        { san: 'e4' },
+        { san: 'e6', annotation: ann('e6', 'p', 'Mở đường Tượng c8, chuẩn bị dựng hàng rào.', 'Tốt e dựng rào') },
+        { san: 'd4' },
+        { san: 'd5', annotation: ann('d5', 'p', 'Dựng trung tâm Tốt vững chắc.', 'Tốt d đáp trả') },
+        { san: 'e5' },
+        { san: 'c5', annotation: ann('c5', 'p', 'Đánh thẳng vào chân đế Tốt d4.', 'Tốt c phản công') },
+        { san: 'c3' },
+        { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã ra tăng sức ép lên ô d4.', 'Mã giữ trung tâm') },
+      ],
+    },
+  ],
 }
 
 // ── Phòng thủ Caro-Kann (bé cầm Đen) ───────────────────────────────────────
@@ -250,6 +373,23 @@ const CARO_KANN: OpeningTreeData = {
       'Giữ Tốt c6 làm chân đế, Mã b8 ra d7, Xe a8 sang cột d - cột d để phản công.',
     ],
   },
+  sidelines: [
+    {
+      id: 'caro-advance',
+      label: 'Trắng đẩy 3.e5',
+      idea: 'Trắng khoá trung tâm bằng e5 - bé đưa Tượng ra f5 ngay rồi mới đóng e6.',
+      moves: [
+        { san: 'e4' },
+        { san: 'c6', annotation: ann('c6', 'p', 'Chuẩn bị đẩy d5 mà không sợ bị đuổi.', 'Tốt c mở đường') },
+        { san: 'd4' },
+        { san: 'd5', annotation: ann('d5', 'p', 'Chiếm trung tâm, thách Trắng ăn Tốt.', 'Tốt d tiến lên') },
+        { san: 'e5' },
+        { san: 'Bf5', annotation: ann('Bf5', 'b', 'Tượng ra ngoài TRƯỚC khi đóng Tốt e6.', 'Tượng ra trước Tốt') },
+        { san: 'Nf3' },
+        { san: 'e6', annotation: ann('e6', 'p', 'Đóng Tốt e6 giữ vững trung tâm.', 'Tốt e dựng rào') },
+      ],
+    },
+  ],
 }
 
 // ── Khai cuộc Anh (bé cầm Trắng) ─────────────────────────────────────────────
@@ -278,6 +418,23 @@ const ENGLISH: OpeningTreeData = {
       'Giữ Tượng g2 quét đường chéo dài, đổi quân ở trung tâm khi có lợi.',
     ],
   },
+  sidelines: [
+    {
+      id: 'english-reversed-sicilian',
+      label: 'Đen đi ...c5',
+      idea: 'Đen chơi ngược Sicilian - bé giữ Tượng g2, đẩy b4-b5 đánh cánh Hậu, chưa mở trung tâm sớm.',
+      moves: [
+        { san: 'c4', annotation: ann('c4', 'p', 'Kiểm soát ô d5 từ xa bằng Tốt cánh.', 'Tốt c nhích lên') },
+        { san: 'c5' },
+        { san: 'Nc3', annotation: ann('Nc3', 'n', 'Mã c3 giữ ô d5 và e4.', 'Mã giữ trung tâm') },
+        { san: 'Nc6' },
+        { san: 'g3', annotation: ann('g3', 'p', 'Đẩy Tốt g3 mở đường Tượng vào lều g2.', 'Mở cửa lều Tượng') },
+        { san: 'g6' },
+        { san: 'Bg2', annotation: ann('Bg2', 'b', 'Tượng vào g2 canh đường chéo dài.', 'Tượng giấu trong lều') },
+        { san: 'Bg7' },
+      ],
+    },
+  ],
 }
 
 // ── Phòng thủ Nimzo-Indian (bé cầm Đen) ──────────────────────────────────────
@@ -306,6 +463,23 @@ const NIMZO_INDIAN: OpeningTreeData = {
       'Đưa Xe a8 sang cột c rồi đổi Tốt c5 lấy Tốt d4 để mở cột.',
     ],
   },
+  sidelines: [
+    {
+      id: 'nimzo-qc2',
+      label: 'Trắng chơi 4.Qc2',
+      idea: 'Trắng né ghim bằng Qc2 - bé nhập thành ngay rồi đánh d5, đừng vội đổi Tượng lấy Mã.',
+      moves: [
+        { san: 'd4' },
+        { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã f6 kiểm soát trung tâm từ xa.', 'Mã ra giữ nhà') },
+        { san: 'c4' },
+        { san: 'e6', annotation: ann('e6', 'p', 'Đóng Tốt e6 mở đường Tượng f8 ghim Mã.', 'Tốt e mở đường') },
+        { san: 'Nc3' },
+        { san: 'Bb4', annotation: ann('Bb4', 'b', 'Tượng b4 ghim Mã c3, khoá ô e4.', 'Tượng ra ghim Mã') },
+        { san: 'Qc2' },
+        { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành sớm đưa Vua vào góc an toàn.', 'Vua an toàn nhất') },
+      ],
+    },
+  ],
 }
 
 /**
@@ -328,8 +502,12 @@ const TREES: Record<string, OpeningTreeData> = {
 export interface OpeningTreeEntry {
   main: OpeningMove[]
   plan: OpeningPlan
+  sidelines?: OpeningSideLine[]
 }
 
 export const OPENING_TREES: Record<string, OpeningTreeEntry> = Object.fromEntries(
-  Object.entries(TREES).map(([id, data]) => [id, { main: data.main, plan: data.plan }]),
+  Object.entries(TREES).map(([id, data]) => [
+    id,
+    { main: data.main, plan: data.plan, sidelines: data.sidelines },
+  ]),
 )

@@ -164,6 +164,7 @@ export const OPENINGS: Opening[] = META.map((meta) => {
     ...meta,
     moves: entry?.main ?? EMPTY,
     plan: entry?.plan ?? { title: 'Kế hoạch tiếp theo', points: [] },
+    sidelines: entry?.sidelines,
   }
 })
 

@@ -59,7 +59,7 @@ export function GroupNav() {
             key={item.to}
             to={item.to}
             aria-current={active}
-            className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
+            className={`inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
               item.highlight
                 ? active
                   ? 'border-gold-600 bg-gradient-to-r from-gold-400 to-gold-300 text-gold-950 shadow-[0_2px_0_#9a7018]'

@@ -81,7 +81,9 @@ export function useChessEngine() {
   const think = useCallback(
     (fen: string, difficulty: Difficulty): Promise<EngineMove | null> => {
       if (difficulty === 'master') {
-        return stockfishThink(fen, { depth: 18, movetime: 1600 })
+        // Mức “Khá”: Stockfish nhưng **giới hạn 1500 Elo** - bé suy nghĩ kỹ là thắng
+        // được. Trước đây gọi hết sức (depth 18) nên bé 1300 thua 100% số ván.
+        return stockfishThink(fen, { depth: 10, movetime: 900, elo: 1500 })
           .then((move) => move ?? computeHere(fen, difficulty))
           .catch(() => computeHere(fen, difficulty))
       }

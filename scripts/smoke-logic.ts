@@ -162,9 +162,23 @@ for (const challenge of ENDGAMES) {
   }
   const probe = new Chess(challenge.fen)
   const applied = probe.move(hint.san)
+  /**
+   * Mục tiêu phong Hậu: gợi ý phải là **nước Tốt tiến**. Nhưng có thế Tốt chưa đi
+   * được vì chính Vua mình đứng trước mặt - lúc đó kỹ thuật đúng là Vua nhường
+   * đường mà vẫn che Tốt, nên chấp nhận nước Vua với điều kiện Tốt không bị ăn ngay.
+   */
+  const pawnAdvances = game.moves({ verbose: true }).some((move) => move.piece === 'p')
+  const pawnSquares = game
+    .board()
+    .flat()
+    .filter((square) => square && square.type === 'p' && square.color === 'w')
+    .map((square) => square!.square)
+  const pawnSafe = pawnSquares.every(
+    (square) => !probe.moves({ verbose: true }).some((reply) => reply.to === square),
+  )
   const good =
     challenge.goal === 'promote'
-      ? applied.piece === 'p'
+      ? applied.piece === 'p' || (!pawnAdvances && pawnSafe)
       : probe.isCheckmate() || applied.san.includes('+')
   check(good, `${challenge.id}: gợi ý "${hint.san}" hợp lý cho mục tiêu ${challenge.goal}`)
 }

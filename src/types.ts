@@ -54,6 +54,20 @@ export interface OpeningPopularity {
   position: string
 }
 
+/**
+ * Một **biến phụ** của khai cuộc: đối thủ đi khác dòng chính (ví dụ London mà Đen
+ * đẩy ...c5 sớm). Dạy đúng biến phụ hay gặp để bé không “ra khỏi bài” ngay nước 4.
+ */
+export interface OpeningSideLine {
+  id: string
+  /** Nhãn ngắn cho chip, ví dụ “Đen đi 3...Nf6”. */
+  label: string
+  /** Một câu: đối thủ đổi ý gì và bé cần nhớ gì. */
+  idea: string
+  /** Toàn bộ dòng của biến phụ, bắt đầu từ nước 1 (đi độc lập được). */
+  moves: OpeningMove[]
+}
+
 export interface Opening {
   id: string
   name: string
@@ -91,6 +105,8 @@ export interface Opening {
   moves: OpeningMove[]
   /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */
   plan: OpeningPlan
+  /** Các biến phụ hay gặp (mỗi biến một dòng đầy đủ từ nước 1). */
+  sidelines?: OpeningSideLine[]
 }
 
 /**

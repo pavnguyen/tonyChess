@@ -67,8 +67,8 @@ export const INFO: Record<string, InfoEntry> = {
     title: 'Chú Máy - đối thủ tập luyện',
     tag: '🧠 Ý tưởng',
     body: [
-      'App có hai "chú Máy": **Dễ** = bộ máy JavaScript tự viết (tính trước 3 nước, không đi bừa) và **Khá** = **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới, tính trước 4 nước).',
-      'Tên mức chỉ để động viên bé, đừng hiểu là máy chơi yếu: cả hai đều chơi hết sức (tương đương mức Khó ~1500 và mức Siêu ~1800). Các bài Tàn cuộc cũng dùng chính bộ máy đó để đỡ quân.',
+      'App có hai "chú Máy": **Dễ** = bộ máy JavaScript tự viết (tính trước 3 nước, không đi bừa) và **Khá** = **Stockfish** (bộ máy mã nguồn mở mạnh nhất thế giới, chạy hết sức - sâu khoảng 18 nước).',
+      '**Dễ** xấp xỉ 1100-1250 Elo (máy JS tự viết). **Khá** là Stockfish nhưng được **giới hạn khoảng 1500 Elo** - đúng tầm một bạn cùng lứa giỏi, nên bé suy nghĩ kỹ là thắng được; trước đây mức này gọi Stockfish hết sức nên gần như không thể thắng. Các bài Tàn cuộc dùng bộ máy JavaScript (tức mức “Dễ”) để đỡ quân.',
       'Trong lúc đấu, bé có nút **💡 Gợi ý**: máy tìm nước mạnh nhất cho **chính bé** rồi vẽ mũi tên vàng + khoanh quân đi và ô đích. Mỗi ván bé chỉ được gợi ý **3 lần** (nút đếm ngược 3-2-1 rồi tự khoá) - để bé tập tự suy nghĩ, ván mới lại có đủ 3 lượt.',
       'Stockfish được tải theo nhu cầu (chỉ khi bé chọn mức Khá) nên mở app vẫn nhanh.',
     ],

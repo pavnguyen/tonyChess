@@ -9,7 +9,7 @@
  *  - **Nối tiếp (serialize)**: các yêu cầu xếp hàng, tránh hai lệnh `go` chồng nhau.
  */
 import type { EngineMove } from './minimax'
-import { extractBestMove, extractScoreInfo, isReady, uciToEngineMove } from './uci'
+import { extractBestMove, extractScoreInfo, isReady, uciToEngineMove } from './uci.ts'
 
 const ENGINE_FILE = 'stockfish-19-lite-single.js'
 const BOOT_TIMEOUT_MS = 20_000
@@ -19,6 +19,33 @@ export interface StockfishOptions {
   depth?: number
   /** Giới hạn thời gian suy nghĩ (ms) - engine dừng khi chạm một trong hai. */
   movetime?: number
+  /**
+   * Giới hạn sức mạnh theo **Elo** (UCI_LimitStrength + UCI_Elo).
+   *
+   * Bỏ trống = engine chạy hết sức. Đây là thứ giữ cho mức “Khá” của tab Đấu Máy
+   * còn có cửa thắng: Stockfish hết sức mạnh hơn 2000 rất xa, còn UCI_Elo 1500 thì
+   * nó chơi đúng tầm một bạn cùng lứa giỏi.
+   */
+  elo?: number
+}
+
+/** Stockfish chỉ nhận UCI_Elo trong khoảng này; ngoài khoảng thì kẹp lại. */
+export const MIN_ELO = 1320
+export const MAX_ELO = 3190
+
+/**
+ * Các lệnh `setoption` đặt sức mạnh cho engine.
+ *
+ * Tách thành hàm thuần để bài kiểm chấm được **không cần** khởi động engine:
+ * đây đúng là phần dễ sai nhất (quên tắt giới hạn, truyền Elo ngoài khoảng…).
+ */
+export function strengthCommands(elo?: number): string[] {
+  if (elo === undefined) return ['setoption name UCI_LimitStrength value false']
+  const clamped = Math.min(MAX_ELO, Math.max(MIN_ELO, Math.round(elo)))
+  return [
+    'setoption name UCI_LimitStrength value true',
+    `setoption name UCI_Elo value ${clamped}`,
+  ]
 }
 
 let worker: Worker | null = null
@@ -156,7 +183,14 @@ export function stockfishThink(fen: string, options: StockfishOptions = {}): Pro
   const movetime = options.movetime ?? 1500
 
   const request = chain.then(async () => {
-    const lines = await run([`position fen ${fen}`, `go depth ${depth} movetime ${movetime}`], movetime + 5000)
+    const lines = await run(
+      [
+        ...strengthCommands(options.elo),
+        `position fen ${fen}`,
+        `go depth ${depth} movetime ${movetime}`,
+      ],
+      movetime + 5000,
+    )
     const uci = extractBestMove(lines)
     return uci ? uciToEngineMove(fen, uci) : null
   })
@@ -190,7 +224,11 @@ export function stockfishAnalyze(
 
   const request = chain.then(async () => {
     const lines = await run(
-      [`position fen ${fen}`, `go depth ${depth} movetime ${movetime}`],
+      [
+        ...strengthCommands(options.elo),
+        `position fen ${fen}`,
+        `go depth ${depth} movetime ${movetime}`,
+      ],
       movetime + 5000,
     )
     const uci = extractBestMove(lines)

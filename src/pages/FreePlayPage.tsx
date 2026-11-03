@@ -26,6 +26,9 @@ import { Chess } from 'chess.js'
 import { gradeMove } from '../engine/analysis'
 import { describeDanger, describeLoss, saveBlunder, worstOf } from '../lib/coach'
 import type { Blunder } from '../lib/coach'
+import { gameDateLabel, loadGames, saveGame } from '../lib/gameArchive'
+import type { SavedGame } from '../lib/gameArchive'
+import { moveNumber, reviewGame } from '../lib/gameReview'
 import { findHangingPieces } from '../lib/threats'
 import type { Side } from '../types'
 
@@ -74,7 +77,8 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
   easy: 'Máy chơi ngây thơ, hay quên bảo vệ quân - bé tha hồ săn quân!',
   medium: 'Máy biết ăn quân và tránh mất quân. Bé phải nhìn kỹ nhé!',
   hard: 'Đối thủ này tính trước 3 nước và không đi bừa - bé bật 👁️ Mắt Thần rồi thử sức nhé!',
-  master: 'Máy tính trước 4 nước, gần như không mắc lỗi. Bé chơi được mức này là rất cứng rồi!',
+  master:
+    'Máy là Stockfish nhưng chỉ chơi cỡ 1500 Elo - bé suy nghĩ kỹ và nhìn quân trước khi đi là thắng được. Đây là mức nên luyện thật quen!',
 }
 
 export function FreePlayPage() {
@@ -117,6 +121,12 @@ export function FreePlayPage() {
   const [danger, setDanger] = useState<{ from: string; to: string; warning: string } | null>(null)
   /** Các lỗi của ván đang chơi, dùng cho phần tổng kết cuối ván. */
   const [blunders, setBlunders] = useState<Blunder[]>([])
+  /** Sổ ván đã chơi (lưu trên máy) - bé mở lại xem lỗi của các ván trước. */
+  const [recentGames, setRecentGames] = useState<SavedGame[]>(() => loadGames())
+  /** Ván đang mở trong sổ (null = không mở ván nào). */
+  const [openGameId, setOpenGameId] = useState<string | null>(null)
+  /** Đã lưu ván hiện tại vào sổ chưa - chỉ lưu MỘT lần cho mỗi ván. */
+  const archivedRef = useRef(false)
   const [coachBusy, setCoachBusy] = useState(false)
   /** Tăng mỗi lần bé đi lại / đổi ván → kết quả chấm cũ bị bỏ. */
   const moveTokenRef = useRef(0)
@@ -130,6 +140,32 @@ export function FreePlayPage() {
   liveRef.current = { fen: board.fen, playerToMove: board.playerToMove }
 
   const gameOver = board.game.isCheckmate() || board.game.isDraw() || board.game.isStalemate()
+
+  /**
+   * Tổng kết CẢ VÁN: 3 lỗi nặng nhất, kiểu lỗi bé hay lặp, và bé rời bài khai cuộc
+   * từ nước nào. Trước đây HLV chỉ nói về nước vừa đi nên chơi xong là quên sạch.
+   */
+  const review = useMemo(() => reviewGame(board.sans, blunders), [board.sans, blunders])
+
+  // Lưu ván vào sổ đúng một lần khi ván kết thúc.
+  useEffect(() => {
+    if (!gameOver || archivedRef.current) return
+    if (board.history.length < 4) return
+    archivedRef.current = true
+    setRecentGames(
+      saveGame({
+        kidSide,
+        level: DIFFICULTY_LABEL[difficulty],
+        result: board.game.isCheckmate()
+          ? board.game.turn() === engineColor
+            ? 'Bé thắng'
+            : 'Máy thắng'
+          : 'Hòa',
+        sans: board.sans,
+        blunders,
+      }),
+    )
+  }, [gameOver, board.history.length, board.sans, board.game, blunders, kidSide, difficulty, engineColor])
 
   /** Máy suy nghĩ rồi đi một nước. */
   useEffect(() => {
@@ -203,6 +239,8 @@ export function FreePlayPage() {
   const newGame = (side: Side = kidSide, fen: string = START_FEN) => {
     moveTokenRef.current += 1
     finishedRef.current = false
+    archivedRef.current = false
+    setOpenGameId(null)
     setStartFen(fen)
     setKidSide(side)
     setResult(null)
@@ -650,9 +688,30 @@ export function FreePlayPage() {
               subtitle="Lỗi lớn nhất - bấm để luyện lại đúng thế cờ đó"
             />
             <p className="rounded-xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold text-brand-700">
-              {board.history.length} nước · {blunders.length} nước mất điểm · nặng nhất{' '}
+              {board.history.length} nước · {review.losses} nước mất điểm · nặng nhất{' '}
               {(Math.max(...blunders.map((item) => item.lossCp)) / 100).toFixed(1)} điểm
             </p>
+            {/* Kiểu lỗi bé hay lặp - để bé thấy “thói quen” chứ không phải từng nước lẻ. */}
+            {review.groups.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {review.groups.map((group) => (
+                  <span
+                    key={group.key}
+                    className="rounded-full bg-sand-100 px-2 py-0.5 text-xs font-extrabold text-brand-700"
+                  >
+                    {group.label} × {group.count}
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* Rời bài khai cuộc ở đâu - bé biết nên mở lại bài nào. */}
+            {review.exit && (
+              <p className="rounded-xl border-2 border-dashed border-brand-200 px-2.5 py-1.5 text-xs font-bold text-brand-600">
+                📕 Bé đi đúng bài <b>{review.exit.name}</b> tới nước{' '}
+                {moveNumber(review.exit.ply)} rồi đi khác đi - mở lại bài đó ở tab Khai cuộc
+                để nhớ tiếp nhé!
+              </p>
+            )}
             <div className="grid gap-1">
               {worstOf(blunders, 3).map((blunder, index) => (
                 <div
@@ -674,6 +733,58 @@ export function FreePlayPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          </Panel>
+        )}
+
+        {recentGames.length > 0 && (
+          <Panel id="kid-game-archive" className="grid gap-1.5">
+            <SectionTitle
+              icon="🗂️"
+              title="Ván đã chơi"
+              subtitle="Bấm một ván để xem lại 3 lỗi lớn nhất"
+            />
+            <div className="grid gap-1">
+              {recentGames.slice(0, 4).map((game) => {
+                const open = openGameId === game.id
+                const worst = worstOf(game.blunders, 3)
+                return (
+                  <div key={game.id} className="rounded-xl border border-sand-200 bg-white">
+                    <button
+                      type="button"
+                      data-archive-id={game.id}
+                      onClick={() => setOpenGameId(open ? null : game.id)}
+                      className="flex w-full items-center gap-1.5 px-2 py-1.5 text-left active:translate-y-[1px]"
+                    >
+                      <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-brand-800">
+                        {gameDateLabel(game.date)} · {game.level} · {game.result}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-xs font-extrabold text-brand-600">
+                        {game.blunders.length} lỗi {open ? '▲' : '▼'}
+                      </span>
+                    </button>
+                    {open && (
+                      <div className="grid gap-1 border-t border-sand-200 px-2 py-1.5">
+                        {worst.length === 0 ? (
+                          <p className="text-xs font-bold text-ink-600">
+                            Ván này bé không mất nước nào đáng kể - quá tốt!
+                          </p>
+                        ) : (
+                          worst.map((blunder) => (
+                            <p
+                              key={`${blunder.ply}-${blunder.san}`}
+                              className="text-xs font-bold text-brand-700"
+                            >
+                              Nước {moveNumber(blunder.ply)} · {formatSan(blunder.san, notation)} · kém{' '}
+                              {(blunder.lossCp / 100).toFixed(1)} điểm
+                            </p>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </Panel>
         )}

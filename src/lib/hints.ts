@@ -64,15 +64,33 @@ export function findHintMove(
     return pool[0]
   }
 
+  /**
+   * Tốt **chưa đi được** - điển hình là chính Vua mình đang đứng trước mặt Tốt
+   * (Vua + Tốt, Lucena, Xe + Tốt chọi Vua). Kỹ thuật đúng không phải là bỏ Tốt:
+   * Vua nhường đường nhưng **vẫn che Tốt**, rồi mới tính nước gần ô phong nhất.
+   *
+   * Trước đây hàm chỉ chọn nước Vua gần Tốt nhất, nên có thế gợi ý nước Vua bỏ
+   * mặc Tốt cho đối thủ ăn - bé làm theo là mất luôn phần thắng.
+   */
   const playerPawns = game
     .board()
     .flat()
     .filter((square) => square && square.type === 'p' && square.color === playerColor)
   const kingMoves = moves.filter((move) => move.piece === 'k')
   if (playerPawns.length && kingMoves.length) {
-    const target = playerPawns[0]!
-    kingMoves.sort((a, b) => distance(a.to, target.square) - distance(b.to, target.square))
-    return kingMoves[0]
+    const forward = playerColor === 'w' ? 1 : -1
+    const leadPawn = [...playerPawns].sort(
+      (a, b) => (rankOf(b!.square) - rankOf(a!.square)) * forward,
+    )[0]!
+    const guarded = kingMoves.filter((move) => {
+      const probe = new Chess(game.fen())
+      probe.move(move.san)
+      return !probe.moves({ verbose: true }).some((reply) => reply.to === leadPawn.square)
+    })
+    const pool = guarded.length ? guarded : kingMoves
+    const goalSquare = `${leadPawn.square[0]}${playerColor === 'w' ? 8 : 1}`
+    pool.sort((a, b) => distance(a.to, goalSquare) - distance(b.to, goalSquare))
+    return pool[0]
   }
   return moves[0]
 }

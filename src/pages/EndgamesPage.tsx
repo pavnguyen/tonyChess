@@ -544,7 +544,13 @@ export function EndgamesPage() {
             Thẻ chỉ cao một hai dòng nên cả 12 thế nằm gọn trong một khung - bé soát
             bằng mắt rồi bấm đúng bài, không phải đọc lại lời gợi ý lần hai.
           */}
-          <div className="mt-1.5 grid gap-1.5">
+          {/*
+            Trên ĐIỆN THOẠI khung chọn bài tự cuộn bên trong (cao tối đa ~3 hàng
+            thẻ) thay vì đẩy dài cả trang: 20 thẻ xếp hết sẽ đẩy phần “mẹo của bài”
+            xuống rất xa, bé phải vuốt qua cả thư viện mới đọc được bài đang luyện.
+            Trên máy tính (`stage`) bỏ trần chiều cao - cột phải vốn đã cuộn riêng.
+          */}
+          <div className="mt-1.5 grid max-h-52 gap-1.5 overflow-y-auto pr-0.5 stage:max-h-none stage:overflow-visible stage:pr-0">
             {LEVELS.map((group) => {
               const items = (endgames ?? []).filter(
                 (item) => (item.level ?? 'basic') === group.level,
