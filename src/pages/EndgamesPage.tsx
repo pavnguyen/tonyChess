@@ -92,10 +92,10 @@ function ToolButton({
    * nhau nên nhìn lệch hẳn so với nút ở Khai cuộc / Trung cuộc.
    */
   const palette = active
-    ? 'border-brand-600 bg-brand-700 text-white shadow-[0_2px_0_#1b2639] hover:bg-brand-600'
+    ? 'border-brand-600 bg-brand-700 text-white shadow-[0_3px_0_#1b2639] hover:bg-brand-600'
     : tone === 'sky'
-      ? 'border-info-600 bg-info-500 text-white shadow-[0_2px_0_#294e5a] hover:bg-info-400'
-      : 'border-sand-300 bg-white text-brand-700 shadow-[0_2px_0_#e3cda3] hover:border-brand-300 hover:bg-brand-50'
+      ? 'border-info-600 bg-info-500 text-white shadow-[0_3px_0_#294e5a] hover:bg-info-400'
+      : 'border-sand-300 bg-white text-brand-700 shadow-[0_3px_0_#e3cda3] hover:border-brand-300 hover:bg-brand-50'
 
   return (
     <button
@@ -105,7 +105,7 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-pressed={pressed}
-      className={`inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border-2 px-2 text-xs font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none stage:flex-none stage:px-2.5 ${palette}`}
+      className={`inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-2xl border-2 px-2.5 py-1.5 text-sm font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none stage:flex-none ${palette}`}
     >
       <span className="shrink-0 text-sm leading-none" aria-hidden>
         {icon}

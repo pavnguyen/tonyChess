@@ -126,7 +126,7 @@ export function StrategyPage() {
         under={
           <div className="grid gap-2">
             {quiz ? (
-              <div className="flex flex-wrap items-stretch gap-1.5" aria-label="Chọn câu trả lời">
+              <div className="flex flex-wrap items-center justify-center gap-1.5" aria-label="Chọn câu trả lời">
                 <KidButton
                   id="kid-principle-answer-good"
                   size="sm"
@@ -167,7 +167,7 @@ export function StrategyPage() {
               <div
                 role="group"
                 aria-label="Chọn thế cờ minh hoạ"
-                className="flex flex-wrap items-stretch gap-1.5"
+                className="flex flex-wrap items-center justify-center gap-1.5"
               >
                 {DEMO_OPTIONS.map((option) => {
                   const active = demoSide === option.value

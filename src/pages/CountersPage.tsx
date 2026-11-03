@@ -837,7 +837,7 @@ export function CountersPage() {
             Lùi / Tiến có mặt ở CẢ HAI chế độ: đang ở chế độ luyện mà muốn ngắm lại
             nước vừa đi thì bấm luôn, không phải đổi sang chế độ Xem rồi quay lại.
           */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             <KidButton
               id="kid-counter-back"
               variant="ghost"
