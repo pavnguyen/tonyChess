@@ -335,5 +335,45 @@ check(
 await sleep(400)
 check(!(await present('#kid-opening-line-idea')), 'quay lại dòng chính thì câu ý đồ tự ẩn')
 
+console.log('\n▶ Nút 🧭 Đối phó: mời bấm + nói trước cách phản công')
+
+// Nút phải có nhịp `animate-attention` để bé thấy ngay, và câu “cách phản công”
+// phải nằm sẵn cạnh nút - bé hiểu trước khi bấm, không phải mở trang khác mới biết.
+check(
+  await evaluate(
+    `document.getElementById('kid-opening-vs')?.classList.contains('animate-attention') === true`,
+  ),
+  'nút Đối phó có animation mời bấm (animate-attention)',
+)
+const punch = (await text('#kid-opening-vs-hint')).replace(/\s+/g, ' ').trim()
+check(punch.length > 0, `có câu “cách phản công” ngay dưới hàng chọn bài: “${punch}”`)
+check(
+  punch.includes('Đối thủ chơi') && punch.includes('bé đáp'),
+  'câu đó nói rõ đối thủ đi gì và bé đáp gì',
+)
+check(
+  punch.includes('1.e4') && punch.includes('1...e5'),
+  'nêu đúng nước cụ thể của khai cuộc đang học (1.e4 → 1...e5)',
+)
+// Đổi sang một bài KHÁC trong danh sách đang mở (không phải bài đang chọn).
+const otherId = await evaluate(`
+  (() => {
+    const nodes = [...document.querySelectorAll('[data-level-id]')].filter(
+      (el) => el.offsetParent && el.getAttribute('aria-current') !== 'true',
+    )
+    return nodes[0]?.dataset.levelId ?? null
+  })()
+`)
+check(Boolean(otherId), `tìm được bài khác để đổi (${otherId})`)
+await evaluate(
+  `document.querySelector('[data-level-id="' + ${JSON.stringify(otherId)} + '"]')?.click()`,
+)
+await sleep(450)
+const otherPunch = (await text('#kid-opening-vs-hint')).replace(/\s+/g, ' ').trim()
+check(
+  otherPunch.length > 0 && otherPunch !== punch && otherPunch.includes('bé đáp'),
+  `đổi bài thì câu phản công đổi theo (“${otherPunch}”)`,
+)
+
 close()
 finish('BROWSER OPENINGS-PATTERNS')

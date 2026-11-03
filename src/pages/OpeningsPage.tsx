@@ -14,6 +14,7 @@ import { KidButton, Panel, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
+import { COUNTERS } from '../data/counters'
 import { useOpeningsQuery } from '../data/queries'
 import {
   ARROW_COLOR,
@@ -263,6 +264,26 @@ export function OpeningsPage() {
     () => activeLine?.moves ?? opening?.moves ?? [],
     [opening, activeLine],
   )
+  /**
+   * Câu **“cách phản công”** ngay cạnh nút 🧭 Đối phó: đối thủ chơi nước gì, bé đáp
+   * nước gì, và bài đối phó đó tên là gì. Bé hiểu trước khi bấm, không phải mò vào
+   * trang khác rồi mới biết mình sẽ học gì.
+   */
+  const counterPunch = useMemo(() => {
+    const lesson = COUNTERS.find((item) => item.openingId === opening?.id)
+    if (!lesson) return null
+    const firstPly = lesson.opponentSide === 'white' ? 0 : 1
+    const reply = lesson.moves[firstPly + 1]
+    if (!lesson.moves[firstPly] || !reply) return null
+    const label = (index: number, san: string) =>
+      index % 2 === 0 ? `${index / 2 + 1}.${san}` : `${(index - 1) / 2 + 1}...${san}`
+    return {
+      first: label(firstPly, lesson.moves[firstPly].san),
+      reply: label(firstPly + 1, reply.san),
+      name: lesson.counterName,
+    }
+  }, [opening?.id])
+
   const totalPlies = moves.length
   const atLeaf = ply >= totalPlies
 
@@ -1051,18 +1072,37 @@ export function OpeningsPage() {
                 <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
               </button>
             )}
+            {/*
+              Nút MỜI BẤM: nhịp `animate-attention` (nhún nhẹ + quầng vàng) + nền
+              chuyển sắc để mắt bé bắt được ngay giữa hàng chip trắng. Tắt chuyển
+              động thì vẫn là một pill xanh ngọc bình thường.
+            */}
             <button
               type="button"
               id="kid-opening-vs"
               onClick={() =>
                 navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
               }
-              title="Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào"
-              className="shrink-0 rounded-full border-2 border-leaf-300 bg-leaf-50 px-2 py-0.5 text-xs font-extrabold text-leaf-800 hover:border-leaf-500"
+              title={
+                counterPunch
+                  ? `Đối thủ ${counterPunch.first} → bé đáp ${counterPunch.reply}: xem cách phản công`
+                  : 'Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào'
+              }
+              className="animate-attention flex shrink-0 items-center gap-0.5 rounded-full border-2 border-leaf-400 bg-gradient-to-r from-leaf-100 via-leaf-50 to-leaf-200 px-2 py-0.5 text-xs font-extrabold text-leaf-800 shadow-[0_2px_0_#c2e1d1] hover:border-leaf-600 hover:from-leaf-200 active:translate-y-[1px]"
             >
-              🧭 Đối phó
+              <span aria-hidden>🧭</span> Đối phó
             </button>
           </div>
+          {/* Cách phản công, nói ngay tại chỗ: đối thủ đi gì → bé đáp gì. */}
+          {counterPunch && (
+            <p
+              id="kid-opening-vs-hint"
+              className="animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
+            >
+              🛡️ Đối thủ chơi <b>{counterPunch.first}</b> → bé đáp{' '}
+              <b>{counterPunch.reply}</b> ({counterPunch.name})
+            </p>
+          )}
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
               id: item.id,
