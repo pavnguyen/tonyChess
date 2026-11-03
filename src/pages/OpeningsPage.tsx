@@ -1052,11 +1052,12 @@ export function OpeningsPage() {
               )
             })}
           </div>
-          {/* Một hàng gọn: tên bảng chọn + lối tắt Đối phó + mở “tham khảo thêm”. */}
+          {/* Một hàng gọn: tên bảng chọn + mở “tham khảo thêm”. Nút Đối phó đã
+              chuyển xuống DƯỚI ba thẻ khai cuộc (xem bên dưới). */}
           <div className="flex items-center gap-1.5">
-            {/* `line-clamp-2`: trên điện thoại hàng này còn hai chip (+2, Đối phó) nên
-                một dòng không đủ - cắt còn “KHAI CUỘC QUÂN…” thì bé mất chữ. Hai dòng
-                vẫn gọn hơn một dòng bị cắt cụt. */}
+            {/* `line-clamp-2`: trên điện thoại hàng này còn chip (+2) nên một dòng
+                không đủ - cắt còn “KHAI CUỘC QUÂN…” thì bé mất chữ. Hai dòng vẫn
+                gọn hơn một dòng bị cắt cụt. */}
             <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
               🗺️ {side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
             </p>
@@ -1074,40 +1075,7 @@ export function OpeningsPage() {
                 <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
               </button>
             )}
-            {/*
-              Nút MỜI BẤM: nhịp `animate-attention` (nhún nhẹ + quầng vàng) + nền
-              chuyển sắc để mắt bé bắt được ngay giữa hàng chip trắng. Tắt chuyển
-              động thì vẫn là một pill xanh ngọc bình thường.
-            */}
-            <button
-              type="button"
-              id="kid-opening-vs"
-              onClick={() =>
-                navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
-              }
-              title={
-                counterPunch
-                  ? `Gặp đối thủ chơi bài này: bé cầm ${counterPunch.kidSide} đáp ${counterPunch.reply}`
-                  : 'Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào'
-              }
-              className="animate-attention flex shrink-0 items-center gap-0.5 rounded-full border-2 border-leaf-400 bg-gradient-to-r from-leaf-100 via-leaf-50 to-leaf-200 px-2 py-0.5 text-xs font-extrabold text-leaf-800 shadow-[0_2px_0_#c2e1d1] hover:border-leaf-600 hover:from-leaf-200 active:translate-y-[1px]"
-            >
-              <span aria-hidden>🧭</span> Đối phó
-            </button>
           </div>
-          {/*
-            Cách phản công, nói rõ ĐỔI VAI: đây là cách đánh LẠI khai cuộc đang xem,
-            nên bé sẽ cầm màu bên kia chứ không phải màu đang học ở trên.
-          */}
-          {counterPunch && (
-            <p
-              id="kid-opening-vs-hint"
-              className="animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
-            >
-              🧭 Nếu <b>đối thủ</b> chơi bài này: bé cầm <b>{counterPunch.kidSide}</b>, đáp{' '}
-              <b>{counterPunch.reply}</b> ({counterPunch.name})
-            </p>
-          )}
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
               id: item.id,
@@ -1129,6 +1097,37 @@ export function OpeningsPage() {
             onSelect={selectOpening}
             showNames
           />
+          {/*
+            Nút Đối phó + câu “cách phản công” nằm NGAY DƯỚI ba thẻ khai cuộc: bé vừa
+            chọn bài là thấy liền “nếu đối thủ chơi bài này thì mình đánh lại thế nào”.
+            Đặt sát nhau để câu đó đọc liền với nút, không tách lên hàng trên.
+          */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              id="kid-opening-vs"
+              onClick={() =>
+                navigate({ to: '/counters', search: { vs: `vs-${opening.id}` } })
+              }
+              title={
+                counterPunch
+                  ? `Gặp đối thủ chơi bài này: bé cầm ${counterPunch.kidSide} đáp ${counterPunch.reply}`
+                  : 'Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào'
+              }
+              className="animate-attention flex shrink-0 items-center gap-0.5 rounded-full border-2 border-leaf-400 bg-gradient-to-r from-leaf-100 via-leaf-50 to-leaf-200 px-2.5 py-1 text-xs font-extrabold text-leaf-800 shadow-[0_2px_0_#c2e1d1] hover:border-leaf-600 hover:from-leaf-200 active:translate-y-[1px]"
+            >
+              <span aria-hidden>🧭</span> Đối phó
+            </button>
+            {counterPunch && (
+              <p
+                id="kid-opening-vs-hint"
+                className="min-w-0 flex-1 animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
+              >
+                🛡️ Nếu <b>đối thủ</b> chơi bài này: bé cầm <b>{counterPunch.kidSide}</b>, đáp{' '}
+                <b>{counterPunch.reply}</b> ({counterPunch.name})
+              </p>
+            )}
+          </div>
           {extraOpenings.length > 0 && (
             <div className="grid gap-1.5">
               {/*

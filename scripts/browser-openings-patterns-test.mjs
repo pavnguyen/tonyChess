@@ -355,6 +355,17 @@ check(
   punch.includes('bé cầm Đen') && punch.includes('1...e5'),
   'bài quân Trắng → bé đổi sang cầm Đen và đáp đúng nước (1...e5)',
 )
+check(
+  await evaluate(`
+    (() => {
+      const hint = document.getElementById('kid-opening-vs-hint')
+      const card = document.querySelector('[data-level-id]')
+      if (!hint || !card) return false
+      return hint.getBoundingClientRect().top >= card.getBoundingClientRect().bottom - 1
+    })()
+  `),
+  'câu phản công nằm DƯỚI ba thẻ khai cuộc, sát nút Đối phó',
+)
 // Đổi sang một bài KHÁC trong danh sách đang mở (không phải bài đang chọn).
 const otherId = await evaluate(`
   (() => {
