@@ -78,15 +78,15 @@ check(
   `mặc định chỉ bày 3 bài đối phó thông dụng nhất cbo đối thủ cầm Trắng (${whiteCount})`,
 )
 const totalWhite = await evaluate(`document.querySelectorAll('[data-counter-id]').length`)
-check(totalWhite === 8, `vẫn đủ 8 bài trong trang (${totalWhite})`)
+check(totalWhite === 5, `vẫn đủ 5 bài trong trang (${totalWhite})`)
 check(
   await evaluate(`
     (() => {
       const extras = [...document.querySelectorAll('[data-counter-extra]')]
-      return extras.length === 5 && extras.every((el) => !el.offsetParent)
+      return extras.length === 2 && extras.every((el) => !el.offsetParent)
     })()
   `),
-  'phần “Tham khảo thêm” mặc định ĐÓNG (5 bài còn lại bị ẩn)',
+  'phần “Tham khảo thêm” mặc định ĐÓNG (2 bài còn lại bị ẩn)',
 )
 check(
   await evaluate(`
@@ -102,10 +102,10 @@ check(
   await evaluate(`
     (() => {
       const extras = [...document.querySelectorAll('[data-counter-extra]')]
-      return extras.length === 5 && extras.every((el) => Boolean(el.offsetParent))
+      return extras.length === 2 && extras.every((el) => Boolean(el.offsetParent))
     })()
   `),
-  'mở khung thì thấy 5 bài tham khảo',
+  'mở khung thì thấy 2 bài tham khảo',
 )
 await evaluate(`document.getElementById('kid-counter-extras')?.click()`)
 await sleep(250)
@@ -172,7 +172,7 @@ check(allWhite === 3, `bỏ lọc thì danh sách chính gọn 3 bài (${allWhit
 check(await clickFilter('d4'), 'bấm chip 1.d4')
 await sleep(400)
 const d4Count = await countList()
-check(d4Count === 3, `lọc 1.d4 gom đúng 3 bài (${d4Count})`)
+check(d4Count === 2, `lọc 1.d4 gom đúng 2 bài (${d4Count})`)
 const d4Selected = await evaluate(
   `document.querySelector('#kid-counter-list [data-counter-id][aria-pressed="true"]')?.getAttribute('data-counter-id')`,
 )
@@ -210,20 +210,8 @@ check(await present('#kid-info-counter'), 'có nút ⓘ “Đối phó khai cu�
 
 console.log('\n▶ Mở sẵn đúng bài qua đường dẫn /counters?vs=…')
 
-// Bài chỉ bàn về một nước mở đầu (không gắn khai cuộc riêng) vẫn xem được, nhưng
-// KHÔNG có nút "mở bài khai cuộc gốc".
-await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/counters?vs=vs-1e4-open`)}`)
-await sleep(1800)
-check(await waitFor('#kid-counter-list'), 'trang Đối phó tải lại với tham số ?vs=')
-check(
-  await present('#kid-counter-opponent-plan'),
-  'bài nước mở đầu có câu “đối thủ đang định làm gì”',
-)
-check(
-  !(await present('#kid-counter-opening')),
-  'bài nước mở đầu KHÔNG có nút mở khai cuộc gốc (không gắn khai cuộc riêng)',
-)
-
+// Mọi bài Đối phó nay đều gắn đúng một khai cuộc trong tab Khai cuộc, nên luôn có
+// nút “mở bài khai cuộc gốc” - không còn bài “nước mở đầu rời” để kiểm riêng.
 await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/counters?vs=vs-sicilian`)}`)
 await sleep(1800)
 await waitFor('#kid-counter-list')

@@ -9,7 +9,10 @@
  *  - mọi nước đều phải hợp lệ trên bàn cờ thật;
  *  - CHỈ nước CỦA BÉ (ngược màu `opponentSide`) mới có `annotation`;
  *  - khẩu quyết vè 4-6 chữ;
- *  - dòng nước đủ dài để thấy rõ ý đồ đối phó (≥ 8 ply).
+ *  - dòng nước đủ dài để thấy rõ ý đồ đối phó (≥ 8 ply);
+ *  - SONG SONG với tab Khai cuộc: mỗi khai cuộc trong `openings.ts` có ĐÚNG một bài
+ *    ở đây (`id = vs-<openingId>`), và ngược lại - không dạy đối phó một khai cuộc
+ *    mà bé chưa học.
  */
 import type { CounterLesson, MoveAnnotation } from '../types'
 
@@ -344,189 +347,11 @@ export const COUNTERS: CounterLesson[] = [
     ],
   },
 
-  // ── Các nước mở đầu phổ biến (không gắn một khai cuộc riêng nào) ─────────────
-  {
-    id: 'vs-1e4-open',
-    // 1.e4 e5: tên quốc tế là "Open Game" (cùng nhóm với Scotch, Four Knights).
-    englishName: 'Open Game',
-    opponentOpening: 'Ván mở · 1.e4 e5',
-    opponentSide: 'white',
-    emoji: '⚔️',
-    counterName: 'Đáp e5, chơi Ván mở đối xứng',
-    idea: 'Đáp e5, đổi Tốt ở d4 rồi phát triển nhanh - cách đơn giản nhất khi gặp 1.e4.',
-    opponentPlan: 'Trắng chiếm trung tâm bằng e4, sẽ ra Mã f3 và Tượng c4 rồi đẩy d4 hoặc nhập thành để tấn công.',
-    points: [
-      'Đáp e5 đối xứng - cách đơn giản nhất để giữ thế cân bằng.',
-      'Sau khi Trắng đẩy d4, đổi Tốt ngay để mở cột và phát triển quân.',
-      'Ra Mã, Tượng rồi nhập thành sớm, đừng để Trắng nhắm ô f7 dễ dàng.',
-    ],
-    moves: [
-      { san: 'e4' },
-      { san: 'e5', annotation: ann('e5', 'p', 'Đáp đối xứng, khoá Tốt e4 của Trắng.', 'Tốt e chặn lại') },
-      { san: 'Nf3' },
-      { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã ra giữ Tốt e5 và kiểm soát d4.', 'Mã ra giữ nhà') },
-      { san: 'd4' },
-      { san: 'exd4', annotation: ann('exd4', 'p', 'Đổi Tốt ở d4 để mở đường phát triển quân.', 'Đổi Tốt mở đường') },
-      { san: 'Nxd4' },
-      { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã f6 ra kiểm soát trung tâm.', 'Mã ra giữ nhà') },
-      { san: 'Nc3' },
-      { san: 'Bb4', annotation: ann('Bb4', 'b', 'Tượng ra b4 ghim Mã c3, tăng sức ép.', 'Tượng ra ghim Mã') },
-      { san: 'Nxc6' },
-      { san: 'bxc6', annotation: ann('bxc6', 'p', 'Tốt b ăn lại, mở cột b cho Xe.', 'Tốt b mở cột') },
-      { san: 'Bd3' },
-      { san: 'd5', annotation: ann('d5', 'p', 'Đẩy d5 chiếm trung tâm, giải phóng Tượng c8.', 'Tốt d tiến lên') },
-    ],
-  },
-  {
-    id: 'vs-1d4-indian',
-    // Dòng 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Bb7 chính là Queen's Indian (không
-    // phải "Ấn Độ" chung chung) - gọi đúng tên để bé tra sách là ra.
-    englishName: "Queen's Indian Defense",
-    opponentOpening: 'Phòng thủ Queen\'s Indian',
-    opponentSide: 'white',
-    emoji: '🏔️',
-    counterName: 'Đáp Nf6, dựng thế Ấn Độ linh hoạt',
-    idea: 'Đáp Nf6, dựng e6-b6 với Tượng b7 - giữ linh hoạt, không vội khoá Tốt.',
-    opponentPlan: 'Trắng chiếm trung tâm bằng d4 và c4, sẽ đẩy e4 rồi nhập thành để dựng thế trung tâm lớn.',
-    points: [
-      'Đáp Nf6 kiểm soát trung tâm mà chưa khoá Tốt - giữ nhiều lựa chọn.',
-      'Dựng ...e6 và ...b6, đưa Tượng c8 ra b7 nhắm đường chéo dài.',
-      'Nhập thành sớm rồi tìm cách đẩy ...c5 hoặc ...d5 phá trung tâm Trắng.',
-    ],
-    moves: [
-      { san: 'd4' },
-      { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã f6 kiểm soát trung tâm từ xa.', 'Mã ra giữ nhà') },
-      { san: 'c4' },
-      { san: 'e6', annotation: ann('e6', 'p', 'Chèn e6 mở đường Tượng f8 ra ngoài.', 'Mở cửa Tượng nhà') },
-      { san: 'Nf3' },
-      { san: 'b6', annotation: ann('b6', 'p', 'Tốt b6 mở đường Tượng c8 ra b7.', 'Mở đường Tượng cánh') },
-      { san: 'g3' },
-      { san: 'Bb7', annotation: ann('Bb7', 'b', 'Tượng ra b7 nhắm đường chéo dài.', 'Tượng ra cánh rộng') },
-      { san: 'Bg2' },
-      { san: 'Be7', annotation: ann('Be7', 'b', 'Tượng về e7 chuẩn bị nhập thành.', 'Tượng về góc an toàn') },
-      { san: 'O-O' },
-      { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành cho Vua an toàn.', 'Vua chui vào lều') },
-    ],
-  },
-  {
-    id: 'vs-1d5',
-    // 1.e4 d5 là Scandinavian Defense (tên cũ: Center Counter).
-    englishName: 'Scandinavian Defense',
-    opponentOpening: 'Phòng thủ Scandinavian · 1.e4 d5',
-    opponentSide: 'black',
-    emoji: '🗡️',
-    counterName: 'Ăn Tốt đúng lúc, phát triển nhanh',
-    idea: 'Ăn Tốt d5, ra Nc3 đuổi Hậu rồi đẩy d4 - giành thời gian phát triển.',
-    opponentPlan: 'Đen muốn đổi Tốt d5 ngay để mở cột rồi đưa Hậu ra sớm, sau đó phát triển quân nhanh về trung tâm.',
-    points: [
-      'Ăn Tốt d5 ngay để buộc Hậu Đen phải ra giữa bàn cờ.',
-      'Ra Nc3 rồi đẩy d4 tấn công Hậu, giành thời gian phát triển.',
-      'Đuổi Hậu đi rồi nhập thành sớm, tận dụng việc Đen đi Hậu nhiều lần.',
-    ],
-    moves: [
-      { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mời Đen đáp ...d5.', 'Tốt e nhảy vọt') },
-      { san: 'd5' },
-      { san: 'exd5', annotation: ann('exd5', 'p', 'Ăn Tốt d5, buộc Hậu Đen phải ra giữa.', 'Ăn Tốt ép Hậu ra') },
-      { san: 'Qxd5' },
-      { san: 'Nc3', annotation: ann('Nc3', 'n', 'Mã c3 tấn công Hậu, giành một nước phát triển.', 'Mã ra đuổi Hậu') },
-      { san: 'Qd6' },
-      { san: 'd4', annotation: ann('d4', 'p', 'Đẩy d4 dựng trung tâm, mở đường Tượng c1.', 'Dựng trung tâm vững') },
-      { san: 'Nf6' },
-      { san: 'Nf3', annotation: ann('Nf3', 'n', 'Mã f3 bảo vệ trung tâm, chuẩn bị nhập thành.', 'Mã ra giữ nhà') },
-      { san: 'a6' },
-      { san: 'Bc4', annotation: ann('Bc4', 'b', 'Tượng ra c4 nhắm ô f7 của Đen.', 'Tượng nhắm tim Vua') },
-      { san: 'e6' },
-    ],
-  },
-  {
-    id: 'vs-1nf6',
-    // Dòng 1.d4 Nf6 2.c4 g6 3.Nc3 d5 4.cxd5 Nxd5 5.e4 là Grünfeld, biến Đổi quân.
-    englishName: 'Grünfeld Defense',
-    opponentOpening: 'Phòng thủ Grünfeld',
-    opponentSide: 'black',
-    emoji: '🐉',
-    counterName: 'Trung tâm lớn, giữ nhịp phát triển',
-    idea: 'Chấp nhận trung tâm lớn rồi phát triển nhanh, sẵn sàng chống ...c5 và ...e5.',
-    opponentPlan: 'Đen đáp ...Nf6 rồi dựng ...g6 với Tượng g7, chủ động đập vào trung tâm Trắng bằng ...d5 chứ chưa vội nhập thành.',
-    points: [
-      'Đẩy d4-c4 dựng trung tâm lớn trước khi Đen kịp phá.',
-      'Sau khi đổi Tốt ở d5, đẩy e4 chiếm trung tâm và mở đường quân.',
-      'Giữ Vua an toàn, đưa Tượng ra rồi nhập thành; đừng vội đổi quân.',
-    ],
-    moves: [
-      { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm, mở đường Tượng c1.', 'Dâng Tốt trung tâm') },
-      { san: 'Nf6' },
-      { san: 'c4', annotation: ann('c4', 'p', 'Tốt c4 giành thêm không gian trung tâm.', 'Tốt c tiến lên') },
-      { san: 'g6' },
-      { san: 'Nc3', annotation: ann('Nc3', 'n', 'Mã c3 bảo vệ trung tâm, chuẩn bị đẩy e4.', 'Mã giữ trung tâm') },
-      { san: 'd5' },
-      { san: 'cxd5', annotation: ann('cxd5', 'p', 'Đổi Tốt ở d5 để mở đường phát triển.', 'Đổi Tốt mở đường') },
-      { san: 'Nxd5' },
-      { san: 'e4', annotation: ann('e4', 'p', 'Đẩy e4 dựng trung tâm lớn, mở đường Tượng.', 'Trung tâm thật lớn') },
-      { san: 'Nxc3' },
-      { san: 'bxc3', annotation: ann('bxc3', 'p', 'Tốt b ăn lại, mở cột b cho Xe.', 'Tốt b mở cột') },
-      { san: 'Bg7' },
-    ],
-  },
-  {
-    id: 'vs-1c6',
-    // 1.e4 c6 2.d4 d5 3.e5 là Caro-Kann, biến Tiến Tốt e (khác bài Caro-Kann cổ điển).
-    englishName: 'Caro-Kann: Advance Variation',
-    opponentOpening: 'Caro-Kann · biến Tiến Tốt e',
-    opponentSide: 'black',
-    emoji: '🧱',
-    counterName: 'Đẩy e5, giam Tượng c8',
-    idea: 'Đẩy e5 giam Tượng c8, giữ chắc d4 rồi dàn quân đánh f7.',
-    opponentPlan: 'Đen đáp ...c6 rồi đẩy ...d5, đưa Tượng ra f5 trước khi đóng Tốt e6 và tấn công chân đế Tốt e5 bằng ...c5.',
-    points: [
-      'Đẩy e5 khoá trung tâm, không cho Đen thoải mái phát triển.',
-      'Giữ chắc ô d4 bằng Nf3 và Be3, chặn đứng ...c5 phá trung tâm.',
-      'Dàn Tượng và Mã nhắm ô f7 yếu, chuẩn bị nhập thành cánh Vua.',
-    ],
-    moves: [
-      { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mời Đen đáp ...c6.', 'Tốt e nhảy vọt') },
-      { san: 'c6' },
-      { san: 'd4', annotation: ann('d4', 'p', 'Dựng trung tâm kép, sẵn sàng đẩy e5.', 'Dựng trung tâm vững') },
-      { san: 'd5' },
-      { san: 'e5', annotation: ann('e5', 'p', 'Đẩy e5 giam Tượng c8, khoá trung tâm.', 'Tốt e khoá rồi') },
-      { san: 'Bf5' },
-      { san: 'Nf3', annotation: ann('Nf3', 'n', 'Mã f3 giữ ô d4, chuẩn bị nhập thành.', 'Mã ra giữ nhà') },
-      { san: 'e6' },
-      { san: 'Be2', annotation: ann('Be2', 'b', 'Tượng ra e2 chuẩn bị nhập thành an toàn.', 'Tượng về góc an toàn') },
-      { san: 'c5' },
-      { san: 'Be3', annotation: ann('Be3', 'b', 'Tượng ra e3 củng cố trung tâm, nhắm cánh Hậu.', 'Tượng ra giữ ô') },
-      { san: 'Nc6' },
-    ],
-  },
-  {
-    id: 'vs-1nf3',
-    englishName: 'Réti Opening',
-    opponentOpening: 'Khai cuộc Réti · 1.Nf3',
-    opponentSide: 'white',
-    emoji: '🎩',
-    counterName: 'Chiếm d5, dựng thế vững cân bằng',
-    idea: 'Chiếm d5 và c5 giữ không gian, phát triển cân đối rồi nhập thành.',
-    opponentPlan: 'Trắng chơi 1.Nf3 linh hoạt, sẽ dựng lều Tượng g2 và nhập thành, rồi tuỳ cơ chuyển sang tấn công cánh Hậu hoặc trung tâm.',
-    points: [
-      'Đáp d5 chiếm trung tâm - đừng để Trắng chơi thong thả dựng thế.',
-      'Dựng ...c5 và ...Nc6 gây sức ép lên trung tâm của Trắng.',
-      'Phát triển Tượng ra e7 rồi nhập thành cho Vua an toàn.',
-    ],
-    moves: [
-      { san: 'Nf3' },
-      { san: 'd5', annotation: ann('d5', 'p', 'Chiếm d5, đối trọng với thế trung tâm của Trắng.', 'Tốt d ra chặn') },
-      { san: 'g3' },
-      { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã f6 kiểm soát trung tâm từ xa.', 'Mã ra giữ nhà') },
-      { san: 'Bg2' },
-      { san: 'c5', annotation: ann('c5', 'p', 'Tốt c5 giành không gian, tăng sức ép lên d4.', 'Tốt c tiến lên') },
-      { san: 'O-O' },
-      { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã c6 thêm sức ép lên trung tâm.', 'Mã thêm sức ép') },
-      { san: 'd3' },
-      { san: 'e6', annotation: ann('e6', 'p', 'Chèn e6 mở đường Tượng f8 ra ngoài.', 'Mở cửa Tượng nhà') },
-      { san: 'Nbd2' },
-      { san: 'Be7', annotation: ann('Be7', 'b', 'Tượng về e7 chuẩn bị nhập thành.', 'Tượng về góc an toàn') },
-    ],
-  },
+  // MỖI BÀI GẮN ĐÚNG MỘT khai cuộc trong tab Khai cuộc (`openingId` = id khai
+  // cuộc đó): bé học khai cuộc nào thì có đúng một bài đối phó cho khai cuộc ấy.
+  // Trước đây còn 6 bài cho những nước mở đầu KHÔNG dạy ở tab Khai cuộc (Réti,
+  // Scandinavian, Grünfeld, Queen's Indian, Ván mở, Caro tiến Tốt) - hai tab lệch
+  // nhau nên bé tra cứu bị rối; đã bỏ để hai tab song song đúng một-một.
 ]
 
 export function getCounter(id: string): CounterLesson | undefined {

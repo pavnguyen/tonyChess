@@ -214,6 +214,25 @@ for (const lesson of COUNTERS) {
   if (!bad) ok(`${lesson.id} - ${lesson.moves.length} ply (${lesson.counterName})`)
 }
 
+console.log('\n▶ Đối phó khai cuộc - song song một-một với tab Khai cuộc')
+{
+  let bad = false
+  for (const lesson of COUNTERS) {
+    if (!lesson.openingId) {
+      fail(`${lesson.id}: thiếu openingId - tab Đối phó chỉ dạy đối phó những khai cuộc đã có ở tab Khai cuộc`)
+      bad = true
+    }
+  }
+  for (const opening of OPENINGS) {
+    const lessons = COUNTERS.filter((lesson) => lesson.openingId === opening.id)
+    if (lessons.length !== 1) {
+      fail(`khai cuộc ${opening.id}: cần ĐÚNG 1 bài đối phó, đang có ${lessons.length}`)
+      bad = true
+    }
+  }
+  if (!bad) ok(`${OPENINGS.length} khai cuộc ↔ ${COUNTERS.length} bài đối phó khớp một-một`)
+}
+
 console.log('\n▶ Đối phó khai cuộc - phủ đủ cả hai màu')
 {
   let bad = false
