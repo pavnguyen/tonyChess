@@ -102,9 +102,11 @@ export const OPPONENT_TO_STYLE: CSSProperties = {
  *   riêng để bé phân biệt "ô máy chỉ cho nước đang đi" với "ô thuộc kế hoạch
  *   trung cuộc" hay "ô mình cần nhắm tới" (tab Khai cuộc, Trung cuộc, Tàn cuộc
  *   dùng chung màu này).
- * - **Ô bé vừa bấm trong bài** (`focusFill`/`focusRing`): cùng xanh thép nhưng
- *   viền dầy hơn - để bé tra cứu "quân này đứng đâu" bằng cách bấm vào chữ,
- *   không phải dò toạ độ.
+ * - **Ô bé vừa bấm trong bài** (`focusFill`/`focusRing`): viền HAI TÔNG (ngoài
+ *   trắng, trong navy đậm) + nền trắng rất nhẹ - để bé tra cứu "quân này đứng
+ *   đâu" bằng cách bấm vào chữ, không phải dò toạ độ. Hai tông là cần thiết:
+ *   viền trắng chìm trên ô gỗ sáng, viền navy chìm trên ô xanh - nhưng luôn có
+ *   một tông nổi, và nền chỉ nhích 20% nên quân Trắng lẫn quân Đen vẫn rõ mặt.
  *
  * Gam Navy - Gỗ sáng - Đỏ son không còn tím, nên TẤT CẢ màu tím cũ đã được thay
  * bằng xanh thép (thông tin) - đúng quy ước "vàng = quân cần đi, xanh = thông tin,
@@ -126,9 +128,16 @@ export const BOARD_MARKS = {
   hintToRing: 'inset 0 0 0 4px #3f748f',
   planFill: 'rgba(51, 96, 111, 0.42)',
   planRing: 'inset 0 0 0 4px #33606f',
-  /** Ô bé vừa bấm trong nội dung bài ("♗ Tượng c5") - cùng gam xanh thép của ô cần nhìn. */
-  focusFill: 'rgba(63, 116, 143, 0.30)',
-  focusRing: 'inset 0 0 0 5px #33606f',
+  /**
+   * Ô bé vừa bấm trong nội dung bài ("♗ Tượng c5").
+   *
+   * Bản cũ (nền xanh thép 30% + viền #33606f) gần như chìm trên ô navy: bé bấm
+   * chữ mà không thấy ô nào vừa sáng. Nay là "khung hai tông" dày 8px: vành
+   * trắng 4px ở ngoài, vành navy đậm 4px phía trong. Nền chỉ nhích 20% trắng -
+   * đủ để ô bật lên mà không làm quân Trắng (trên ô sáng) biến mất.
+   */
+  focusFill: 'rgba(255, 255, 255, 0.28)',
+  focusRing: 'inset 0 0 0 6px #ffffff, inset 0 0 0 12px #14313d',
   goodFill: 'rgba(104, 174, 139, 0.55)',
   goodRing: 'inset 0 0 0 4px #256349',
   badFill: 'rgba(204, 88, 71, 0.5)',

@@ -101,13 +101,16 @@ const PAIRS: Pair[] = [
  * "nhìn ra vòng này trên ô đang đứng", nên mỗi vòng chỉ cần nổi trên MỘT trong hai
  * loại ô; phần nền phủ (alpha 0.3-0.42) và nhịp "thở" dày viền lo phần còn lại.
  */
-const HINT_RINGS: { label: string; ring: string; squares: string[] }[] = [
-  { label: 'vòng quân cần đi gold-300', ring: token('gold-300'), squares: [token('board-dark'), token('board-light')] },
-  { label: 'vòng ô đích info-500', ring: token('info-500'), squares: [token('board-dark'), token('board-light')] },
-  { label: 'vòng kế hoạch info-600', ring: token('info-600'), squares: [token('board-dark'), token('board-light')] },
-  { label: 'vòng ô bé bấm info-600', ring: token('info-600'), squares: [token('board-dark'), token('board-light')] },
-  { label: 'vòng nước sai coral-500', ring: token('coral-500'), squares: [token('board-dark'), token('board-light')] },
-  { label: 'vòng nước đúng leaf-600', ring: token('leaf-600'), squares: [token('board-dark'), token('board-light')] },
+const HINT_RINGS: { label: string; rings: string[]; squares: string[] }[] = [
+  { label: 'vòng quân cần đi gold-300', rings: [token('gold-300')], squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng ô đích info-500', rings: [token('info-500')], squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng kế hoạch info-600', rings: [token('info-600')], squares: [token('board-dark'), token('board-light')] },
+  // Ô bé bấm là khung HAI TÔNG: vành trắng ngoài + vành navy trong. Vì vậy chỉ
+  // cần MỘT trong hai tông nổi trên ô đang đứng (trắng nổi trên ô navy, navy nổi
+  // trên ô gỗ) - bé luôn thấy khung.
+  { label: 'vòng ô bé bấm (trắng + navy)', rings: ['#ffffff', '#14313d'], squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng nước sai coral-500', rings: [token('coral-500')], squares: [token('board-dark'), token('board-light')] },
+  { label: 'vòng nước đúng leaf-600', rings: [token('leaf-600')], squares: [token('board-dark'), token('board-light')] },
 ]
 
 let failed = 0
@@ -123,7 +126,7 @@ for (const pair of PAIRS) {
 }
 
 for (const hint of HINT_RINGS) {
-  const values = hint.squares.map((square) => ratio(hint.ring, square))
+  const values = hint.rings.flatMap((ring) => hint.squares.map((square) => ratio(ring, square)))
   const best = Math.max(...values)
   const ok = best >= GRAPHIC
   if (!ok) failed += 1

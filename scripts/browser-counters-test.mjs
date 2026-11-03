@@ -151,6 +151,45 @@ console.log('\n▶ Nút ⓘ có nội dung')
 
 check(await present('#kid-info-counter'), 'có nút ⓘ “Đối phó khai cuộc”')
 
+console.log('\n▶ Bấm cụm “quân + ô” trong bài → tô sáng ô trên bàn cờ')
+
+// Ô bé bấm phải nổi RÕ trên cả ô gỗ sáng lẫn ô navy: khung hai tông (vành trắng
+// 6px ngoài + vành navy 6px trong) chứ không chỉ một viền xanh thép mỏng như trước.
+const picked = await evaluate(
+  `
+  (() => {
+    const chip = document.querySelector('[data-move-square]')
+    if (!chip) return null
+    const square = chip.getAttribute('data-move-square')
+    chip.click()
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const cell = document.getElementById('kid-board-square-' + square)
+        // react-chessboard vẽ lớp tô lên một div CON của ô, không phải chính ô.
+        const ring = cell
+          ? [cell, ...cell.querySelectorAll('*')]
+              .map((el) => getComputedStyle(el).boxShadow)
+              .join(' | ')
+          : ''
+        resolve({
+          square,
+          active: chip.getAttribute('aria-pressed'),
+          ring,
+        })
+      }, 250)
+    })
+  })()
+`,
+  true,
+)
+check(Boolean(picked?.square), 'có cụm “quân + ô” bấm được trong bài')
+check(picked?.active === 'true', 'chip đang chọn được đánh dấu (aria-pressed)')
+check(
+  Boolean(picked?.ring?.includes('rgb(255, 255, 255)')) &&
+    Boolean(picked?.ring?.includes('rgb(20, 49, 61)')),
+  `ô trên bàn cờ có khung hai tông trắng + navy (${String(picked?.ring).slice(0, 60)}…)`,
+)
+
 console.log('\n▶ Mở sẵn đúng bài qua đường dẫn /counters?vs=…')
 
 // Mọi bài Đối phó nay đều gắn đúng một khai cuộc trong tab Khai cuộc, nên luôn có
