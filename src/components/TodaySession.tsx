@@ -52,7 +52,7 @@ export function TodaySession() {
         id="kid-session-start"
         type="button"
         onClick={finished ? () => { resetSession(); setDone(0) } : start}
-        className="min-h-7 shrink-0 rounded-lg bg-brand-700 px-2 text-xs font-extrabold text-white active:translate-y-[1px]"
+        className="animate-attention min-h-7 shrink-0 rounded-lg bg-brand-700 px-2 text-xs font-extrabold text-white active:translate-y-[1px]"
       >
         {finished ? '↺ Luyện lại' : done === 0 ? '▶ Bắt đầu' : '▶ Làm tiếp'}
       </button>

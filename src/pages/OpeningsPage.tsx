@@ -98,6 +98,13 @@ export function OpeningsPage() {
   const [patternId, setPatternId] = useState('london')
   const awardedRef = useRef(false)
   const replyAfterDropRef = useRef(false)
+  /**
+   * Bé cầm Đen thì **Trắng đi trước** - nước mở đầu đó do app tự đi hộ bé, đúng
+   * như cách Đen tự đáp khi bé cầm Trắng. Cờ này bật lúc VÀO BÀI để đối thủ chỉ tự
+   * đi một lần duy nhất: bé bấm “◀ Lùi” về thế ban đầu để xem thì bàn cờ đứng yên,
+   * không bị đẩy tới.
+   */
+  const openingReplyRef = useRef(false)
 
   const openingList = openings ?? NO_OPENINGS
   const opening: Opening | undefined = useMemo(
@@ -191,14 +198,44 @@ export function OpeningsPage() {
     [openingList],
   )
 
-  /** Rời chế độ xem trước để bắt đầu bài từ nước đầu. */
+  /**
+   * Rời chế độ xem trước để bắt đầu bài từ nước đầu.
+   */
   const startLearning = useCallback(() => {
     setOpeningPreview(false)
     setPly(0)
+    openingReplyRef.current = true
     setHintVisible(true)
     setWrongInfo(null)
     setFinished(false)
   }, [])
+
+  /**
+   * Bấm **Enter** ở tab Khai cuộc = bấm “▶ Bắt đầu học” - bé/ba mẹ đang xem mẫu
+   * hình hay đang lướt bản đồ rồi gõ Enter là vào bài luôn, không phải với chuột
+   * xuống đúng nút nhỏ.
+   *
+   * Bỏ qua khi con trỏ đang nằm trong nút/ô nhập (lúc đó Enter đã là “bấm” của
+   * chính nó - bấm hai lần sẽ nhảy cóc), và khi đang mở khung mẫu hình hoặc bảng
+   * chúc mừng (Enter lúc đó thuộc về khung đang mở).
+   */
+  useEffect(() => {
+    if (patternOpen || result) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || event.altKey || event.ctrlKey || event.metaKey) return
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        target.closest('button, a, input, textarea, select, [contenteditable="true"]')
+      ) {
+        return
+      }
+      event.preventDefault()
+      startLearning()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [patternOpen, result, startLearning])
 
   /**
    * Bật/tắt “soi mục tiêu khai cuộc”: bàn cờ tô tím đúng những ô câu `goal` nhắc tới.
@@ -245,6 +282,9 @@ export function OpeningsPage() {
     setPlanFocusIdx(null)
     awardedRef.current = false
     replyAfterDropRef.current = false
+    // Vào bài mới: nếu bé cầm Đen thì Trắng được đi nước mở đầu trước (xem effect
+    // “đối thủ tự đi” bên dưới).
+    openingReplyRef.current = true
   }, [openingId, mode])
 
   // Đi tới/lui nước nào thì tự thoát chế độ soi kế hoạch, để bé quay về đúng bài.
@@ -260,9 +300,13 @@ export function OpeningsPage() {
   useEffect(() => {
     if (!opening || openingPreview || atLeaf) return
     if (isKidPly(ply)) return
-    if (mode === 'learn' && !replyAfterDropRef.current) return
+    // Nước mở đầu của Trắng khi bé cầm Đen: bé chưa kéo quân nào nên không có
+    // `replyAfterDropRef` - trước đây vì thế mà bàn cờ đứng im, Trắng không đi.
+    const openingMove = ply === 0 && openingReplyRef.current
+    if (mode === 'learn' && !replyAfterDropRef.current && !openingMove) return
     const timer = setTimeout(() => {
       replyAfterDropRef.current = false
+      openingReplyRef.current = false
       setPly((current) => current + 1)
     }, 600)
     return () => clearTimeout(timer)
@@ -775,6 +819,9 @@ export function OpeningsPage() {
                   id="kid-opening-preview-start"
                   variant="primary"
                   size="sm"
+                  className="animate-attention"
+                  title="Bắt đầu học từ nước đầu (hoặc bấm phím Enter)"
+                  aria-keyshortcuts="Enter"
                   onClick={startLearning}
                 >
                   ▶ Bắt đầu học
@@ -1155,6 +1202,8 @@ export function OpeningsPage() {
               size="sm"
               onClick={() => {
                 replyAfterDropRef.current = false
+                // Về đầu BÀI: bé cầm Đen thì Trắng lại đi nước mở đầu trước.
+                openingReplyRef.current = true
                 setPly(0)
               }}
             >
@@ -1185,6 +1234,7 @@ export function OpeningsPage() {
         onRetry={() => {
           setResult(null)
           replyAfterDropRef.current = false
+          openingReplyRef.current = true
           setPly(0)
           setFinished(false)
           setHintVisible(mode === 'learn')
