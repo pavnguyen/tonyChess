@@ -52,7 +52,9 @@ const LONDON: OpeningTreeData = {
   plan: {
     title: 'Ba việc: dựng khung - đổi Tượng xấu - đánh cánh Vua',
     points: [
-      'Đưa Tượng f1 ra d3 rồi nhập thành: ba nước là xong khung.',
+      // Dòng chính đưa Tượng c1 ra f4 (không phải Tượng f1 ra d3 như câu cũ):
+      // bé đọc kế hoạch rồi nhìn bàn cờ phải thấy đúng quân vừa đi.
+      'Khung London: Tượng ra f4, Tốt c3-e3 giữ d4 - dựng xong khung thì nhập thành.',
       // Trong London Tượng ô đen của Đen đi ra d6 (không phải g7 như King's Indian),
       // và Tượng của bé đã sang g3 - nên phải đổi ở d6 mới đúng thế cờ.
       'Đổi Tượng g3 lấy Tượng d6: Đen mất Tượng ô đen thì các ô đen quanh Vua Đen thành mục tiêu.',
@@ -326,7 +328,9 @@ const FRENCH: OpeningTreeData = {
     points: [
       // Tốt c4 KHÔNG tấn công d4 (nó chỉ đánh b3/d3) - phải là c5 đánh thẳng d4.
       'Đẩy c5 đánh thẳng vào chân đế d4; đổi cxd4 khi có lợi là trung tâm Trắng sụp.',
-      'Đẩy f6 tấn công Tốt e5 ngay khi Trắng đẩy e5 - đừng để Trắng yên xây thế.',
+      // Dòng chính đang dạy đánh c5 (vào d4) trước rồi mới tới f6; câu cũ bảo
+      // "f6 ngay" nên bé đọc xong nhìn bàn cờ thấy lệch.
+      'Trắng đẩy e5 thì đánh vào chân đế ngay: c5 vào d4 trước, sau đó f6 vào e5.',
       'Đưa Tượng f8 ra e7 rồi nhập thành; giữ Tượng c8, đừng để bị nhốt sau hàng rào.',
     ],
   },

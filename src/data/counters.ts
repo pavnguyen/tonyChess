@@ -34,25 +34,28 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🇬🇧',
     counterName: 'Giữ d5, đánh vào chân đế d4',
     idea: 'Giữ d5, dồn c5 đánh vào chân đế d4 trước khi Trắng kịp khoá thế.',
-    opponentPlan: 'Trắng muốn dựng kim tự tháp Tốt c3-d4-e3, đưa Tượng ra f4 rồi nhập thành an toàn và đẩy e4 tấn công.',
+    opponentPlan: 'Trắng muốn dựng kim tự tháp Tốt c3-d4-e3, đưa Tượng ra f4 rồi nhập thành an toàn, sau đó mở cột h bằng h4-h5.',
     points: [
       'Giữ Tốt d5 đối đầu trực diện với Tốt d4 của Trắng.',
       'Đẩy c5 tấn công chân đế d4 - chỗ dễ lung lay nhất của London.',
-      'Đưa Tượng f8 ra d6 để đổi bớt quân Trắng, rồi nhập thành sớm.',
+      'Đưa Tượng f8 ra d6 đuổi Tượng f4 lùi về g3, rồi nhập thành sớm.',
     ],
     moves: [
       { san: 'd4' },
       { san: 'd5', annotation: ann('d5', 'p', 'Chiếm d5 đối đầu Tốt d4, mở đường Tượng c8.', 'Tốt d ra chặn') },
       { san: 'Bf4' },
       { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã ra kiểm soát ô e4 và d5.', 'Mã giữ hai ô') },
-      { san: 'e3' },
-      { san: 'e6', annotation: ann('e6', 'p', 'Chèn Tốt e mở đường Tượng f8 ra d6.', 'Mở cửa Tượng nhà') },
+      // Thứ tự Nf3-e3 giống đúng dòng chính ở tab Khai cuộc: bé học một dòng,
+      // sang đây không thấy hai thứ tự khác nhau cho cùng một khai cuộc.
       { san: 'Nf3' },
+      { san: 'e6', annotation: ann('e6', 'p', 'Chèn Tốt e mở đường Tượng f8 ra d6.', 'Mở cửa Tượng nhà') },
+      { san: 'e3' },
       { san: 'c5', annotation: ann('c5', 'p', 'Tấn công Tốt d4 - chân đế trung tâm Trắng.', 'Đánh vào chân đế') },
       { san: 'c3' },
       { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã ra tăng thêm sức ép lên ô d4.', 'Mã thêm sức ép') },
       { san: 'Nbd2' },
-      { san: 'Bd6', annotation: ann('Bd6', 'b', 'Đổi Tượng với Tượng f4, làm mỏng Tốt Trắng.', 'Đổi Tượng mở đường') },
+      // Tượng Trắng đang ở f4; Bd6 TẤN CÔNG nó chứ không đổi được (Trắng lùi g3).
+      { san: 'Bd6', annotation: ann('Bd6', 'b', 'Tượng ra d6 tấn công Tượng f4, buộc nó lùi về g3.', 'Đuổi Tượng ra biên') },
       { san: 'Bg3' },
       { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành đưa Vua vào lều an toàn.', 'Vua chui vào lều') },
     ],
@@ -67,7 +70,9 @@ export const COUNTERS: CounterLesson[] = [
     // `f2` mới là ô yếu của Trắng (f7 là ô yếu của chính Đen) - đừng viết lẫn.
     counterName: 'Đáp đối xứng, nhắm ô f2',
     idea: 'Giữ e5, ra Tượng c5 nhắm f2 rồi nhập thành - thế cân bằng, chờ Trắng sơ hở.',
-    opponentPlan: 'Trắng muốn Tượng c4 nhắm ô f7 yếu, đẩy d4 mở trung tâm rồi nhập thành để tấn công cánh Vua.',
+    // Nhập thành TRƯỚC rồi mới đẩy d3-c3 và d4 - đúng thứ tự dòng chính ở tab
+    // Khai cuộc (1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.O-O ... 5.d3 6.c3 7.d4).
+    opponentPlan: 'Trắng muốn Tượng c4 nhắm ô f7 yếu, nhập thành xong mới đẩy d3-c3 rồi d4 để tấn công cánh Vua.',
     points: [
       'Đáp e5 và ra Mã c6 để giữ Tốt e5, không cho Trắng đẩy d4 dễ.',
       'Đưa Tượng f8 ra c5 nhắm thẳng vào ô f2 gần Vua Trắng.',
@@ -80,9 +85,10 @@ export const COUNTERS: CounterLesson[] = [
       { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã ra giữ Tốt e5 và kiểm soát d4.', 'Mã ra giữ nhà') },
       { san: 'Bc4' },
       { san: 'Bc5', annotation: ann('Bc5', 'b', 'Tượng ra c5 nhắm ô f2 yếu của Trắng.', 'Tượng nhắm tim Vua') },
-      { san: 'd3' },
-      { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã ra tấn công Tốt e4.', 'Mã ra dọa Tốt') },
+      // Nhập thành TRƯỚC d3, đúng như dòng chính ở tab Khai cuộc.
       { san: 'O-O' },
+      { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã ra tấn công Tốt e4.', 'Mã ra dọa Tốt') },
+      { san: 'd3' },
       { san: 'd6', annotation: ann('d6', 'p', 'Chèn Tốt d mở đường Tượng c8.', 'Mở cửa Tượng nhà') },
       { san: 'c3' },
       { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành cho Vua an toàn.', 'Vua chui vào lều') },
@@ -97,7 +103,7 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🇭🇺',
     counterName: 'Giữ d5, phá ghim bằng h6',
     idea: 'Giữ d5, đáp e6 rồi phá ghim Bg5 bằng h6 - thế vững, ít sơ hở.',
-    opponentPlan: 'Trắng dâng Tốt c4 giành trung tâm, ra Tượng g5 ghim Mã f6 rồi chuẩn bị đẩy e4 mở thế.',
+    opponentPlan: 'Trắng dâng Tốt c4 giành trung tâm, ra Tượng g5 ghim Mã f6, nhập thành rồi mới đưa Xe sang cột c - chỉ đẩy e4 khi Tốt e đã đủ yểm trợ.',
     points: [
       'Giữ Tốt d5 và đáp e6 để bảo vệ chắc trung tâm.',
       'Phá ghim Tượng Bg5 bằng h6, buộc Tượng lùi về h4.',
@@ -129,7 +135,7 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🏝️',
     counterName: 'Chiếm e5, ghim Mã c3',
     idea: 'Đáp e5, ra Tượng b4 ghim Mã c3 rồi đẩy d5 - không cho Trắng độc chiếm.',
-    opponentPlan: 'Trắng giữ Tốt c4 kiểm soát ô d5, dựng lều Tượng g2 rồi mở trung tâm bằng d4 hoặc đánh cánh Hậu.',
+    opponentPlan: 'Trắng giữ Tốt c4 kiểm soát ô d5, dựng lều Tượng g2 rồi đánh cánh Hậu bằng b4-b5 và Xe b1, chỉ mở trung tâm khi đã đủ quân.',
     points: [
       'Đáp e5 chiếm trung tâm, không để Trắng thong thả dựng thế.',
       'Tượng ra b4 ghim Mã c3, hạn chế Trắng mở trung tâm.',
@@ -161,7 +167,7 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🇪🇸',
     counterName: 'Phòng thủ Morphy: đuổi Tượng',
     idea: 'Đuổi Tượng bằng a6 rồi dựng Nf6-Be7-b5-O-O: phòng thủ Morphy chắc chắn.',
-    opponentPlan: 'Trắng ghim Mã c6 bằng Tượng b5, đẩy d4 mở trung tâm và giữ Xe e1 để tăng sức ép lên Tốt e5.',
+    opponentPlan: 'Trắng ghim Mã c6 bằng Tượng b5, giữ Xe e1 rồi mới đẩy d3-c3 và d4 - áp lực từ từ lên Tốt e5, không đổi quân vội.',
     points: [
       'Đáp e5 và ra Mã c6 giữ Tốt e5 trước sức ép của Tượng b5.',
       'Đuổi Tượng bằng a6 - đừng để nó ghim Mã c6 mãi.',
@@ -193,11 +199,13 @@ export const COUNTERS: CounterLesson[] = [
     opponentOpening: 'Phòng thủ Sicilian',
     opponentSide: 'black',
     emoji: '🌋',
-    counterName: 'Sicilian Mở: đổi Tốt mở cột',
-    idea: 'Đẩy d4 đổi Tốt mở cột c, dựng Mã d4 rồi f4 đánh cánh Vua trước khi Đen phản công.',
+    // Cột c KHÔNG mở cho Trắng (Tốt c2 còn nguyên, Tốt c Đen đã bị ăn ở d4):
+    // cái mở ra là trung tâm + ô d4 cho Mã. Đừng viết "mở cột c" ở phía Trắng.
+    counterName: 'Sicilian Mở: đổi Tốt, Mã vào d4',
+    idea: 'Đẩy d4 đổi Tốt để mở trung tâm, dựng Mã d4 rồi f4 đánh cánh Vua trước khi Đen kịp phản công.',
     opponentPlan: 'Đen muốn đánh cánh Hậu bằng ...b5 và ...Bb7, đổi Tốt ở d4 rồi phản công bằng Tốt cánh.',
     points: [
-      'Đẩy d4 đổi Tốt, mở cột c và trung tâm cho quân Trắng.',
+      'Đẩy d4 đổi Tốt để mở trung tâm và lấy ô d4 làm bàn đạp cho Mã.',
       'Dựng Mã d4 và Nc3 khống chế trung tâm trước khi mở cánh Vua.',
       'Đẩy f4, đưa Be3 rồi chuẩn bị e5 để dồn Đen vào thế bị động.',
     ],
@@ -227,11 +235,13 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🇫🇷',
     counterName: 'Đẩy e5 giam quân, dựng f4',
     idea: 'Đẩy e5 khoá trung tâm, giam quân Đen rồi dựng f4-f5 đánh cánh Vua.',
-    opponentPlan: 'Đen dựng hàng rào Tốt e6-d5 rồi tìm cách phá trung tâm bằng ...c5 và ...f6, mở đường Tượng c8.',
+    // Không hứa "mở đường Tượng c8": trong Pháp Tượng đó thường nằm nhà, tab
+    // Khai cuộc cũng dạy đúng như vậy ("giữ Tượng c8, đừng để bị nhốt").
+    opponentPlan: 'Đen dựng hàng rào Tốt e6-d5 rồi tìm cách phá trung tâm bằng ...c5 và ...f6, trong khi Tượng c8 vẫn nằm nhà.',
     points: [
       'Đẩy d4 rồi e5 đóng cứng trung tâm và giam quân Đen.',
-      'Dựng f4-h4 chuẩn bị đánh sang cánh Vua bằng f5.',
-      'Giữ chắc ô d4 bằng Nf3, Nc3, đừng để Đen đẩy c5 phá thế.',
+      'Dựng f4 rồi Nf3-Be3, chuẩn bị đánh sang cánh Vua bằng f5.',
+      'Đen đẩy ...c5 thì giữ d4 bằng Nf3, Be3 - đừng để mất Tốt d4.',
     ],
     moves: [
       { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
@@ -263,7 +273,7 @@ export const COUNTERS: CounterLesson[] = [
     points: [
       'Chiếm trung tâm bằng d4 rồi đổi Tốt để mở đường cho quân.',
       'Nhảy Mã vào e4 rồi Ng3 để đuổi Tượng g6 của Đen.',
-      'Đẩy h4-h5 mở cánh Vua, tấn công vào ô yếu của đối phương.',
+      'Đẩy h4 tấn công Tượng g6: Đen phải chặn bằng h6 thì cột h vẫn mở cho Xe nhà.',
     ],
     moves: [
       { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
@@ -295,7 +305,7 @@ export const COUNTERS: CounterLesson[] = [
     points: [
       'Chiếm trung tâm bằng bộ ba Tốt d4-c4-e4 vững chắc.',
       'Phát triển Nc3, Nf3, Be2 rồi nhập thành trước khi Đen phản công.',
-      'Giữ chắc trung tâm rồi mở cánh Hậu hoặc đẩy f4 tấn công.',
+      'Giữ chắc trung tâm rồi mở cánh Hậu bằng c5 và b4 - cánh Vua cứ để Đen lo, đừng tự mở ở đó.',
     ],
     moves: [
       { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm, mở đường Tượng c1.', 'Dâng Tốt trung tâm') },
@@ -305,9 +315,10 @@ export const COUNTERS: CounterLesson[] = [
       { san: 'Nc3', annotation: ann('Nc3', 'n', 'Mã c3 bảo vệ ô e4 và d5.', 'Mã giữ trung tâm') },
       { san: 'Bg7' },
       { san: 'e4', annotation: ann('e4', 'p', 'Đẩy e4 dựng trung tâm lớn.', 'Trung tâm thật lớn') },
-      { san: 'd6' },
-      { san: 'Nf3', annotation: ann('Nf3', 'n', 'Mã f3 ra bảo vệ Tốt e4.', 'Mã ra giữ nhà') },
+      // Đen nhập thành trước rồi mới ...d6, đúng thứ tự dòng chính ở tab Khai cuộc.
       { san: 'O-O' },
+      { san: 'Nf3', annotation: ann('Nf3', 'n', 'Mã f3 ra bảo vệ Tốt e4.', 'Mã ra giữ nhà') },
+      { san: 'd6' },
       { san: 'Be2', annotation: ann('Be2', 'b', 'Tượng ra e2 chuẩn bị nhập thành.', 'Tượng về góc an toàn') },
       { san: 'e5' },
       { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành cho Vua an toàn.', 'Vua chui vào lều') },
@@ -321,13 +332,15 @@ export const COUNTERS: CounterLesson[] = [
     opponentOpening: 'Phòng thủ Nimzo-Indian',
     opponentSide: 'black',
     emoji: '⛓️',
-    counterName: 'Tránh ghim: e3-Bd3 giữ cặp Tượng',
-    idea: 'Chọn e3-Bd3 giữ cặp Tượng, nhập thành rồi chờ Đen đẩy c5 để mở cột.',
+    // e3 KHÔNG gỡ được ghim (ghim còn cho tới khi Đen đổi Tượng hoặc bé đẩy a3);
+    // cái e3 đánh đổi là nhường ô e4 để giữ cặp Tượng - nói đúng như vậy.
+    counterName: 'Nhường e4: e3-Bd3 giữ cặp Tượng',
+    idea: 'Chọn e3 rồi Bd3 giữ cặp Tượng, nhập thành, chờ Đen đẩy ...c5 để đổi Tốt mở cột c.',
     opponentPlan: 'Đen ghim Mã c3 bằng Tượng b4, dọa đổi Tượng lấy Mã làm lệch Tốt Trắng rồi đẩy ...c5 phá trung tâm.',
     points: [
-      'Chọn e3 (không đẩy e4) để giữ cặp Tượng, tránh bị ghim nặng.',
+      'Chọn e3 (không đẩy e4): chịu Tượng b4 ghim Mã c3, đổi lại giữ được cặp Tượng.',
       'Đưa Tượng ra d3 nhắm cánh Vua Đen, chuẩn bị nhập thành.',
-      'Nếu Đen đẩy c5 thì đổi Tốt để mở cột c cho Xe.',
+      'Đen đẩy ...c5 thì đổi Tốt c lấy d5, mở cột c cho Xe a1.',
     ],
     moves: [
       { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm, mở đường Tượng c1.', 'Dâng Tốt trung tâm') },

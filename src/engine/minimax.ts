@@ -194,6 +194,9 @@ export function pickMove(fen: string, difficulty: Difficulty = 'medium'): Move |
     move,
     score: 0,
   }))
+  /** Điểm của những nước đã chấm xong trong vòng đang chạy (dùng khi hết giờ). */
+  let partial: { move: Move; score: number }[] = []
+  let finishedDepth = 0
 
   try {
     for (let depth = 1; depth <= config.depth; depth += 1) {
@@ -213,12 +216,25 @@ export function pickMove(fen: string, difficulty: Difficulty = 'medium'): Move |
         )
         game.undo()
         scored.push({ move, score })
+        // Ghi ngay từng nước: nếu vòng này bị cắt giữa chừng, phần đã chấm
+        // vẫn dùng được thay vì bị vứt bỏ.
+        partial = scored
       }
       scored.sort((a, b) => b.score - a.score)
       pool = scored
+      partial = []
+      finishedDepth = depth
     }
   } catch {
     // Hết ngân sách thời gian → dùng kết quả của vòng sâu nhất đã hoàn thành.
+    //
+    // Nếu CHƯA xong cả vòng 1 (máy đang bận việc khác), `pool` vẫn là điểm 0 cho
+    // mọi nước → mọi nước "hoà điểm" và máy chọn NGẪU NHIÊN, có thể bỏ lỡ nước
+    // chiếu bí ngay trước mặt. Lúc đó lấy phần đã chấm của vòng 1.
+    if (finishedDepth === 0 && partial.length > 0) {
+      const scored = [...partial].sort((a, b) => b.score - a.score)
+      pool = scored
+    }
   }
 
   const bestScore = pool[0]?.score ?? 0

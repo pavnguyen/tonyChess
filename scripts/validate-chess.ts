@@ -228,6 +228,30 @@ console.log('\n▶ Đối phó khai cuộc - song song một-một với tab Kha
     if (lessons.length !== 1) {
       fail(`khai cuộc ${opening.id}: cần ĐÚNG 1 bài đối phó, đang có ${lessons.length}`)
       bad = true
+      continue
+    }
+    /*
+     * Đối thủ trong bài Đối phó phải đi ĐÚNG dòng chính của tab Khai cuộc, cùng
+     * thứ tự. Lỗi từng có: bài Italian cho Trắng đi d3 trước khi nhập thành, còn
+     * dòng chính nhập thành trước - bé học một đằng, tra cứu một nẻo.
+     */
+    const lesson = lessons[0]
+    const oppIsWhite = lesson.opponentSide === 'white'
+    const oppMoves = lesson.moves
+      .filter((_, index) => (oppIsWhite ? index % 2 === 0 : index % 2 === 1))
+      .map((move) => move.san)
+    const mainMoves = opening.moves
+      .filter((_, index) => (oppIsWhite ? index % 2 === 0 : index % 2 === 1))
+      .map((move) => move.san)
+    const shared = Math.min(oppMoves.length, mainMoves.length)
+    for (let index = 0; index < shared; index += 1) {
+      if (oppMoves[index] !== mainMoves[index]) {
+        fail(
+          `${lesson.id}: nước ${index + 1} của đối thủ là “${oppMoves[index]}” nhưng dòng chính ${opening.id} là “${mainMoves[index]}”`,
+        )
+        bad = true
+        break
+      }
     }
   }
   if (!bad) ok(`${OPENINGS.length} khai cuộc ↔ ${COUNTERS.length} bài đối phó khớp một-một`)
