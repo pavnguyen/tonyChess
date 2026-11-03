@@ -15,6 +15,18 @@ import { OPENING_TREES } from './openingTrees.ts'
  *   1. xác suất gặp trên bàn cờ thật (khai cuộc càng phổ biến càng học trước),
  *   2. dễ triển khai quân và mạnh về lâu dài (không cần thuộc nhiều biến).
  *
+ * BÉ CẦM TRẮNG (xếp theo nước đáp bé THẬT SỰ gặp, rồi mới tới độ dễ):
+ *   1. Ván cờ Ý - sống trong thế giới 1...e5, mục tiêu f7 dễ thấy nhất;
+ *   2. Ruy Lopez - cũng là 1...e5 và dùng lại ĐÚNG khung của Ván cờ Ý
+ *      (1.e4 e5 2.Nf3 Nc6), chỉ đổi 3.Bc4 thành 3.Bb5, nên học ngay sau là rẻ nhất;
+ *   3. London - dễ chơi nhất nhưng chỉ dùng được khi Đen đáp 1...d5 kiểu kín,
+ *      nên đứng sau hai bài 1...e5;
+ *   4. Gambit Hậu - cần hiểu căng Tốt c4/d5 trước đã;
+ *   5. English - trừu tượng nhất (1.c4 dẫn nhập vào nhiều thế khác nhau).
+ *
+ * BÉ CẦM ĐEN (xếp thẳng theo tần suất gặp): Sicilian ≫ Caro-Kann > Pháp >
+ * King's Indian > Nimzo-Indian.
+ *
  * LƯU Ý VỀ TÍNH TRUNG THỰC: đây là **lựa chọn sư phạm**, KHÔNG phải kết quả đo từ
  * cơ sở dữ liệu nào. Vì vậy `rankNote` chỉ nói lý do DẠY HỌC ("Dễ chơi nhất",
  * "Nhiều lý thuyết", "Học sau cùng"…) - không dùng chữ nghe như số liệu thống kê
@@ -32,6 +44,8 @@ interface OpeningMeta {
   goal: string
   /** Vì sao khai cuộc này đứng ở vị trí này trong thứ tự ưu tiên học. */
   rankNote: string
+  /** Bài chỉ cần nhận diện + ý tưởng (dòng chính ngắn 6 nửa nước) - xem `Opening`. */
+  ideaOnly?: boolean
 }
 
 const META: OpeningMeta[] = [
@@ -59,17 +73,6 @@ const META: OpeningMeta[] = [
     rankNote: 'Dễ chơi nhất',
   },
   {
-    id: 'queens-gambit',
-    name: 'Gambit Hậu',
-    englishName: "Queen's Gambit",
-    gm: 'GM Judit Polgár',
-    side: 'white',
-    emoji: '🇭🇺',
-    tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
-    goal: 'Dâng Tốt c4 để đổi được Tốt d5 và lấy ô d4 làm bàn đạp; con đường tấn công chính là cột c, không phải ăn Tốt.',
-    rankNote: 'Bài tiếp theo',
-  },
-  {
     id: 'ruy-lopez',
     name: 'Khai cuộc Tây Ban Nha',
     // Viết không dấu cho đúng cách tra cứu phổ biến (ChessBase, chess.com, sách
@@ -80,7 +83,18 @@ const META: OpeningMeta[] = [
     emoji: '🇪🇸',
     tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
     goal: 'Tượng b5 ghim Mã c6 làm Tốt e5 của Đen yếu dần; bé chơi d3-c3 rồi mới đẩy d4 - áp lực từ từ, không đổi quân vội.',
-    rankNote: 'Nhiều lý thuyết',
+    rankNote: 'Hay gặp, nhiều lý thuyết',
+  },
+  {
+    id: 'queens-gambit',
+    name: 'Gambit Hậu',
+    englishName: "Queen's Gambit",
+    gm: 'GM Judit Polgár',
+    side: 'white',
+    emoji: '🇭🇺',
+    tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
+    goal: 'Dâng Tốt c4 để đổi được Tốt d5 và lấy ô d4 làm bàn đạp; con đường tấn công chính là cột c, không phải ăn Tốt.',
+    rankNote: 'Bài tiếp theo',
   },
   {
     id: 'english',
@@ -104,7 +118,7 @@ const META: OpeningMeta[] = [
     emoji: '🌋',
     tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
     goal: 'Đổi Tốt c5 lấy Tốt d4 để Trắng mất trung tâm, rồi phản công cánh Hậu bằng b5-b4 và cột c.',
-    rankNote: 'Phản công mạnh',
+    rankNote: 'Hay gặp nhất, phản công mạnh',
   },
   {
     id: 'caro-kann',
@@ -148,7 +162,8 @@ const META: OpeningMeta[] = [
     emoji: '⛓️',
     tagline: 'Tượng ra ghim Mã c3, khoá chặt không cho Trắng đẩy Tốt e4.',
     goal: 'Tượng b4 ghim Mã c3 buộc Trắng chọn: nhân đôi Tốt c hoặc mất quyền đẩy e4 - Đen thắng bằng cấu trúc Tốt, không bằng nước hay.',
-    rankNote: 'Khó nhất',
+    rankNote: 'Chỉ cần nhận diện',
+    ideaOnly: true,
   },
 ]
 

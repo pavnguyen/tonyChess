@@ -51,10 +51,19 @@ for (const opening of OPENINGS) {
   let bad = false
 
   // 1. Dòng chính phải đủ dài để "kế hoạch tiếp theo" có nghĩa.
-  if (opening.moves.length < 10) {
+  //    Bài `ideaOnly` (chỉ nhận diện + ý tưởng) cố ý ngắn: 6 nửa nước là đủ thấy
+  //    "Tượng ghim Mã" của Nimzo, dài hơn chỉ tốn thời gian thuộc lòng của bé.
+  const minPlies = opening.ideaOnly ? 6 : 10
+  if (opening.moves.length < minPlies) {
     fail(
-      `${opening.id}: dòng chính chỉ ${opening.moves.length} ply - cần ≥ 10 để dạy kế hoạch trung cuộc`,
+      `${opening.id}: dòng chính chỉ ${opening.moves.length} ply - cần ≥ ${minPlies}` +
+        (opening.ideaOnly ? ' (bài nhận diện)' : ' để dạy kế hoạch trung cuộc'),
     )
+    bad = true
+  }
+  // Bài nhận diện không được dạy biến phụ: mục tiêu là nhận ra thế cờ, không thuộc dòng.
+  if (opening.ideaOnly && (opening.sidelines?.length ?? 0) > 0) {
+    fail(`${opening.id}: bài nhận diện không nên có biến phụ`)
     bad = true
   }
 

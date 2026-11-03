@@ -101,6 +101,14 @@ export interface Opening {
    * Bỏ trống thì giao diện không hiện chip - không hiện ô rỗng cho khai cuộc chưa đo.
    */
   popularity?: OpeningPopularity
+  /**
+   * Bài **chỉ cần nhận diện + nắm ý tưởng**, không dạy hết dòng nước: dòng chính
+   * ngắn (6 nửa nước) vừa đủ để bé nhận ra thế cờ, phần còn lại là kế hoạch.
+   *
+   * Dùng cho khai cuộc hiếm gặp hơn (Nimzo-Indian): học thuộc cả biến là lãng phí
+   * thời gian của bé 1500, nhưng không nhận ra thì mất thế ngay nước 4.
+   */
+  ideaOnly?: boolean
   /** Một dòng chính duy nhất, đủ cho cả hai bên (xen kẽ nước bé và nước đối thủ). */
   moves: OpeningMove[]
   /** Kế hoạch trung cuộc, hiện sau khi bé đi hết phần khai cuộc. */

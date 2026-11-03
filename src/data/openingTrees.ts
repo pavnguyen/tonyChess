@@ -438,6 +438,11 @@ const ENGLISH: OpeningTreeData = {
 }
 
 // ── Phòng thủ Nimzo-Indian (bé cầm Đen) ──────────────────────────────────────
+//
+// **Chỉ mức NHẬN DIỆN** (`ideaOnly` trong `src/data/openings.ts`): đây là khai
+// cuộc hiếm nhất trong 10 bài, nên dạy đúng 3 nước Đen (Nf6 - e6 - Bb4) để bé nhận
+// ra ngay nước 3, còn lại là ý tưởng. Học thuộc cả biến Nimzo là lãng phí thời gian
+// của bé 1500 - gặp lại ở đâu thì mở tab Đối phó ra xem.
 const NIMZO_INDIAN: OpeningTreeData = {
   main: [
     { san: 'd4' },
@@ -446,40 +451,15 @@ const NIMZO_INDIAN: OpeningTreeData = {
     { san: 'e6', annotation: ann('e6', 'p', 'Đóng Tốt e6 mở đường cho Tượng f8 ra ghim Mã.', 'Tốt e mở đường') },
     { san: 'Nc3' },
     { san: 'Bb4', annotation: ann('Bb4', 'b', 'Tượng ra b4 ghim Mã c3, khoá chặt không cho Trắng đẩy e4.', 'Tượng ra ghim Mã') },
-    { san: 'e3' },
-    { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành sớm đưa Vua vào góc an toàn.', 'Vua an toàn nhất') },
-    { san: 'Bd3' },
-    { san: 'd5', annotation: ann('d5', 'p', 'Đẩy Tốt d5 chiếm trung tâm, mở đường cho Tượng c8.', 'Tốt d chiếm giữa') },
-    { san: 'Nf3' },
-    { san: 'c5', annotation: ann('c5', 'p', 'Tốt c5 tấn công chân đế Tốt d4 từ cánh Hậu.', 'Tốt c phản công') },
-    { san: 'O-O' },
-    { san: 'Nc6', annotation: ann('Nc6', 'n', 'Mã c6 ra tăng sức ép lên ô d4 đang bị vây.', 'Mã ra tăng sức ép') },
   ],
   plan: {
-    title: 'Ba việc: ghim c3 - Tượng b7 - cột c',
+    title: 'Nhận diện: Tượng ghim Mã - Tốt c phá d4',
     points: [
-      'Đổi Tượng b4 lấy Mã c3 làm lệch cấu trúc Tốt Trắng - Tốt c nhân đôi thì khó đẩy e4.',
-      'Đẩy b6 rồi đưa Tượng c8 ra b7 tăng sức ép lên d4.',
-      'Đưa Xe a8 sang cột c rồi đổi Tốt c5 lấy Tốt d4 để mở cột.',
+      'Nhận diện: Trắng đẩy d4 rồi c4, ra Mã c3 - Đen đáp Nf6, e6, rồi Tượng b4 GHIM Mã c3. Thấy Tượng b4 là biết đang ở Nimzo-Indian.',
+      'Ý tưởng: Tượng b4 ghim Mã c3 để Trắng mất quyền đẩy e4; Đen giành trung tâm bằng c5 và d5 chứ không bằng quân.',
+      'Nhớ một câu: “Tượng ghim Mã - Tốt c phá d4”. Đổi Tượng lấy Mã chỉ khi Trắng nhân đôi Tốt c, đừng đổi vội.',
     ],
   },
-  sidelines: [
-    {
-      id: 'nimzo-qc2',
-      label: 'Trắng chơi 4.Qc2',
-      idea: 'Trắng né ghim bằng Qc2 - bé nhập thành ngay rồi đánh d5, đừng vội đổi Tượng lấy Mã.',
-      moves: [
-        { san: 'd4' },
-        { san: 'Nf6', annotation: ann('Nf6', 'n', 'Mã f6 kiểm soát trung tâm từ xa.', 'Mã ra giữ nhà') },
-        { san: 'c4' },
-        { san: 'e6', annotation: ann('e6', 'p', 'Đóng Tốt e6 mở đường Tượng f8 ghim Mã.', 'Tốt e mở đường') },
-        { san: 'Nc3' },
-        { san: 'Bb4', annotation: ann('Bb4', 'b', 'Tượng b4 ghim Mã c3, khoá ô e4.', 'Tượng ra ghim Mã') },
-        { san: 'Qc2' },
-        { san: 'O-O', annotation: ann('O-O', 'k', 'Nhập thành sớm đưa Vua vào góc an toàn.', 'Vua an toàn nhất') },
-      ],
-    },
-  ],
 }
 
 /**

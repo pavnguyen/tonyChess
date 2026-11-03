@@ -29,7 +29,7 @@ export const INFO: Record<string, InfoEntry> = {
     title: 'Số % xuất hiện của khai cuộc',
     tag: '📊 Nguồn số liệu',
     body: [
-      'Số **% ván** là tỉ lệ các ván trong cơ sở dữ liệu của **Lichess Opening Explorer** đi tới đúng thế cờ của khai cuộc đó (bộ lọc mặc định của Lichess: mức 1000-2500, mọi thể loại).',
+      'Số **% ván** là tỉ lệ các ván trong cơ sở dữ liệu **Lichess Opening Explorer** đi tới đúng **thế cờ nhận diện** của khai cuộc (ví dụ Ruy Lopez là thế cờ sau 3.Bb5). Bộ lọc: blitz + rapid, mức 1200-1800. App hỏi thẳng Lichess lúc mở và giữ kết quả 30 ngày trên máy; mất mạng thì không hiện chip - không dùng số ước lượng.',
       'Cách tính: nhân xác suất từng nước trên dòng chính (ví dụ 1.e4 ≈ 59% số ván, sau đó 1...e5 ≈ 40% số ván của nhánh đó…), nên đây là con số **xấp xỉ**, chỉ dùng để so sánh khai cuộc nào hay gặp hơn.',
       'Con số này **không** nói khai cuộc mạnh hay yếu: nhiều khai cuộc rất mạnh nhưng ít gặp. Thứ tự học trong app là lựa chọn sư phạm, còn % chỉ cho biết bé sẽ gặp bài đó nhiều hay ít trên bàn cờ thật.',
     ],

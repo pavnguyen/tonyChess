@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Chess } from 'chess.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -25,6 +26,7 @@ import {
   PLAN_FOCUS_STYLE,
   pieceFromSan,
 } from '../lib/notation'
+import { STATS_PLY, STATS_SOURCE, fetchOpeningStat, markerFen } from '../lib/openingStats'
 import { isSideMoveLegal, parsePlanFocus } from '../lib/planFocus'
 import { playError, playMove, playWin } from '../lib/sound'
 import { speakOpening } from '../lib/speech'
@@ -280,6 +282,32 @@ export function OpeningsPage() {
       name: lesson.counterName,
     }
   }, [opening?.id])
+
+  /**
+   * **% số ván thật** của khai cuộc này, hỏi thẳng Lichess Opening Explorer (xem
+   * `src/lib/openingStats.ts`): đo ở **thế cờ nhận diện** của bài (ví dụ sau 3.Bb5),
+   * chứ không phải hết dòng chính - hết dòng thì khai cuộc nào cũng còn rất ít ván.
+   *
+   * Không hỏi được (mất mạng, API từ chối) thì `stat` là `undefined` và KHÔNG hiện
+   * chip - thà không có số còn hơn số ước lượng đội lốt số đo.
+   */
+  const statPly = STATS_PLY[opening?.id ?? ''] ?? 0
+  const statFen = useMemo(
+    () => markerFen(opening?.moves ?? [], statPly),
+    [opening, statPly],
+  )
+  const { data: stat } = useQuery({
+    queryKey: ['opening-stat', statFen],
+    queryFn: () => fetchOpeningStat(statFen ?? ''),
+    enabled: Boolean(statFen),
+    staleTime: 60 * 60 * 1000,
+    retry: 0,
+  })
+  const statPosition = useMemo(() => {
+    const main = opening?.moves ?? []
+    if (!statPly || main.length < statPly) return ''
+    return `thế cờ sau nước ${Math.ceil(statPly / 2)} (${main[statPly - 1].san})`
+  }, [opening, statPly])
 
   const totalPlies = moves.length
   const atLeaf = ply >= totalPlies
@@ -964,20 +992,20 @@ export function OpeningsPage() {
                 {opening.name} · {opening.gm}
               </span>
               {/*
-                Chip số liệu THẬT (đo từ Lichess Opening Explorer): % số ván đi vào
-                khai cuộc này, kèm tên nguồn ngay trên chip. Khai cuộc chưa có số đo
-                thì không hiện gì - không dựng ô rỗng hay số ước lượng.
+                Chip số liệu THẬT: % số ván Lichess đi tới đúng thế cờ nhận diện của
+                bài này. Số lấy trực tiếp từ Lichess Opening Explorer lúc mở app
+                (cache 30 ngày), nên không bao giờ là con số cũ nằm cứng trong code.
+                Không lấy được thì không hiện gì.
               */}
-              {opening.popularity && (
+              {stat && (
                 <span className="mt-0.5 flex items-center gap-0.5">
                   <span
-                    title={`${opening.popularity.source} · đo ở thế ${opening.popularity.position}`}
+                    id="kid-opening-popularity"
+                    title={`${STATS_SOURCE} · đo ở ${statPosition}`}
                     className="shrink-0 rounded-full border border-brand-100 bg-brand-50 px-1.5 py-px text-xs font-extrabold leading-tight text-brand-600"
                   >
                     📊 ≈
-                    {opening.popularity.percent.toLocaleString('vi-VN', {
-                      maximumFractionDigits: 1,
-                    })}
+                    {stat.percent.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}
                     % ván · Lichess
                   </span>
                   <InfoButton topic="popularity" />
