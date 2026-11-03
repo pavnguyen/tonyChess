@@ -275,6 +275,95 @@ export const BEST_MOVES: BestMovePuzzle[] = [
       'Hậu f7 lên h5 chiếu; Vua Đen chỉ còn g8, Xe e1 lên e8 chiếu bí vì Hậu h5 đã giữ h7 và g6.',
     rhyme: 'Hậu ép, Xe lên e8',
   },
+
+  // ── Bổ sung: bộ KHÓ HƠN cho bé đã lên trình ────────────────────────────────
+  // Hai bài đầu là **nước lặng** (không ăn quân, không chiếu ngay) - bé phải thấy
+  // trước mới tìm ra. Hai bài sau thắng quân nhưng phải tính cả chuỗi 3 nước.
+  // Tất cả đã chấm bằng `npm run verify:bestmove`.
+  {
+    id: 'mate-8',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Hậu lên d7 khóa hàng 7',
+    fen: '6k1/8/8/8/8/8/5PPP/3QR1K1 w - - 0 1',
+    side: 'white',
+    bestSan: 'Qd7',
+    goodMoves: ['Qd7'],
+    continuation: ['Kh8', 'Re8#'],
+    hint: 'Nước lặng: Hậu lên d7 giữ chặt hàng 7 nên Vua Đen không dám bước xuống. Đen chỉ còn lên h8, Xe e1 lên e8 là chiếu bí.',
+    explanation:
+      'Hậu d1 lên d7 khóa hàng 7; Vua Đen buộc lên h8, Xe e1 lên e8 chiếu bí vì Hậu d7 đã giữ g7 và h7.',
+    rhyme: 'Hậu khóa hàng, Xe vào bí',
+  },
+  {
+    id: 'mate-9',
+    theme: 'mate',
+    title: 'Chiếu bí 3 nước: Xe lên g1, Hậu xuống d8',
+    fen: '6k1/5p1p/8/8/8/8/5P1P/3Q1R1K w - - 0 1',
+    side: 'white',
+    bestSan: 'Rg1+',
+    goodMoves: ['Rg1+'],
+    continuation: ['Kh8', 'Qd8#'],
+    hint: 'Xe f1 lên g1 chiếu dọc cột g; Vua Đen chỉ còn h8, Hậu d1 xuống d8 là chiếu bí.',
+    explanation:
+      'Xe f1 lên g1 chiếu cột g; Vua Đen buộc lên h8, Hậu d1 xuống d8 chiếu bí - cột g đã bị Xe g1 khóa, Tốt h7 chặn nốt ô h7.',
+    rhyme: 'Xe khóa cột, Hậu xuống bí',
+  },
+  {
+    id: 'mate-10',
+    theme: 'mate',
+    title: 'Chiếu bí 5 nước: Xe d7 rồi Xe d8',
+    fen: '5k2/5ppp/8/8/8/8/5PPP/2QR2K1 w - - 0 1',
+    side: 'white',
+    bestSan: 'Rd7',
+    goodMoves: ['Rd7'],
+    continuation: ['g6', 'Qc3', 'Kg8', 'Rd8#'],
+    hint: 'Ba nước của bé: đưa Xe lên d7 khóa hàng 7 trước đã (chưa chiếu, chưa ăn gì). Đen hết nước hay buộc đẩy Tốt, Hậu sang c3 chờ sẵn rồi Xe xuống d8 chiếu bí.',
+    explanation:
+      'Xe d1 lên d7 giữ hàng 7 nên Vua Đen không dám ra; Đen chỉ còn đẩy Tốt g6, Hậu c1 sang c3 rồi Xe d7 xuống d8 chiếu bí vì Tốt f7 g7 h7 đã khóa đường chạy.',
+    rhyme: 'Xe khóa hàng, rồi xuống bí',
+  },
+  {
+    id: 'queen-4',
+    theme: 'win-queen',
+    title: 'Nước lặng rồi ăn Xe: Hậu sang d4',
+    fen: 'r5k1/5ppp/8/8/8/8/5R2/3Q3K w - - 0 1',
+    side: 'white',
+    bestSan: 'Qd4',
+    goodMoves: ['Qd4'],
+    continuation: ['f6', 'Qd5+', 'Kf8', 'Qxa8+'],
+    hint: 'Đừng vội ăn: Hậu sang d4 canh đúng đường chéo tới a7 và hàng 4. Đen yếu hàng 8, bé chiếu Hậu xuống d5 rồi ăn Xe a8.',
+    explanation:
+      'Hậu d1 sang d4 giữ chặt các đường; Đen chỉ còn đẩy Tốt f6, Hậu xuống d5 chiếu, Vua Đen lên f8 rồi Hậu ăn Xe a8 - lời cả Xe.',
+    rhyme: 'Hậu canh đường, rồi ăn Xe',
+  },
+  {
+    id: 'queen-5',
+    theme: 'win-queen',
+    title: 'Mã nhảy e7 vừa chiếu vừa chĩa Hậu',
+    fen: '2q3k1/5ppp/8/5N2/8/8/5PPP/5RK1 w - - 0 1',
+    side: 'white',
+    bestSan: 'Ne7+',
+    goodMoves: ['Ne7+'],
+    continuation: ['Kh8', 'Nxc8'],
+    hint: 'Mã f5 nhảy lên e7: vừa chiếu Vua g8, vừa chĩa sang Hậu c8. Vua Đen chạy đâu cũng mất Hậu.',
+    explanation:
+      'Mã f5 lên e7 chiếu Vua g8 và đồng thời tấn công Hậu c8; Vua Đen buộc lên h8, Mã ăn Hậu c8 - lời cả Hậu.',
+    rhyme: 'Một nước, hai mục tiêu',
+  },
+  {
+    id: 'material-2',
+    theme: 'win-material',
+    title: 'Mã bắt đôi Vua và Xe ở góc',
+    fen: 'r3k3/5ppp/8/1N6/8/8/5PPP/4K3 w - - 0 1',
+    side: 'white',
+    bestSan: 'Nc7+',
+    goodMoves: ['Nc7+'],
+    continuation: ['Kf8', 'Nxa8'],
+    hint: 'Mã b5 nhảy lên c7: chiếu Vua e8 và chĩa đúng Xe a8 ở góc. Vua Đen chạy ra là bé ăn Xe.',
+    explanation:
+      'Mã b5 lên c7 chiếu Vua e8 và tấn công Xe a8; Vua Đen buộc lùi về f8, Mã ăn Xe a8 - lời cả Xe.',
+    rhyme: 'Mã chĩa góc, ăn Xe',
+  },
 ]
 
 export function bestMovesByTheme(theme: BestMoveTheme): BestMovePuzzle[] {

@@ -86,13 +86,14 @@ export function Segmented<T extends string>({
 }: SegmentedProps<T>) {
   return (
     /*
-     * MỘT HÀNG cuộn ngang trên điện thoại (thay vì `flex-wrap`): 5 chủ đề Trung
-     * cuộc trước đây làm vỡ thành 2-3 hàng, chiếm mất chỗ của bàn cờ. Mục đang
-     * chọn nền trắng + chữ navy đậm, mục thường chữ xám navy.
+     * Xuống hàng thay vì cuộn ngang: 5 chủ đề Trung cuộc mà để một hàng cuộn thì
+     * chủ đề cuối bị cắt cụt ("Hy sinh mở…"), bé phải vuốt mới đọc được - khó tra
+     * cứu. Giờ các chip tự xuống hàng, mỗi nhãn nằm trọn một dòng; chữ nhỏ gọn nên
+     * 5 chủ đề chỉ chiếm 2 hàng, không giành chỗ của bàn cờ.
      */
     <div
       role="tablist"
-      className={`flex flex-nowrap items-stretch gap-1 overflow-x-auto rounded-2xl border border-sand-300 bg-sand-100 p-0.5 ${className}`}
+      className={`flex flex-wrap items-stretch gap-1 rounded-2xl border border-sand-300 bg-sand-100 p-0.5 ${className}`}
     >
       {options.map((option) => {
         const active = option.value === value
@@ -103,7 +104,9 @@ export function Segmented<T extends string>({
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={`flex shrink-0 items-center gap-1.5 rounded-xl font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 transition-all ${
-              size === 'sm' ? 'min-h-10 px-2.5 py-1.5 text-sm' : 'min-h-11 px-3 py-2 text-base'
+              size === 'sm'
+                ? 'min-h-7 px-2 py-1 text-xs sm:text-sm'
+                : 'min-h-9 px-3 py-1.5 text-sm sm:text-base'
             } ${
               active
                 ? 'border border-brand-200 bg-white text-brand-800 shadow-[0_2px_4px_rgba(27,38,57,0.16)]'

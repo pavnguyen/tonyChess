@@ -72,6 +72,29 @@ const clickSquare = (square) =>
     })()
   `)
 
+/**
+ * Đưa bé về đúng thế `material-1` trên bản đồ.
+ *
+ * Vì sao cần: chủ đề “Trừng phạt quân treo” nay có nhiều thế hơn một, nên phím ▶
+ * ở phần trên đầu bài kiểm có thể đã đưa bé sang thế khác. Bài kiểm phải tự quay
+ * về thế nó muốn giải thay vì tin rằng chủ đề chỉ có một bài.
+ */
+const selectMaterialOne = async () => {
+  await evaluate(`
+    (() => {
+      const node = document.querySelector('[data-level-id="material-1"]')
+      if (node) node.click()
+      return true
+    })()
+  `)
+  await sleep(500)
+  // Bấm thế trên bản đồ mở bàn XEM TRƯỚC (không kéo quân được) → phải bấm “▶ Giải thế này”.
+  if (await evaluate(`Boolean(document.getElementById('kid-tactic-start'))`)) {
+    await clickById('kid-tactic-start')
+    await sleep(400)
+  }
+}
+
 /** Giải trọn thế `material-1`: 3 nước của bé, giữa mỗi nước có nước máy đáp. */
 const solveMaterialOne = async () => {
   await clickSquare('c4')
@@ -216,6 +239,7 @@ check(badgeAfter.startsWith('Thế cờ '), `phím ▶ không làm vỡ trang ($
 
 console.log('\n▶ Làm lại và đổi bài khi đang phát lời giải')
 
+await selectMaterialOne()
 await solveMaterialOne()
 await waitFor('#kid-tactic-replay')
 await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
@@ -234,9 +258,11 @@ await evaluate(`document.querySelector('[role="dialog"]')?.click()`)
 await clickById('kid-tactic-replay')
 await clickById('kid-tactic-next')
 await sleep(1600)
+// Sang thế KẾ TIẾP (nay chủ đề có nhiều thế) nên bàn cờ phải là thế đầu của bài
+// mới - thế của “Mã bắt đôi Vua và Xe ở góc”, Mã đứng b5 - chứ không còn là thế cũ.
 check(
-  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-c4'))`),
-  'đổi thế hủy timer lời giải cũ, bàn cờ về thế đầu',
+  await evaluate(`Boolean(document.getElementById('kid-board-piece-wN-b5'))`),
+  'đổi thế hủy timer lời giải cũ, bàn cờ về thế đầu của bài mới',
 )
 check(await waitFor('#kid-tactic-think'), 'thế mới không lộ đáp án cũ')
 
