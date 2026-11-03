@@ -615,17 +615,57 @@ export function CountersPage() {
           ấy cho bàn cờ. Dải này vẫn nằm ngay cạnh bàn cờ, và trên bàn cờ quân cần
           đi đã được tô viền màu sẵn.
         */}
+        {/*
+          “ĐANG ĐỐI PHỐ KHAI CUỘC NÀO” - thẻ nhận diện đặt LÊN ĐẦU cột, TRƯỚC cả
+          dải lượt đi và khối mind-set. Trước đây khối mind-set hiện ra trước mà
+          không nêu tên khai cuộc, nên bé/ba mẹ phải cuộn xuống danh sách mới biết
+          mình đang đối phó với kiểu chơi nào. Thẻ này gộp đủ ngữ cảnh trong một
+          dòng: tên quốc tế, tên Việt, nước đối thủ đi trước, bé cầm màu nào - và
+          nút nhảy xuống danh sách để đổi bài.
+        */}
+        <div
+          id="kid-counter-topic"
+          className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border-2 border-brand-200 bg-white px-2.5 py-2"
+        >
+          <span className="text-xl leading-none" aria-hidden>
+            {lesson.emoji}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-extrabold text-brand-900">
+              🧭 Đang đối phó: {lesson.englishName}
+            </span>
+            <span className="block truncate text-xs font-bold text-brand-500">
+              {lesson.opponentOpening} · đối thủ đi {openingMoveLabel(lesson)} · bé cầm{' '}
+              {sideLabel(kidSide)}
+            </span>
+          </span>
+          <button
+            type="button"
+            id="kid-counter-switch"
+            onClick={() =>
+              document
+                .getElementById('kid-counter-list')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+            title="Nhảy xuống danh sách để chọn khai cuộc khác"
+            className="shrink-0 rounded-full border-2 border-brand-200 bg-brand-50 px-2 py-0.5 text-xs font-extrabold text-brand-700 transition-all hover:border-brand-400 active:translate-y-[1px]"
+          >
+            🔁 Đổi khai cuộc
+          </button>
+        </div>
+
         {nextTurnStrip}
 
         {/*
-          MIND-SET ĐỐI PHÓ đặt ngay dưới dải “lượt ai sắp đi”, TRÊN cả danh sách
-          bài và nút điều khiển: bé cần hiểu “đối thủ muốn gì - mình làm gì”
-          trước khi nhớ nước nào đi trước. Mở sẵn trên điện thoại.
+          MIND-SET ĐỐI PHÓ đặt ngay dưới thẻ nhận diện và dải “lượt ai sắp đi”,
+          TRÊN cả danh sách bài và nút điều khiển: bé cần hiểu “đối thủ muốn gì -
+          mình làm gì” trước khi nhớ nước nào đi trước. Mở sẵn trên điện thoại.
+          Tiêu đề ghi luôn TÊN khai cuộc đối thủ để khung này không còn “vô danh”.
         */}
         <FoldPanel
           id="kid-counter-detail"
           icon="🧠"
-          title={`Mindset: ${lesson.counterName}`}
+          title={`Đối phó ${lesson.englishName}`}
           defaultOpen
         >
           {/* Tiêu đề + nút ⓘ chỉ hiện trên máy tính: điện thoại đã có dòng “Mindset”. */}
@@ -707,6 +747,14 @@ export function CountersPage() {
           nước mở đầu, để bé dò nhanh các kiểu khai cuộc mà không phải mở từng bài.
         */}
         <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+          {/* Nhãn khung: nói rõ đây là chỗ CHỌN khai cuộc của đối thủ (trước đây
+              khung mở bằng hai nút Trắng/Đen nên khó hiểu đang chọn cái gì). */}
+          <p className="flex min-w-0 items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+            🗂️ Chọn khai cuộc của đối thủ
+            <span className="shrink-0 rounded-full bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold normal-case tracking-normal text-brand-600">
+              {list.length} bài
+            </span>
+          </p>
           <Segmented
             options={SIDE_OPTIONS}
             value={viewSide}
