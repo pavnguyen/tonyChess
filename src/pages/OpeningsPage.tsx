@@ -968,7 +968,7 @@ export function OpeningsPage() {
       />
 
       {/* Cột phải: tab chế độ, bản đồ leo cấp, điều khiển, mục tiêu… (tự cuộn) */}
-      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      <div className="lesson-reader flex min-h-0 flex-col gap-1.5 stage:overflow-y-auto stage:pr-1">
         {/*
           Chọn khai cuộc → Mindset → chế độ → nút điều khiển → phần dạy từng bước.
           Bé cần NHỚ Ý (mục tiêu + 3 việc) trước khi nhớ nước nào đi trước.
@@ -977,7 +977,7 @@ export function OpeningsPage() {
           liếc xem có những kiểu khai cuộc nào. Trước đây khung này nằm dưới cả
           chế độ lẫn mục tiêu, trên điện thoại phải cuộn thêm gần một màn hình.
         */}
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 stage:p-2">
           {/* Tên khai cuộc đang học + ⓘ lịch sử: đủ để tra cứu, không cần khung riêng. */}
           <div className="flex min-w-0 items-center justify-between gap-2">
             {/*
@@ -1035,7 +1035,15 @@ export function OpeningsPage() {
             />
             <EyeToggle className="shrink-0" on={heatmap} onToggle={toggleHeatmap} />
           </div>
-          <div id="kid-opening-move-filter" className="flex flex-wrap gap-1.5">
+          {/*
+            Nhãn “Khai cuộc quân …” nằm CHUNG hàng với bộ lọc: tiết kiệm trọn một
+            dòng trong cột phải, nhờ vậy cả khối chọn bài gọn lại để không phải
+            cuộn (xem `reserve` của BoardStage và chiều cao cột).
+          */}
+          <div id="kid-opening-move-filter" className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-0.5 shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              🗺️ {side === 'white' ? 'Quân Trắng' : 'Quân Đen'}
+            </span>
             <button
               type="button"
               data-opening-move-filter="all"
@@ -1074,13 +1082,6 @@ export function OpeningsPage() {
                 </button>
               )
             })}
-          </div>
-          {/* Một hàng gọn cho nhãn “Khai cuộc quân …”. Nút Đối phó nằm DƯỚI các
-              thẻ khai cuộc (xem bên dưới). */}
-          <div className="flex items-center gap-1.5">
-            <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
-              🗺️ {side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
-            </p>
           </div>
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
@@ -1127,10 +1128,11 @@ export function OpeningsPage() {
             {counterPunch && (
               <p
                 id="kid-opening-vs-hint"
-                className="min-w-0 flex-1 animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
+                title={`${counterPunch.reply} - ${counterPunch.name}`}
+                className="min-w-0 flex-1 animate-slide-up truncate rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
               >
                 🛡️ Nếu <b>đối thủ</b> chơi bài này: bé cầm <b>{counterPunch.kidSide}</b>, đáp{' '}
-                <b>{counterPunch.reply}</b> ({counterPunch.name})
+                <b>{counterPunch.reply}</b>
               </p>
             )}
           </div>
@@ -1142,7 +1144,7 @@ export function OpeningsPage() {
           Đọc một mạch: mục tiêu (câu lớn) → 3 việc cụ thể. Không phải học thuộc
           chuỗi nước đi.
         */}
-        <Panel id="kid-opening-goal" className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
+        <Panel id="kid-opening-goal" className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 stage:p-2">
           {/*
             Bỏ khối tiêu đề to (icon 44px + 2 dòng mô tả): nội dung bên dưới đã tự
             nói rõ “Mục tiêu + ba việc”, nên chỉ cần một dòng nhãn mỏng.
@@ -1167,7 +1169,7 @@ export function OpeningsPage() {
                   : 'Bấm để tô sáng các ô mục tiêu trên bàn cờ'
                 : 'Mục tiêu của khai cuộc này'
             }
-            className={`grid gap-1 rounded-xl border-2 px-2.5 py-2 text-left transition-all active:translate-y-[1px] ${
+            className={`grid gap-1 rounded-xl border-2 px-2.5 py-1.5 text-left transition-all active:translate-y-[1px] ${
               goalFocus && !previewing
                 ? 'border-info-600 bg-info-100'
                 : 'border-gold-300 bg-gold-50 hover:border-gold-400'
@@ -1206,7 +1208,7 @@ export function OpeningsPage() {
                 )}
                 <InfoButton topic="plan" />
               </div>
-              <ul className="grid gap-1">
+              <ul className="grid gap-0.5">
               {opening.plan.points.map((point, index) => {
                 const focus = planFocusList[index]
                 const active = planFocusIdx === index
@@ -1234,7 +1236,7 @@ export function OpeningsPage() {
                         setPlanFocusIdx(active ? null : index)
                       }}
                       title="Bấm để xem thế cờ cuối khai cuộc và soi ô của việc này"
-                      className={`flex w-full items-start gap-1.5 rounded-xl px-2 py-1 text-left text-xs font-bold transition-all active:translate-y-[1px] ${
+                      className={`flex w-full items-start gap-1.5 rounded-xl px-2 py-0.5 text-left text-xs font-bold transition-all active:translate-y-[1px] ${
                         active
                           ? 'border-2 border-info-600 bg-info-100 text-brand-900'
                           : 'border-2 border-transparent text-brand-700 hover:bg-brand-50'

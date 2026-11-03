@@ -531,8 +531,8 @@ export function EndgamesPage() {
           1. CHỌN BÀI (việc làm nhiều nhất - trước đây nằm tận cuối, phải cuộn qua ba khung),
           2. bài đang luyện: mục tiêu → 3 việc → mẹo → nước đã đi, gói trong MỘT khung.
       */}
-      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
-        <Panel id="kid-endgame-list">
+      <div className="lesson-reader flex min-h-0 flex-col gap-1.5 stage:overflow-y-auto stage:pr-1">
+        <Panel id="kid-endgame-list" className="stage:p-2">
           <SectionTitle
             icon="👑"
             title="Tàn cuộc"
@@ -561,7 +561,12 @@ export function EndgamesPage() {
                   <span className="text-xs font-extrabold tracking-wide text-brand-500">
                     {group.icon} {group.title} · {items.length} bài
                   </span>
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                  {/*
+                    5 cột ở cỗ máy tính (`stage`) để 10 thẻ của mỗi mức nằm gọn 2 hàng:
+                    cột phải cao chừng 650px nên phải dồn chiều cao cho phần đang luyện
+                    thay vì để danh sách bài chiếm gần nửa cột.
+                  */}
+                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 stage:grid-cols-5">
                     {items.map((item) => {
                       const active = item.id === challenge?.id
                       return (
@@ -572,7 +577,7 @@ export function EndgamesPage() {
                           onClick={() => setChallengeId(item.id)}
                           aria-pressed={active}
                           title={item.title}
-                          className={`min-w-0 rounded-lg border-2 px-1.5 py-1 text-left transition-all active:translate-y-[1px] ${
+                          className={`min-w-0 rounded-lg border-2 px-1.5 py-0.5 text-left transition-all active:translate-y-[1px] ${
                             active
                               ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
                               : 'border-brand-100 bg-white hover:border-brand-300'
@@ -596,7 +601,7 @@ export function EndgamesPage() {
           </div>
         </Panel>
 
-        <Panel id="kid-endgame-lesson" className="grid gap-1.5">
+        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:p-2">
           <div className="flex items-center justify-between gap-2">
             <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
               🧭 {challenge?.title ?? ''}
@@ -605,30 +610,44 @@ export function EndgamesPage() {
               {board.history.length} nước
             </span>
           </div>
-          <p className="text-xs font-bold text-brand-600">{challenge?.hint}</p>
-          <p className="rounded-2xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-brand-700">
-            🧠 {mindset}
-          </p>
+          {/*
+            Lời nhắc + mindset chung MỘT hộp: hai câu ngắn cùng trả lời “bé làm gì
+            bây giờ”, tách hai hộp chỉ tốn chiều cao mà đọc bị ngắt.
+          */}
+          <div className="grid gap-0.5 rounded-2xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-brand-700">
+            <p>{challenge?.hint}</p>
+            <p className="text-brand-600">🧠 {mindset}</p>
+          </div>
 
-          <div id="kid-endgame-explanation" className="grid gap-1 border-t border-brand-100 pt-1.5">
-            <span className="text-xs font-extrabold tracking-wide text-brand-500">
-              💡 Mẹo của bài này
-            </span>
-            <p className="text-xs font-bold text-brand-700">{challenge?.explanation}</p>
-            <p className="rounded-xl bg-gold-50 px-2.5 py-1.5 text-xs font-extrabold text-gold-800">
-              🎵 “{challenge?.rhyme}”
+          {/*
+            Mẹo + câu vè in liền MỘT đoạn: trước đây là nhãn + đoạn + hộp vàng riêng,
+            tốn ba dòng chiều cao mà đọc rời rạc. Nội dung không mất chữ nào.
+          */}
+          <div id="kid-endgame-explanation" className="border-t border-brand-100 pt-1.5">
+            <p className="text-xs font-bold leading-snug text-brand-700">
+              <span className="font-extrabold tracking-wide text-brand-500">
+                💡 Mẹo của bài này:{' '}
+              </span>
+              {challenge?.explanation}{' '}
+              <span className="font-extrabold text-gold-800">🎵 “{challenge?.rhyme}”</span>
             </p>
           </div>
 
-          <div id="kid-endgame-history" className="grid gap-1 border-t border-brand-100 pt-1.5">
-            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              📜 Nước đi của ván · bấm một nước để quay lại
-            </span>
+          <div
+            id="kid-endgame-history"
+            className={
+              playedMoves.length === 0 ? 'grid gap-1' : 'grid gap-1 border-t border-brand-100 pt-1.5'
+            }
+          >
             {playedMoves.length === 0 ? (
               <p className="text-xs font-bold text-ink-600">
-                🐣 Bé kéo một quân trên bàn cờ để bắt đầu - từng nước sẽ hiện ở đây.
+                📜 🐣 Bé kéo một quân để bắt đầu - từng nước hiện ở đây, bấm một nước để quay lại.
               </p>
             ) : (
+              <>
+                <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
+                  📜 Nước đi của ván · bấm một nước để quay lại
+                </span>
               <MoveStrip
                 moves={playedMoves}
                 side={challenge?.playerSide ?? 'white'}
@@ -636,6 +655,7 @@ export function EndgamesPage() {
                 notation={notation}
                 onJump={jumpToMove}
               />
+              </>
             )}
           </div>
         </Panel>
