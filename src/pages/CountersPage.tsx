@@ -552,9 +552,19 @@ export function CountersPage() {
             “Đối thủ muốn…” mà không biết của bài nào.
           */}
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            <span className="min-w-0 flex-1 truncate text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              🧭 Cách phá <b className="normal-case text-brand-900">{lesson.englishName}</b>{' '}
-              <span className="normal-case text-brand-600">({lesson.opponentOpening})</span>
+            <span className="flex min-w-0 flex-1 items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              {/*
+                Cùng bộ icon với tab Khai cuộc (🧠 cho khung mind-set) và icon to
+                hơn chữ một bậc: emoji cỡ 12px đứng cạnh nhãn in hoa bị chìm, nhìn
+                như dấu chấm mờ chứ không ra biểu tượng.
+              */}
+              <span aria-hidden className="text-sm leading-none">
+                🧠
+              </span>
+              <span className="min-w-0 truncate">
+                Cách phá <b className="normal-case text-brand-900">{lesson.englishName}</b>{' '}
+                <span className="normal-case text-brand-500">({lesson.opponentOpening})</span>
+              </span>
             </span>
             {nextTurnStrip}
             <InfoButton topic="counter" />
@@ -591,6 +601,14 @@ export function CountersPage() {
             Bỏ nhãn “✅ Ba việc cần nhớ”: danh sách đã đánh số 1-2-3, tự hiểu, và mỗi
             nhãn thừa là một dòng chiều cao trong cột phải.
           */}
+          {/* Nhãn “Ba việc” cùng kiểu với khung mind-set ở tab Khai cuộc (🧠 + nhãn
+              in hoa mảnh) để hai tab đọc ra một giọng. */}
+          <p className="mt-1 flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+            <span aria-hidden className="text-sm leading-none">
+              🧠
+            </span>
+            Ba việc
+          </p>
           <div className="grid gap-0.5">
             <ul id="kid-counter-points" className="grid gap-0.5">
               {lesson.points.map((point, index) => (
