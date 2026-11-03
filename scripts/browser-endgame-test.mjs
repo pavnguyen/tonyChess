@@ -1,8 +1,7 @@
 /**
  * Kiểm tra tab **Tàn cuộc** `/endgames` sau khi thay bộ thế dễ bằng kỹ thuật thật:
- *   1. Chỉ còn 8 thế kỹ thuật (Vua–Tốt ô đối diện, Xe + Tốt chọi Xe, Tượng đôi,
- *      Mã + Tượng, Tốt thông hành, hai Tốt, Vua che Tốt, Hậu + Vua); các khung tham
- *      khảo cũ đã bị gỡ.
+ *   1. Có 20 thế kỹ thuật, chia hai mức rõ ràng: “Tàn cuộc cơ bản” (10 thế) và
+ *      “Tàn cuộc nâng cao” (10 thế); các khung tham khảo cũ đã bị gỡ.
  *   2. Bấm thẻ thì bàn cờ lớn đổi sang đúng thế cờ của bài đó.
  *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Soi mục tiêu” tô xanh thép
  *      đúng Tốt + ô phong cấp.
@@ -128,7 +127,7 @@ check(
 const ids = await evaluate(
   `[...document.querySelectorAll('[data-endgame-id]')].map((el) => el.dataset.endgameId)`,
 )
-check(ids.length === 8, `có đúng 8 thế luyện (${ids.length})`)
+check(ids.length === 20, `có đúng 20 thế luyện (${ids.length})`)
 check(
   [
     'opposition',
@@ -139,8 +138,25 @@ check(
     'two-pawns',
     'pawn-escort',
     'queen-mate',
+    'rook-mate',
+    'ladder-mate',
+    'queen-mate-edge',
+    'kp-sixth',
+    'lucena',
+    'back-rank-mate',
+    'queen-back-rank-mate',
+    'kp-two-push',
+    'rook-pawn-vs-king',
+    'two-pawns-tandem',
+    'queen-and-pawn',
+    'knight-smother-mate',
   ].every((id) => ids.includes(id)),
-  `đủ 8 thế kỹ thuật (${ids.join(', ')})`,
+  `đủ 20 thế kỹ thuật (${ids.join(', ')})`,
+)
+const endgameText = String(await bodyText())
+check(
+  endgameText.includes('Tàn cuộc cơ bản') && endgameText.includes('Tàn cuộc nâng cao'),
+  'chia rõ hai mức “Tàn cuộc cơ bản” và “Tàn cuộc nâng cao”',
 )
 
 console.log('\n▶ Bấm thẻ để đổi bài luyện')

@@ -23,30 +23,32 @@ import {
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
 import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
-import type { EndgameChallenge, EndgameGoal, OpeningMove } from '../types'
+import type { EndgameChallenge, EndgameLevel, OpeningMove } from '../types'
 
 const PLAYER_COLOR = 'w' as const
 
 /**
- * Hai nhóm bài tàn cuộc, chia theo ĐÍCH cuối cùng của bé. Bé nhìn là biết ngay
- * mình sắp luyện "đưa Tốt lên Hậu" hay "chiếu bí Vua Đen".
+ * Hai MỨC luyện, chia theo độ khó thay vì theo đích: bé chọn đúng tầm mình đang
+ * đứng trước, rồi trong mỗi mức tự chọn bài. Mỗi thẻ còn ghi đích bằng emoji
+ * (🛡️ phong Hậu / 🏁 chiếu bí) nên vẫn biết ngay bài dạy gì.
  */
-const GROUPS: {
-  goal: EndgameGoal
+const LEVELS: {
+  level: EndgameLevel
   icon: string
   title: string
   blurb: string
 }[] = [
   {
-    goal: 'promote',
-    icon: '🛡️',        title: 'Đưa Tốt lên thành Hậu',
-    blurb: 'Vua che Tốt, Tốt tiến tới hàng 8.',
+    level: 'basic',
+    icon: '🌱',
+    title: 'Tàn cuộc cơ bản',
+    blurb: 'Vua che Tốt, Xe/Hậu chiếu bí.',
   },
   {
-    goal: 'checkmate',
-    icon: '🏁',
-    title: 'Chiếu bí Vua Đen',
-    blurb: 'Khóa hết đường chạy của Vua Đen rồi chiếu.',
+    level: 'advanced',
+    icon: '🔥',
+    title: 'Tàn cuộc nâng cao',
+    blurb: 'Đổi Xe, Tượng đôi, Mã + Tượng, Lucena.',
   },
 ]
 
@@ -533,8 +535,8 @@ export function EndgamesPage() {
         <Panel id="kid-endgame-list">
           <SectionTitle
             icon="👑"
-            title="Tàn cuộc cơ bản"
-            subtitle={`Endgame · ${endgames?.length ?? 0} thế luyện`}
+            title="Tàn cuộc"
+            subtitle={`Cơ bản + nâng cao · ${endgames?.length ?? 0} thế`}
             info="endgame"
           />
           {/*
@@ -543,12 +545,14 @@ export function EndgamesPage() {
             bằng mắt rồi bấm đúng bài, không phải đọc lại lời gợi ý lần hai.
           */}
           <div className="mt-1.5 grid gap-1.5">
-            {GROUPS.map((group) => {
-              const items = (endgames ?? []).filter((item) => item.goal === group.goal)
+            {LEVELS.map((group) => {
+              const items = (endgames ?? []).filter(
+                (item) => (item.level ?? 'basic') === group.level,
+              )
               if (items.length === 0) return null
               return (
-                <div key={group.goal} className="grid gap-1">
-                  <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
+                <div key={group.level} className="grid gap-1">
+                  <span className="text-xs font-extrabold tracking-wide text-brand-500">
                     {group.icon} {group.title} · {items.length} bài
                   </span>
                   <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
@@ -573,6 +577,7 @@ export function EndgamesPage() {
                               active ? 'text-brand-900' : 'text-brand-700'
                             }`}
                           >
+                            <span aria-hidden>{item.goal === 'promote' ? '🛡️' : '🏁'}</span>{' '}
                             {item.title}
                           </span>
                         </button>

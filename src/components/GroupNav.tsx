@@ -7,12 +7,20 @@ import { Link, useMatchRoute } from '@tanstack/react-router'
  * Chơi) cho bé bấm trúng, nên các bài trong nhóm được chuyển bằng dải
  * pill này - vẫn tới được mọi trang cũ mà không nhồi lại 7 ô nhỏ.
  */
-const GROUPS: { id: string; items: { to: string; label: string; icon: string }[] }[] = [
+/**
+ * `highlight` đánh dấu bài nên MỜI bé bấm nhất trong nhóm (hiện là Đối phó): pill
+ * được tô vàng đồng + nhịp `animate-attention` nhẹ, vẫn cùng cỡ và cùng bo góc với
+ * các pill khác nên dải không bị lệch.
+ */
+const GROUPS: {
+  id: string
+  items: { to: string; label: string; icon: string; highlight?: boolean }[]
+}[] = [
   {
     id: 'learn',
     items: [
       { to: '/', label: 'Khai cuộc', icon: '🛡️' },
-      { to: '/counters', label: 'Đối phó', icon: '🧭' },
+      { to: '/counters', label: 'Đối phó', icon: '🧭', highlight: true },
       { to: '/strategy', label: 'Nguyên tắc', icon: '🏅' },
     ],
   },
@@ -52,9 +60,13 @@ export function GroupNav() {
             to={item.to}
             aria-current={active}
             className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-extrabold transition-all active:translate-y-[1px] ${
-              active
-                ? 'border-brand-600 bg-brand-700 text-white'
-                : 'border-sand-300 bg-white text-brand-700 hover:border-brand-300'
+              item.highlight
+                ? active
+                  ? 'border-gold-600 bg-gradient-to-r from-gold-400 to-gold-300 text-gold-950 shadow-[0_2px_0_#9a7018]'
+                  : 'animate-attention border-gold-500 bg-gradient-to-r from-gold-300 via-gold-200 to-gold-300 text-gold-900 shadow-[0_2px_0_#bf8c22] hover:from-gold-400 hover:to-gold-300'
+                : active
+                  ? 'border-brand-600 bg-brand-700 text-white'
+                  : 'border-sand-300 bg-white text-brand-700 hover:border-brand-300'
             }`}
           >
             <span aria-hidden>{item.icon}</span>

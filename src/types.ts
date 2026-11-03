@@ -193,10 +193,20 @@ export interface CounterLesson {
 
 export type EndgameGoal = 'promote' | 'checkmate'
 
+/**
+ * Mức của bài tàn cuộc - bé chọn theo trình độ, không phải đoán độ khó.
+ *
+ * `basic` = kỹ thuật nền (Vua che Tốt, Xe/Hậu chiếu bí); `advanced` = kỹ thuật
+ * thật ở mức 1500+: đổi Xe, Tượng đôi, Mã + Tượng, Lucena.
+ */
+export type EndgameLevel = 'basic' | 'advanced'
+
 export interface EndgameChallenge {
   id: string
   title: string
   goal: EndgameGoal
+  /** Mức luyện; bỏ trống thì coi như `basic`. */
+  level?: EndgameLevel
   fen: string
   /** Bé cầm quân màu nào. */
   playerSide: Side
