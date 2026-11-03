@@ -92,23 +92,31 @@ export function StrategyPage() {
       <BoardStage
         reserve={300}
         top={
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="text-2xl" aria-hidden>
+          /*
+            Hàng trạng thái MỘT dòng, cao đúng một chip nhỏ: emoji trong ô bo nhẹ +
+            tên nguyên tắc + (chỉ khi ẩn đáp án) chip “Ẩn đáp án”, rồi nút Mắt Thần
+            bên phải. Bản cũ xếp emoji 24px chồng tiêu đề và một dòng phụ
+            “✅ Thế cờ NÊN làm” ngay dưới, làm hàng này cao gấp đôi bàn cờ cần và
+            chữ phụ đè lên tiêu đề. Thế cờ đang soi đã có nút Nên/Không nên tô màu
+            ngay dưới bàn cờ và câu giải thích trong khung bài học, nên không lặp lại
+            ở đây nữa.
+          */
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-1.5">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="grid size-6 shrink-0 place-items-center rounded-lg bg-brand-100 text-sm leading-none"
+                aria-hidden
+              >
                 {activePrinciple.emoji}
               </span>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-extrabold text-brand-900 sm:text-base">
-                  {activePrinciple.order}. {activePrinciple.title}
-                </div>
-                <div className="hidden truncate text-xs font-bold text-ink-500 sm:block">
-                  {hidingAnswer
-                    ? '🔎 Bé đang xem quân Trắng'
-                    : demoSide === 'good'
-                      ? '✅ Thế cờ NÊN làm'
-                      : '⚠️ Thế cờ KHÔNG NÊN'}
-                </div>
-              </div>
+              <span className="truncate text-xs font-extrabold text-brand-900 sm:text-sm">
+                {activePrinciple.order}. {activePrinciple.title}
+              </span>
+              {hidingAnswer && (
+                <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.65rem] font-extrabold whitespace-nowrap text-gold-800">
+                  🔎 Ẩn đáp án
+                </span>
+              )}
             </div>
             {!hidingAnswer && <EyeToggle on={heatmap} onToggle={toggleHeatmap} />}
           </div>

@@ -77,85 +77,89 @@ export function ExplanationBanner({
       ? formatSanLetters(annotation.san)
       : formatSan(annotation.san, notation)
 
+  /*
+    Bố cục BA CỘT ĐỀU NHAU trên màn hình rộng (nước đi · vì sao · khẩu quyết) thay
+    cho hai cột lệch trước đây: cột trái vừa chip vừa khối xanh lớn nên cao gấp rưỡi
+    cột phải, khối xanh lại phình to trong khi chữ bên cạnh ngắn - nhìn nặng và
+    chiếm chiều cao của bàn cờ. Ba khối cùng một hàng, cùng bo góc, cùng đệm dọc,
+    chỉ khác màu - cân đối và thấp hơn hẳn. Trên điện thoại ba khối tự xếp dọc.
+  */
   return (
     <section
       aria-live="polite"
-      className={`animate-pop-in card-pop border-[3px] ${style.ring} p-2.5 sm:p-3`}
+      className={`animate-pop-in card-pop border-2 ${style.ring} px-2 py-1.5 sm:px-2.5`}
     >
-      <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className={`rounded-full px-2 py-0.5 text-[0.7rem] font-extrabold ${style.chip}`}>
+          {style.icon} {style.label}
+        </span>
+        <span className="rounded-full bg-sand-100 px-2 py-0.5 text-[0.7rem] font-bold text-brand-700 ring-1 ring-sand-200">
+          {moveLabel(plyIndex, annotation.san, notation)}
+        </span>
+      </div>
+
+      <div className="mt-1.5 grid gap-1.5 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1.05fr)] sm:gap-2">
         {/* 1. Nước đi + tên quân */}
-        <div className="grid content-start gap-1.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${style.chip}`}
-            >
-              {style.icon} {style.label}
-            </span>
-            <span className="rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-bold text-brand-700 ring-1 ring-sand-200">
-              {moveLabel(plyIndex, annotation.san, notation)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-brand-700 to-brand-500 px-3 py-2 text-white shadow-[0_10px_20px_-14px_rgba(13,32,24,0.95)]">
-            {/* Hình quân cờ chuẩn (♚♛♜♝♞♟) để bé nhận ra ngay quân gì. */}
-            <span
-              className="text-3xl leading-none text-white drop-shadow-[0_2px_0_rgba(13,32,24,0.5)] sm:text-4xl"
-              aria-hidden
-            >
-              {PIECE_GLYPH[piece]}
-            </span>
-            <div className="min-w-0 leading-tight">
-              <div className="text-xl font-extrabold tracking-tight sm:text-2xl">
-                {shownNotation}
-              </div>
-              <div className="truncate text-xs font-bold text-white/85 sm:text-xs">
-                Quân {PIECE_NAME_VI[piece]} · {info.action}
-              </div>
+        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-gradient-to-br from-brand-700 to-brand-500 px-2 py-1 text-white shadow-[0_8px_16px_-14px_rgba(13,32,24,0.95)]">
+          {/* Hình quân cờ chuẩn (♚♛♜♝♞♟) để bé nhận ra ngay quân gì. */}
+          <span
+            className="shrink-0 text-2xl leading-none text-white drop-shadow-[0_2px_0_rgba(13,32,24,0.5)]"
+            aria-hidden
+          >
+            {PIECE_GLYPH[piece]}
+          </span>
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-lg font-extrabold tracking-tight sm:text-xl">
+              {shownNotation}
+            </div>
+            <div className="truncate text-[0.7rem] font-bold text-white/85">
+              Quân {PIECE_NAME_VI[piece]} · {info.action}
             </div>
           </div>
         </div>
 
-        {/* 2. Lý do + 3. Khẩu quyết vè */}
-        <div className="grid content-start gap-1.5">
-          <div className="rounded-2xl bg-brand-50 px-2.5 py-1.5">
-            <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              💡 Vì sao?
-            </div>
-            <p className="text-sm font-bold text-brand-900">
-              <MoveText text={annotation.reason} />
-            </p>
+        {/* 2. Lý do */}
+        <div className="flex min-w-0 flex-col justify-center rounded-xl bg-brand-50 px-2 py-1">
+          <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
+            💡 Vì sao?
           </div>
-          {annotation.rhyme ? (
-            <div className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-sun bg-sun/20 px-2.5 py-1.5">
-              <span className="text-lg sm:text-xl" aria-hidden>
-                🎵
+          <p className="text-xs font-bold leading-snug text-brand-900 sm:text-[0.8rem]">
+            <MoveText text={annotation.reason} />
+          </p>
+        </div>
+
+        {/* 3. Khẩu quyết vè (hoặc nguyên tắc nếu bài không có vè) */}
+        {annotation.rhyme ? (
+          <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-sun bg-sun/20 px-2 py-1">
+            <span className="shrink-0 text-base" aria-hidden>
+              🎵
+            </span>
+            <div className="min-w-0">
+              <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-gold-600">
+                Khẩu quyết vè - đọc to lên nhé!
+              </div>
+              <div className="text-sm font-extrabold leading-snug text-gold-900">
+                “{annotation.rhyme}”
+              </div>
+            </div>
+          </div>
+        ) : (
+          annotation.principle && (
+            <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-info-300 bg-info-50 px-2 py-1">
+              <span className="shrink-0 text-base" aria-hidden>
+                🎯
               </span>
               <div className="min-w-0">
-                <div className="text-xs font-extrabold uppercase tracking-wide text-gold-600">
-                  Khẩu quyết vè - đọc to lên nhé!
+                <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-info-600">
+                  Nguyên tắc
                 </div>
-                <div className="text-base font-extrabold text-gold-900 sm:text-lg">
-                  “{annotation.rhyme}”
+                <div className="text-xs font-extrabold leading-snug text-info-900 sm:text-sm">
+                  {annotation.principle}
                 </div>
               </div>
             </div>
-          ) : (
-            annotation.principle && (
-              <div className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-info-300 bg-info-50 px-2.5 py-1.5">
-                <span className="text-lg sm:text-xl" aria-hidden>
-                  🎯
-                </span>
-                <div className="min-w-0">
-                  <div className="text-xs font-extrabold uppercase tracking-wide text-info-600">
-                    Nguyên tắc
-                  </div>
-                  <div className="text-sm font-extrabold text-info-900">
-                    {annotation.principle}
-                  </div>
-                </div>
-              </div>
-            )
-          )}
-        </div>
+          )
+        )}
       </div>
     </section>
   )

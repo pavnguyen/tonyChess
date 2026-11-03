@@ -412,8 +412,13 @@ export function FreePlayPage() {
         reserve={300}
         top={
           <>
+            {/*
+              Chip trạng thái cao đúng một dòng chữ nhỏ (20px) để hàng này không
+              giành chiều cao của bàn cờ: trước đây mỗi chip đệm `px-3 py-1` chữ
+              12px nên hàng chip dày gần gấp đôi và lệch hẳn với bàn cờ bên dưới.
+            */}
             <span
-              className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+              className={`rounded-full px-2 py-0.5 text-[0.7rem] font-extrabold leading-tight ${
                 kidInCheck
                   ? 'animate-pulse bg-coral-100 text-coral-700'
                   : 'bg-brand-100 text-brand-700'
@@ -421,11 +426,14 @@ export function FreePlayPage() {
             >
               {statusText}
             </span>
-            <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
+            <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold whitespace-nowrap text-gold-800">
               Nước {board.history.length + 1}
             </span>
             {coachBusy && !gameOver && (
-              <span id="kid-coach-busy" className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-500">
+              <span
+                id="kid-coach-busy"
+                className="rounded-full bg-brand-50 px-2 py-0.5 text-[0.7rem] font-bold text-brand-500"
+              >
                 🧑‍🏫 đang chấm…
               </span>
             )}
