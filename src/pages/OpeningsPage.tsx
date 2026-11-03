@@ -265,20 +265,22 @@ export function OpeningsPage() {
     [opening, activeLine],
   )
   /**
-   * Câu **“cách phản công”** ngay cạnh nút 🧭 Đối phó: đối thủ chơi nước gì, bé đáp
-   * nước gì, và bài đối phó đó tên là gì. Bé hiểu trước khi bấm, không phải mò vào
-   * trang khác rồi mới biết mình sẽ học gì.
+   * Câu **“cách phản công”** cạnh nút 🧭 Đối phó, viết cho đúng tình huống: bài đang
+   * học là của MỘT bên, còn bài đối phó dạy **bên kia** đánh lại. Vì vậy phải nói rõ
+   * “bé cầm Đen/Trắng” - nếu không bé đang học khai cuộc quân Trắng sẽ tưởng câu
+   * “bé đáp 1...e5” là nước của mình trong ván đang xem (mâu thuẫn, rất khó hiểu).
    */
   const counterPunch = useMemo(() => {
     const lesson = COUNTERS.find((item) => item.openingId === opening?.id)
     if (!lesson) return null
     const firstPly = lesson.opponentSide === 'white' ? 0 : 1
     const reply = lesson.moves[firstPly + 1]
-    if (!lesson.moves[firstPly] || !reply) return null
+    if (!reply) return null
     const label = (index: number, san: string) =>
       index % 2 === 0 ? `${index / 2 + 1}.${san}` : `${(index - 1) / 2 + 1}...${san}`
     return {
-      first: label(firstPly, lesson.moves[firstPly].san),
+      /** Bên bé sẽ cầm khi vào bài đối phó (ngược với bên chơi khai cuộc này). */
+      kidSide: lesson.opponentSide === 'white' ? 'Đen' : 'Trắng',
       reply: label(firstPly + 1, reply.san),
       name: lesson.counterName,
     }
@@ -1085,7 +1087,7 @@ export function OpeningsPage() {
               }
               title={
                 counterPunch
-                  ? `Đối thủ ${counterPunch.first} → bé đáp ${counterPunch.reply}: xem cách phản công`
+                  ? `Gặp đối thủ chơi bài này: bé cầm ${counterPunch.kidSide} đáp ${counterPunch.reply}`
                   : 'Xem đối thủ chơi khai cuộc này thì mình đáp lại thế nào'
               }
               className="animate-attention flex shrink-0 items-center gap-0.5 rounded-full border-2 border-leaf-400 bg-gradient-to-r from-leaf-100 via-leaf-50 to-leaf-200 px-2 py-0.5 text-xs font-extrabold text-leaf-800 shadow-[0_2px_0_#c2e1d1] hover:border-leaf-600 hover:from-leaf-200 active:translate-y-[1px]"
@@ -1093,13 +1095,16 @@ export function OpeningsPage() {
               <span aria-hidden>🧭</span> Đối phó
             </button>
           </div>
-          {/* Cách phản công, nói ngay tại chỗ: đối thủ đi gì → bé đáp gì. */}
+          {/*
+            Cách phản công, nói rõ ĐỔI VAI: đây là cách đánh LẠI khai cuộc đang xem,
+            nên bé sẽ cầm màu bên kia chứ không phải màu đang học ở trên.
+          */}
           {counterPunch && (
             <p
               id="kid-opening-vs-hint"
               className="animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
             >
-              🛡️ Đối thủ chơi <b>{counterPunch.first}</b> → bé đáp{' '}
+              🧭 Nếu <b>đối thủ</b> chơi bài này: bé cầm <b>{counterPunch.kidSide}</b>, đáp{' '}
               <b>{counterPunch.reply}</b> ({counterPunch.name})
             </p>
           )}

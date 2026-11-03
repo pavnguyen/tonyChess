@@ -348,12 +348,12 @@ check(
 const punch = (await text('#kid-opening-vs-hint')).replace(/\s+/g, ' ').trim()
 check(punch.length > 0, `có câu “cách phản công” ngay dưới hàng chọn bài: “${punch}”`)
 check(
-  punch.includes('Đối thủ chơi') && punch.includes('bé đáp'),
-  'câu đó nói rõ đối thủ đi gì và bé đáp gì',
+  punch.includes('đối thủ') && punch.includes('bé cầm'),
+  'câu đó nói rõ đây là cách ĐÁNH LẠI và bé cầm màu nào',
 )
 check(
-  punch.includes('1.e4') && punch.includes('1...e5'),
-  'nêu đúng nước cụ thể của khai cuộc đang học (1.e4 → 1...e5)',
+  punch.includes('bé cầm Đen') && punch.includes('1...e5'),
+  'bài quân Trắng → bé đổi sang cầm Đen và đáp đúng nước (1...e5)',
 )
 // Đổi sang một bài KHÁC trong danh sách đang mở (không phải bài đang chọn).
 const otherId = await evaluate(`
@@ -371,7 +371,7 @@ await evaluate(
 await sleep(450)
 const otherPunch = (await text('#kid-opening-vs-hint')).replace(/\s+/g, ' ').trim()
 check(
-  otherPunch.length > 0 && otherPunch !== punch && otherPunch.includes('bé đáp'),
+  otherPunch.length > 0 && otherPunch !== punch && otherPunch.includes('bé cầm'),
   `đổi bài thì câu phản công đổi theo (“${otherPunch}”)`,
 )
 
