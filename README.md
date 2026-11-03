@@ -59,7 +59,7 @@ cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và
 | Tab | Nội dung |
 | --- | --- |
 | 🛡️ **Khai cuộc Grand Master** (`/`) | Bấm một khai cuộc trên bản đồ → bàn cờ hiện **thế cờ mẫu hình cuối dòng chính** để xem trước, rồi **▶ Bắt đầu học từ đầu**. **10 khai cuộc** chia hai cột bé cầm Trắng / bé cầm Đen, xếp theo nước đáp bé thật sự gặp rồi mới tới độ dễ: Ván cờ Ý (Wesley So), Ruy Lopez (Fischer), Hệ thống London (Carlsen), Gambit Hậu (Polgár), Khai cuộc Anh (Tony Miles) · Sicilian (Kasparov), Caro-Kann (Petrosian), Pháp (Botvinnik), Phòng thủ King's Indian (Nakamura), Nimzo-Indian (Nimzowitsch). Có **Học từng bước** (bé **kéo-thả quân viền vàng** sang **ô viền xanh**, hoặc bấm nút / **phím ◀ ▶ ▲ ▼**). Kèm **kế hoạch trung cuộc** (bấm từng câu để soi ô cờ), **bộ lọc theo nước mở đầu** (1.e4, 1.d4, 1...c5…) gom các bài cùng nước mở đầu, và nút **🧭 Đối thủ chơi khai cuộc này thì sao?** nhảy sang bài Đối phó tương ứng. |
-| 🧭 **Đối phó khai cuộc** (`/counters`) | **16 bài “đối thủ chơi X → bé đáp Y”** (8 bài đối thủ cầm Trắng + 8 bài đối thủ cầm Đen, bé cầm màu ngược lại) - gồm 10 khai cuộc của app **và**6 nước mở đầu phổ biến (1.e4, 1.d4, 1.Nf3, ...d5, ...Nf6, ...c6). Mỗi bài là một dòng nước từ nước đầu, ghi rõ nước nào của đối thủ, nước nào bé đáp, kèm **"đối thủ đang định làm gì"**, **ý tưởng đối phó** và **3 việc bé cần làm**; **bộ lọc theo nước mở đầu** gom các bài cùng nước mở đầu để **phá thế khai cuộc** và **chặn triển khai quân** của bạn. Đi từng nước bằng nút hoặc **phím ◀ ▶ ▲ ▼**; nút **📖 Mở bài khai cuộc gốc** nhảy về đúng bài ở tab Khai cuộc (mở sẵn qua `/?opening=…` - và ngược lại qua `/counters?vs=…`). |
+| 🧭 **Đối phó khai cuộc** (`/counters`) | **10 bài “đối thủ chơi X → bé đáp Y”** (5 bài đối thủ cầm Trắng + 5 bài đối thủ cầm Đen, bé cầm màu ngược lại) - đúng một bài cho mỗi khai cuộc ở tab Khai cuộc. Mỗi bài là một dòng nước từ nước đầu, ghi rõ nước nào của đối thủ, nước nào bé đáp, kèm **"đối thủ đang định làm gì"**, **ý tưởng đối phó** và **3 việc bé cần làm**. Chọn bài bằng **combo một dòng** ở ngay dưới nút đổi màu; đi từng nước bằng nút hoặc **phím ◀ ▶ ▲ ▼**; nút **📖 Mở bài khai cuộc gốc** nhảy về đúng bài ở tab Khai cuộc (mở sẵn qua `/?opening=…` - và ngược lại qua `/counters?vs=…`). |
 | ⚔️ **Trung cuộc - Tìm nước hay nhất** (`/tactics`) | **9 thế cờ thật / 5 chủ đề**: 🎯 Trừng phạt quân treo · 👸 Đòn hiểm ăn Hậu · 📌 Đòn ghim · 🏁 Chiếu bí 3 nước · 💥 Hy sinh mở đường. Bé tự tìm **nước mạnh nhất** trên thế cờ thật (không học thuộc tên đòn); mỗi lời giải đã được máy chấm điểm và **kiểm chứng** (`verify:bestmove`). Thế nào có **chuỗi “đánh tiếp”** thì sau nước hay nhất, **máy tự đáp trả** rồi bé đi nốt để kết liễu. Có 💡 Gợi ý, thẻ **“Khi nào dùng?”** và nút **🔁 Xem lại lời giải** phát lại đúng chuỗi nước kèm mũi tên. |
 | 👑 **Tàn cuộc cơ bản** (`/endgames`) | **5 thế kỹ thuật thật**: Vua–Tốt ô đối diện · Tốt thông · Xe + Tốt chọi Xe · Mã + Tượng chiếu bí · cặp Tượng chiếu bí. Đấu với máy mức Khó; kèm gợi ý, mục tiêu và nút đi lại. |
 | 🏅 **Chiến lược - 10 nguyên tắc vàng** (`/strategy`) | **10 nguyên tắc vàng** (chiếm trung tâm, phát triển quân, nhập thành, tránh quân treo, cột mở, tiền đồn, hàng 7, Tốt thông, cặp Tượng, trao đổi đúng). Mỗi nguyên tắc có **hai thế cờ đối chiếu tốt / chưa tốt** kèm ô cờ và nhãn soi. |
@@ -172,12 +172,11 @@ mới** để việc tìm kiếm hết thời gian không làm hỏng bàn cờ 
   (`bestSan`) đã được **Stockfish kiểm chứng**; nhiều nước cùng tốt trong biên độ cho phép vẫn tính đúng.
 - **👑 5 thế luyện Tàn cuộc** (`src/data/endgames.ts`): Vua–Tốt ô đối diện, Tốt thông, Xe + Tốt
   chọi Xe, Mã + Tượng chiếu bí, cặp Tượng chiếu bí. Đối thủ đi mức Khó.
-- **🧭 16 bài Đối phó khai cuộc** (`src/data/counters.ts`): 8 bài cho đối thủ cầm Trắng + 8 bài cho
+- **🧭 10 bài Đối phó khai cuộc** (`src/data/counters.ts`): 5 bài cho đối thủ cầm Trắng + 5 bài cho
   đối thủ cầm Đen, mỗi bài một dòng nước kèm **đối thủ đang định làm gì**, ý tưởng đối phó và 3 việc
-  bé cần làm. 10 bài gắn `openingId` trỏ tới bài khai cuộc gốc (quy ước `id = vs-<openingId>`) để
-  nhảy qua lại giữa hai tab; 6 bài còn lại chỉ bàn về **nước mở đầu phổ biến** (1.e4, 1.d4, 1.Nf3,
-  ...d5, ...Nf6, ...c6). Danh sách có **bộ lọc theo nước mở đầu** để gom những bài cùng nước mở đầu
-  (ví dụ cùng 1.d4: London / Gambit Hậu / Ấn Độ).
+  bé cần làm. Mỗi bài gắn `openingId` trỏ tới ĐÚNG MỘT bài khai cuộc gốc (quy ước `id = vs-<openingId>`)
+  - hai tab song song một-một, `validate-chess.ts` kiểm cả hai chiều. Bài được chọn bằng **combo**
+  (một dòng, nói rõ đang học bài nào) thay cho lưới thẻ + hàng chip lọc cũ.
 - **🏅 10 nguyên tắc vàng** (`src/data/goldPrinciples.ts`, mỗi nguyên tắc có hai bàn cờ đối chiếu
   tốt/chưa tốt).
 
@@ -352,7 +351,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `check-contrast.ts` | Tính **tương phản WCAG AA** trực tiếp từ token đọc trong `src/index.css`: 25 cặp chữ/nền và vòng gợi ý trên bàn cờ - chữ dưới 4.5:1 là fail. Chạy trong `npm run check`. |
 | `browser-theme-test.mjs` | Ghim **bảng màu thật**: nền gỗ sáng, thanh trên cùng navy, bàn cờ ô gỗ + ô navy, mũi tên vàng đồng - và **không còn màu tím** sót lại. |
 | `browser-freeplay-hint-test.mjs` | Tab **Đấu tập tự do**: đủ **2 mức** Dễ / Khá, bấm **💡 Gợi ý** thì máy tìm nước cho bé và vẽ **mũi tên vàng**; **giới hạn 3 lần mỗi ván** (nút đếm ngược rồi tự khoá, ♟️ Ván mới cấp lại đủ 3). |
-| `browser-counters-test.mjs` | Tab **Đối phó khai cuộc**: đủ 8 bài cho đối thủ cầm Trắng và 8 bài cho đối thủ cầm Đen, hiện **“đối thủ đang định làm gì”** + ý tưởng + 3 việc, **bộ lọc theo nước mở đầu** (lọc 1.d4 gom đúng 3 bài), **phím ◀ ▶ tiến/lùi từng nước**, đổi màu đối thủ thì danh sách đổi theo, và **liên kết hai chiều**: `?vs=` mở sẵn đúng bài, **📖 Mở bài khai cuộc gốc** nhảy về đúng bài Khai cuộc, **🧭** nhảy ngược lại Đối phó. |
+| `browser-counters-test.mjs` | Tab **Đối phó khai cuộc**: combo có đủ 5 bài cho đối thủ cầm Trắng và 5 bài cho đối thủ cầm Đen, đổi bài trong combo thì hiện **“đối thủ đang định làm gì”** + ý tưởng + 3 việc, **phím ◀ ▶ tiến/lùi từng nước**, đổi màu đối thủ thì combo đổi theo, và **liên kết hai chiều**: `?vs=` mở sẵn đúng bài, **📖 Mở bài khai cuộc gốc** nhảy về đúng bài Khai cuộc, **🧭** nhảy ngược lại Đối phó. |
 | `browser-layout-test.mjs` | Duyệt cả 7 trang trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
 | `generate-assets.mjs` | Sinh `og-image.png` (1200×630) và `apple-touch-icon.png` (180×180) bằng Chrome headless, rồi tự giải mã lại ảnh để kiểm tra kích thước và màu. |
 

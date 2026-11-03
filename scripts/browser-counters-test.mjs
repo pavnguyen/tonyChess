@@ -1,9 +1,9 @@
 /**
  * Kiểm tra tab **Đối phó khai cuộc** (`/counters`):
- *   1. Danh sách có đủ bài đối phó cho cả hai màu đối thủ (5 Trắng / 5 Đen).
- *   2. Bấm một bài → hiện tên cách đối phó + ý tưởng + các việc cần làm.
+ *   1. Combo chọn bài có đủ bài đối phó cho cả hai màu đối thủ (5 Trắng / 5 Đen).
+ *   2. Đổi bài trong combo → hiện tên cách đối phó + ý tưởng + các việc cần làm.
  *   3. Phím tắt ◀ ▶ ▲ ▼ tiến/lùi từng nước trên bàn cờ (như tab Khai cuộc).
- *   4. Đổi màu đối thủ → danh sách đổi sang đúng bộ bài của màu đó.
+ *   4. Đổi màu đối thủ → combo đổi sang đúng bộ bài của màu đó.
  *   5. Nút ⓘ “Đối phó khai cuộc” có nội dung.
  *
  * Chạy: npm run check:counters
@@ -68,46 +68,14 @@ await sleep(2500)
 
 console.log('\n▶ Tab Đối phó tải và liệt kê bài của “đối thủ cầm Trắng”')
 
-check(await waitFor('#kid-counter-list'), 'hiện danh sách bài đối phó')
+check(await waitFor('#kid-counter-select'), 'hiện combo chọn bài đối phó')
 check(await present('#kid-board-board'), 'có bàn cờ chính (kid-board-board)')
-const whiteCount = await evaluate(
-  `document.querySelectorAll('#kid-counter-list [data-counter-id]').length`,
+const whiteOptions = await evaluate(
+  `document.querySelectorAll('#kid-counter-select option').length`,
 )
-check(
-  whiteCount === 3,
-  `mặc định chỉ bày 3 bài đối phó thông dụng nhất cbo đối thủ cầm Trắng (${whiteCount})`,
-)
-const totalWhite = await evaluate(`document.querySelectorAll('[data-counter-id]').length`)
-check(totalWhite === 5, `vẫn đủ 5 bài trong trang (${totalWhite})`)
-check(
-  await evaluate(`
-    (() => {
-      const extras = [...document.querySelectorAll('[data-counter-extra]')]
-      return extras.length === 2 && extras.every((el) => !el.offsetParent)
-    })()
-  `),
-  'phần “Tham khảo thêm” mặc định ĐÓNG (2 bài còn lại bị ẩn)',
-)
-check(
-  await evaluate(`
-    (() => {
-      document.getElementById('kid-counter-extras')?.click()
-      return true
-    })()
-  `),
-  'bấm mở được khung tham khảo',
-)
-await sleep(350)
-check(
-  await evaluate(`
-    (() => {
-      const extras = [...document.querySelectorAll('[data-counter-extra]')]
-      return extras.length === 2 && extras.every((el) => Boolean(el.offsetParent))
-    })()
-  `),
-  'mở khung thì thấy 2 bài tham khảo',
-)
-await evaluate(`document.getElementById('kid-counter-extras')?.click()`)
+check(whiteOptions === 5, `đối thủ cầm Trắng có đủ 5 bài trong combo (${whiteOptions})`)
+const whiteSelected = await evaluate(`document.getElementById('kid-counter-select').value`)
+check(whiteSelected === 'vs-london', `combo đang mở đúng bài từ ?vs= (${whiteSelected})`)
 await sleep(250)
 check(
   String(await text('#kid-counter-idea')).trim().length >= 30,
@@ -149,60 +117,35 @@ check(
   'phím ◀ lùi lại: nước d5 được gỡ, d4 vẫn còn',
 )
 
-console.log('\n▶ Bộ lọc “gom theo nước mở đầu”')
+console.log('\n▶ Đổi bài bằng combo')
 
-const countList = () =>
-  evaluate(`document.querySelectorAll('#kid-counter-list [data-counter-id]').length`)
-const clickFilter = (move) =>
+const selectLesson = (id) =>
   evaluate(`
     (() => {
-      const el = document.querySelector('[data-move-filter="' + ${JSON.stringify(move)} + '"]')
+      const el = document.getElementById('kid-counter-select')
       if (!el) return false
-      el.click()
+      el.value = ${JSON.stringify(id)}
+      el.dispatchEvent(new Event('change', { bubbles: true }))
       return true
     })()
   `)
 
-check(await present('#kid-counter-move-filter'), 'có hàng bộ lọc theo nước mở đầu')
-check(await present('[data-move-filter="d4"]'), 'có chip lọc cho 1.d4')
-check(await present('[data-move-filter="all"]'), 'có chip “Tất cả”')
-const allWhite = await countList()
-check(allWhite === 3, `bỏ lọc thì danh sách chính gọn 3 bài (${allWhite})`)
-
-check(await clickFilter('d4'), 'bấm chip 1.d4')
-await sleep(400)
-const d4Count = await countList()
-check(d4Count === 2, `lọc 1.d4 gom đúng 2 bài (${d4Count})`)
-const d4Selected = await evaluate(
-  `document.querySelector('#kid-counter-list [data-counter-id][aria-pressed="true"]')?.getAttribute('data-counter-id')`,
-)
-check(d4Selected === 'vs-london', `bài đang chọn là bài 1.d4 đầu tiên (${d4Selected})`)
-
-check(await clickFilter('all'), 'bấm “Tất cả”')
-await sleep(400)
-const allAgain = await countList()
-check(allAgain === 3, `bỏ lọc hiện lại 3 bài chính (${allAgain})`)
+const before = String(await text('#kid-counter-name'))
+check(await selectLesson('vs-ruy-lopez'), 'chọn bài khác trong combo')
+await sleep(500)
+const after = String(await text('#kid-counter-name'))
+check(after !== before, `cách đối phó đổi theo bài mới (${after.slice(0, 50)}…)`)
 
 console.log('\n▶ Đổi sang “đối thủ cầm Đen”')
 
 check(await clickInBody('Đối thủ cầm Đen'), 'bấm “Đối thủ cầm Đen”')
 await sleep(500)
-const blackCount = await evaluate(
-  `document.querySelectorAll('#kid-counter-list [data-counter-id]').length`,
+const blackOptions = await evaluate(
+  `document.querySelectorAll('#kid-counter-select option').length`,
 )
-check(blackCount === 3, `danh sách đổi sang 3 bài thông dụng nhất của Đen (${blackCount})`)
-const firstBlack = await evaluate(
-  `document.querySelector('#kid-counter-list [data-counter-id]')?.getAttribute('data-counter-id')`,
-)
-check(firstBlack !== 'vs-london', `bài đầu tiên là của Đen, không phải London (${firstBlack})`)
-
-console.log('\n▶ Bấm một bài khác → bàn cờ đổi dòng nước')
-
-const before = String(await text('#kid-counter-name'))
-check(await clickInBody('Phòng thủ Pháp'), 'bấm bài “Phòng thủ Pháp”')
-await sleep(500)
-const after = String(await text('#kid-counter-name'))
-check(after !== before, `tên cách đối phó đổi theo bài mới (${after.slice(0, 50)}…)`)
+check(blackOptions === 5, `combo đổi sang 5 bài của Đen (${blackOptions})`)
+const firstBlack = await evaluate(`document.getElementById('kid-counter-select').value`)
+check(firstBlack !== 'vs-london', `bài đang chọn là của Đen, không phải London (${firstBlack})`)
 
 console.log('\n▶ Nút ⓘ có nội dung')
 
@@ -214,10 +157,8 @@ console.log('\n▶ Mở sẵn đúng bài qua đường dẫn /counters?vs=…')
 // nút “mở bài khai cuộc gốc” - không còn bài “nước mở đầu rời” để kiểm riêng.
 await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/counters?vs=vs-sicilian`)}`)
 await sleep(1800)
-await waitFor('#kid-counter-list')
-const selected = await evaluate(
-  `document.querySelector('#kid-counter-list [data-counter-id][aria-pressed="true"]')?.getAttribute('data-counter-id')`,
-)
+await waitFor('#kid-counter-select')
+const selected = await evaluate(`document.getElementById('kid-counter-select').value`)
 check(selected === 'vs-sicilian', `mở sẵn đúng bài Sicilian (${selected})`)
 
 console.log('\n▶ Từ Đối phó mở bài khai cuộc gốc')
@@ -254,7 +195,7 @@ check(
   urlVs.includes('/counters') && urlVs.includes('vs=vs-sicilian'),
   `sang tab Đối phó kèm ?vs=vs-sicilian (${urlVs})`,
 )
-check(await waitFor('#kid-counter-list'), 'tab Đối phó mở lại đúng bài')
+check(await waitFor('#kid-counter-select'), 'tab Đối phó mở lại đúng bài')
 
 console.log('\n▶ Luyện đáp trả bằng thao tác trên bàn cờ')
 await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/counters?vs=vs-london`)}`)

@@ -49,19 +49,6 @@ const MODES: { value: Mode; label: string; icon: string }[] = [
 
 const sideLabel = (side: Side) => (side === 'white' ? 'Trắng ⬜' : 'Đen ⬛')
 
-/**
- * Nước mở đầu của ĐỐI THỦ trong một bài. Trắng luôn đi trước, nên nếu đối thủ cầm
- * Đen thì nước mở đầu của họ nằm ở ply 1 (sau nước đi đầu tiên của bé).
- */
-function opponentFirstMove(lesson: CounterLesson): string | undefined {
-  return lesson.opponentSide === 'white' ? lesson.moves[0]?.san : lesson.moves[1]?.san
-}
-
-/** Nhãn hiển thị cho nước mở đầu, ví dụ `1.d4` hoặc `1...Nf6`. */
-function openingMoveLabel(lesson: CounterLesson): string {
-  return `${lesson.opponentSide === 'white' ? '1.' : '1...'}${opponentFirstMove(lesson) ?? ''}`
-}
-
 export function CountersPage() {
   const { data: counters, isLoading } = useCountersQuery()
   const { notation, soundOn } = useKidProgress()
@@ -74,19 +61,12 @@ export function CountersPage() {
   /** Bài mặc định cùng thứ tự ưu tiên với tab Khai cuộc (Ván cờ Ý đứng đầu). */
   const [lessonId, setLessonId] = useState('vs-italian')
   const [ply, setPly] = useState(0)
-  /** Lọc danh sách theo nước mở đầu của đối thủ (null = xem tất cả). */
-  const [moveFilter, setMoveFilter] = useState<string | null>(null)
   /**
    * Ô bé vừa bấm trong nội dung bài (ví dụ bấm “♗ Tượng c5”) → tô sáng đúng ô đó
    * trên bàn cờ. Bé không phải tự dò toạ độ: bấm vào chữ là thấy quân ấy đứng đâu.
    * Bấm lại đúng ô đó thì bỏ tô.
    */
   const [pickedSquare, setPickedSquare] = useState<string | null>(null)
-  /**
-   * Mở khung “Tham khảo thêm” (các bài ít gặp). MẶC ĐỊNH ĐÓNG, giống tab Khai cuộc:
-   * chỉ bày 3 bài thông dụng nhất cho gọn, cần bài khác thì bấm mở.
-   */
-  const [showExtras, setShowExtras] = useState(false)
   /**
    * Bé đang XEM LẠI một nước cũ (bấm ◀/▶ ở chế độ luyện). Trong lúc xem lại thì tạm
    * dừng việc đối thủ tự đi, nếu không bé vừa lùi một bước là máy lại tiến tiếp ngay.
@@ -120,7 +100,6 @@ export function CountersPage() {
     if (!target) return
     setViewSide(target.opponentSide)
     setLessonId(target.id)
-    setMoveFilter(null)
   }, [search.vs, counters])
 
   /**
@@ -145,31 +124,11 @@ export function CountersPage() {
   )
 
   /**
-   * Bộ lọc “gom theo nước mở đầu”: mỗi nước mở đầu khác nhau của đối thủ trong cột
-   * đang xem thành một chip (ví dụ cùng `1.d4`: London / Gambit Hậu / Ấn Độ).
+   * Bài đang học. Chỉ có 5 bài mỗi phe nên KHÔNG lọc theo nước mở đầu nữa: combo
+   * chọn bài đã liệt kê đủ 5, thêm hàng chip lọc chỉ làm rối mắt.
    */
-  const moveFilters = useMemo(() => {
-    const seen = new Map<string, string>()
-    for (const item of list) {
-      const move = opponentFirstMove(item)
-      if (move && !seen.has(move)) seen.set(move, openingMoveLabel(item))
-    }
-    return [...seen.entries()].map(([move, label]) => ({ move, label }))
-  }, [list])
-
-  /** Danh sách sau khi lọc theo nước mở đầu đang chọn. */
-  const visibleList = useMemo(
-    () => (moveFilter ? list.filter((item) => opponentFirstMove(item) === moveFilter) : list),
-    [list, moveFilter],
-  )
-  /** 3 bài thông dụng nhất bày sẵn; phần còn lại gom vào “Tham khảo thêm”. */
-  const mainList = visibleList.slice(0, 3)
-  const extraList = visibleList.slice(3)
-  /** Đang học bài nằm trong phần tham khảo → tự mở khung, không để bài bị ẩn. */
-  const extrasOpen = showExtras || extraList.some((item) => item.id === lessonId)
-
   const lesson: CounterLesson | undefined =
-    visibleList.find((item) => item.id === lessonId) ?? visibleList[0]
+    list.find((item) => item.id === lessonId) ?? list[0]
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học bài đối phó nào.
 
@@ -393,65 +352,11 @@ export function CountersPage() {
     const first = (counters ?? []).find((item) => item.opponentSide === next)
     if (first) setLessonId(first.id)
     setPly(0)
-    setMoveFilter(null)
   }
 
   const selectLesson = (id: string) => {
     setLessonId(id)
     setPly(0)
-  }
-
-  /** Một dòng bài đối phó: tên khai cuộc ↔ cách bé đáp ↔ nước mở đầu. */
-  const LessonRow = ({
-    item,
-    compact = false,
-  }: {
-    item: CounterLesson
-    compact?: boolean
-  }) => {
-    const active = item.id === lesson?.id
-    return (
-      <button
-        type="button"
-        data-counter-id={item.id}
-        data-counter-extra={compact ? '1' : undefined}
-        aria-pressed={active}
-        title={`${item.opponentOpening} · ${item.counterName} - ${item.idea}`}
-        onClick={() => selectLesson(item.id)}
-        className={`flex min-w-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1 text-left transition-all active:translate-y-[1px] ${
-          active
-            ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
-            : 'border-brand-100 bg-white hover:border-brand-300'
-        }`}
-      >
-        <span className="text-base leading-none" aria-hidden>
-          {item.emoji}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-xs font-extrabold text-brand-900">
-            {item.englishName}
-          </span>
-          <span className="block truncate text-xs font-bold text-brand-500">
-            {item.opponentOpening} · <MoveText text={item.counterName} />
-          </span>
-          {/*
-            Ý đồ chỉ mở ở bài ĐANG CHỌN (2 dòng): 8 bài mà bài nào cũng mở ý đồ thì
-            danh sách cao gấp đôi, bé phải cuộn. Bài khác rê chuột là thấy trong tooltip.
-          */}
-          {active && !compact && (
-            // `line-clamp-2` (KHÔNG kèm `block`): `line-clamp` tự đặt `display:-webkit-box`,
-            // thêm `block` là mất cắt dòng - ý đồ dài 4 dòng từng làm hàng đang chọn cao
-            // 119px, kéo cả danh sách cao thêm 47px.
-            <span className="mt-0.5 line-clamp-2 text-xs font-bold leading-snug text-ink-600">
-              <MoveText text={item.idea} />
-            </span>
-          )}
-        </span>
-        <span className="shrink-0 rounded-lg bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold text-brand-700">
-          {openingMoveLabel(item)}
-        </span>
-      </button>
-    )
   }
 
   if (isLoading || !lesson) {
@@ -659,7 +564,7 @@ export function CountersPage() {
           <div className="grid gap-0.5">
           <p
             id="kid-counter-opponent-plan"
-            className="rounded-xl bg-coral-50 px-2 py-1 text-xs font-bold leading-snug text-coral-800 ring-1 ring-coral-200"
+            className="rounded-xl bg-coral-50 px-2 py-1 text-sm font-bold leading-snug text-coral-800 ring-1 ring-coral-200"
           >
             🚩 <b className="text-coral-900">Đối thủ muốn:</b>{' '}
             <MoveText
@@ -679,7 +584,7 @@ export function CountersPage() {
               pickedSquare={pickedSquare}
             />
           </div>
-          <p id="kid-counter-idea" className="text-xs font-bold text-brand-700">
+          <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
             <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
           </p>
           {/*
@@ -689,7 +594,7 @@ export function CountersPage() {
           <div className="grid gap-0.5">
             <ul id="kid-counter-points" className="grid gap-0.5">
               {lesson.points.map((point, index) => (
-                <li key={point} className="flex gap-1.5 text-xs font-bold text-brand-700">
+                <li key={point} className="flex gap-1.5 text-sm font-bold text-brand-700">
                   <span
                     aria-hidden
                     className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-extrabold text-brand-600"
@@ -709,24 +614,41 @@ export function CountersPage() {
           </div>
           </div>
 
-        </FoldPanel>
-
-        {/*
-          Chọn khai cuộc của đối thủ: mỗi dòng là TÊN khai cuộc + cách bé đáp lại +
-          nước mở đầu, để bé dò nhanh các kiểu khai cuộc mà không phải mở từng bài.
+        </FoldPanel>        {/*
+          CHỌN BÀI bằng combo thay cho lưới thẻ: lưới cũ cao gần 180px mà nội dung
+          lặp lại đúng khung “Cách phá …” ngay trên (tên quốc tế + cách đáp), lại
+          thêm hàng lọc nước mở đầu và nút “bài khác” nằm rời - rất rối. Combo nói
+          rõ ĐANG học bài nào, chỉ mở ra khi bé muốn đổi, và trên điện thoại dùng
+          luôn bảng chọn quen thuộc của máy.
         */}
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 stage:p-2">
-          {/* Nhãn khung: nói rõ đây là chỗ CHỌN khai cuộc của đối thủ (trước đây
-              khung mở bằng hai nút Trắng/Đen nên khó hiểu đang chọn cái gì). */}
-          <div className="flex min-w-0 items-center gap-1.5">
-            {/*
-              Tên khai cuộc đã nằm ngay trên, trong dòng “🧭 Cách phá …” của khung
-              mind-set, nên dòng này chỉ giữ phần VIỆC CẦN LÀM: đây là chỗ đổi bài.
-              Trước đây nó nhắc lại cả tên khai cuộc + màu quân, đọc hai lần một thông tin.
-            */}
-            <span className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-900">
-              🔀 Đổi bài đối phó · đối thủ đi {openingMoveLabel(lesson)} · {list.length} bài
-            </span>
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 stage:p-2">
+          <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
+
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <label
+              htmlFor="kid-counter-select"
+              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
+            >
+              <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+                Bài đối phó
+              </span>
+              <select
+                id="kid-counter-select"
+                value={lesson.id}
+                onChange={(event) => selectLesson(event.target.value)}
+                aria-label="Chọn bài đối phó"
+                className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+              >
+                {list.map((item) => (
+                  <option key={item.id} value={item.id} data-counter-id={item.id}>
+                    {item.emoji} {item.englishName} · {item.counterName}
+                  </option>
+                ))}
+              </select>
+              <span aria-hidden className="shrink-0 text-brand-500">
+                ▾
+              </span>
+            </label>
             {lesson.openingId && (
               <button
                 type="button"
@@ -739,84 +661,6 @@ export function CountersPage() {
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
-            <span className="shrink-0 rounded-full bg-brand-100 px-1.5 py-0.5 text-xs font-extrabold text-brand-600">
-              {list.length} bài
-            </span>
-            {/* Bộ lọc nước mở đầu nằm CHUNG hàng với chọn phe: hai thứ cùng là “lọc bài”. */}
-            <div id="kid-counter-move-filter" className="flex flex-wrap gap-1">
-            <button
-              type="button"
-              data-move-filter="all"
-              aria-pressed={moveFilter === null}
-              onClick={() => setMoveFilter(null)}
-              className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
-                moveFilter === null
-                  ? 'border-brand-600 bg-brand-50 text-brand-800'
-                  : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
-              }`}
-            >
-              Tất cả
-            </button>
-            {moveFilters.map(({ move, label }) => {
-              const active = moveFilter === move
-              return (
-                <button
-                  key={move}
-                  type="button"
-                  data-move-filter={move}
-                  aria-pressed={active}
-                  onClick={() => {
-                    setMoveFilter(move)
-                    const first = list.find((item) => opponentFirstMove(item) === move)
-                    if (first) setLessonId(first.id)
-                  }}
-                  className={`rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition-all active:translate-y-[1px] ${
-                    active
-                      ? 'border-brand-600 bg-brand-50 text-brand-800'
-                      : 'border-brand-100 bg-white text-brand-600 hover:border-brand-300'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-            </div>
-            {/*
-              Nút “bài khác” nằm CHUNG hàng lọc thay vì một khung riêng bên dưới:
-              cùng là thao tác “thu hẹp / mở rộng danh sách”, và tiết kiệm một dòng
-              (34px + khoảng cách) - đúng chỗ cột phải từng phải cuộn.
-            */}
-            {extraList.length > 0 && (
-              <button
-                type="button"
-                id="kid-counter-extras"
-                aria-expanded={extrasOpen}
-                onClick={() => setShowExtras((open) => !open)}
-                className="shrink-0 rounded-full border-2 border-dashed border-brand-200 bg-white px-2.5 py-1 text-xs font-extrabold text-brand-600 transition-all hover:border-brand-400 active:translate-y-[1px]"
-              >
-                📚 {extraList.length} bài khác <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
-              </button>
-            )}
-          </div>
-          {/*
-            Danh sách xếp 2 CỘT ở máy tính: 8 bài vẫn đọc được tên + cách đáp, mà
-            chiều cao giảm một nửa - đây là chỗ chiếm nhiều nhất trong cột phải.
-          */}
-          <div id="kid-counter-list" className="grid min-w-0 gap-1 sm:grid-cols-2">
-            {mainList.map((item) => (
-              <LessonRow key={item.id} item={item} />
-            ))}
-          </div>
-          {extraList.length > 0 && (
-            // Vẫn giữ trong DOM khi đóng (chỉ ẩn CSS) để điều hướng và bài kiểm vẫn thấy đủ.
-            <div className={extrasOpen ? 'grid gap-1 sm:grid-cols-2' : 'hidden'}>
-              {extraList.map((item) => (
-                <LessonRow key={item.id} item={item} compact />
-              ))}
-            </div>
-          )}
 
           {/*
             Điều khiển nằm CHUNG khung với danh sách (một đường kẻ thay vì một khung
