@@ -322,11 +322,16 @@ export function HazardsPage() {
             công. Bé tìm ra trước khi đối thủ kịp ăn nhé!
           </p>
 
-          <div className="flex items-center gap-1.5 rounded-2xl bg-white px-1.5 py-1.5 ring-2 ring-sand-200">
-            <span className="shrink-0 px-1 text-xs font-extrabold text-brand-500">
-              Mức
+          {/*
+            Chọn mức luyện: hai nút cùng cỡ 40px, cùng bo 16px và cùng bóng đáy như nút
+            ở các tab khác (trước đây là hai chip 36px nằm trong một khung trắng viền
+            kép, nhìn nặng và lạc tông so với phần còn lại).
+          */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              Mức luyện
             </span>
-            <div id="kid-hazard-levels" className="flex min-w-0 flex-1 gap-1.5">
+            <div id="kid-hazard-levels" className="flex min-w-0 gap-1.5">
               {(Object.keys(LEVELS) as HazardLevel[]).map((key) => {
                 const spec = LEVELS[key]
                 const active = key === level
@@ -337,10 +342,10 @@ export function HazardsPage() {
                     data-hazard-level={key}
                     aria-pressed={active}
                     onClick={() => changeLevel(key)}
-                    className={`min-h-9 flex-1 rounded-xl border-2 px-1.5 text-sm font-extrabold transition-all active:translate-y-[1px] ${
+                    className={`min-h-10 rounded-2xl border-2 px-3 text-sm font-extrabold transition-all active:translate-y-[2px] ${
                       active
-                        ? 'border-brand-500 bg-brand-700 text-white'
-                        : 'border-sand-200 bg-white text-brand-700 hover:border-brand-400'
+                        ? 'border-brand-600 bg-brand-700 text-white shadow-[0_3px_0_#1b2639]'
+                        : 'border-sand-300 bg-white text-brand-700 shadow-[0_3px_0_#e3cda3] hover:border-brand-300'
                     }`}
                   >
                     {spec.icon} {spec.label}
@@ -374,7 +379,7 @@ export function HazardsPage() {
                   data-hazard-square={choice.square}
                   disabled={answered}
                   onClick={() => pick(choice.square)}
-                  className={`flex min-h-11 min-w-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-left text-sm font-extrabold text-brand-900 transition-all active:translate-y-[1px] disabled:cursor-default ${state}`}
+                  className={`flex min-h-10 min-w-0 items-center gap-1.5 rounded-2xl border-2 px-2 py-1 text-left text-sm font-extrabold text-brand-900 transition-all active:translate-y-[1px] disabled:cursor-default ${state}`}
                 >
                   <span className="text-base leading-none" aria-hidden>
                     {FIGURINE[choice.piece]}
@@ -387,7 +392,7 @@ export function HazardsPage() {
             })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             <KidButton
               id="kid-hazard-next"
               variant="primary"
