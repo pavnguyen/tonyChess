@@ -66,6 +66,7 @@ function ToolButton({
   active = false,
   disabled = false,
   pressed,
+  tone = 'plain',
   onClick,
 }: {
   id?: string
@@ -77,8 +78,25 @@ function ToolButton({
   disabled?: boolean
   /** `aria-pressed` cho nút bật/tắt (bài kiểm trình duyệt đọc thuộc tính này). */
   pressed?: boolean
+  /**
+   * `sky` = nút HÀNH ĐỘNG chính (💡 Gợi ý, xanh thép như tab Trung cuộc);
+   * `plain` = nút phụ nền trắng viền gỗ. Bật/tắt (🎯) thì luôn dùng màu navy đậm
+   * của app - KHÔNG dùng đỏ son, vì đỏ son chỉ dành cho "sai / nguy hiểm".
+   */
+  tone?: 'sky' | 'plain'
   onClick: () => void
 }) {
+  /*
+   * Cùng một "ngôn ngữ nút" với các tab khác: cao 36px, viền 2px, bo 12px và bóng
+   * 2px phía dưới để bé thấy bấm được. Trước đây hàng này dùng viền 1px + bo khác
+   * nhau nên nhìn lệch hẳn so với nút ở Khai cuộc / Trung cuộc.
+   */
+  const palette = active
+    ? 'border-brand-600 bg-brand-700 text-white shadow-[0_2px_0_#1b2639] hover:bg-brand-600'
+    : tone === 'sky'
+      ? 'border-info-600 bg-info-500 text-white shadow-[0_2px_0_#294e5a] hover:bg-info-400'
+      : 'border-sand-300 bg-white text-brand-700 shadow-[0_2px_0_#e3cda3] hover:border-brand-300 hover:bg-brand-50'
+
   return (
     <button
       id={id}
@@ -87,11 +105,7 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-pressed={pressed}
-      className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border px-1.5 text-xs font-extrabold leading-none transition-all active:translate-y-[1px] disabled:opacity-40 stage:flex-none stage:px-2.5 ${
-        active
-          ? 'border-coral-500 bg-coral-500 text-white'
-          : 'border-sand-200 bg-white text-brand-700 hover:border-brand-300 hover:bg-brand-50'
-      }`}
+      className={`inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border-2 px-2 text-xs font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none stage:flex-none stage:px-2.5 ${palette}`}
     >
       <span className="shrink-0 text-sm leading-none" aria-hidden>
         {icon}
@@ -434,15 +448,16 @@ export function EndgamesPage() {
         under={
           <>
             {/*
-              Thanh công cụ MỘT dòng, nút thấp 32px: bàn cờ giữ được gần hết bề
-              ngang, còn trên điện thoại cả 4 nút vẫn nằm gọn một hàng (trước đây
-              bốn nút to phải xuống hai hàng, chiếm gần nửa màn hình).
-              Nhãn dài ở máy tính, nhãn ngắn (1-2 chữ) ở điện thoại.
+              Hàng công cụ GỌN, canh giữa như tab Trung cuộc: bốn nút cùng một cỡ,
+              cùng bóng đáy 2px nên nhìn liền một khối. Bỏ khung trắng bao ngoài
+              (trước đây khung ấy gần như trùng màu nền nên vừa thừa vừa làm nút
+              trông lọt thỏm). Nhãn dài ở máy tính, nhãn ngắn (1-2 chữ) ở điện thoại.
             */}
-            <div className="flex flex-wrap items-center gap-1 rounded-2xl border border-sand-200 bg-white/85 p-1">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
               <ToolButton
                 icon="💡"
                 label="Gợi ý"
+                tone="sky"
                 title="Gợi ý nước hay nhất ở thế cờ này"
                 onClick={() => {
                   setGoalFocus(false)
@@ -489,7 +504,7 @@ export function EndgamesPage() {
             {/* Đổi lời nhắc theo việc bé đang làm - không thêm dòng nào nên bàn cờ
                 không bị thu nhỏ (xem chú thích `reserve` của BoardStage). */}
             {!finished && (
-              <p className="text-xs font-bold leading-snug text-ink-600">
+              <p className="text-center text-xs font-bold leading-snug text-ink-600">
                 {goalFocus
                   ? '🎯 Ô TÍM là chỗ bé cần nhắm tới (Tốt + ô phong cấp, hoặc Vua Đen + ô nó chạy được).'
                   : !board.playerToMove
