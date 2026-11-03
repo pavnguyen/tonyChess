@@ -55,11 +55,6 @@ export function OpeningsPage() {
   const [side, setSide] = useState<Side>('white')
   /** Bộ lọc theo nước mở đầu của bé (null = xem tất cả). */
   const [moveFilter, setMoveFilter] = useState<string | null>(null)
-  /**
-   * Mở khung “Tham khảo thêm” (các khai cuộc ít gặp hơn). MẶC ĐỊNH ĐÓNG: bản đồ chỉ
-   * bày 3 kiểu thông dụng nhất cho gọn, bé cần kiểu khác thì bấm mở - tránh loạn.
-   */
-  const [showExtras, setShowExtras] = useState(false)
   /** Số nửa nước (ply) bé đã đi. Mỗi khai cuộc chỉ có MỘT dòng chính. */
   const [ply, setPly] = useState(0)
   const [hintVisible, setHintVisible] = useState(true)
@@ -158,20 +153,20 @@ export function OpeningsPage() {
   }, [sideOpenings, kidFirstMove])
 
   /**
-   * Bản đồ chỉ bày **3 kiểu thông dụng nhất** của phe đang xem (thứ tự trong
-   * `OPENINGS` đã xếp sẵn: gặp nhiều + dễ triển khai quân trước). Các kiểu còn lại
-   * gom vào khung “Tham khảo thêm” mặc định đóng - bày hết 5 thẻ cùng lúc làm bé
-   * rối, nhất là trên điện thoại.
+   * Bản đồ bày **cả 5 khai cuộc** của phe đang xem (thứ tự trong `OPENINGS` đã xếp
+   * sẵn: gặp nhiều + dễ triển khai quân trước).
+   *
+   * Trước đây chỉ bày 3 thẻ rồi giấu 2 kiểu sau nút “📚 +2”. Cả 5 kiểu đều là khai
+   * cuộc thật sự hay gặp ở tầm 1500-1800 (Ruy Lopez, English, King's Indian,
+   * Nimzo-Indian), và thẻ chỉ cao hai dòng - bày hết vẫn không rối mà bé tra cứu
+   * được ngay, không phải bấm mở thêm một lần.
    */
   const visibleOpenings = useMemo(
     () =>
       sideOpenings.filter((item) => !moveFilter || kidFirstMove(item) === moveFilter),
     [sideOpenings, moveFilter, kidFirstMove],
   )
-  const mainOpenings = visibleOpenings.slice(0, 3)
-  const extraOpenings = visibleOpenings.slice(3)
-  /** Đang học một bài trong phần tham khảo → tự mở khung, không để bài bị ẩn. */
-  const extrasOpen = showExtras || extraOpenings.some((item) => item.id === opening?.id)
+  const mainOpenings = visibleOpenings
 
   /** Đổi phe: nhảy luôn sang bài đầu tiên của phe đó. */
   const changeSide = (next: Side) => {
@@ -1052,29 +1047,12 @@ export function OpeningsPage() {
               )
             })}
           </div>
-          {/* Một hàng gọn: tên bảng chọn + mở “tham khảo thêm”. Nút Đối phó đã
-              chuyển xuống DƯỚI ba thẻ khai cuộc (xem bên dưới). */}
+          {/* Một hàng gọn cho nhãn “Khai cuộc quân …”. Nút Đối phó nằm DƯỚI các
+              thẻ khai cuộc (xem bên dưới). */}
           <div className="flex items-center gap-1.5">
-            {/* `line-clamp-2`: trên điện thoại hàng này còn chip (+2) nên một dòng
-                không đủ - cắt còn “KHAI CUỘC QUÂN…” thì bé mất chữ. Hai dòng vẫn
-                gọn hơn một dòng bị cắt cụt. */}
             <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
               🗺️ {side === 'white' ? 'Khai cuộc quân Trắng' : 'Khai cuộc quân Đen'}
             </p>
-            {extraOpenings.length > 0 && (
-              <button
-                type="button"
-                id="kid-opening-extras"
-                aria-expanded={extrasOpen}
-                aria-label={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
-                title={`Tham khảo thêm ${extraOpenings.length} kiểu khác`}
-                onClick={() => setShowExtras((open) => !open)}
-                className="flex shrink-0 items-center gap-0.5 rounded-full border-2 border-dashed border-brand-200 px-2 py-0.5 text-xs font-extrabold text-brand-600 hover:border-brand-400"
-              >
-                📚 +{extraOpenings.length}
-                <span aria-hidden>{extrasOpen ? '▲' : '▼'}</span>
-              </button>
-            )}
           </div>
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
@@ -1128,46 +1106,6 @@ export function OpeningsPage() {
               </p>
             )}
           </div>
-          {extraOpenings.length > 0 && (
-            <div className="grid gap-1.5">
-              {/*
-                Vẫn giữ trong DOM khi đóng (chỉ ẩn bằng CSS) để bàn phím và các bài
-                kiểm vẫn thấy đủ danh sách khai cuộc.
-              */}
-              <div className={extrasOpen ? 'grid grid-cols-2 gap-1.5 sm:grid-cols-3' : 'hidden'}>
-                {extraOpenings.map((item) => {
-                  const isActive = opening.id === item.id
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      data-level-id={item.id}
-                      data-opening-extra
-                      aria-current={isActive}
-                      onClick={() => selectOpening(item.id)}
-                      className={`flex min-h-11 items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 text-left transition-all active:translate-y-[1px] ${
-                        isActive
-                          ? 'border-brand-600 bg-brand-50'
-                          : 'border-sand-200 bg-white hover:border-brand-400'
-                      }`}
-                    >
-                      <span className="text-base leading-none" aria-hidden>
-                        {item.emoji}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-extrabold leading-tight text-brand-800">
-                          {item.englishName}
-                        </span>
-                        <span className="block truncate text-xs font-bold text-brand-500">
-                          {item.rankNote}
-                        </span>
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
         </Panel>
 
         {/*

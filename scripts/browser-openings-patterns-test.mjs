@@ -221,10 +221,6 @@ check(
 console.log('\n▶ Bộ lọc khai cuộc theo nước mở đầu của bé')
 
 const nodeCount = () => evaluate(`document.querySelectorAll('[data-level-id]').length`)
-// Bản đồ chỉ bày 3 kiểu thông dụng nhất; các kiểu khác nằm trong khung “Tham khảo
-// thêm” (mặc định đóng). Đếm riêng để chắc phần chính vẫn đúng 3 thẻ.
-const mainCount = () =>
-  evaluate(`document.querySelectorAll('[data-level-id]:not([data-opening-extra])').length`)
 const clickOpenFilter = (move) =>
   evaluate(`
     (() => {
@@ -237,48 +233,26 @@ const clickOpenFilter = (move) =>
 
 check(await present('#kid-opening-move-filter'), 'có hàng bộ lọc theo nước mở đầu')
 check(await present('[data-opening-move-filter="all"]'), 'có chip “Tất cả”')
+check((await nodeCount()) === 5, `bé cầm Trắng: cả 5 khai cuộc bày sẵn (${await nodeCount()})`)
 check(
-  (await mainCount()) === 3,
-  `bé cầm Trắng: bản đồ chỉ bày 3 kiểu thông dụng nhất (${await mainCount()})`,
+  await evaluate(`
+    (() => {
+      const cards = [...document.querySelectorAll('[data-level-id]')]
+      return cards.length === 5 && cards.every((el) => Boolean(el.offsetParent))
+    })()
+  `),
+  'cả 5 thẻ đều hiện sẵn, không còn bài nào bị giấu',
 )
-check((await nodeCount()) === 5, `vẫn đủ 5 khai cuộc trong trang (${await nodeCount()})`)
 check(
   await evaluate(
     `document.querySelector('[data-level-id="italian"]')?.getAttribute('aria-current') === 'true'`,
   ),
   'bài đang chọn mặc định đúng là bài số 1 (Ván cờ Ý)',
 )
-check(await present('#kid-opening-extras'), 'có nút “📚 Tham khảo thêm” cho các kiểu ít gặp')
 check(
-  await evaluate(`
-    (() => {
-      const extras = [...document.querySelectorAll('[data-opening-extra]')]
-      return extras.length === 2 && extras.every((el) => !el.offsetParent)
-    })()
-  `),
-  'phần tham khảo mặc định ĐÓNG (2 kiểu còn lại bị ẩn)',
+  !(await present('#kid-opening-extras')),
+  'không còn nút “📚 +2” - không có bài nào bị giấu sau thêm một lần bấm',
 )
-check(
-  await evaluate(`
-    (() => {
-      document.getElementById('kid-opening-extras')?.click()
-      return true
-    })()
-  `),
-  'bấm mở được khung tham khảo',
-)
-await sleep(350)
-check(
-  await evaluate(`
-    (() => {
-      const extras = [...document.querySelectorAll('[data-opening-extra]')]
-      return extras.length === 2 && extras.every((el) => Boolean(el.offsetParent))
-    })()
-  `),
-  'mở khung thì thấy 2 kiểu tham khảo',
-)
-await evaluate(`document.getElementById('kid-opening-extras')?.click()`)
-await sleep(250)
 
 check(await clickOpenFilter('e4'), 'bấm chip 1.e4')
 await sleep(400)
@@ -290,8 +264,8 @@ await sleep(400)
 const allCount = await nodeCount()
 check(allCount === 5, `bỏ lọc hiện lại đủ 5 khai cuộc (${allCount})`)
 check(
-  (await mainCount()) === 3,
-  `bỏ lọc thì bản đồ chính vẫn gọn 3 thẻ (${await mainCount()})`,
+  (await nodeCount()) === 5,
+  `bỏ lọc thì vẫn đủ 5 thẻ (${await nodeCount()})`,
 )
 
 console.log('\n▶ Biến phụ: gặp đối thủ đi khác dòng chính')
