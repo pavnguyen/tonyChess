@@ -160,6 +160,16 @@ for (const viewport of VIEWPORTS) {
       )
     }
 
+    // 2b. Riêng tab Đối phó: cột phải phải chứa TRỌN nội dung, không cuộn nội bộ - bé
+    // không nên vừa cuộn trang vừa cuộn trong khung để đọc hết “3 việc cần làm”
+    // (trước đây cột này tràn 123px ở 1440×900 và 114px ở 1366×768).
+    if (route.path === '/counters') {
+      check(
+        m.worstHidden === 0,
+        `Đối phó khai cuộc: cột phải không phải cuộn nội bộ (${m.worstHidden}px)`,
+      )
+    }
+
     // 3. Bàn cờ luôn nằm trọn trong màn hình.
     if (m.board) {
       check(

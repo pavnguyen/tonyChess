@@ -507,7 +507,9 @@ export function CountersPage() {
         }
       />
 
-      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
+      {/* `stage:gap-1.5`: trên máy tính hai khung sát nhau hơn 2px, đủ để cửa sổ
+          thấp 980×720 không còn phải cuộn nội bộ. */}
+      <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:gap-1.5 stage:overflow-y-auto stage:pr-1">
         {/*
           Dải “lượt ai sắp đi” + quân nào đi đâu. Đặt ở CỘT ĐIỀU KHIỂN chứ không
           nằm dưới bàn cờ: khối dưới bàn cờ càng cao thì bàn cờ càng bị thu nhỏ
@@ -639,7 +641,11 @@ export function CountersPage() {
           rõ ĐANG học bài nào, chỉ mở ra khi bé muốn đổi, và trên điện thoại dùng
           luôn bảng chọn quen thuộc của máy.
         */}
-        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 stage:p-2">
+        {/*
+          `gap-1` (4px) thay 6px: ở cửa sổ thấp 980×720 cột phải chỉ thiếu đúng 5px
+          mới hết cuộn - bóp khoảng cách giữa 4 hàng là đủ, không phải cắt chữ nào.
+        */}
+        <Panel className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1 stage:p-2">
           <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
 
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
