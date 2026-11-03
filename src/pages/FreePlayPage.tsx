@@ -447,21 +447,27 @@ export function FreePlayPage() {
         }
         under={
           <>
-            <div className="flex flex-wrap items-center gap-2">
+            {/*
+              Hàng nút GỌN, canh giữa như các tab khác: một nút xanh ngọc (việc chính
+              khi mở ván), hai nút phụ nền trắng (đi lại, mắt thần), một nút xanh thép
+              (gợi ý). Trước đây “Đi lại” cũng xanh thép nên hai nút màu giống nhau,
+              hàng lại dồn về trái và lệch so với bàn cờ ở trên.
+            */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
               <KidButton variant="grass" size="sm" onClick={() => newGame()}>
-              ♟️ Ván mới
-            </KidButton>
-            <KidButton
-              variant="sky"
-              size="sm"
-              disabled={board.history.length === 0 || thinking}
-              onClick={undoKid}
-            >
-              ↩️ Đi lại nước vừa rồi
-            </KidButton>
-            <KidButton variant="ghost" size="sm" onClick={toggleHeatmap}>
-              👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
-            </KidButton>
+                ♟️ Ván mới
+              </KidButton>
+              <KidButton
+                variant="ghost"
+                size="sm"
+                disabled={board.history.length === 0 || thinking}
+                onClick={undoKid}
+              >
+                ↩️ Đi lại nước vừa rồi
+              </KidButton>
+              <KidButton variant="ghost" size="sm" onClick={toggleHeatmap}>
+                👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
+              </KidButton>
             <KidButton
               id="kid-freeplay-hint"
               variant="sky"
