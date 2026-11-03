@@ -389,14 +389,25 @@ export function TacticsPage() {
                 🤖 Máy đang đáp trả... bé chuẩn bị tìm nước tiếp theo nhé!
               </p>
             )}
-            <div className="flex flex-wrap items-center gap-2">
+            {/*
+              Một hàng nút GỌN dưới bàn cờ: cỡ `sm` + xuống hàng khi hẹp, nên 4 nút
+              nằm chung một dòng trên máy tính và hai dòng đều tăm tắp trên điện
+              thoại (trước đây để cỡ `md` nên nút to gần gấp rưỡi và tràn khỏi khung).
+            */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
               {previewing && (
-                <KidButton id="kid-tactic-start" variant="primary" onClick={startSolving}>
+                <KidButton
+                  id="kid-tactic-start"
+                  variant="primary"
+                  size="sm"
+                  onClick={startSolving}
+                >
                   ▶ Giải thế này
                 </KidButton>
               )}
               <KidButton
                 variant="sky"
+                size="sm"
                 onClick={() => setHint(true)}
                 disabled={hint || solved || previewing || waitingReply}
               >
@@ -416,6 +427,7 @@ export function TacticsPage() {
               <KidButton
                 id="kid-tactic-prev"
                 variant="ghost"
+                size="sm"
                 onClick={prevPuzzle}
                 title="Về thế cờ trước (hoặc bấm phím ◀ / ▼)"
                 aria-keyshortcuts="ArrowLeft ArrowDown"
@@ -425,6 +437,7 @@ export function TacticsPage() {
               <KidButton
                 id="kid-tactic-next"
                 variant="primary"
+                size="sm"
                 onClick={nextPuzzle}
                 title="Sang thế cờ kế tiếp (hoặc bấm phím ▶ / ▲)"
                 aria-keyshortcuts="ArrowRight ArrowUp"
@@ -433,6 +446,7 @@ export function TacticsPage() {
               </KidButton>
               <KidButton
                 variant="ghost"
+                size="sm"
                 onClick={() => {
                   board.reset()
                   resetRound()
@@ -453,9 +467,10 @@ export function TacticsPage() {
                 🎉 Chuẩn rồi! Bé bấm ➡️ Thế cờ tiếp để sang thế mới nhé.
               </p>
             ) : (
-              <p className="text-xs font-bold text-ink-600">
-                🖐️ Kéo quân của bé vào ô bé muốn · 💡 bí quá thì bấm Gợi ý · ⌨️ ◀ ▶ ▲ ▼ để
-                đổi thế cờ
+              /* Dòng nhắc gộp còn hai vế ngắn, chữ nhỏ và sát nhau - đủ nhắc mà
+                 không chiếm thêm một khối chữ dưới bàn cờ. */
+              <p className="text-center text-xs font-bold leading-snug text-ink-600">
+                🖐️ Kéo quân vào ô bé muốn · 💡 bí thì bấm Gợi ý · ⌨️ ◀ ▶ ▲ ▼ đổi thế cờ
               </p>
             )}
           </>
