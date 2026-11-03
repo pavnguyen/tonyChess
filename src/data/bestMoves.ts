@@ -102,6 +102,51 @@ export const BEST_MOVES: BestMovePuzzle[] = [
     rhyme: 'Ghim rồi thì vồ',
   },
 
+  // ── Đòn ghim: quân bị ghim thì không dám chạy, bé cứ vồ lấy ────────
+  {
+    id: 'pin-2',
+    theme: 'pin',
+    title: 'Xe ghim Mã e7, Mã ăn gọn rồi rút về d5',
+    fen: '4k3/4nppp/8/5N2/8/8/5PPP/4R1K1 w - - 0 1',
+    side: 'white',
+    bestSan: 'Nxe7',
+    goodMoves: ['Nxe7'],
+    continuation: ['Kf8', 'Nd5'],
+    hint: 'Xe e1 ghim Mã e7 vào Vua e8, còn Mã f5 đang nhìn đúng ô e7 - hai quân ăn một quân. Ăn xong đưa Mã về d5 cho an toàn.',
+    explanation:
+      'Mã f5 ăn e7: Mã Đen bị Xe e1 ghim vào Vua e8 nên Vua không dám ăn lại. Vua lùi f8 thì Mã về d5 - vừa an toàn vừa giữ ô trung tâm.',
+    rhyme: 'Ghim rồi ăn gọn',
+  },
+  {
+    id: 'pin-3',
+    theme: 'pin',
+    title: 'Tượng ghim Mã c7, Tốt d6 vồ tới ăn',
+    fen: '3k4/p1n2ppp/8/B2P4/8/8/5PPP/4K3 w - - 0 1',
+    side: 'white',
+    bestSan: 'd6',
+    goodMoves: ['d6'],
+    continuation: ['Kc8', 'dxc7'],
+    hint: 'Tượng a5 ghim Mã c7 vào Vua d8 nên Mã không dám nhúc nhích. Đẩy Tốt d5 lên d6 tấn công, rồi ăn Mã c7 - Tốt đổi Mã là lời.',
+    explanation:
+      'Tượng a5 ghim Mã c7 vào Vua d8; Tốt d5 lên d6 tấn công quân bị ghim, Vua Đen buộc lùi về c8 rồi Tốt ăn Mã c7.',
+    rhyme: 'Ghim xong, Tốt ăn',
+  },
+
+  {
+    id: 'pin-5',
+    theme: 'pin',
+    title: 'Tượng ghim Tượng e7, Tốt d6 ăn cả Tượng',
+    fen: '4k3/4bppp/8/3P4/8/8/5PPP/4R1K1 w - - 0 1',
+    side: 'white',
+    bestSan: 'd6',
+    goodMoves: ['d6'],
+    continuation: ['Kf8', 'dxe7+'],
+    hint: 'Tượng e7 bị Xe e1 ghim vào Vua e8 nên không dám chạy. Đẩy Tốt d5 lên d6 tấn công: Vua Đen lùi f8 rồi Tốt ăn Tượng e7 - lại còn chiếu.',
+    explanation:
+      'Tượng e7 bị Xe e1 ghim vào Vua e8; Tốt d5 lên d6 tấn công quân bị ghim, Vua Đen buộc lùi f8, Tốt ăn Tượng e7 và chiếu luôn Vua - lời cả Tượng.',
+    rhyme: 'Ghim Tượng, Tốt ăn',
+  },
+
   // ── Hy sinh mở đường (cho Đen ăn quân để mở đúng đường chiếu bí) ─────────────
   {
     id: 'sac-1',
