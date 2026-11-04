@@ -603,11 +603,12 @@ export function CountersPage() {
             Bỏ nhãn “✅ Ba việc cần nhớ”: danh sách đã đánh số 1-2-3, tự hiểu, và mỗi
             nhãn thừa là một dòng chiều cao trong cột phải.
           */}
-          {/* Nhãn “Ba việc” cùng kiểu với khung mind-set ở tab Khai cuộc (🧠 + nhãn
-              in hoa mảnh) để hai tab đọc ra một giọng. */}
+          {/* Nhãn “Ba việc” mang icon 🎯 - cùng bộ icon với tab Khai cuộc (🧠 =
+              mind-set, 🎯 = việc bé phải làm): danh sách này là việc cụ thể, không
+              phải ý đồ, nên dùng 🎯 chứ không lặp lại 🧠 của dòng tiêu đề ngay trên. */}
           <p className="mt-1 flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
             <span aria-hidden className="text-sm leading-none">
-              🧠
+              🎯
             </span>
             Ba việc
           </p>

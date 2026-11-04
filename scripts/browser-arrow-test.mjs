@@ -549,11 +549,15 @@ check((await readPlanSquare('b5')) !== PLAN_FILL, 'quay lại bài học thì b�
 // ----------------------------------------------------------------
 console.log('\n▶ Câu kế hoạch “Đưa <quân> <ô> … <ô>” → vẽ mũi tên trên bàn cờ')
 
-// Về bài mặc định (Hệ thống London, cờ Trắng): câu 1 là
-// “Đưa Tượng f1 ra d3 (hoặc e2) rồi nhập thành…” nên mũi tên phải là f1 → d3.
-await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/?opening=london`)}`)
+// Bài Gambit Hậu (cờ Trắng): câu kế hoạch số 2 là “Đưa Tượng f1 ra d3 nhắm Vua
+// Đen…”, và nước f1 → d3 đi được thật ở thế cuối dòng chính - nên mũi tên phải là
+// f1 → d3. (London không còn câu dạng này: dòng chính đưa Tượng c1 ra f4.)
+await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/?opening=queens-gambit`)}`)
 await sleep(2600)
-check(await waitForSelector('[data-plan-point="0"]'), 'về bài London và thấy câu kế hoạch số 1')
+check(
+  await waitForSelector('[data-plan-point="1"]'),
+  'về bài Gambit Hậu và thấy câu kế hoạch số 2',
+)
 
 const readArrow = () =>
   evaluate(`
@@ -565,7 +569,7 @@ const readArrow = () =>
     })()
   `)
 
-await evaluate(`document.querySelector('[data-plan-point="0"]')?.click()`)
+await evaluate(`document.querySelector('[data-plan-point="1"]')?.click()`)
 await sleep(600)
 
 const planArrowShot = await readArrow()
@@ -575,7 +579,7 @@ check(
 )
 const chip = await evaluate(`
   (() => {
-    const button = document.querySelector('[data-plan-point="0"]')
+    const button = document.querySelector('[data-plan-point="1"]')
     return button ? button.innerText : ''
   })()
 `)
@@ -585,7 +589,7 @@ check(
 )
 check(
   await evaluate(`Boolean(document.getElementById('kid-board-piece-wB-f1'))`),
-  'bàn cờ đang ở thế cờ cuối khai cuộc London (Tượng còn ở f1 như cuối dòng chính)',
+  'bàn cờ đang ở thế cờ cuối khai cuộc Gambit Hậu (Tượng còn ở f1 như cuối dòng chính)',
 )
 
 close()

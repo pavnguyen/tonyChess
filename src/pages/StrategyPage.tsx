@@ -280,8 +280,13 @@ export function StrategyPage() {
             </p>
           )}
 
+          {/*
+            BỘ ICON DÙNG CHUNG với tab Khai cuộc / Đối phó: 🧠 = mind-set (“vì sao”),
+            🎯 = việc bé phải làm (câu tự hỏi trước khi đi). Cùng một cặp icon ở cả ba
+            tab để bé đọc quen mắt, không phải học lại ký hiệu mỗi lần đổi tab.
+          */}
           <p className="text-sm font-bold leading-snug text-brand-800">
-            <span aria-hidden>🤔 </span>
+            <span aria-hidden>🎯 </span>
             {quiz ? 'Thế cờ này nên làm hay không nên?' : activePrinciple.ask}
           </p>
 
@@ -312,6 +317,7 @@ export function StrategyPage() {
           {!hidingAnswer && (
             <>
               <p className="text-xs font-bold leading-snug text-brand-600">
+                <span aria-hidden>🧠 </span>
                 <b className="text-brand-800">Vì sao?</b> {activePrinciple.why}
               </p>
 

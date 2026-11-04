@@ -73,18 +73,23 @@ const clickSquare = (square) =>
   `)
 
 /**
- * Đưa bé về đúng thế `material-1` trên bản đồ.
+ * Đưa bé về đúng thế `material-1` bằng combo chọn thế cờ.
  *
  * Vì sao cần: chủ đề “Trừng phạt quân treo” nay có nhiều thế hơn một, nên phím ▶
  * ở phần trên đầu bài kiểm có thể đã đưa bé sang thế khác. Bài kiểm phải tự quay
  * về thế nó muốn giải thay vì tin rằng chủ đề chỉ có một bài.
+ *
+ * Combo native không nhận `.click()` trên <option>, nên gán `value` rồi bắn
+ * sự kiện `change` đúng như khi bé chọn trong bảng chọn của máy.
  */
 const selectMaterialOne = async () => {
   await evaluate(`
     (() => {
-      const node = document.querySelector('[data-level-id="material-1"]')
-      if (node) node.click()
-      return true
+      const el = document.getElementById('kid-tactic-select')
+      if (!el) return false
+      el.value = 'material-1'
+      el.dispatchEvent(new Event('change', { bubbles: true }))
+      return el.value === 'material-1'
     })()
   `)
   await sleep(500)

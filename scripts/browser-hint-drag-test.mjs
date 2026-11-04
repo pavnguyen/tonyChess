@@ -11,7 +11,10 @@
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
 
-const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
+// Bỏ dấu “/” cuối: `goto` nối thêm “/tactics” vào chuỗi này, để nguyên thì thành
+// “http://localhost:5198//tactics” - router không khớp đường dẫn nên trang nhảy về “/”
+// và bài kiểm tra lại đi bấm nút của tab khác.
+const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(`${APP_URL}#hint-drag`, {
   port: 9349,
@@ -37,16 +40,27 @@ const STEEL_RING = '63, 116, 143' // #3f748f - ô đích
 console.log('\n▶ Tab Trung cuộc: gợi ý chỉ hiện khi bé hỏi')
 
 const goto = async (path) => {
-  await evaluate(`location.href = ${JSON.stringify(`${APP_URL}${path}`)}`)
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    await sleep(200)
-    try {
-      if (await evaluate(`Boolean(document.getElementById('kid-board-board'))`)) {
-        await sleep(400)
-        return true
+  // Phải chờ ĐÚNG đường dẫn: khối bàn cờ `#kid-board-board` có mặt ở mọi tab, nên chỉ
+  // chờ nó thì trang cũ (vẫn còn bàn cờ) bị coi là đã mở xong - bài kiểm tra bấm
+  // “Gợi ý” trong khi tab Trung cuộc còn chưa hiện ra.
+  //
+  // Điều hướng có thể bị router của app ghi đè về “/” nếu nó chạy đúng lúc trang còn
+  // đang khởi động, nên thử lại vài lượt thay vì bỏ cuộc sau một lần.
+  for (let round = 0; round < 3; round += 1) {
+    await evaluate(`location.href = ${JSON.stringify(`${APP_URL}${path}`)}`)
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      await sleep(200)
+      try {
+        const ready = await evaluate(
+          `location.pathname === ${JSON.stringify(path)} && Boolean(document.getElementById('kid-board-board'))`,
+        )
+        if (ready) {
+          await sleep(400)
+          return true
+        }
+      } catch {
+        /* đang chuyển trang */
       }
-    } catch {
-      /* đang chuyển trang */
     }
   }
   return false

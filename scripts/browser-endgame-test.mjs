@@ -45,14 +45,20 @@ const waitForSelector = async (selector, timeoutMs = 12000) => {
   return false
 }
 
-/** Bấm thẻ luyện theo `id` của bài - bền hơn so với so khớp chữ trong tiêu đề. */
-const clickChip = (id) =>
+/**
+ * Chọn bài theo `id` trong combo - bền hơn so với so khớp chữ trong tiêu đề.
+ *
+ * Combo native không nhận `.click()` trên <option>, nên phải gán `value` rồi bắn
+ * sự kiện `change` đúng như khi bé chọn trong bảng chọn của máy.
+ */
+const selectChallenge = (id) =>
   evaluate(`
     (() => {
-      const el = document.querySelector('[data-endgame-id=${JSON.stringify(id)}]')
+      const el = document.getElementById('kid-endgame-select')
       if (!el) return false
-      el.click()
-      return true
+      el.value = ${JSON.stringify(id)}
+      el.dispatchEvent(new Event('change', { bubbles: true }))
+      return el.value === ${JSON.stringify(id)}
     })()
   `)
 
@@ -102,7 +108,13 @@ const clickId = (id) => evaluate(`document.getElementById(${JSON.stringify(id)})
 
 await sleep(2000)
 await go('/endgames')
-check(await waitForSelector('[data-endgame-id]'), 'mở được tab Tàn cuộc')
+check(await waitForSelector('#kid-endgame-select'), 'mở được tab Tàn cuộc')
+// Combo chỉ có lựa chọn khi dữ liệu 20 thế đã về (React Query tải lười) - chờ ô
+// chọn đầu tiên xuất hiện rồi mới đếm, nếu không sẽ đo trúng lúc danh sách còn rỗng.
+check(
+  await waitForSelector('#kid-endgame-select [data-endgame-id]'),
+  'combo nạp xong danh sách thế luyện',
+)
 
 console.log('\n▶ Chỉ còn bộ thế kỹ thuật, không còn khung tham khảo cũ')
 
@@ -159,9 +171,9 @@ check(
   'chia rõ hai mức “Tàn cuộc cơ bản” và “Tàn cuộc nâng cao”',
 )
 
-console.log('\n▶ Bấm thẻ để đổi bài luyện')
+console.log('\n▶ Chọn bài trong combo để đổi bài luyện')
 
-check(await clickChip('bishop-pair'), 'bấm thẻ “Tượng đôi chiếu bí”')
+check(await selectChallenge('bishop-pair'), 'chọn bài “Tượng đôi chiếu bí” trong combo')
 await sleep(600)
 check(await hasPiece('bK', 'h8'), 'bàn cờ soi đúng thế cờ mới (Vua Đen ở h8)')
 check(await hasPiece('wB', 'a3'), 'Tượng Trắng ở a3 như thế ban đầu')
@@ -170,7 +182,7 @@ check(String(await bodyText()).includes('Tượng đôi'), 'bảng chi tiết hi
 
 console.log('\n▶ Gợi ý và soi mục tiêu')
 
-check(await clickChip('opposition'), 'bấm thẻ “Vua–Tốt: ô đối diện”')
+check(await selectChallenge('opposition'), 'chọn bài “Vua–Tốt: ô đối diện” trong combo')
 await sleep(600)
 check(await hasPiece('wP', 'f6'), 'thế Vua–Tốt có Tốt Trắng ở f6')
 check(await hasPiece('bK', 'f8'), 'Vua Đen ở f8 chặn trước mặt Tốt')
@@ -200,7 +212,7 @@ check(
 
 console.log('\n▶ Tốt thông hành: lịch sử, Đi lại, đổi bài khi máy đang chờ')
 
-check(await clickChip('passed-pawn'), 'bấm thẻ “Tốt thông hành”')
+check(await selectChallenge('passed-pawn'), 'chọn bài “Tốt thông hành” trong combo')
 await sleep(600)
 check(await hasPiece('wP', 'b5'), 'Tốt Trắng ở b5')
 check((await historyCount()) === 0, 'bài mới có lịch sử rỗng')
@@ -217,7 +229,7 @@ await clickId('kid-endgame-takeback')
 await sleep(400)
 check((await historyCount()) === 0 && await hasPiece('wP', 'b5'), 'Đi lại sau nước máy lùi cả cặp nước')
 await moveByClick('b5', 'b6')
-await clickChip('bishop-pair')
+await selectChallenge('bishop-pair')
 await sleep(1200)
 check((await historyCount()) === 0 && await hasPiece('wB', 'a3'), 'đổi bài khi máy đang chờ không nhận nước cũ')
 

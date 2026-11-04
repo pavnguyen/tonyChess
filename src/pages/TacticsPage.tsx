@@ -6,7 +6,6 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
-import { ProgressMap } from '../components/ProgressMap'
 import { BoardStage } from '../components/BoardStage'
 import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -541,9 +540,8 @@ export function TacticsPage() {
         </Panel>
 
         {/*
-          Bản đồ thế cờ và THẾ CỜ ĐANG LÀM nằm chung một khung: ô sáng trên bản đồ
-          và nhiệm vụ ngay bên dưới là cùng một thế cờ, bé nhìn một chỗ là hiểu mình
-          đang ở đâu. Trước đây hai thứ này bị đẩy cách xa nhau nên khó theo dõi.
+          Chọn thế cờ (combo) và nhiệm vụ của thế đang làm nằm chung một khung: bé
+          chọn xong là thấy ngay phải làm gì với đúng thế đó, không phải dò hai nơi.
         */}
         <Panel id="kid-tactic-map" className="grid gap-2">
           {/*
@@ -576,18 +574,35 @@ export function TacticsPage() {
               ▶ Ôn ngay
             </button>
           </div>
-          <ProgressMap
-            nodes={list.map((item, index) => ({
-              id: item.id,
-              level: index + 1,
-              title: item.title,
-              emoji: activeMeta.emoji,
-              subtitle: `Khẩu quyết: “${item.rhyme}”`,
-            }))}
-            activeId={active?.id}
-            onSelect={selectPuzzle}
-            title="Bản đồ thế cờ"
-          />
+          {/*
+            CHỌN THẾ BẰNG COMBO (cùng kiểu tab Đối phó / Tàn cuộc): bản đồ 10 ô
+            trước đây chiếm 2 hàng ô vuông mà không cho biết ô nào là thế nào; combo
+            cao đúng một dòng, mở ra là đọc được tên cả 10 thế theo thứ tự dễ → khó.
+          */}
+          <label
+            htmlFor="kid-tactic-select"
+            className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
+          >
+            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              Thế cờ
+            </span>
+            <select
+              id="kid-tactic-select"
+              value={active?.id ?? ''}
+              onChange={(event) => selectPuzzle(event.target.value)}
+              aria-label="Chọn thế cờ"
+              className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+            >
+              {list.map((item, position) => (
+                <option key={item.id} value={item.id} data-level-id={item.id}>
+                  {position + 1}. {item.title}
+                </option>
+              ))}
+            </select>
+            <span aria-hidden className="shrink-0 text-brand-500">
+              ▾
+            </span>
+          </label>
 
           {active && (
             <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">

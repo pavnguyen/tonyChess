@@ -360,6 +360,9 @@ export function OpeningsPage() {
    */
   useEffect(() => {
     if (!opening || openingPreview || atLeaf) return
+    // Đang soi một câu kế hoạch thì máy KHÔNG tự đi: bàn cờ đang bày thế cờ cuối
+    // khai cuộc để bé nhìn, tự nhảy sang nước kế tiếp là phá đúng cái bé đang xem.
+    if (planFocusIdx !== null) return
     if (isKidPly(ply)) return
     // Nước mở đầu của Trắng khi bé cầm Đen: bé chưa kéo quân nào nên không có
     // `replyAfterDropRef` - trước đây vì thế mà bàn cờ đứng im, Trắng không đi.
@@ -371,7 +374,7 @@ export function OpeningsPage() {
       setPly((current) => current + 1)
     }, 600)
     return () => clearTimeout(timer)
-  }, [mode, ply, opening, atLeaf, isKidPly, openingPreview])
+  }, [mode, ply, opening, atLeaf, isKidPly, openingPreview, planFocusIdx])
 
   /** Bé đi đúng hết bài → tặng Cúp Vàng. */
   useEffect(() => {
@@ -646,6 +649,11 @@ export function OpeningsPage() {
   const goStep = useCallback(
     (delta: number) => {
       setOpeningPreview(false)
+      // Đi tới/lùi nước là đang học bài, không còn soi kế hoạch: phải bỏ luôn câu
+      // kế hoạch đang chọn. Nếu chỉ tắt cờ xem trước mà giữ `planFocusIdx`, nút câu
+      // kế hoạch vẫn sáng “đang chọn” trong khi bàn cờ đã về bài học - bấm lại lần
+      // nữa hoá ra TẮT chứ không bật, bé tưởng nút hỏng.
+      setPlanFocusIdx(null)
       replyAfterDropRef.current = false
       setWrongInfo(null)
       setPly((current) => {
@@ -1153,6 +1161,12 @@ export function OpeningsPage() {
             {/* `line-clamp-1` (không phải `truncate`): vẫn cắt gọn 1 dòng nhưng chữ
                 được phép xuống dòng nên không kéo cả khung rộng quá màn hình. */}
             <p className="min-w-0 flex-1 line-clamp-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              {/*
+                BỘ ICON DÙNG CHUNG cho ba tab dạy (Khai cuộc · Đối phó · Nguyên tắc):
+                🧠 = mind-set, tức “ý đồ / vì sao”; 🎯 = “việc bé phải làm” (mục tiêu,
+                ba việc, câu tự hỏi trước khi đi). Nhờ vậy bé thấy cùng một cặp icon ở
+                mọi tab và biết ngay dòng nào là ý đồ, dòng nào là việc cụ thể.
+              */}
               🧠 Mindset khai cuộc
             </p>
             <InfoButton topic="goal" />
@@ -1190,7 +1204,7 @@ export function OpeningsPage() {
                 {/* Tên khối ba việc là chính cái “mindset” ("Giữ ô f7 trong tầm ngắm"),
                     nên không được cắt cụt - cho xuống tối đa 2 dòng. */}
                 <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
-                  🧠 {opening.plan.title}
+                  🎯 {opening.plan.title}
                 </p>
                 {/* Chỉ hiện khi bàn cờ đang ở thế cuối - thay cho dòng gợi ý dài cũ. */}
                 {previewing && (

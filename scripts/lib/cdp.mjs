@@ -3,7 +3,9 @@
  * Node 22+ có WebSocket toàn cục nên không cần thư viện ngoài.
  */
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -17,6 +19,12 @@ export const DEFAULT_CHROME =
 export async function openPage(appUrl, { port = 9333, windowSize = '1280,1600' } = {}) {
   if (!existsSync(DEFAULT_CHROME)) return { skipped: true }
 
+  // Hồ sơ Chrome DÙNG MỘT LẦN cho mỗi lượt chạy. Trước đây hồ sơ được giữ lại theo
+  // cổng (`/tmp/kid-chess-cdp-<port>`) để khỏi tốn thời gian khởi động, nhưng service
+  // worker của PWA cache bundle cũ: lần chạy sau có thể kiểm tra ĐÚNG bản build trước
+  // đó và báo lỗi “không tìm thấy nút” dù code đã sửa. Hồ sơ mới mỗi lượt thì bài
+  // kiểm tra luôn đo bản build hiện tại.
+  const profileDir = mkdtempSync(join(tmpdir(), `kid-chess-cdp-${port}-`))
   const child = spawn(
     DEFAULT_CHROME,
     [
@@ -26,7 +34,7 @@ export async function openPage(appUrl, { port = 9333, windowSize = '1280,1600' }
       '--no-first-run',
       `--window-size=${windowSize}`,
       `--remote-debugging-port=${port}`,
-      `--user-data-dir=/tmp/kid-chess-cdp-${port}`,
+      `--user-data-dir=${profileDir}`,
       appUrl,
     ],
     { stdio: 'ignore' },
@@ -40,6 +48,11 @@ export async function openPage(appUrl, { port = 9333, windowSize = '1280,1600' }
       child.kill('SIGKILL')
     } catch {
       /* ignore */
+    }
+    try {
+      rmSync(profileDir, { recursive: true, force: true })
+    } catch {
+      /* Chrome có thể còn đang ghi - bỏ qua, hệ điều hành sẽ dọn */
     }
   }
   process.on('exit', close)

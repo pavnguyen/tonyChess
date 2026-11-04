@@ -540,68 +540,66 @@ export function EndgamesPage() {
             info="endgame"
           />
           {/*
-            Hai nhóm theo ĐÍCH (phong Hậu / chiếu bí), mỗi thẻ chỉ ghi TÊN BÀI.
-            Thẻ chỉ cao một hai dòng nên cả 12 thế nằm gọn trong một khung - bé soát
-            bằng mắt rồi bấm đúng bài, không phải đọc lại lời gợi ý lần hai.
+            CHỌN BÀI BẰNG COMBO (cùng kiểu tab Đối phó): trước đây 20 thẻ nhỏ xếp
+            thành 4 hàng - vừa chiếm gần nửa cột phải, vừa phải đọc từng thẻ để tìm
+            bài. Combo chỉ cao một dòng, mở ra là thấy đủ 20 bài chia sẵn hai mức
+            (optgroup), và nói rõ ĐANG luyện bài nào. Trên điện thoại dùng luôn bảng
+            chọn quen thuộc của máy nên không phải vuốt qua cả thư viện.
           */}
+          <label
+            htmlFor="kid-endgame-select"
+            className="mt-1.5 flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
+          >
+            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              Bài tàn cuộc
+            </span>
+            <select
+              id="kid-endgame-select"
+              value={challenge?.id ?? ''}
+              onChange={(event) => setChallengeId(event.target.value)}
+              aria-label="Chọn bài tàn cuộc"
+              className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+            >
+              {LEVELS.map((group) => {
+                const items = (endgames ?? []).filter(
+                  (item) => (item.level ?? 'basic') === group.level,
+                )
+                if (items.length === 0) return null
+                return (
+                  <optgroup key={group.level} label={`${group.icon} ${group.title}`}>
+                    {items.map((item) => (
+                      <option key={item.id} value={item.id} data-endgame-id={item.id}>
+                        {item.goal === 'promote' ? '🛡️' : '🏁'} {item.title}
+                      </option>
+                    ))}
+                  </optgroup>
+                )
+              })}
+            </select>
+            <span aria-hidden className="shrink-0 text-brand-500">
+              ▾
+            </span>
+          </label>
           {/*
-            Trên ĐIỆN THOẠI khung chọn bài tự cuộn bên trong (cao tối đa ~3 hàng
-            thẻ) thay vì đẩy dài cả trang: 20 thẻ xếp hết sẽ đẩy phần “mẹo của bài”
-            xuống rất xa, bé phải vuốt qua cả thư viện mới đọc được bài đang luyện.
-            Trên máy tính (`stage`) bỏ trần chiều cao - cột phải vốn đã cuộn riêng.
+            Hai tên mức vẫn hiện thành một dòng ngắn: optgroup chỉ đọc được khi mở
+            combo, còn dòng này cho bé biết ngay thư viện chia làm hai tầm.
           */}
-          <div className="mt-1.5 grid max-h-52 gap-1.5 overflow-y-auto pr-0.5 stage:max-h-none stage:overflow-visible stage:pr-0">
+          <p className="mt-1 text-xs font-bold text-brand-500">
             {LEVELS.map((group) => {
-              const items = (endgames ?? []).filter(
+              const count = (endgames ?? []).filter(
                 (item) => (item.level ?? 'basic') === group.level,
-              )
-              if (items.length === 0) return null
-              return (
-                <div key={group.level} className="grid gap-1">
-                  <span className="text-xs font-extrabold tracking-wide text-brand-500">
-                    {group.icon} {group.title} · {items.length} bài
-                  </span>
-                  {/*
-                    5 cột ở cỗ máy tính (`stage`) để 10 thẻ của mỗi mức nằm gọn 2 hàng:
-                    cột phải cao chừng 650px nên phải dồn chiều cao cho phần đang luyện
-                    thay vì để danh sách bài chiếm gần nửa cột.
-                  */}
-                  <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 stage:grid-cols-5">
-                    {items.map((item) => {
-                      const active = item.id === challenge?.id
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          data-endgame-id={item.id}
-                          onClick={() => setChallengeId(item.id)}
-                          aria-pressed={active}
-                          title={item.title}
-                          className={`min-w-0 rounded-lg border-2 px-1.5 py-0.5 text-left transition-all active:translate-y-[1px] ${
-                            active
-                              ? 'border-brand-600 bg-brand-50 shadow-[0_2px_6px_rgba(31,65,50,0.28)]'
-                              : 'border-brand-100 bg-white hover:border-brand-300'
-                          }`}
-                        >
-                          <span
-                            className={`line-clamp-2 text-xs font-extrabold leading-tight ${
-                              active ? 'text-brand-900' : 'text-brand-700'
-                            }`}
-                          >
-                            <span aria-hidden>{item.goal === 'promote' ? '🛡️' : '🏁'}</span>{' '}
-                            {item.title}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+              ).length
+              return `${group.icon} ${group.title} ${count} bài`
+            }).join(' · ')}
+          </p>
         </Panel>
 
-        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:p-2">
+        {/*
+          `stage:mt-auto`: combo chỉ cao một dòng nên cột phải còn dư nhiều chỗ; bám
+          khung bài học xuống đáy thì cột kết thúc đúng hàng với khối bàn cờ (cùng
+          cách xử lý ở tab Đối phó) thay vì để một khoảng trống dưới đáy.
+        */}
+        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:mt-auto stage:p-2">
           <div className="flex items-center justify-between gap-2">
             <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
               🧭 {challenge?.title ?? ''}
