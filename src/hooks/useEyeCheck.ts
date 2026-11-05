@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 /**
- * “Mắt Thần Cờ Vua”: **tắt sẵn** — bàn cờ mặc định sạch, bé/ba mẹ chủ động bật
+ * “Mắt Thần Cờ Vua”: **tắt sẵn** - bàn cờ mặc định sạch, bé/ba mẹ chủ động bật
  * khi muốn soi thế cờ (quân bị treo, ô nguy hiểm).
  */
 export function useEyeCheck() {

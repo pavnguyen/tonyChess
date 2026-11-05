@@ -3,10 +3,10 @@
 > Người yêu cầu: chủ dự án (bố của bé Nam An) · Ngày viết spec: 2026-10-01
 > Trạng thái: **ĐÃ CHỐT qua 6 vòng hỏi–đáp**, chưa viết mã
 > Liên quan: `gm-deep-dive-spec.md` §4.4 (cây khai cuộc + kế hoạch trung cuộc), §5 (sư phạm tương tác),
-> §2.1 (M3 — khai cuộc thực chiến)
+> §2.1 (M3 - khai cuộc thực chiến)
 > Tên việc ngắn: **post-opening-development**
 
-> ### ⚠️ TÀI LIỆU LỊCH SỬ — TÍNH NĂNG NÀY **CHƯA ĐƯỢC TRIỂN KHAI**
+> ### ⚠️ TÀI LIỆU LỊCH SỬ - TÍNH NĂNG NÀY **CHƯA ĐƯỢC TRIỂN KHAI**
 >
 > Đây là **kế hoạch** cho một buổi luyện "Triển khai quân sau khai cuộc" (chế độ `develop`). App
 > hiện tại **không có** tính năng này: tab Khai cuộc chỉ có `learn` và `memorize`, và tab Đấu với
@@ -22,11 +22,11 @@
 ## 0. Tóm tắt một đoạn
 
 App đang dạy khai cuộc rất kỹ nhưng **dừng đúng lúc khó nhất**: hết dòng sách (khoảng nước 5–7) là trao
-Cúp Vàng và hết bài, trong khi thực chiến phải đi tiếp **6–8 nước nữa mới hoàn tất triển khai quân** —
+Cúp Vàng và hết bài, trong khi thực chiến phải đi tiếp **6–8 nước nữa mới hoàn tất triển khai quân** -
 đúng đoạn mà trẻ con hay lạc. Đặc tả này thêm một **buổi LUYỆN** (không phải bài giảng mới, **không
 thêm dữ liệu nước đi viết tay**): từ **đúng thế cờ bé vừa kết thúc bài** (kể cả khi bé đã rẽ sang nhánh
 phụ), bé **đấu với máy**, và app chấm bằng **BẢNG KIỂM TRIỂN KHAI** (nhập thành ✓, ra hết quân nhỏ ✓,
-Xe kết nối ✓, quân đứng ô tốt ✓, không thua quân ✓) — **quy trình là chính, thắng thua là phụ**. Xong
+Xe kết nối ✓, quân đứng ô tốt ✓, không thua quân ✓) - **quy trình là chính, thắng thua là phụ**. Xong
 bảng kiểm là xong buổi luyện. Toàn bộ phần “HLV” dùng lại những thứ **đã có trong repo**
 (`findHangingPieces`, `pickMove`, và khung kế hoạch sinh từ engine của §4.4 mức 3).
 
@@ -59,14 +59,14 @@ cuộc* và *trung cuộc thật*.
 | 2 | Khi nào kết thúc buổi luyện | **Xong bảng kiểm là xong** (dù ván chưa ngã ngũ). |
 | 2 | HLV được phép làm gì | **Tất cả 6**: cảnh báo trước khi mất quân · tự hiện gợi ý khi “bí 2 lần” · cho lùi lại 1 nước · bảng kiểm cập nhật liên tục · khung kế hoạch theo thế cờ · nút xem nước máy gợi ý. |
 | 2 | Sức mạnh máy | **Mạnh để phạt nước dở** (không phải máy nhẹ). |
-| 3 | Mạnh từ lúc nào | **Mạnh nhưng chỉ “phạt” khi bé ẩu** — chơi bình thường, hễ bé để quân bị ăn thì máy đánh thẳng vào đó. |
+| 3 | Mạnh từ lúc nào | **Mạnh nhưng chỉ “phạt” khi bé ẩu** - chơi bình thường, hễ bé để quân bị ăn thì máy đánh thẳng vào đó. |
 | 3 | Mục “không thua quân” chấm sao | **Theo giá trị quân**: đổi quân ngang giá thì không sao; **thua nhiều hơn đối thủ** thì bị đánh dấu đỏ. |
 | 3 | Nếu bị chiếu bí trước khi xong bảng kiểm | **Giữ tiến độ đã đạt**, cho bé **xem lại nước làm mất ván**, rồi mới làm lại. |
-| 3 | Chỗ đứng trong app | **Hai cửa**: (a) **chế độ thứ 3** trong tab Khai cuộc; (b) **mục trong tab Đấu với Robot** — “bắt đầu từ thế cuối bài khai cuộc”. |
+| 3 | Chỗ đứng trong app | **Hai cửa**: (a) **chế độ thứ 3** trong tab Khai cuộc; (b) **mục trong tab Đấu với Robot** - “bắt đầu từ thế cuối bài khai cuộc”. |
 | 4 | Bé đã rẽ nhánh phụ thì luyện từ đâu | **Đúng thế bé vừa tới** (branch-aware), không ép về dòng chính. |
 | 4 | Bảng kiểm có theo tuổi không | **Giống nhau cho mọi tuổi** (một bộ mục duy nhất). |
 | 4 | Phần thưởng | **Sao ⭐ như bài học** + **điểm mini-Elo khai cuộc**. **KHÔNG** chuyển Cúp Vàng, **không** đổi thứ tự mở khoá, **không** huy hiệu mới. |
-| 4 | Trợ giúp có theo lộ trình 7→18 không | **Không** — buổi luyện **luôn có trợ giúp** (ngoại lệ có chủ ý so với `stage.hintPolicy`). |
+| 4 | Trợ giúp có theo lộ trình 7→18 không | **Không** - buổi luyện **luôn có trợ giúp** (ngoại lệ có chủ ý so với `stage.hintPolicy`). |
 | 5 | “Ra hết quân nhỏ” nghĩa là | **Cả 4 quân nhỏ rời ô gốc** (2 Mã + 2 Tượng). |
 | 5 | “Kết nối Xe” nghĩa là | **Một trong hai là đủ**: hai Xe nhìn thấy nhau **HOẶC** một Xe đứng trên cột mở. |
 | 5 | Mục trở nên bất khả thi | **Chuyển thành “không áp dụng”** (mờ đi, không tính vào tổng); buổi luyện vẫn kết thúc bình thường. |
@@ -81,20 +81,20 @@ cuộc* và *trung cuộc thật*.
 
 ### 3.1. Hai cửa vào
 
-**(a) Chế độ thứ 3 trong tab Khai cuộc** — `Segmented` hiện có 2 chế độ, thêm chế độ thứ ba:
+**(a) Chế độ thứ 3 trong tab Khai cuộc** - `Segmented` hiện có 2 chế độ, thêm chế độ thứ ba:
 
 | value | label | icon | Ý nghĩa |
 | --- | --- | --- | --- |
 | `learn` | Học từng bước | 📖 | (đang có) |
-| `memorize` | Luyện N bước | 🧠 | (đang có) — vẫn là nơi trao **Cúp Vàng** |
-| `develop` | **Triển khai quân** | 🚀 | **MỚI** — buổi luyện của đặc tả này |
+| `memorize` | Luyện N bước | 🧠 | (đang có) - vẫn là nơi trao **Cúp Vàng** |
+| `develop` | **Triển khai quân** | 🚀 | **MỚI** - buổi luyện của đặc tả này |
 
 - Vào chế độ `develop` thì **bắt đầu ngay** từ thế cuối bài (không cần bấm gì thêm), nút Segmented hiện
   huy hiệu nhỏ `✓` khi bài đó đã hoàn tất bảng kiểm ít nhất một lần.
 - Nhãn nút nên kèm số mục còn thiếu, ví dụ `Triển khai quân · còn 3` (giống cách nút *Luyện thuộc lòng*
   hiện `Luyện 6 bước`).
 
-**(b) Mục trong tab Đấu với Robot** — thêm một panel **“🚀 Tập từ thế cuối bài khai cuộc”**:
+**(b) Mục trong tab Đấu với Robot** - thêm một panel **“🚀 Tập từ thế cuối bài khai cuộc”**:
 
 - Liệt kê **cả 8 khai cuộc** (tên + emoji + GM + bên bé cầm), kèm nhãn trạng thái:
   `chưa học` · `đã học dòng sách` · `đã triển khai gọn gàng ✓`.
@@ -104,14 +104,14 @@ cuộc* và *trung cuộc thật*.
 
 ### 3.2. Thế bắt đầu buổi luyện (branch-aware)
 
-- Từ tab Khai cuộc: dùng **đúng `path` bé đang đứng** trong cây (`OpeningNode[]`) — nếu bé đã rẽ sang
+- Từ tab Khai cuộc: dùng **đúng `path` bé đang đứng** trong cây (`OpeningNode[]`) - nếu bé đã rẽ sang
   nhánh phụ như `4…Bg4` thì luyện từ thế đó, **không** kéo bé về dòng chính.
   - Lưu ý kỹ thuật: `path` đã dựng sẵn `fens[ply]`, nên chỉ cần truyền FEN hiện tại + `opening.side`.
   - Nếu bé đang ở **giữa** dòng sách (chưa tới `atLeaf`) mà bấm vào chế độ `develop`: hiện một dòng
-    nhắc *“Bé còn N nước lý thuyết nữa — vẫn luyện từ thế này nhé?”* và **cho phép luyện ngay**
+    nhắc *“Bé còn N nước lý thuyết nữa - vẫn luyện từ thế này nhé?”* và **cho phép luyện ngay**
     (không chặn), vì luyện từ thế bất kỳ là hợp lệ.
 - Từ Đấu với Robot: thế cuối dòng chính = FEN của **nút lá cuối dòng chính** (`mainNodes(tree)` phần tử
-  cuối) — dùng lại `mainNodes` trong `src/lib/openingTree.ts`.
+  cuối) - dùng lại `mainNodes` trong `src/lib/openingTree.ts`.
 - **Bé cầm bên nào theo `opening.side`**; mọi phép soi bảng kiểm phải **soi gương** tự động cho Đen
   (4/8 bài), đúng cách `BoardStage`/`ChessBoardPanel` đã xoay bàn.
 
@@ -130,7 +130,7 @@ cuộc* và *trung cuộc thật*.
 
 **Luật thi hành:**
 
-- Bảng kiểm **tính lại sau mỗi nửa nước** (cả nước của bé và nước của máy) — cập nhật liên tục.
+- Bảng kiểm **tính lại sau mỗi nửa nước** (cả nước của bé và nước của máy) - cập nhật liên tục.
 - Buổi luyện **hoàn tất** khi **tất cả mục còn áp dụng đều xanh** (mục “không áp dụng” bị bỏ khỏi mẫu số).
 - Mục nào đã đạt **sẵn** ngay từ thế xuất phát (ví dụ khai cuộc kết thúc khi Vua đã nhập thành) thì
   **tick sẵn** ngay khi vào.
@@ -141,9 +141,9 @@ cuộc* và *trung cuộc thật*.
 ### 3.4. Máy đấu & luật “phạt nước dở”
 
 - **Mức nền**: `botLevel` suy từ mini-Elo như tab Đấu với Máy (bé vẫn đổi được mức). *[suy ra từ câu trả
-  lời “mạnh nhưng chỉ phạt khi ẩu” — xem Q1]*
+  lời “mạnh nhưng chỉ phạt khi ẩu” - xem Q1]*
 - **Chế độ phạt (override)**: ngay sau nước của bé, nếu `findHangingPieces(game, <phía bé>)` trả về
-  **ít nhất một quân bị treo** thì nước đáp của máy được tính bằng `pickMove(fen, 'hard')` — mức `hard`
+  **ít nhất một quân bị treo** thì nước đáp của máy được tính bằng `pickMove(fen, 'hard')` - mức `hard`
   có `blunderChance = 0` nên **sẽ ăn** quân treo đó thay vì đi nước dở.
 - Nước máy vẫn đi qua `useChessEngine().think(fen, difficulty)` (đã có sẵn ở `FreePlayPage`), **không**
   thêm engine mới; ở mức `master` vẫn là đường Stockfish lazy như hiện nay.
@@ -157,7 +157,7 @@ cuộc* và *trung cuộc thật*.
 | 💡 **Tự hiện gợi ý khi “bí 2 lần”** | Đếm số lần bé bấm nút **Gợi ý** trong **cùng một thế**; lần bấm thứ 2 → gợi ý **tự hiện** và không cần bấm nữa cho tới khi thế đổi. |
 | ↩️ **Lùi lại 1 nước** | Nút “Lùi lại”: hoàn tác **nước của bé + nước đáp của máy** để về đúng lượt bé (dùng `useChessGame` sẵn có). Mỗi thế chỉ lùi được **1 lần** (xem Q6). |
 | ✅ **Bảng kiểm cập nhật liên tục** | Khung `#kid-develop-checklist` ngay dưới bàn cờ (hoặc cột phải), tính lại sau mỗi nửa nước. |
-| 🔎 **Khung kế hoạch theo thế cờ** | **Đã có** (`#kid-live-plan`, `buildLivePlan`) — trong buổi luyện hiện ở **mọi ply** (không chờ `ply >= 10` như ở chế độ học). |
+| 🔎 **Khung kế hoạch theo thế cờ** | **Đã có** (`#kid-live-plan`, `buildLivePlan`) - trong buổi luyện hiện ở **mọi ply** (không chờ `ply >= 10` như ở chế độ học). |
 | 🤖 **Nút xem nước máy gợi ý** | Nút “Máy gợi ý gì?” → chạy `pickMove(fen, 'medium')` và hiện nước đó kèm một câu vì sao (lấy từ chính khung kế hoạch). |
 
 - Mọi trợ giúp ở trên là **ngoại lệ có chủ ý** so với `stage.hintPolicy` (bé 16–18 tuổi vẫn được nhắc
@@ -187,9 +187,9 @@ cuộc* và *trung cuộc thật*.
 
 - **Sao ⭐**: hoàn tất bảng kiểm lần đầu = **4 ⭐**; luyện lại một bài đã xong = **2 ⭐** (theo đúng cách
   `addStars`/`completeActivity` đang xử lý “lần đầu / lần sau”).
-- **Mini-Elo**: `recordRating('opening', true)` — **chỉ ở lần hoàn tất đầu tiên** cho mỗi khai cuộc
+- **Mini-Elo**: `recordRating('opening', true)` - **chỉ ở lần hoàn tất đầu tiên** cho mỗi khai cuộc
   (tránh cày điểm; xem Q5).
-- **Hoàn thành**: `completeActivity('openings:<id>:develop', 4)` — **id mới**, tách hẳn khỏi
+- **Hoàn thành**: `completeActivity('openings:<id>:develop', 4)` - **id mới**, tách hẳn khỏi
   `openings:<id>:memorize` (Cúp Vàng vẫn thuộc về buổi *Luyện thuộc lòng*).
 - **KHÔNG** đổi: Cúp Vàng ở cuối dòng sách, thứ tự mở khoá (`useCurriculum` với suffix `:memorize`),
   huy hiệu danh hiệu.
@@ -198,7 +198,7 @@ cuộc* và *trung cuộc thật*.
 
 - Dòng sách + cây §4.4 (271 nút / 24 ngã ba): **không thêm nước nào**.
 - Cúp Vàng và điều kiện nhận Cúp Vàng.
-- Số tab (**5 tab**) — buổi luyện là **chế độ**, không phải tab mới; LAYOUT test phải còn xanh.
+- Số tab (**5 tab**) - buổi luyện là **chế độ**, không phải tab mới; LAYOUT test phải còn xanh.
 - Bố cục “bàn làm việc” không-cuộn; bảng màu “Sồi & Ngọc”.
 - Không thêm kho dữ liệu lớn (bài học từ vụ kho câu đố 300 MB).
 
@@ -213,7 +213,7 @@ cuộc* và *trung cuộc thật*.
 | Đọc thế cờ, nước hợp lệ | `chess.js` (đã là dependency) |
 | Quân bị treo | `findHangingPieces(game, side)` + `PIECE_VALUES` (`src/lib/threats.ts`) |
 | Nước máy | `useChessEngine().think(fen, difficulty)` · `pickMove` · `evaluateWhite` (`src/engine/minimax.ts`) |
-| Khung kế hoạch | `buildLivePlan(fen, side)` (`src/lib/livePlan.ts`) — **đã có, đừng viết bản thứ hai** |
+| Khung kế hoạch | `buildLivePlan(fen, side)` (`src/lib/livePlan.ts`) - **đã có, đừng viết bản thứ hai** |
 | Ván cờ SAN + lịch sử | `useChessGame(startFen, kidSide)` (`src/hooks/useChessGame.ts`) |
 | Bàn cờ + bố cục | `BoardStage({ reserve })` + `ChessBoardPanel` (chú ý chỉnh `reserve` cho chế độ mới, xem §4.4) |
 | Điểm trình độ | `useRating().record/ratingOf/botLevel` |
@@ -226,14 +226,14 @@ cuộc* và *trung cuộc thật*.
 
 1. **Route + state**: mở `/free-play` kèm `?tu=<openingId>` (hoặc state của router TanStack) → trang tự
    dựng FEN từ cây; không nhét FEN dài vào URL cho gọn đường dẫn.
-2. **Nhận FEN trực tiếp**: `?fen=<fen url-encoded>` — linh hoạt hơn nhưng URL xấu và khó đọc với bố mẹ.
+2. **Nhận FEN trực tiếp**: `?fen=<fen url-encoded>` - linh hoạt hơn nhưng URL xấu và khó đọc với bố mẹ.
 
 Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải luôn `'white'` như hiện nay) và
 `difficulty` vẫn mặc định `botLevel`.
 
 ### 4.3. Nơi lưu trạng thái
 
-- **Tiến độ/hoàn thành**: ở `useKidProgress` (`openings:<id>:develop`) — **không** tạo sổ mới.
+- **Tiến độ/hoàn thành**: ở `useKidProgress` (`openings:<id>:develop`) - **không** tạo sổ mới.
 - **Buổi luyện đang dở** (để “chơi tiếp ván này” ở cửa (b)): một khoá `localStorage` mới, đề xuất
   `hoc-vien-co-vua-nhi.develop.v1`, chứa:
   ```json
@@ -268,7 +268,7 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 
 ## 5. Kế hoạch kiểm thử
 
-### 5.1. Kiểm thuần (không cần trình duyệt) — `scripts/smoke-develop.ts`
+### 5.1. Kiểm thuần (không cần trình duyệt) - `scripts/smoke-develop.ts`
 
 `npm run check:develop`, thêm vào chuỗi `npm run check`. Các nhóm kiểm:
 
@@ -281,7 +281,7 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 | Thế xuất phát từ cây | Với **cả 8 khai cuộc**: FEN của mọi nút lá (dòng chính **và** mọi nhánh) phải `load` được bằng chess.js và `evaluateDevelopment` chạy không lỗi. |
 | Không-hồi-quy | `buildLivePlan` trên thế xuất phát vẫn trả kế hoạch hợp lệ (dùng lại phần đã có). |
 
-### 5.2. Kiểm trong trình duyệt — `scripts/browser-develop-test.mjs` (cổng **9366**)
+### 5.2. Kiểm trong trình duyệt - `scripts/browser-develop-test.mjs` (cổng **9366**)
 
 `npm run check:develop-ui`, thêm vào `check:browser` (**11 → 12 bộ**). Kịch bản:
 
@@ -297,7 +297,7 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 
 ### 5.3. Bố cục
 
-- Chạy `check:layout` **có** bảng kiểm đang hiện (thêm một lượt đo cho chế độ `develop`) — 10 khung nhìn
+- Chạy `check:layout` **có** bảng kiểm đang hiện (thêm một lượt đo cho chế độ `develop`) - 10 khung nhìn
   phải còn “không tràn ngang / trang không cuộn / thấy trọn bàn cờ”.
 
 ### 5.4. Dữ liệu
@@ -307,7 +307,7 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 
 ---
 
-## 6. Việc cần chốt thêm (câu hỏi mở — không chặn việc viết mã)
+## 6. Việc cần chốt thêm (câu hỏi mở - không chặn việc viết mã)
 
 | # | Câu hỏi | Đề xuất mặc định |
 | --- | --- | --- |
@@ -315,7 +315,7 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 | Q2 | Mục “không thua quân” cho phép kém bao nhiêu | Kém **≥ 1 điểm quân** là đỏ; bằng hoặc hơn là xanh |
 | Q3 | “Quân nhỏ đứng ô tốt” có áp cho cả Hậu không | Chỉ **Mã + Tượng** (bé mới hay bỏ quên Mã/Tượng; Hậu đi đâu cũng là chuyện khác) |
 | Q4 | Thế xuất phát đã đạt **hết** mục thì sao | Hiện tổng kết ngay *“đã triển khai gọn gàng”* nhưng **vẫn mở bàn cờ** cho bé chơi tiếp |
-| Q5 | Luyện lại bài đã xong có cộng mini-Elo nữa không | **Không** — chỉ sao (2 ⭐), tránh cày điểm |
+| Q5 | Luyện lại bài đã xong có cộng mini-Elo nữa không | **Không** - chỉ sao (2 ⭐), tránh cày điểm |
 | Q6 | Giới hạn nút “Lùi lại” | Mỗi thế lùi được **1 lần**; tổng cộng không giới hạn |
 | Q7 | Bé cầm Đen | Bảng kiểm **soi gương tự động**, không cần nội dung riêng |
 | Q8 | Có thêm câu gợi ý cho ba mẹ (§10) về buổi luyện không | Thêm 1 câu: *“Đố con: vì sao Xe phải kết nối trước khi mở cột?”* |
@@ -341,14 +341,14 @@ Trong cả hai cách: mặc định **`kidSide = opening.side`** (không phải 
 
 - `README.md`: mô tả chế độ 🚀 (bảng kiểm, hai cửa vào, ngoại lệ “luôn có trợ giúp”), thêm dòng
   `check:develop` / `check:develop-ui`, cập nhật số bộ test trình duyệt.
-- `gm-deep-dive-spec.md`: thêm mục **§4.7 “Luyện triển khai quân sau khai cuộc — ✅ ĐÃ LÀM”** và ghi vào
+- `gm-deep-dive-spec.md`: thêm mục **§4.7 “Luyện triển khai quân sau khai cuộc - ✅ ĐÃ LÀM”** và ghi vào
   khối **“Ràng buộc không được phá”**: *buổi luyện luôn có trợ giúp bất kể giai đoạn tuổi*.
 
 ## 9. Trạng thái repo lúc viết spec (để người làm biết điểm xuất phát)
 
 - ✅ **§10 khung “Gợi ý cho ba mẹ”**: đã làm (`src/components/ParentTips.tsx`, `src/lib/parentTips.ts`,
   `src/store/lesson.tsx`, test `check:tips`).
-- ✅ **§4.4 mức 3 — kế hoạch sinh từ engine**: đã làm (`src/lib/livePlan.ts` + khung `#kid-live-plan`,
+- ✅ **§4.4 mức 3 - kế hoạch sinh từ engine**: đã làm (`src/lib/livePlan.ts` + khung `#kid-live-plan`,
   `scripts/smoke-plan.ts`, phần tương ứng trong `browser-arrow-test.mjs`). Nay đã xác nhận xanh -
   `browser-opening-tree-test.mjs` và `check:tree` đã bị xoá cùng cây khai cuộc phân nhánh.
 - ✅ Đã bỏ tính năng: kho câu đố Lichess · ván kỳ thủ hiện đại (`/gm-games`) · tab Ôn tập (`/review`),
