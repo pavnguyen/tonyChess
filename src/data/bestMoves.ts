@@ -182,7 +182,7 @@ export const BEST_MOVES: BestMovePuzzle[] = [
     continuation: ['hxg6', 'Rf8#'],
     hint: 'Mã ăn g6 chiếu. Tốt h7 ăn lại thì Xe f8 chiếu bí.',
     explanation:
-      'Mã ăn g6 chiếu; Tốt h7 ăn Mã thì Xe f8 chiếu bí (Xe a7 đã giữ hàng 7). Vua lên g8 cũng bị Xe f8 bí.',
+      'Mã ăn g6 chiếu; Tốt h7 ăn Mã thì Xe f8 bí. Vua lên g8 cũng bị Xe f8 bí.',
     rhyme: 'Mã mở đường cho Xe',
   },
 

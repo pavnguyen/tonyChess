@@ -111,7 +111,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     title: 'Phát triển quân nhanh',
     emoji: '🚀',
     ask: 'Còn mấy quân mình vẫn đang nằm ở hàng cuối?',
-    why: 'Mỗi nước nên đưa ra một quân MỚI. Quân còn ở nhà là quân chưa tham chiến - ra sớm thì có thêm lực và sớm nhập thành được.',
+    why: 'Mỗi nước nên đưa ra một quân MỚI. Quân ở nhà là quân chưa tham chiến.',
     rhyme: 'Mã Tượng ra trước',
     piece: 'n',
     good: {
@@ -244,7 +244,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     title: 'Xe lên hàng 7',
     emoji: '7️⃣',
     ask: 'Xe mình có thể lên hàng Tốt của địch không?',
-    why: 'Xe ở hàng 7 vừa hái Tốt chưa tiến của địch, vừa nhốt Vua địch ở hàng cuối. Dân cờ vua gọi vui là "con lợn trên hàng 7".',
+    why: 'Xe ở hàng 7 vừa hái Tốt chưa tiến, vừa nhốt Vua địch ở hàng cuối - dân cờ gọi là "con lợn trên hàng 7".',
     rhyme: 'Xe hái Tốt hàng bảy',
     piece: 'r',
     info: 'positional:seventh-rank',
@@ -276,12 +276,12 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     piece: 'p',
     good: {
       fen: '4k3/pp6/8/3P4/8/8/8/4K3 w - - 0 1',
-      note: 'Tốt d5 không còn Tốt Đen nào ở cột d hay hai cột c, e cản: cứ đẩy thẳng, địch buộc phải tung quân to ra chặn.',
+      note: 'Tốt d5 không còn Tốt Đen nào ở cột d, c hay e cản: cứ đẩy thẳng, Đen phải tung quân to ra chặn.',
       marks: [{ square: 'd5', tone: 'good', label: 'Tốt thông' }],
     },
     bad: {
       fen: '4k3/8/8/8/2P5/2P5/8/4K3 w - - 0 1',
-      note: 'Hai Tốt chồng ở cột c vừa vướng chân nhau vừa không bảo vệ được nhau (Tốt cô lập còn tệ hơn): đó là Tốt yếu, đừng tạo.',
+      note: 'Hai Tốt chồng ở cột c vừa vướng chân vừa không bảo vệ nhau: đó là Tốt yếu, đừng tạo.',
       marks: [
         { square: 'c3', tone: 'bad', label: 'Tốt chồng' },
         { square: 'c4', tone: 'bad', label: 'Tốt chồng' },
@@ -294,7 +294,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     title: 'Giữ cặp Tượng',
     emoji: '⛪',
     ask: 'Tượng mình đang nhắm ô nào - và mình có đang giữ được cả hai Tượng không?',
-    why: 'Tượng chỉ đi được MỘT màu ô: Tượng ô đen không bao giờ bảo vệ nổi ô trắng. Giữ đủ cặp Tượng là phủ kín cả hai màu ô - càng về tàn cuộc càng mạnh.',
+    why: 'Tượng chỉ đi được MỘT màu ô, nên giữ đủ cặp Tượng là phủ kín cả hai màu - càng về tàn cuộc càng mạnh.',
     rhyme: 'Giữ đủ hai Tượng',
     piece: 'b',
     info: 'positional:bishop-pair',
@@ -324,7 +324,7 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     title: 'Đổi quân đúng lúc',
     emoji: '⚖️',
     ask: 'Mình đang hơn quân hay kém quân? Nếu hơn thì có nên đổi bớt cho gọn không?',
-    why: 'Hơn quân thì chủ động đổi quân để đơn giản hoá và tiến thẳng tới thắng. Kém quân thì giữ quân lại, tạo thế rối để tìm cơ hội.',
+    why: 'Hơn quân thì chủ động đổi quân để tiến thẳng tới thắng; kém quân thì giữ quân, tạo thế rối.',
     rhyme: 'Hơn thì đổi gọn',
     piece: 'q',
     good: {

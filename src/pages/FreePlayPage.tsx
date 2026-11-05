@@ -78,7 +78,7 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
   medium: 'Máy biết ăn quân và tránh mất quân. Bé phải nhìn kỹ nhé!',
   hard: 'Đối thủ này tính trước 3 nước và không đi bừa - bé bật 👁️ Mắt Thần rồi thử sức nhé!',
   master:
-    'Máy là Stockfish nhưng chỉ chơi cỡ 1500 Elo - bé suy nghĩ kỹ và nhìn quân trước khi đi là thắng được. Đây là mức nên luyện thật quen!',
+    'Stockfish giới hạn cỡ 1500 Elo - bé nhìn quân kỹ trước khi đi là thắng được. Mức nên luyện thật quen!',
 }
 
 export function FreePlayPage() {

@@ -25,7 +25,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Tốt f6 đã có Vua e6 che. Đẩy Tốt lên f7 - Vua Đen phải nhường ô f8.',
     explanation:
-      'Hai Vua đối diện cách một ô: bên phải đi là bên nhường. Vua Đen không chen được trước mặt Tốt, nên Tốt cứ tiến là thành Hậu.',
+      'Hai Vua đối diện cách một ô: bên phải đi là bên nhường, nên Tốt cứ tiến là thành Hậu.',
     rhyme: 'Đối diện thì Vua kia phải nhường',
   },
   {
@@ -42,7 +42,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Xe Đen canh ô b8 nên đừng phong Hậu ngay. Đưa Xe lên a8 buộc Xe Đen phải đổi.',
     explanation:
-      'Đổi được Xe là hết người canh b8: Xe Đen ăn thì Tốt bắt chéo lên a8 thành Hậu; Xe Đen tránh thì bé ăn Xe rồi phong Hậu.',
+      'Đổi Xe xong là hết người canh b8: Đen ăn thì Tốt bắt chéo lên a8 thành Hậu, Đen tránh thì bé ăn Xe.',
     rhyme: 'Đổi Xe mở đường cho Tốt',
   },
   {
@@ -59,7 +59,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Vua giữ g7, g8, Mã g5 giữ h7. Còn thiếu nước Tượng chiếu vào h8.',
     explanation:
-      'Mã và Tượng chia nhau hai màu ô: Mã giữ h7, Tượng chiếu h8. Vua Đen hết cả ba ô - đó là cách Mã + Tượng phối hợp.',
+      'Mã giữ h7, Tượng chiếu h8: hai quân chia nhau hai màu ô nên Vua Đen hết đường.',
     rhyme: 'Mã giữ h7, Tượng chiếu h8',
   },
   {
@@ -127,7 +127,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Đẩy Tốt d4 lên, Vua Trắng theo sau từng bước.',
     explanation:
-      'Tốt muốn thành Hậu phải có Vua che lưng: Tốt tiến một bước, Vua tiến theo một bước. Vua Đen từ g1 không kịp vòng ra trước.',
+      'Tốt thành Hậu phải có Vua che lưng: Tốt tiến một bước, Vua theo một bước. Vua Đen ở g1 không kịp vòng ra.',
     rhyme: 'Vua theo sau che Tốt',
   },
   {
@@ -254,7 +254,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Vua Đen kẹt sau ba Tốt f7 g7 h7. Đưa Xe lên hàng 8 chiếu là hết đường.',
     explanation:
-      'Xe e8 chiếu hàng 8; Vua Đen g8 bị chính Tốt của mình khóa, ô f8 thì Xe giữ. Đây là “chiếu bí hàng cuối” - đòn gặp nhiều nhất trong ván thật.',
+      'Xe e8 chiếu hàng 8; Tốt f7 g7 h7 của Đen tự khóa Vua, ô f8 đã có Xe giữ. Đó là “chiếu bí hàng cuối”.',
     rhyme: 'Hàng cuối là tử huyệt',
   },
   {
@@ -290,7 +290,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Vua đứng trước Tốt b6, Vua Đen ở tận h1. Đẩy Tốt b7 rồi b8 thành Hậu.',
     explanation:
-      'Vua c6 vừa che Tốt vừa giữ ô b7. Tốt sát biên vẫn thắng khi Vua đi trước - miễn đừng để Vua Đen kịp về chặn.',
+      'Vua c6 vừa che Tốt vừa giữ b7. Tốt sát biên vẫn thắng khi Vua đi trước.',
     rhyme: 'Tốt sát biên, Vua che',
   },
   {
@@ -341,7 +341,7 @@ export const ENDGAMES: EndgameChallenge[] = [
     playerSide: 'white',
     hint: 'Có Hậu cũng phải đẩy Tốt: b6 lên b7 rồi b8. Đừng chiếu mãi mà quên Tốt.',
     explanation:
-      'Việc chính vẫn là TỐT. Hậu c1 canh sẵn cột c và hàng 1 nên Vua Đen ở h8 không dám lại gần - tránh hòa vô cớ.',
+      'Việc chính vẫn là TỐT. Hậu c1 canh sẵn nên Vua Đen h8 không dám lại gần.',
     rhyme: 'Tốt lên, Hậu canh',
   },
   {

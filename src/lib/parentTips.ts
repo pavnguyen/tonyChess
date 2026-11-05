@@ -120,7 +120,7 @@ export const TIPS_BY_LESSON: Record<string, ParentQuestion[]> = {
     },
     {
       q: 'Con thử nhắc lại “Kế hoạch trung cuộc” của hệ thống London.',
-      a: 'Đưa Tượng f1 ra d3 rồi nhập thành cho Vua an toàn; sau đó đẩy Tốt e4 mở trung tâm, và đánh sang cánh Vua bằng h4-h5 mở cột h.',
+      a: 'Đưa Tượng f1 ra d3, nhập thành, rồi đẩy e4 mở trung tâm và đánh cánh Vua bằng h4-h5.',
     },
   ],
   'opening:italian': [
