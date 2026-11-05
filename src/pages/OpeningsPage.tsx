@@ -1188,7 +1188,7 @@ export function OpeningsPage() {
               <p
                 id="kid-opening-vs-hint"
                 title={`${counterPunch.reply} - ${counterPunch.name}`}
-                className="min-w-0 flex-1 animate-slide-up truncate rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800"
+                className="min-w-0 w-full animate-slide-up rounded-xl border-2 border-dashed border-leaf-300 bg-leaf-50 px-2 py-1 text-xs font-extrabold leading-tight text-leaf-800 sm:w-auto sm:flex-1"
               >
                 🛡️ Nếu <b>đối thủ</b> chơi bài này: bé cầm <b>{counterPunch.kidSide}</b>, đáp{' '}
                 <b>{counterPunch.reply}</b>
