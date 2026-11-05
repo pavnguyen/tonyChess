@@ -57,7 +57,7 @@ export function RootLayout() {
             <span className="grid size-8 place-items-center rounded-xl bg-white text-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)]">
               ♟️
             </span>
-            <span className="hidden text-sm font-extrabold leading-tight text-white sm:block">
+            <span className="text-xs font-extrabold leading-tight text-white sm:text-sm">
               Nam An - Cờ Vua
             </span>
           </Link>
@@ -118,7 +118,7 @@ export function RootLayout() {
         Trên điện thoại chỉ chừa lề 6px để bàn cờ rộng gần hết màn hình, và chừa
         thêm một khoảng ở đáy để thanh tab cố định không che nội dung cuối trang.
       */}
-      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-1.5 pt-1.5 pb-[5.4rem] sm:px-3 sm:pt-2 stage:py-2">
+      <main className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-1.5 pt-1.5 pb-[5.4rem] sm:px-3 sm:pt-2 stage:py-1">
         {/*
           Dải chuyển bài và buổi luyện hôm nay là hai dòng “phụ”. Khi màn hình thấp
           (điện thoại nằm ngang 430px) chúng tự ẩn để khối bàn cờ vẫn nằm trọn một

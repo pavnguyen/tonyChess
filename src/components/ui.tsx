@@ -291,7 +291,7 @@ export function KidPicker({
   const indexById = new Map(flat.map((item, index) => [item.id, index]))
 
   return (
-    <div ref={rootRef} className={`relative ${className}`}>
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
       <select
         id={id}
         value={value}
@@ -633,6 +633,30 @@ export function FoldPanel({
       </button>
       <div className={`${open ? 'grid' : 'hidden'} gap-2 stage:grid`}>{children}</div>
     </Panel>
+  )
+}
+
+/**
+ * Tên bài đang học NGAY TRÊN bàn cờ (icon + tên): bé mở app là biết mình đang
+ * học bài nào, không phải cuộn xuống dưới (điện thoại) hay ngó sang cột bên
+ * (máy tính). Bản gọn một dòng của `SectionTitle`; tên dài thì cắt bớt.
+ */
+export function LessonHead({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div id="kid-lesson-title" className="flex min-w-0 flex-1 items-center gap-1.5">
+      <span
+        className="grid size-6 shrink-0 place-items-center rounded-lg bg-brand-100 text-sm leading-none"
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <span
+        className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-900 sm:text-sm"
+        title={title}
+      >
+        {title}
+      </span>
+    </div>
   )
 }
 

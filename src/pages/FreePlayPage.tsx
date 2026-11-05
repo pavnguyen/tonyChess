@@ -6,6 +6,7 @@ import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
+import { randomIndex } from '../lib/randomPick'
 import { completeSessionItem } from '../lib/session'
 import { FoldPanel, KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
@@ -90,7 +91,13 @@ export function FreePlayPage() {
   // Bố cục 2 cột hay 1 cột - để chỉ render MỘT bản điều khiển (không nhân đôi nút).
   const stage = useStageLayout()
 
-  const [kidSide, setKidSide] = useState<Side>('white')
+  /**
+   * Mỗi lần mở app bốc ngẫu nhiên bé cầm Trắng hay Đen, để bé quen cả hai phía
+   * thay vì mặc định mãi quân Trắng. Chuyển tab qua lại vẫn giữ màu đã bốc.
+   */
+  const [kidSide, setKidSide] = useState<Side>(() =>
+    randomIndex(2, 'play-side') === 0 ? 'white' : 'black',
+  )
   // Chỉ còn hai mức KHÓ và SIÊU (đã bỏ Dễ và Vừa vì dưới 1200 Elo). Đây là app học
   // cờ, không phải bảng xếp hạng: không chấm điểm, không so hơn thua.
   const [difficulty, setDifficulty] = useState<Difficulty>('hard')

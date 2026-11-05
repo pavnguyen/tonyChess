@@ -150,7 +150,17 @@ check(
 )
 await sleep(600)
 check((await hintLabel()).includes('(3)'), `ván mới → nút 💡 hiện lại (3) (${await hintLabel()})`)
-check(!(await hintDisabled()), 'ván mới → nút 💡 bấm được trở lại')
+// Bé có thể được bốc cầm quân Đen: máy (Trắng) đi nước mở đầu trước, nên chờ tới
+// lượt bé thay vì đòi nút bấm được ngay.
+let hintReady = false
+for (let attempt = 0; attempt < 40; attempt += 1) {
+  if (!(await hintDisabled())) {
+    hintReady = true
+    break
+  }
+  await sleep(200)
+}
+check(hintReady, 'ván mới → nút 💡 bấm được trở lại')
 
 close()
 finish('BROWSER FREEPLAY HINT')

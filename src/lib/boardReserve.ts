@@ -10,10 +10,10 @@
  * Số càng lớn = càng chừa nhiều chỗ cho phần dưới = bàn cờ càng nhỏ.
  */
 export const BOARD_RESERVE = {
-  openings: 296,
+  openings: 324,
   counters: 244,
-  tactics: 232,
-  endgames: 296,
+  tactics: 252,
+  endgames: 320,
   strategy: 300,
   freePlay: 350,
   hazards: 260,

@@ -10,9 +10,9 @@ import { MoveStrip } from '../components/MoveStrip'
 import { MoveText } from '../components/MoveText'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
-import { dailyIndex } from '../lib/dailyPick'
+import { randomIndex } from '../lib/randomPick'
 import { completeSessionItem } from '../lib/session'
-import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
+import { KidPicker, LessonHead, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { ENDGAMES } from '../data/endgames'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
@@ -57,8 +57,8 @@ const LEVELS: {
 ]
 
 /**
- * Bài mặc định mỗi ngày chỉ xoay trong 10 thế CƠ BẢN: thế nâng cao (Lucena…) để
- * bé tự chọn khi đã vững, không bắt bé 7 tuổi mở tab là gặp bài khó.
+ * Bài chọn sẵn mỗi lần mở app chỉ xoay trong 10 thế CƠ BẢN: thế nâng cao
+ * (Lucena…) để bé tự chọn khi đã vững, không bắt bé 7 tuổi mở tab là gặp bài khó.
  */
 const BASIC_ENDGAMES = ENDGAMES.filter((item) => item.level === 'basic')
 
@@ -166,11 +166,12 @@ export function EndgamesPage() {
   const search = useSearch({ from: '/endgames' })
 
   const [challengeId, setChallengeId] = useState(() => {
-    // Buổi luyện trỏ thẳng tới đúng thế thì ưu tiên; không thì lấy thế của hôm nay.
+    // Buổi luyện trỏ thẳng tới đúng thế thì ưu tiên; không thì lấy thế ngẫu nhiên
+    // của lần mở app này.
     if (search.challenge && ENDGAMES.some((item) => item.id === search.challenge)) {
       return search.challenge
     }
-    return BASIC_ENDGAMES[dailyIndex(BASIC_ENDGAMES.length, 'endgame')]?.id ?? 'opposition'
+    return BASIC_ENDGAMES[randomIndex(BASIC_ENDGAMES.length, 'endgame')]?.id ?? 'opposition'
   })
   const [hintVisible, setHintVisible] = useState(false)
   /**
@@ -491,7 +492,11 @@ export function EndgamesPage() {
               đây ba chip + nút Mắt Thần rơi thành 3-4 hàng, đẩy bàn cờ xuống gần
               40px mà không thêm thông tin gì.
             */}
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+              <LessonHead
+                icon={LEVELS.find((item) => item.level === (challenge?.level ?? 'basic'))?.icon ?? '👑'}
+                title={challenge?.title ?? 'Tàn cuộc'}
+              />
               <span className="rounded-full bg-gold-100 px-2.5 py-1 text-xs font-extrabold text-gold-800">
                 <span className="stage:hidden">
                   {challenge?.goal === 'promote' ? '🛡️ Thành Hậu' : '🏁 Chiếu bí'}
@@ -586,15 +591,15 @@ export function EndgamesPage() {
               />
             </div>
 
-            {/* Đổi lời nhắc theo việc bé đang làm - không thêm dòng nào nên bàn cờ
-                không bị thu nhỏ (xem chú thích `reserve` của BoardStage). */}
-            {!finished && (
+            {/* Chỉ nhắc khi có việc cần biết; nhãn thường ngày đã nằm ở hàng nút. */}
+            {!finished && goalFocus && (
               <p className="text-center text-xs font-bold leading-snug text-ink-600">
-                {goalFocus
-                  ? '🎯 Ô TÍM là chỗ bé cần nhắm tới (Tốt + ô phong cấp, hoặc Vua Đen + ô nó chạy được).'
-                  : !board.playerToMove
-                    ? '🤖 Chờ máy đi một nước · ◀ Đi lại để sửa nước vừa đi.'
-                    : '🖐️ Kéo quân hoặc bấm quân rồi bấm ô đích · 💡 viền vàng → viền xanh'}
+                🎯 Ô TÍM là chỗ bé cần nhắm tới (Tốt + ô phong cấp, hoặc Vua Đen + ô nó chạy được).
+              </p>
+            )}
+            {!finished && !goalFocus && !board.playerToMove && (
+              <p className="text-center text-xs font-bold leading-snug text-ink-600">
+                🤖 Chờ máy đi một nước · ◀ Đi lại để sửa nước vừa đi.
               </p>
             )}
 

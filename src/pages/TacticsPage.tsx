@@ -8,9 +8,9 @@ import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
-import { dailyIndex } from '../lib/dailyPick'
+import { randomIndex } from '../lib/randomPick'
 import { completeSessionItem } from '../lib/session'
-import { KidButton, KidPicker, Panel, SectionTitle, Segmented } from '../components/ui'
+import { KidButton, KidPicker, LessonHead, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BEST_MOVE_THEMES } from '../data/bestMoves'
 import { useTacticsQuery } from '../data/queries'
@@ -97,18 +97,18 @@ export function TacticsPage() {
     () => (puzzles ?? []).find((item) => item.id === search.puzzle),
     [puzzles, search.puzzle],
   )
-  /** Mỗi ngày mở tab, chọn sẵn một thế khác - ổn định trong ngày. */
-  const dailyPuzzle = useMemo(() => {
+  /** Mỗi lần mở app, chọn sẵn một thế ngẫu nhiên - giữ nguyên khi chuyển tab. */
+  const randomPuzzle = useMemo(() => {
     const list = puzzles ?? []
-    return list.length > 0 ? list[dailyIndex(list.length, 'tactic')] : undefined
+    return list.length > 0 ? list[randomIndex(list.length, 'tactic')] : undefined
   }, [puzzles])
-  /** Đường dẫn `?puzzle=…` thắng lựa chọn theo ngày. */
-  const targetPuzzle = initialPuzzle ?? dailyPuzzle
+  /** Đường dẫn `?puzzle=…` thắng lựa chọn ngẫu nhiên. */
+  const targetPuzzle = initialPuzzle ?? randomPuzzle
   const [theme, setTheme] = useState<BestMoveTheme>(() => {
     // Thứ tự ưu tiên: thế chỉ định → chủ đề chỉ định → thế của hôm nay.
     if (initialPuzzle && isBestMoveTheme(initialPuzzle.theme)) return initialPuzzle.theme
     if (isBestMoveTheme(search.theme)) return search.theme
-    if (dailyPuzzle && isBestMoveTheme(dailyPuzzle.theme)) return dailyPuzzle.theme
+    if (randomPuzzle && isBestMoveTheme(randomPuzzle.theme)) return randomPuzzle.theme
     return 'win-material'
   })
   const [index, setIndex] = useState(() => {
@@ -429,7 +429,11 @@ export function TacticsPage() {
         reserve={BOARD_RESERVE.tactics}
         top={
           <>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <LessonHead
+                icon={BEST_MOVE_THEMES[theme]?.emoji ?? '⚔️'}
+                title={active?.title ?? 'Trung cuộc'}
+              />
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
@@ -489,7 +493,7 @@ export function TacticsPage() {
               nằm chung một dòng trên máy tính và hai dòng đều tăm tắp trên điện
               thoại (trước đây để cỡ `md` nên nút to gần gấp rưỡi và tràn khỏi khung).
             */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1.5">
               {previewing && (
                 <KidButton
                   id="kid-tactic-start"
@@ -557,15 +561,9 @@ export function TacticsPage() {
                 rồi thử lại nhé.
               </p>
             )}
-            {solved ? (
+            {solved && (
               <p className="animate-pop-in rounded-2xl bg-leaf-50 px-3 py-2 text-center text-sm font-extrabold text-leaf-700">
                 🎉 Chuẩn rồi! Bé bấm ➡️ Thế cờ tiếp để sang thế mới nhé.
-              </p>
-            ) : (
-              /* Dòng nhắc gộp còn hai vế ngắn, chữ nhỏ và sát nhau - đủ nhắc mà
-                 không chiếm thêm một khối chữ dưới bàn cờ. */
-              <p className="text-center text-xs font-bold leading-snug text-ink-600">
-                🖐️ Kéo quân vào ô bé muốn · 💡 bí thì bấm Gợi ý · ⌨️ ◀ ▶ ▲ ▼ đổi thế cờ
               </p>
             )}
           </>

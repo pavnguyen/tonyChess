@@ -125,18 +125,23 @@ check(dupBoardIds === 1, `chỉ có ĐÚNG 1 bàn cờ chính (nhận ${dupBoard
 
 console.log('\n▶ Mặc định mở đúng khai cuộc đang học')
 
-// Bài mặc định nay là bài đứng đầu danh sách ưu tiên - Ván cờ Ý.
-check(
-  (await present('[data-pattern-id="italian"]')) &&
-    String(await evaluate(`document.querySelector('[data-pattern-id="italian"]').getAttribute('aria-pressed')`)) ===
-      'true',
-  'thẻ khai cuộc đang học (Ván cờ Ý) được chọn sẵn',
+// Bài mặc định nay được bốc ngẫu nhiên mỗi lần mở app, nên kiểm theo thẻ ĐANG
+// chọn chứ không gắn cứng vào một khai cuộc.
+const selectedIds = await evaluate(
+  `[...document.querySelectorAll('[data-pattern-id][aria-pressed="true"]')].map((el) => el.getAttribute('data-pattern-id'))`,
 )
+check(Array.isArray(selectedIds) && selectedIds.length === 1, `có đúng 1 thẻ khai cuộc đang học được chọn sẵn (${selectedIds})`)
 const defaultLine = String(await text('#kid-pattern-line'))
-check(
-  defaultLine.includes('e4'),
-  `hiện dòng chính của bài mặc định - Ván cờ Ý (${defaultLine.slice(0, 40)}…)`,
-)
+check(defaultLine.trim().length > 0, `hiện dòng chính của bài đang học (${defaultLine.slice(0, 40)}…)`)
+const lessonAboveBoard = await evaluate(`
+  (() => {
+    const title = document.getElementById('kid-lesson-title')
+    const board = document.getElementById('kid-board-board')
+    if (!title || !board) return null
+    return title.getBoundingClientRect().bottom <= board.getBoundingClientRect().top
+  })()
+`)
+check(lessonAboveBoard === true, 'tên bài + icon nằm TRÊN bàn cờ, bé thấy ngay không phải cuộn')
 
 const whiteChips = await evaluate(
   `document.querySelectorAll('#kid-patterns-list [data-pattern-id]').length`,
@@ -145,6 +150,9 @@ check(whiteChips === 5, `cột Trắng có đủ 5 khai cuộc (${whiteChips})`)
 
 console.log('\n▶ Bấm khai cuộc khác → bàn cờ trong modal đổi thế cờ cuối')
 
+// Bài mặc định có thể là khai cuộc của quân Đen, nên mở cột Trắng trước.
+check(await clickInModal('Bé cầm Trắng'), 'mở cột “Bé cầm Trắng” trong khung mẫu hình')
+await sleep(300)
 check(await clickPattern('london'), 'bấm thẻ “Hệ thống London”')
 await sleep(400)
 const londonLine = String(await text('#kid-pattern-line'))
@@ -178,6 +186,23 @@ check(!(await present('#kid-patterns-modal')), 'modal đã đóng')
 check(await present('#kid-board-board'), 'bàn cờ chính vẫn hoạt động bình thường')
 
 console.log('\n▶ Bấm một khai cuộc → bàn cờ hiện thế cờ mẫu hình')
+
+// Bài mặc định được bốc ngẫu nhiên mỗi lần mở app và có thể là khai cuộc của quân
+// Đen, nên đưa trang về cột Trắng + Ván cờ Ý trước khi kiểm luồng học.
+check(
+  await evaluate(`
+    (() => {
+      const tab = [...document.querySelectorAll('[role="tab"]')].find((el) =>
+        el.innerText.includes('Bé cầm Trắng'),
+      )
+      if (!tab) return false
+      tab.click()
+      return true
+    })()
+  `),
+  'chuyển sang cột “Bé cầm Trắng”',
+)
+await sleep(400)
 
 // Mở tab bằng đường dẫn thường thì bàn cờ đã hiện SẴN mẫu hình của bài mặc định
 // (Italian Game) - bé không phải bấm lại đúng thẻ đang được chọn sẵn.

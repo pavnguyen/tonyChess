@@ -67,6 +67,22 @@ await sleep(2400)
 console.log('\n▶ Chưa đi gì thì HLV im lặng')
 
 check(await waitFor('#kid-board-square-g1'), 'mở được bàn chờ tab Đấu Máy')
+
+// Ván mới nay bốc ngẫu nhiên bé cầm Trắng hay Đen; bài kiểm này đi theo chuỗi
+// nước của quân Trắng nên chọn cầm Trắng trước.
+const pickedWhite = await evaluate(`
+  (() => {
+    const tab = [...document.querySelectorAll('[role="tab"]')].find((el) =>
+      el.innerText.includes('Trắng'),
+    )
+    if (!tab) return false
+    tab.click()
+    return true
+  })()
+`)
+check(pickedWhite, 'chọn bé cầm quân Trắng')
+await sleep(1200)
+
 check(!(await evaluate(`Boolean(document.getElementById('kid-coach-danger'))`)), 'chưa có cảnh báo nào')
 check(!(await evaluate(`Boolean(document.getElementById('kid-coach-loss'))`)), 'chưa có nhận xét nào')
 

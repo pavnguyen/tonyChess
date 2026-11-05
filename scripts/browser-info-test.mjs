@@ -170,8 +170,20 @@ if (switched === 'not-found') {
   }
 }
 
-// --- Tab Trung cuộc: đòn chiến thuật mặc định (Bắt đôi).
+// --- Tab Trung cuộc: chủ đề bắt đôi. Chủ đề mở sẵn nay bốc ngẫu nhiên mỗi lần
+// mở app, nên bấm đúng chip trước rồi mới kiểm nút ⓘ của chủ đề đó.
 await navigate('/tactics')
+await evaluate(`
+  (() => {
+    const tab = [...document.querySelectorAll('[role="tab"]')].find((el) =>
+      el.innerText.includes('Trừng phạt quân treo'),
+    )
+    if (!tab) return false
+    tab.click()
+    return true
+  })()
+`)
+await sleep(400)
 await expectTopic(
   'theme:win-material',
   'Trừng phạt quân treo',

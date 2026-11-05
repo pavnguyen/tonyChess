@@ -25,13 +25,13 @@
     "check:review": "node scripts/smoke-review.ts",
     "check:schedule": "node scripts/smoke-tactics-schedule.ts",
     "check:session": "node scripts/smoke-session.ts",
-    "check:daily-pick": "node scripts/smoke-daily-pick.ts",
+    "check:random-pick": "node scripts/smoke-random-pick.ts",
     "check:copy": "node scripts/check-duplicate-copy.ts",
     "check:voice-pick": "node scripts/smoke-voice.ts",
     "check:sidelines": "node scripts/smoke-openings-sidelines.ts",
     "check:opening-stats": "node scripts/smoke-opening-stats.ts",
     "verify:bestmove": "node scripts/verify-bestmove.ts",
-    "check": "npm run check:chess && npm run check:coach && npm run verify:bestmove && npm run check:plan && npm run check:info && npm run check:contrast && npm run check:engine && npm run check:uci && npm run check:strength && npm run check:review && npm run check:schedule && npm run check:session && npm run check:daily-pick && npm run check:copy && npm run check:voice-pick && npm run check:sidelines && npm run check:opening-stats",
+    "check": "npm run check:chess && npm run check:coach && npm run verify:bestmove && npm run check:plan && npm run check:info && npm run check:contrast && npm run check:engine && npm run check:uci && npm run check:strength && npm run check:review && npm run check:schedule && npm run check:session && npm run check:random-pick && npm run check:copy && npm run check:voice-pick && npm run check:sidelines && npm run check:opening-stats",
     "check:layout": "node scripts/browser-layout-test.mjs",
     "check:learn": "node scripts/browser-learn-drag-test.mjs",
     "check:theme": "node scripts/browser-theme-test.mjs",
@@ -55,24 +55,29 @@
     "check:browser": "node scripts/browser-engine-test.mjs && node scripts/browser-arrow-test.mjs && npm run check:learn && npm run check:hints && npm run check:strategy && npm run check:stockfish && npm run check:info-ui && npm run check:coords && npm run check:voice && npm run check:tactics && npm run check:tactics-tiep && npm run check:endgames && npm run check:patterns && npm run check:counters && npm run check:freeplay && npm run check:coach-ui && npm run check:hazards && npm run check:theme && npm run check:layout"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.104.0",
-    "@tanstack/react-router": "^1.170.41",
+    "@tanstack/react-query": "^5.106.1",
+    "@tanstack/react-router": "^1.170.46",
     "chess.js": "^1.4.0",
-    "react": "^19.2.8",
+    "react": "^19.3.1",
     "react-chessboard": "^5.12.1",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
-    "stockfish": "^19.0.0",
-    "tailwindcss": "^4.3.3",
-    "typescript": "~6.0.2",
-    "vite": "^8.3.0",
+    "@tailwindcss/vite": "^4.3.4",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "oxlint": "^1.91.0",
+    "stockfish": "^19.0.1",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
     "vite-plugin-pwa": "^2.0.0"
+  },
+  "overrides": {
+    "deepmerge": "^4.3.1",
+    "minimatch": "^11.0.4",
+    "glob": "^14.0.3"
   }
 }
