@@ -37,6 +37,8 @@ export function speechSupported(): boolean {
 }
 
 let cachedVoice: SpeechSynthesisVoice | null = null
+/** Giọng tiếng Việt, dùng riêng cho **khẩu quyết vè** (xem `speakVietnamese`). */
+let cachedViVoice: SpeechSynthesisVoice | null = null
 
 /**
  * Các giọng tiếng Anh nghe tự nhiên nhất trên máy phổ thông, xếp theo mức ưu
@@ -128,6 +130,33 @@ function pickVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
+ * Giọng TIẾNG VIỆT cho khẩu quyết vè. Ưu tiên các giọng Việt tự nhiên hay có sẵn
+ * trên máy phổ thông; không có thì lấy giọng Việt đầu tiên, cuối cùng trả `null`
+ * để trình duyệt tự chọn theo `lang`.
+ */
+function autoVietnameseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  const vi = voices.filter((voice) => voice.lang?.toLowerCase().startsWith('vi'))
+  if (vi.length === 0) return null
+  const preferred = [
+    'Google Tiếng Việt',
+    'Microsoft HoaiMy Online (Natural) - Vietnamese',
+    'Microsoft NamMinh Online (Natural) - Vietnamese',
+    'Linh',
+    'Mai',
+  ]
+  for (const hint of preferred) {
+    const match = vi.find((voice) => matchesHint(voice.name, hint))
+    if (match) return match
+  }
+  return vi[0]
+}
+
+function pickVietnameseVoice(): SpeechSynthesisVoice | null {
+  if (!speechSupported()) return null
+  return autoVietnameseVoice(window.speechSynthesis.getVoices() ?? [])
+}
+
+/**
  * Nạp sẵn danh sách giọng đọc. **Quan trọng**: Chrome/Safari trả danh sách RỖNG ở
  * lần gọi đầu và chỉ có giọng sau sự kiện `voiceschanged`. Nếu ta “khoá” kết quả
  * rỗng lại thì mãi mãi không có giọng Mỹ - nên chỉ lưu khi thật sự tìm thấy giọng,
@@ -141,6 +170,8 @@ export function primeSpeech() {
   const refresh = () => {
     const voice = pickVoice()
     if (voice) cachedVoice = voice
+    const vi = pickVietnameseVoice()
+    if (vi) cachedViVoice = vi
   }
   refresh()
   synth.addEventListener?.('voiceschanged', refresh)
@@ -154,6 +185,13 @@ function usVoice(): SpeechSynthesisVoice | null {
   return voice
 }
 
+function viVoice(): SpeechSynthesisVoice | null {
+  if (cachedViVoice) return cachedViVoice
+  const voice = pickVietnameseVoice()
+  if (voice) cachedViVoice = voice
+  return voice
+}
+
 /**
  * Đọc một câu tiếng Anh. Cắt câu đang đọc dở trước khi đọc câu mới để bé bấm
  * liên tục không bị "dồn" thành một tràng lộn xộn.
@@ -162,16 +200,31 @@ export function speak(text: string) {
   utter(text, false)
 }
 
-function utter(text: string, force: boolean, voiceOverride?: SpeechSynthesisVoice | null) {
+/**
+ * Đọc một câu TIẾNG VIỆT - dùng cho **khẩu quyết vè** trước nước đi của bé (bé nghe
+ * như được “nhắc tuồng” rồi nhắc theo). Không có giọng Việt trên máy thì vẫn đọc
+ * bằng giọng mặc định theo `lang`, bé nghe được câu chữ dù giọng hơi lạ.
+ */
+export function speakVietnamese(text: string) {
+  const clean = (text ?? '').trim()
+  if (!clean) return
+  utter(clean, false, { lang: 'vi-VN', voice: viVoice(), rate: 0.88 })
+}
+
+function utter(
+  text: string,
+  force: boolean,
+  options: { lang?: string; voice?: SpeechSynthesisVoice | null; rate?: number } = {},
+) {
   if (!text || !speechSupported()) return
   if (!force && isMuted()) return
   try {
     const synth = window.speechSynthesis
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'en-US'
+    utterance.lang = options.lang ?? 'en-US'
     // Chậm hơn một chút cho bé 7 tuổi nghe kịp.
-    utterance.rate = 0.92
-    const voice = voiceOverride ?? usVoice()
+    utterance.rate = options.rate ?? 0.92
+    const voice = options.voice ?? usVoice()
     if (voice) utterance.voice = voice
     // Đang đọc dở thì ngắt để câu mới phát ngay; đang rảnh thì đọc thẳng - tránh
     // vài bản Chrome “nuốt” mất câu khi vừa `cancel()` xong đã `speak()` liền.

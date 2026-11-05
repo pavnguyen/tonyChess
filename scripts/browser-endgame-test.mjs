@@ -118,7 +118,16 @@ check(
 
 console.log('\n▶ Chỉ còn bộ thế kỹ thuật, không còn khung tham khảo cũ')
 
-check(String(await bodyText()).includes('Tàn cuộc cơ bản'), 'tiêu đề trang là “Tàn cuộc cơ bản”')
+// Tiêu đề khung là “Tàn cuộc”, phụ đề ghi gọn hai mức “🌱 Cơ bản + nâng cao · 20 thế”
+// (tên đầy đủ của từng mức nằm trong nhóm của bảng chọn - kiểm ở dưới).
+const endgameHeading = String(
+  await evaluate(`document.querySelector('#kid-endgame-list h2')?.innerText ?? ''`),
+).trim()
+check(
+  endgameHeading === 'Tàn cuộc' &&
+    String(await bodyText()).includes('Cơ bản + nâng cao'),
+  `tiêu đề trang là “Tàn cuộc” kèm hai mức “Cơ bản + nâng cao” (${endgameHeading})`,
+)
 check(
   !(await evaluate(`Boolean(document.getElementById('kid-mate-library'))`)),
   'không còn khung “Thư viện chiếu bí”',
@@ -166,9 +175,15 @@ check(
   `đủ 20 thế kỹ thuật (${ids.join(', ')})`,
 )
 const endgameText = String(await bodyText())
+// Hai tên mức nằm trong NHÓM của bảng chọn (luôn có trong DOM), không còn là một
+// dòng chữ riêng trên trang - tiêu đề chỉ ghi “🌱 Cơ bản + nâng cao · 20 thế”.
+const levelLabels = await evaluate(
+  `[...document.querySelectorAll('#kid-endgame-select optgroup')].map((el) => el.label)`,
+)
 check(
-  endgameText.includes('Tàn cuộc cơ bản') && endgameText.includes('Tàn cuộc nâng cao'),
-  'chia rõ hai mức “Tàn cuộc cơ bản” và “Tàn cuộc nâng cao”',
+  levelLabels.some((label) => String(label).includes('Tàn cuộc cơ bản')) &&
+    levelLabels.some((label) => String(label).includes('Tàn cuộc nâng cao')),
+  `chia rõ hai mức “Tàn cuộc cơ bản” và “Tàn cuộc nâng cao” (${levelLabels.join(' | ')})`,
 )
 
 console.log('\n▶ Chọn bài trong combo để đổi bài luyện')

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { MoveText } from './MoveText'
 import {
   describeMove,
@@ -8,6 +9,7 @@ import {
   PIECE_GLYPH,
   PIECE_NAME_VI,
 } from '../lib/notation'
+import { speakVietnamese } from '../lib/speech'
 import type { MoveAnnotation, NotationStyle } from '../types'
 
 export type BannerVariant = 'hint' | 'played' | 'opponent' | 'wrong'
@@ -77,6 +79,25 @@ export function ExplanationBanner({
       ? formatSanLetters(annotation.san)
       : formatSan(annotation.san, notation)
 
+  /**
+   * Khẩu quyết chỉ là **lời nhắc cho nước SẮP TỚI của bé** (hoặc câu trấn an khi bé
+   * đi sai). Nước của đối thủ mà kèm “khẩu quyết” thì bé dễ tưởng đó là việc mình
+   * phải làm - nên bỏ hẳn ở trạng thái `opponent`, và cũng không khoe lại sau khi bé
+   * đã đi xong (`played`) vì lúc đó bé cần xem nước đã đi, không cần nhắc nữa.
+   */
+  const showRhyme = Boolean(annotation.rhyme) && (variant === 'hint' || variant === 'wrong')
+  const showPrinciple = !showRhyme && Boolean(annotation.principle)
+
+  /**
+   * Nhắc tuồng: khẩu quyết được đọc to bằng tiếng Việt ngay khi băng "nước sắp tới"
+   * hiện ra, để bé nghe trước rồi làm theo. Máy tắt tiếng (🔇) hoặc không có giọng
+   * đọc thì im lặng, không báo lỗi.
+   */
+  useEffect(() => {
+    if (variant !== 'hint' || !annotation.rhyme) return
+    speakVietnamese(annotation.rhyme)
+  }, [variant, annotation.rhyme, annotation.san])
+
   /*
     Bố cục BA CỘT ĐỀU NHAU trên màn hình rộng (nước đi · vì sao · khẩu quyết) thay
     cho hai cột lệch trước đây: cột trái vừa chip vừa khối xanh lớn nên cao gấp rưỡi
@@ -98,7 +119,13 @@ export function ExplanationBanner({
         </span>
       </div>
 
-      <div className="mt-1.5 grid gap-1.5 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1.05fr)] sm:gap-2">
+      <div
+        className={`mt-1.5 grid gap-1.5 sm:gap-2 ${
+          showRhyme || showPrinciple
+            ? 'sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1.05fr)]'
+            : 'sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]'
+        }`}
+      >
         {/* 1. Nước đi + tên quân */}
         <div className="flex min-w-0 items-center gap-2 rounded-xl bg-gradient-to-br from-brand-700 to-brand-500 px-2 py-1 text-white shadow-[0_8px_16px_-14px_rgba(13,32,24,0.95)]">
           {/* Hình quân cờ chuẩn (♚♛♜♝♞♟) để bé nhận ra ngay quân gì. */}
@@ -128,23 +155,32 @@ export function ExplanationBanner({
           </p>
         </div>
 
-        {/* 3. Khẩu quyết vè (hoặc nguyên tắc nếu bài không có vè) */}
-        {annotation.rhyme ? (
+        {/* 3. Khẩu quyết vè (chỉ khi là lời nhắc cho nước sắp tới của bé) */}
+        {showRhyme ? (
           <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-sun bg-sun/20 px-2 py-1">
             <span className="shrink-0 text-base" aria-hidden>
               🎵
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-gold-600">
-                Khẩu quyết vè - đọc to lên nhé!
+                Khẩu quyết - nhắc theo nhé!
               </div>
               <div className="text-sm font-extrabold leading-snug text-gold-900">
                 “{annotation.rhyme}”
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => speakVietnamese(annotation.rhyme ?? '')}
+              aria-label="Đọc lại khẩu quyết"
+              title="Đọc lại khẩu quyết"
+              className="shrink-0 rounded-full px-1 text-sm leading-none text-gold-700 transition-colors hover:bg-gold-100 active:translate-y-[1px]"
+            >
+              🔊
+            </button>
           </div>
         ) : (
-          annotation.principle && (
+          showPrinciple && (
             <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-info-300 bg-info-50 px-2 py-1">
               <span className="shrink-0 text-base" aria-hidden>
                 🎯

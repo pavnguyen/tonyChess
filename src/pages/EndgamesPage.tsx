@@ -7,7 +7,7 @@ import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
 import { BoardStage } from '../components/BoardStage'
-import { Panel, SectionTitle } from '../components/ui'
+import { KidPicker, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
 import { useChessGame } from '../hooks/useChessGame'
@@ -395,11 +395,16 @@ export function EndgamesPage() {
         ? '🖐️ Đến lượt bé'
         : '🤖 Máy đang nghĩ…'
 
-  /** Ba việc cốt lõi của nhóm bài - một câu, không phải đoạn văn. */
-  const mindset =
+  /**
+   * Ba bước cốt lõi của nhóm bài, tách thành MẢNG để mỗi bước nằm trọn một dòng có
+   * số thứ tự - bé đọc như danh sách việc cần làm, không phải một câu dài có dấu
+   * chấm giữa (bản cũ gộp cả ba vào một câu, mắt bé phải tự tách lại).
+   */
+  const steps =
     (challenge?.goal ?? 'promote') === 'promote'
-      ? '1️⃣ Vua đi trước che Tốt · 2️⃣ Đẩy Tốt thẳng lên hàng 8 · 3️⃣ Chạm đích là thành Hậu!'
-      : '1️⃣ Canh chặt hàng ngang · 2️⃣ Quân còn lại chiếu Vua · 3️⃣ Hết đường chạy là bí!'
+      ? ['Vua đi trước che Tốt', 'Đẩy Tốt thẳng lên hàng 8', 'Chạm đích là thành Hậu!']
+      : ['Canh chặt hàng ngang', 'Quân còn lại chiếu Vua', 'Hết đường chạy là chiếu bí!']
+
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
@@ -560,99 +565,86 @@ export function EndgamesPage() {
           <SectionTitle
             icon="👑"
             title="Tàn cuộc"
-            subtitle={`Cơ bản + nâng cao · ${endgames?.length ?? 0} thế`}
+            subtitle={`🌱 Cơ bản + nâng cao · ${endgames?.length ?? 0} thế`}
             info="endgame"
           />
           {/*
-            CHỌN BÀI BẰNG COMBO (cùng kiểu tab Đối phó): trước đây 20 thẻ nhỏ xếp
-            thành 4 hàng - vừa chiếm gần nửa cột phải, vừa phải đọc từng thẻ để tìm
-            bài. Combo chỉ cao một dòng, mở ra là thấy đủ 20 bài chia sẵn hai mức
-            (optgroup), và nói rõ ĐANG luyện bài nào. Trên điện thoại dùng luôn bảng
-            chọn quen thuộc của máy nên không phải vuốt qua cả thư viện.
+            CHỌN BÀI BẰNG BẢNG CHỌN CỦA APP (thay `<select>` của máy): trước đây
+            20 thẻ nhỏ xếp 4 hàng chiếm gần nửa cột; combo native thì mở ra là danh
+            sách xám của hệ điều hành, không icon, không màu. Bảng chọn này chia sẵn
+            hai mức, mỗi bài có 🛡️/🏁 cho biết đích, bài đang luyện tô vàng + ✓.
           */}
-          <label
-            htmlFor="kid-endgame-select"
-            className="mt-1.5 flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
-          >
-            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              Bài tàn cuộc
-            </span>
-            <select
-              id="kid-endgame-select"
-              value={challenge?.id ?? ''}
-              onChange={(event) => setChallengeId(event.target.value)}
-              aria-label="Chọn bài tàn cuộc"
-              className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-            >
-              {LEVELS.map((group) => {
-                const items = (endgames ?? []).filter(
-                  (item) => (item.level ?? 'basic') === group.level,
-                )
-                if (items.length === 0) return null
-                return (
-                  <optgroup key={group.level} label={`${group.icon} ${group.title}`}>
-                    {items.map((item) => (
-                      <option key={item.id} value={item.id} data-endgame-id={item.id}>
-                        {item.goal === 'promote' ? '🛡️' : '🏁'} {item.title}
-                      </option>
-                    ))}
-                  </optgroup>
-                )
-              })}
-            </select>
-            <span aria-hidden className="shrink-0 text-brand-500">
-              ▾
-            </span>
-          </label>
-          {/*
-            Hai tên mức vẫn hiện thành một dòng ngắn: optgroup chỉ đọc được khi mở
-            combo, còn dòng này cho bé biết ngay thư viện chia làm hai tầm.
-          */}
-          <p className="mt-1 text-xs font-bold text-brand-500">
-            {LEVELS.map((group) => {
-              const count = (endgames ?? []).filter(
-                (item) => (item.level ?? 'basic') === group.level,
-              ).length
-              return `${group.icon} ${group.title} ${count} bài`
-            }).join(' · ')}
-          </p>
+          <KidPicker
+            className="mt-1.5"
+            id="kid-endgame-select"
+            label="Bài tàn cuộc"
+            value={challenge?.id ?? ''}
+            onChange={setChallengeId}
+            groups={LEVELS.map((group) => ({
+              label: group.title,
+              icon: group.icon,
+              items: (endgames ?? [])
+                .filter((item) => (item.level ?? 'basic') === group.level)
+                .map((item) => ({
+                  id: item.id,
+                  label: item.title,
+                  icon: item.goal === 'promote' ? '🛡️' : '🏁',
+                  data: { 'data-endgame-id': item.id },
+                })),
+            }))}
+          />
         </Panel>
 
         {/*
-          Khung bài học cao ĐÚNG BẰNG nội dung và nằm ngay dưới combo. Trước đây
-          nó bị `stage:mt-auto` đẩy xuống đáy cột, để hở một khoảng trống lớn ngay
-          dưới khung chọn bài - nhìn như trang bị thiếu nội dung.
+          Khung bài học cao ĐÚNG BẰNG nội dung và nằm ngay dưới combo.
+
+          Sắp lại theo đúng thứ tự bé cần:
+            1. BA BƯỚC (mỗi bước một dòng, có số) - việc phải làm, đọc là hiểu;
+            2. 👉 Bài này - nước cụ thể của đúng thế đang đứng;
+            3. 💡 Vì sao - chữ nhẹ hơn, để phần hướng dẫn nổi trước;
+            4. 📜 Các nước đã đi.
+
+          Tên bài và số nước đã có ngay phía trên (bảng chọn bài + chip cạnh bàn cờ)
+          nên khung này không nhắc lại: bớt một hàng tiêu đề trùng và bớt chip “0 nước”.
         */}
-        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:p-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
-              🧭 {challenge?.title ?? ''}
+        <Panel id="kid-endgame-lesson" className="grid gap-1.5 stage:p-2">
+          <div className="grid gap-1">
+            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              🧭 Cách thắng
             </span>
-            <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-xs font-extrabold text-brand-600 ring-1 ring-sand-200">
-              {board.history.length} nước
-            </span>
-          </div>
-          {/*
-            Lời nhắc + mindset chung MỘT hộp: hai câu ngắn cùng trả lời “bé làm gì
-            bây giờ”, tách hai hộp chỉ tốn chiều cao mà đọc bị ngắt.
-          */}
-          <div className="grid gap-0.5 rounded-2xl bg-brand-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-brand-700">
-            <p>{challenge?.hint}</p>
-            <p className="text-brand-600">🧠 {mindset}</p>
+            <ol className="grid gap-1">
+              {steps.map((step, index) => (
+                <li key={step} className="flex items-start gap-2">
+                  <span
+                    aria-hidden
+                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[11px] font-extrabold text-white"
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 font-extrabold leading-snug text-brand-900">
+                    {step}
+                  </span>
+                </li>
+              ))}
+            </ol>
           </div>
 
-          {/*
-            Mẹo + câu vè in liền MỘT đoạn: trước đây là nhãn + đoạn + hộp vàng riêng,
-            tốn ba dòng chiều cao mà đọc rời rạc. Nội dung không mất chữ nào.
-          */}
-          <div id="kid-endgame-explanation" className="border-t border-brand-100 pt-1.5">
-            <p className="text-xs font-bold leading-snug text-brand-700">
-              <span className="font-extrabold tracking-wide text-brand-500">
-                💡 Mẹo của bài này:{' '}
-              </span>
-              {challenge?.explanation}{' '}
-              <span className="font-extrabold text-gold-800">🎵 “{challenge?.rhyme}”</span>
-            </p>
+          <div className="rounded-2xl border-l-4 border-brand-300 bg-brand-50 px-2.5 py-1.5">
+            <span className="block text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              👉 Bài này
+            </span>
+            <p className="font-bold leading-snug text-brand-800">{challenge?.hint}</p>
+          </div>
+
+          <div
+            id="kid-endgame-explanation"
+            className="grid gap-1 rounded-2xl border-l-4 border-gold-400 bg-gold-50 px-2.5 py-1.5"
+          >
+            <span className="text-xs font-extrabold tracking-wide text-gold-700">
+              💡 Mẹo của bài này
+            </span>
+            <p className="font-medium leading-relaxed text-brand-800">{challenge?.explanation}</p>
+            <p className="font-extrabold text-gold-800">🎵 “{challenge?.rhyme}”</p>
           </div>
 
           <div
@@ -662,13 +654,13 @@ export function EndgamesPage() {
             }
           >
             {playedMoves.length === 0 ? (
-              <p className="text-xs font-bold text-ink-600">
-                📜 🐣 Bé kéo một quân để bắt đầu - từng nước hiện ở đây, bấm một nước để quay lại.
+              <p className="font-bold text-ink-600">
+                🖐️ Kéo quân để bắt đầu — từng nước hiện ở đây, bấm để quay lại.
               </p>
             ) : (
               <>
                 <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                  📜 Nước đi của ván · bấm một nước để quay lại
+                  📜 Các nước đã đi · bấm để quay lại
                 </span>
               <MoveStrip
                 moves={playedMoves}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { InfoButton } from './InfoPopover'
 
@@ -123,7 +123,7 @@ export function Segmented<T extends string>({
 }
 
 /**
- * Chọn một mục trong danh sách: **combobox gọn một dòng** khi màn hình hẹp
+ * Chọn một mục trong danh sách: **bảng chọn của app** khi màn hình hẹp
  * (ngoài `stage`), **lưới thẻ** do trang tự vẽ trên máy tính (`stage`).
  *
  * Vì sao: danh sách 5–10 mục vẽ thành thẻ thì trên điện thoại chiếm gần trọn một
@@ -145,38 +145,332 @@ export function PickSwitch({
   label: string
   value: string
   onChange: (value: string) => void
-  options: { id: string; label: string }[]
+  options: { id: string; label: string; icon?: string }[]
   /** Lưới thẻ chỉ hiện trên máy tính. */
   children: ReactNode
   className?: string
 }) {
   return (
     <div className={`grid gap-1.5 ${className}`}>
-      <label
-        htmlFor={id}
-        className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1 stage:hidden"
+      <KidPicker
+        id={id}
+        label={label}
+        value={value}
+        onChange={onChange}
+        groups={[{ items: options }]}
+        className="stage:hidden"
+      />
+      <div className="hidden stage:block">{children}</div>
+    </div>
+  )
+}
+
+export type KidTagTone = 'leaf' | 'gold' | 'info'
+
+/** Màu của nhãn nhỏ (độ khó, mức…): xanh ngọc = dễ, vàng đồng = vừa, xanh thép = khó. */
+const TAG_TONES: Record<KidTagTone, string> = {
+  leaf: 'bg-leaf-100 text-leaf-800 ring-leaf-200',
+  gold: 'bg-gold-100 text-gold-800 ring-gold-200',
+  info: 'bg-info-100 text-info-800 ring-info-200',
+}
+
+export interface KidPickerItem {
+  id: string
+  label: string
+  /** Icon nhỏ cuối hàng (♞ quân hay 🛡️/🏁 mục tiêu) - cũng là icon trên nút khi đã chọn. */
+  icon?: string
+  /** Nhãn nhỏ cạnh tên ("Dễ / Vừa / Khó") - đọc là biết ngay mức của thế này. */
+  tag?: { label: string; tone?: KidTagTone }
+  /** Thuộc tính `data-*` gắn lên `<option>` (bài kiểm trình duyệt bám vào). */
+  data?: Record<string, string>
+}
+
+export interface KidPickerGroup {
+  label?: string
+  icon?: string
+  items: KidPickerItem[]
+}
+
+/**
+ * Chọn một mục trong danh sách - bản "của bé" thay cho `<select>` của máy.
+ *
+ * Vì sao không dùng `<select>` trần: danh sách xổ xuống của HỆ ĐIỀU HÀNH là một
+ * khối xám/đen không thể tô màu hay thêm icon, chữ dài bị cắt, và hàng cao thấp
+ * theo hệ thống nên ngón tay bé 7 tuổi dễ bấm nhầm hàng bên cạnh. Ở đây bảng
+ * chọn do app tự vẽ:
+ *   - mỗi hàng cao ≥ 44px, số thứ tự nằm trong ô tròn để bé đếm được thứ tự dễ → khó;
+ *   - hàng ĐANG CHỌN tô vàng đồng + dấu ✓ (cùng ngôn ngữ với phần thưởng của app);
+ *   - tiêu đề dài xuống tối đa 2 dòng thay vì bị cắt cụt, không phải viết tắt tên thế cờ;
+ *   - nhóm (Cơ bản / Nâng cao) có nhãn riêng ngay trong danh sách.
+ *
+ * `<select>` gốc vẫn nằm trong DOM nhưng bị ẩn (`sr-only`): nhờ vậy đoạn mã cũ /
+ * bài kiểm trình duyệt gán `value` rồi bắn `change` vẫn chạy, và dữ liệu vẫn còn
+ * một bản dự phòng nếu JavaScript của bảng chọn gặp lỗi.
+ */
+export function KidPicker({
+  id,
+  label,
+  value,
+  onChange,
+  groups,
+  className = '',
+}: {
+  id: string
+  /** Nhãn ngắn hiện phía trên tên mục đang chọn ("Thế cờ", "Bài tàn cuộc"…). */
+  label: string
+  value: string
+  onChange: (value: string) => void
+  groups: KidPickerGroup[]
+  className?: string
+}) {
+  const flat = groups.flatMap((group) => group.items)
+  const selectedIndex = Math.max(
+    0,
+    flat.findIndex((item) => item.id === value),
+  )
+  const current = flat[selectedIndex]
+  const [open, setOpen] = useState(false)
+  const [cursor, setCursor] = useState(selectedIndex)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const panelId = `${id}-panel`
+
+  // Bấm ra ngoài hoặc Esc thì đóng, như mọi bảng chọn khác của hệ điều hành.
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      triggerRef.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  // Mở ra là đưa bàn phím về đúng hàng đang chọn và cuộn hàng đó vào tầm mắt.
+  useEffect(() => {
+    if (!open) return
+    const node = panelRef.current?.querySelector<HTMLElement>(
+      `[data-kid-option="${cursor}"]`,
+    )
+    node?.focus({ preventScroll: true })
+    node?.scrollIntoView({ block: 'nearest' })
+  }, [open, cursor])
+
+  const choose = (index: number) => {
+    const item = flat[index]
+    if (!item) return
+    onChange(item.id)
+    setCursor(index)
+    setOpen(false)
+    triggerRef.current?.focus()
+  }
+
+  /** Phím mũi tên / Home / End di chuyển giữa các hàng khi bảng đang mở. */
+  const move = (delta: number | 'home' | 'end') => {
+    setCursor((index) => {
+      if (delta === 'home') return 0
+      if (delta === 'end') return flat.length - 1
+      return Math.min(flat.length - 1, Math.max(0, index + delta))
+    })
+  }
+
+  /** Vị trí (1-based) của từng mục trong danh sách phẳng - dùng cho ô số thứ tự. */
+  const indexById = new Map(flat.map((item, index) => [item.id, index]))
+
+  return (
+    <div ref={rootRef} className={`relative ${className}`}>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="sr-only"
       >
-        <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-          {label}
-        </span>
-        <select
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          aria-label={label}
-          className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-        >
-          {options.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.label}
+        {groups.map((group, groupIndex) => {
+          const options = group.items.map((item) => (
+            <option key={item.id} value={item.id} {...item.data}>
+              {item.label}
             </option>
-          ))}
-        </select>
-        <span aria-hidden className="shrink-0 text-brand-500">
+          ))
+          if (!group.label) return <Fragment key={groupIndex}>{options}</Fragment>
+          return (
+            <optgroup key={groupIndex} label={`${group.icon ? `${group.icon} ` : ''}${group.label}`}>
+              {options}
+            </optgroup>
+          )
+        })}
+      </select>
+
+      <button
+        ref={triggerRef}
+        type="button"
+        id={`${id}-trigger`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-label={`${label}: ${current?.label ?? 'chưa chọn'}`}
+        onClick={() => {
+          setCursor(selectedIndex)
+          setOpen((value) => !value)
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+          event.preventDefault()
+          setCursor(selectedIndex)
+          setOpen(true)
+        }}
+        className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-2 py-1.5 text-left shadow-[0_2px_0_#e3cda3] transition-all hover:border-brand-300 hover:bg-brand-50 active:translate-y-[1px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+      >
+        {/* Ô icon màu navy: quân cờ / mục tiêu của thế đang chọn, nhìn là nhận ra. */}
+        <span
+          aria-hidden
+          className="grid size-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-700 to-brand-500 text-base font-extrabold text-white shadow-[0_2px_6px_-2px_rgba(27,38,57,0.7)]"
+        >
+          {current?.icon ?? selectedIndex + 1}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+              {label}
+            </span>
+            <span className="shrink-0 rounded-full bg-gold-100 px-1.5 text-xs font-extrabold text-gold-800 ring-1 ring-gold-200">
+              {selectedIndex + 1}/{flat.length}
+            </span>
+            {current?.tag && (
+              <span
+                className={`shrink-0 rounded-full px-1.5 text-xs font-extrabold ring-1 ${
+                  TAG_TONES[current.tag.tone ?? 'gold']
+                }`}
+              >
+                {current.tag.label}
+              </span>
+            )}
+          </span>
+          <span className="block truncate text-sm font-extrabold leading-tight text-brand-900">
+            {current?.label ?? 'Đang tải…'}
+          </span>
+        </span>
+        <span
+          aria-hidden
+          className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-extrabold transition-transform ${
+            open
+              ? 'rotate-180 bg-brand-700 text-white'
+              : 'bg-brand-100 text-brand-700'
+          }`}
+        >
           ▾
         </span>
-      </label>
-      <div className="hidden stage:block">{children}</div>
+      </button>
+
+      {open && (
+        <div
+          ref={panelRef}
+          id={panelId}
+          role="listbox"
+          aria-label={label}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault()
+              move(event.key === 'ArrowDown' ? 1 : -1)
+            } else if (event.key === 'Home' || event.key === 'End') {
+              event.preventDefault()
+              move(event.key === 'Home' ? 'home' : 'end')
+            } else if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              choose(cursor)
+            }
+          }}
+          className="animate-pop-in absolute inset-x-0 top-[calc(100%+6px)] z-40 max-h-[min(16rem,45vh)] overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-200 bg-white p-1 shadow-[0_18px_36px_-14px_rgba(27,38,57,0.45)]"
+        >
+          {groups.map((group, groupIndex) => (
+            <Fragment key={groupIndex}>
+              {group.label && (
+                <div className="flex items-center gap-1 px-2 pb-0.5 pt-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500 first:pt-0.5">
+                  {group.icon && <span aria-hidden>{group.icon}</span>}
+                  {group.label}
+                </div>
+              )}
+              {group.items.map((item) => {
+                const index = indexById.get(item.id) ?? 0
+                const active = item.id === value
+                const highlighted = index === cursor
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    data-kid-option={index}
+                    tabIndex={-1}
+                    onClick={() => choose(index)}
+                    onMouseEnter={() => setCursor(index)}
+                    className={`flex min-h-11 w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors ${
+                      active
+                        ? 'bg-gold-100 ring-1 ring-gold-300'
+                        : highlighted
+                          ? 'bg-brand-50'
+                          : ''
+                    }`}
+                  >
+                    <span
+                      aria-hidden
+                      className={`grid size-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${
+                        active ? 'bg-gold-400 text-gold-950' : 'bg-brand-100 text-brand-700'
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+                    <span
+                      className={`line-clamp-2 min-w-0 flex-1 text-sm font-extrabold leading-snug ${
+                        active ? 'text-gold-900' : 'text-brand-900'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                    {item.tag && (
+                      <span
+                        className={`shrink-0 rounded-full px-1.5 text-xs font-extrabold ring-1 ${
+                          TAG_TONES[item.tag.tone ?? 'gold']
+                        }`}
+                      >
+                        {item.tag.label}
+                      </span>
+                    )}
+                    {item.icon && (
+                      <span
+                        aria-hidden
+                        className={`shrink-0 text-base ${
+                          active ? 'text-gold-700' : 'text-brand-400'
+                        }`}
+                      >
+                        {item.icon}
+                      </span>
+                    )}
+                    <span
+                      aria-hidden
+                      className={`shrink-0 text-sm font-extrabold text-gold-600 ${
+                        active ? 'visible' : 'invisible'
+                      }`}
+                    >
+                      ✓
+                    </span>
+                  </button>
+                )
+              })}
+            </Fragment>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

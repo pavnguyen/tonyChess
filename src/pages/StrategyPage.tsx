@@ -223,7 +223,8 @@ export function StrategyPage() {
             onChange={togglePrinciple}
             options={GOLD_PRINCIPLES.map((principle) => ({
               id: principle.id,
-              label: `${principle.order}. ${principle.title}`,
+              label: principle.title,
+              icon: principle.emoji,
             }))}
             className="mt-2"
           >

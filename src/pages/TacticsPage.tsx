@@ -7,7 +7,7 @@ import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
-import { KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
+import { KidButton, KidPicker, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BEST_MOVE_THEMES } from '../data/bestMoves'
 import { useTacticsQuery } from '../data/queries'
@@ -25,6 +25,7 @@ import {
   BOARD_MARKS,
   HINT_FROM_STYLE,
   HINT_TO_STYLE,
+  PIECE_GLYPH,
   pieceFromSan,
 } from '../lib/notation'
 import { playError, playMove, playWin } from '../lib/sound'
@@ -38,6 +39,39 @@ const TYPE_OPTIONS: { value: BestMoveTheme; label: string; icon: string }[] = (
   label: BEST_MOVE_THEMES[theme].label,
   icon: BEST_MOVE_THEMES[theme].emoji,
 }))
+
+/**
+ * ĐỘ KHÓ của từng thế, để bé/ba mẹ chọn đúng tầm: nền theo CHỦ ĐỀ (đòn ghim và
+ * trừng phạt quân treo dễ thấy; đòn hiểm ăn Hậu và hy sinh mở đường phải nhìn xa
+ * hơn; chiếu bí 3 nước khó nhất vì phải tính trước nhiều nước), rồi nâng thêm một
+ * bậc nếu chuỗi lời giải dài - bé phải tự tính từ 3 nước trở lên.
+ *
+ * Nhãn này CHỈ để chọn bài, không phải điểm số: app không có dữ liệu đánh giá riêng
+ * cho từng thế nên suy ra từ hai thứ đọc được ngay trong dữ liệu.
+ */
+const THEME_DIFFICULTY: Record<BestMoveTheme, number> = {
+  'win-material': 1,
+  pin: 1,
+  'win-queen': 2,
+  sacrifice: 2,
+  mate: 3,
+}
+
+const DIFFICULTY_TAGS: { label: string; tone: 'leaf' | 'gold' | 'info' }[] = [
+  { label: 'Dễ', tone: 'leaf' },
+  { label: 'Vừa', tone: 'gold' },
+  { label: 'Khó', tone: 'info' },
+]
+
+/** Số nước BÉ phải tự tính trong một thế (nước hay nhất + các nước kết liễu). */
+const kidMoveCount = (puzzle: BestMovePuzzle) =>
+  1 + (puzzle.continuation?.length ?? 0) / 2
+
+function difficultyTag(puzzle: BestMovePuzzle) {
+  const base = THEME_DIFFICULTY[puzzle.theme] ?? 1
+  const bump = kidMoveCount(puzzle) >= 3 ? 1 : 0
+  return DIFFICULTY_TAGS[Math.min(DIFFICULTY_TAGS.length, base + bump) - 1]
+}
 
 /** Mở sẵn đúng chủ đề qua đường dẫn `/tactics?theme=...`. */
 const isBestMoveTheme = (value: unknown): value is BestMoveTheme =>
@@ -534,37 +568,34 @@ export function TacticsPage() {
             size="sm"
           />
           {/*
-            CHỌN THẾ BẰNG COMBO (cùng kiểu tab Đối phó / Tàn cuộc): bản đồ 10 ô
-            trước đây chiếm 2 hàng ô vuông mà không cho biết ô nào là thế nào; combo
-            cao đúng một dòng, mở ra là đọc được tên cả 10 thế theo thứ tự dễ → khó.
+            CHỌN THẾ BẰNG BẢNG CHỌN CỦA APP (thay `<select>` của máy): danh sách
+            xổ xuống của hệ điều hành là khối xám không tô được, chữ dài bị cắt.
+            Bảng chọn này tô vàng đúng thế đang làm, đánh số thứ tự dễ → khó và gắn
+            hình quân của nước hay nhất (♞ Mã, ♜ Xe…) để bé nhìn là nhớ bài.
           */}
-          <label
-            htmlFor="kid-tactic-select"
-            className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
-          >
-            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              Thế cờ
-            </span>
-            <select
-              id="kid-tactic-select"
-              value={active?.id ?? ''}
-              onChange={(event) => selectPuzzle(event.target.value)}
-              aria-label="Chọn thế cờ"
-              className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-            >
-              {list.map((item, position) => (
-                <option key={item.id} value={item.id} data-level-id={item.id}>
-                  {position + 1}. {item.title}
-                </option>
-              ))}
-            </select>
-            <span aria-hidden className="shrink-0 text-brand-500">
-              ▾
-            </span>
-          </label>
-          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
-            {activeMeta.blurb}
-          </p>
+          <KidPicker
+            id="kid-tactic-select"
+            label="Thế cờ"
+            value={active?.id ?? ''}
+            onChange={selectPuzzle}
+            groups={[
+              {
+                items: list.map((item) => ({
+                  id: item.id,
+                  label: item.title,
+                  icon: PIECE_GLYPH[pieceFromSan(item.bestSan)],
+                  tag: difficultyTag(item),
+                  data: { 'data-level-id': item.id },
+                })),
+              },
+            ]}
+          />
+          {/*
+            MỘT dòng về chủ đề, không hai: câu "chủ đề dạy gì" (blurb) và câu
+            "khi nào dùng" nói cùng một ý - gộp lại chỉ còn vế "khi nào", vốn là
+            thứ bé/ba mẹ cần để nhận ra đòn trên bàn cờ thật. Tên chủ đề đã nằm
+            trong hàng chip phía trên và nút ⓘ nên không nhắc lại ở đây.
+          */}
           <p
             id="kid-tactic-when"
             className="rounded-2xl border-2 border-dashed border-brand-100 px-3 py-2 text-xs font-bold text-brand-600"
@@ -602,23 +633,22 @@ export function TacticsPage() {
           )}
         </Panel>
 
-        {puzzleAnnotation && !previewing && (hint || solved) ? (
-          <ExplanationBanner
-            annotation={puzzleAnnotation}
-            plyIndex={0}
-            notation={notation}
-            variant={solved ? 'played' : 'hint'}
-          />
-        ) : (
-          <Panel id="kid-tactic-think">
-            <p className="text-sm font-bold text-brand-700">
-              🧠 Bé nhìn xem Vua có an toàn không, quân nào đang bị tấn công và mình có thể chiếu hay bắt quân nào nhé.
-            </p>
-            <p className="mt-1 text-xs font-bold text-brand-500">
-              💡 Lời giải chỉ hiện khi bé bấm Gợi ý hoặc giải xong, để bé tự suy nghĩ trước.
-            </p>
-          </Panel>
-        )}
+        {/*
+          Vùng LỜI GIẢI: chưa bấm Gợi ý và chưa giải xong thì để TRỐNG - không còn
+          khung "bé nhìn xem…" nhắc lại yêu cầu đã ghi dưới bàn cờ. `display:
+          contents` để khi trống không sinh thêm một khe hở trong cột; `id` giữ lại
+          làm mốc cho bài kiểm trình duyệt kiểm "chưa lộ đáp án".
+        */}
+        <div id="kid-tactic-think" className="contents">
+          {puzzleAnnotation && !previewing && (hint || solved) && (
+            <ExplanationBanner
+              annotation={puzzleAnnotation}
+              plyIndex={0}
+              notation={notation}
+              variant={solved ? 'played' : 'hint'}
+            />
+          )}
+        </div>
 
         {/*
           Dải “Hôm nay”: thế đã tới hạn ôn (theo lịch 3/7/21 ngày) và thế mới, gộp

@@ -604,15 +604,18 @@ export function OpeningsPage() {
       if (wrongInfo) return { ...wrongInfo, variant: 'wrong' as const }
       if (ply === 0 || !opening) return null
       const node = moves[ply - 1]
+      const lastIsKid = isKidPly(ply - 1)
       return {
         annotation: node.annotation ?? {
           san: node.san,
           piece: pieceFromSan(node.san),
-          reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
-          rhyme: 'Đối thủ vừa đi',
+          reason: lastIsKid
+            ? 'Bé vừa đi nước này - bài đã hết, bé xem lại hoặc chọn bài khác nhé.'
+            : 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
+          rhyme: '',
         },
         plyIndex: ply - 1,
-        variant: 'opponent' as const,
+        variant: lastIsKid ? ('played' as const) : ('opponent' as const),
       }
     }
     if (wrongInfo) {
@@ -620,30 +623,38 @@ export function OpeningsPage() {
     }
     if (mode === 'learn') {
       const node = moves[ply]
+      const nextIsKid = isKidPly(ply)
       return {
         annotation: node.annotation ?? {
           san: node.san,
           piece: pieceFromSan(node.san),
-          reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
-          rhyme: 'Đối thủ vừa đi',
+          reason: nextIsKid
+            ? 'Nước hay nhất của bé - nhìn mũi tên vàng rồi kéo quân nhé.'
+            : 'Đối thủ sắp đi nước này - bé xem ý đồ rồi tìm cách đáp lại nhé.',
+          rhyme: '',
         },
         plyIndex: ply,
-        variant: 'hint' as const,
+        // Chỉ nước SẮP TỚI CỦA BÉ mới là “nhắc tuồng” (có khẩu quyết, được đọc to).
+        // Nước của đối thủ hiện đúng nhãn “Đối thủ đi” và không kèm khẩu quyết.
+        variant: nextIsKid ? ('hint' as const) : ('opponent' as const),
       }
     }
     if (ply === 0) return null
     const node = moves[ply - 1]
+    const lastIsKid = isKidPly(ply - 1)
     return {
       annotation: node.annotation ?? {
         san: node.san,
         piece: pieceFromSan(node.san),
-        reason: 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
-        rhyme: 'Đối thủ vừa đi',
+        reason: lastIsKid
+          ? 'Bé vừa đi nước này - giờ xem đối thủ đáp lại thế nào.'
+          : 'Nước của đối thủ - bé xem rồi đi tiếp nhé.',
+        rhyme: '',
       },
       plyIndex: ply - 1,
-      variant: node.annotation ? ('played' as const) : ('opponent' as const),
+      variant: lastIsKid ? ('played' as const) : ('opponent' as const),
     }
-  }, [opening, wrongInfo, mode, ply, moves, atLeaf])
+  }, [opening, wrongInfo, mode, ply, moves, atLeaf, isKidPly])
 
   /** Tiến / Lùi một nước - dùng chung cho nút bấm và phím mũi tên. */
   const goStep = useCallback(
@@ -1100,9 +1111,10 @@ export function OpeningsPage() {
             label="Khai cuộc"
             value={opening.id}
             onChange={selectOpening}
-            options={mainOpenings.map((item, index) => ({
+            options={mainOpenings.map((item) => ({
               id: item.id,
-              label: `${index + 1}. ${item.englishName}`,
+              label: item.englishName,
+              icon: item.emoji,
             }))}
           >
           <ProgressMap
@@ -1326,7 +1338,7 @@ export function OpeningsPage() {
                 setPly(0)
               }}
             >
-              🔄 Đầu
+              🔄 Làm lại
             </KidButton>
           </div>
         </Panel>

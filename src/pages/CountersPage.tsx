@@ -287,13 +287,19 @@ export function CountersPage() {
           rhyme: 'Xem trước rồi đi',
         },
         plyIndex: 0,
-        variant: 'hint' as const,
+        // Nước mở màn của ĐỐI THỦ (bé cầm Đen) không phải “nhắc tuồng” của bé.
+        variant: isKidPly(0) ? ('hint' as const) : ('opponent' as const),
       }
     }
     const node = moves[ply - 1]
     if (!node) return null
     if (node.annotation) {
-      return { annotation: node.annotation, plyIndex: ply - 1, variant: 'played' as const }
+      return {
+        annotation: node.annotation,
+        plyIndex: ply - 1,
+        // Lời bình của nước ĐỐI THỦ vẫn là “đối thủ đi”, không phải “bé vừa đi”.
+        variant: isKidPly(ply - 1) ? ('played' as const) : ('opponent' as const),
+      }
     }
     const annotation: MoveAnnotation = {
       san: node.san,
@@ -302,7 +308,7 @@ export function CountersPage() {
       rhyme: 'Đối thủ vừa đi',
     }
     return { annotation, plyIndex: ply - 1, variant: 'opponent' as const }
-  }, [lesson, moves, ply, wrongInfo, kidSide])
+  }, [lesson, moves, ply, wrongInfo, kidSide, isKidPly])
 
   const announceSan = ply > 0 ? (moves[ply - 1]?.san ?? null) : null
 
@@ -539,7 +545,7 @@ export function CountersPage() {
         */}
         <FoldPanel
           id="kid-counter-detail"
-          className="stage:p-2"
+          className="stage:px-2 stage:py-1"
           icon="🧠"
           title={`Đối phó ${lesson.englishName}`}
           defaultOpen
@@ -553,8 +559,8 @@ export function CountersPage() {
             thanh tiêu đề của FoldPanel bị ẩn, nên nếu không có dòng này bé chỉ thấy
             “Đối thủ muốn…” mà không biết của bài nào.
           */}
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            <span className="flex min-w-0 flex-1 items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+          <div className="flex min-w-0 flex-wrap items-center gap-1">
+            <span className="flex min-w-0 flex-1 items-center gap-1 text-xs font-extrabold text-brand-500">
               {/*
                 Cùng bộ icon với tab Khai cuộc (🧠 cho khung mind-set) và icon to
                 hơn chữ một bậc: emoji cỡ 12px đứng cạnh nhãn in hoa bị chìm, nhìn
@@ -564,8 +570,9 @@ export function CountersPage() {
                 🧠
               </span>
               <span className="min-w-0 truncate">
-                Cách phá <b className="normal-case text-brand-900">{lesson.englishName}</b>{' '}
-                <span className="normal-case text-brand-500">({lesson.opponentOpening})</span>
+                Cách phá{' '}
+                <b className="text-base text-brand-900">{lesson.englishName}</b>{' '}
+                <span className="text-brand-500">· {lesson.opponentOpening}</span>
               </span>
             </span>
             {nextTurnStrip}
@@ -574,65 +581,74 @@ export function CountersPage() {
           {/* Bốn khối dưới xếp sát hơn (4px thay 8px): cùng là “một bài đọc ngắn”,
               không cần khoảng thở bằng nhau giữa các thẻ. */}
           <div className="grid gap-0.5">
-          <p
-            id="kid-counter-opponent-plan"
-            className="rounded-xl bg-coral-50 px-2 py-1 text-sm font-bold leading-snug text-coral-800 ring-1 ring-coral-200"
-          >
-            🚩 <b className="text-coral-900">Đối thủ muốn:</b>{' '}
-            <MoveText
-              text={lesson.opponentPlan}
-              onPickSquare={pickSquare}
-              pickedSquare={pickedSquare}
-            />
-          </p>
+          {/* Ý đồ đối thủ là khối PHỤ: nhãn dán ngay đầu câu (không chiếm một dòng
+              riêng), chữ thường - bé hiểu trước rồi mới tới việc của mình. */}
           <div
-            id="kid-counter-name"
-            className="rounded-xl border-2 border-info-600 bg-info-100 px-2 py-1 text-sm font-extrabold text-brand-900"
+            id="kid-counter-opponent-plan"
+            className="rounded-xl bg-coral-50 px-2 py-1 ring-1 ring-coral-200"
           >
-            🛡️ Cách của bé:{' '}
-            <MoveText
-              text={lesson.counterName}
-              onPickSquare={pickSquare}
-              pickedSquare={pickedSquare}
-            />
+            <p className="font-medium leading-snug text-coral-900">
+              <span className="mr-1 text-[12px] font-extrabold uppercase tracking-wide text-coral-700">
+                🚩 Đối thủ muốn
+              </span>
+              <MoveText
+                text={lesson.opponentPlan}
+                onPickSquare={pickSquare}
+                pickedSquare={pickedSquare}
+              />
+            </p>
           </div>
-          <p id="kid-counter-idea" className="text-sm font-bold text-brand-700">
-            <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
-          </p>
+          {/* Cách của bé là khối CHÍNH: tên cách đối phó đậm + câu giải thích ngay dưới,
+              gộp hai khối rời cũ (tên và “idea”) vốn nói cùng một ý. */}
+          <div className="rounded-2xl border-2 border-info-600 bg-info-50 px-2 py-1">
+            <div id="kid-counter-name" className="font-extrabold leading-snug text-brand-900">
+              <span className="mr-1 text-[12px] uppercase tracking-wide text-info-700">
+                🛡️ Cách của bé
+              </span>
+              <MoveText
+                text={lesson.counterName}
+                onPickSquare={pickSquare}
+                pickedSquare={pickedSquare}
+              />
+            </div>
+            <p id="kid-counter-idea" className="font-medium leading-snug text-brand-700">
+              <MoveText text={lesson.idea} onPickSquare={pickSquare} pickedSquare={pickedSquare} />
+            </p>
+          </div>
           {/*
             Bỏ nhãn “✅ Ba việc cần nhớ”: danh sách đã đánh số 1-2-3, tự hiểu, và mỗi
             nhãn thừa là một dòng chiều cao trong cột phải.
           */}
-          {/* Nhãn “Ba việc” mang icon 🎯 - cùng bộ icon với tab Khai cuộc (🧠 =
-              mind-set, 🎯 = việc bé phải làm): danh sách này là việc cụ thể, không
-              phải ý đồ, nên dùng 🎯 chứ không lặp lại 🧠 của dòng tiêu đề ngay trên. */}
-          <p className="mt-1 flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+          {/* Ba việc: mỗi việc một hàng nền navy nhạt + số tròn, để bé quét mắt
+              từng việc thay vì đọc một khối chữ liền. */}
+          <p className="flex items-center gap-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
             <span aria-hidden className="text-sm leading-none">
               🎯
             </span>
-            Ba việc
+            Ba việc cần làm
           </p>
-          <div className="grid gap-0.5">
-            <ul id="kid-counter-points" className="grid gap-0.5">
-              {lesson.points.map((point, index) => (
-                <li key={point} className="flex gap-1.5 text-sm font-bold text-brand-700">
-                  <span
-                    aria-hidden
-                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-extrabold text-brand-600"
-                  >
-                    {index + 1}
-                  </span>
-                  <span>
-                    <MoveText
-                      text={point}
-                      onPickSquare={pickSquare}
-                      pickedSquare={pickedSquare}
-                    />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul id="kid-counter-points" className="grid gap-0.5">
+            {lesson.points.map((point, index) => (
+              <li
+                key={point}
+                className="flex items-start gap-2 rounded-xl bg-brand-50 px-2 py-0.5 font-semibold leading-snug text-brand-800"
+              >
+                <span
+                  aria-hidden
+                  className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[11px] font-extrabold text-white"
+                >
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <MoveText
+                    text={point}
+                    onPickSquare={pickSquare}
+                    pickedSquare={pickedSquare}
+                  />
+                </span>
+              </li>
+            ))}
+          </ul>
           </div>
 
         </FoldPanel>        {/*

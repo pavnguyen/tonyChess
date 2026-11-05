@@ -494,40 +494,42 @@ export function FreePlayPage() {
         under={
           <>
             {/*
-              Hàng nút GỌN, canh giữa như các tab khác: một nút xanh ngọc (việc chính
-              khi mở ván), hai nút phụ nền trắng (đi lại, mắt thần), một nút xanh thép
-              (gợi ý). Trước đây “Đi lại” cũng xanh thép nên hai nút màu giống nhau,
-              hàng lại dồn về trái và lệch so với bàn cờ ở trên.
+              THỨ TỰ DÙNG CHUNG cho cả 4 tab có bàn cờ:
+                💡 trợ giúp → 👁️/🎯 công cụ nhìn → ↩️ lùi → ▶ tiến → 🔄 làm lại.
+              Vì vậy “💡 Gợi ý” đứng ĐẦU (việc bé cần nhất khi đang suy nghĩ) và “♟️
+              Ván mới” - vốn là LÀM LẠI - đứng CUỐI, không đứng đầu như trước. Nhãn
+              “Đi lại” rút ngắn để ba nút vẫn nằm gọn một hàng trên điện thoại.
+
+              KHÔNG lặp lại nút Mắt Thần ở đây: nó đã có nút riêng cạnh bàn cờ (cùng
+              chỗ với 3 tab kia), thêm nữa là hai công tắc cho cùng một việc.
             */}
             <div className="flex flex-wrap items-center justify-center gap-1.5">
-              <KidButton variant="grass" size="sm" onClick={() => newGame()}>
-                ♟️ Ván mới
+              <KidButton
+                id="kid-freeplay-hint"
+                variant="sky"
+                size="sm"
+                disabled={!isKidTurn || hintBusy || hintsLeft <= 0}
+                onClick={showHint}
+              >
+                {hintBusy
+                  ? '💡 Đang tính…'
+                  : hintsLeft > 0
+                    ? `💡 Gợi ý (${hintsLeft})`
+                    : '💡 Hết gợi ý'}
               </KidButton>
               <KidButton
                 variant="ghost"
                 size="sm"
                 disabled={board.history.length === 0 || thinking}
                 onClick={undoKid}
+                title="Lùi lại nước vừa rồi"
               >
-                ↩️ Đi lại nước vừa rồi
+                ↩️ Đi lại
               </KidButton>
-              <KidButton variant="ghost" size="sm" onClick={toggleHeatmap}>
-                👁️ {heatmap ? 'Tắt Mắt Thần' : 'Bật Mắt Thần'}
+              <KidButton variant="grass" size="sm" onClick={() => newGame()}>
+                ♟️ Ván mới
               </KidButton>
-            <KidButton
-              id="kid-freeplay-hint"
-              variant="sky"
-              size="sm"
-              disabled={!isKidTurn || hintBusy || hintsLeft <= 0}
-              onClick={showHint}
-            >
-              {hintBusy
-                ? '💡 Đang tính…'
-                : hintsLeft > 0
-                  ? `💡 Gợi ý (${hintsLeft})`
-                  : '💡 Hết gợi ý'}
-            </KidButton>
-          </div>
+            </div>
 
           {/*
             HLV: cảnh báo TRƯỚC khi đi (đỏ) và nhận xét SAU khi đi (vàng). Chỉ một
