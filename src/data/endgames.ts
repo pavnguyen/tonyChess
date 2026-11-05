@@ -362,7 +362,3 @@ export const ENDGAMES: EndgameChallenge[] = [
     rhyme: 'Mã chiếu, địch tự nhốt',
   },
 ]
-
-export function getEndgame(id: string): EndgameChallenge | undefined {
-  return ENDGAMES.find((challenge) => challenge.id === id)
-}

@@ -182,7 +182,3 @@ export const OPENINGS: Opening[] = META.map((meta) => {
     sidelines: entry?.sidelines,
   }
 })
-
-export function getOpening(id: string): Opening | undefined {
-  return OPENINGS.find((opening) => opening.id === id)
-}

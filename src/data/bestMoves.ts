@@ -783,7 +783,3 @@ export const BEST_MOVES: BestMovePuzzle[] = [
     rhyme: 'Hiến Mã, Hậu bí',
   },
 ]
-
-export function bestMovesByTheme(theme: BestMoveTheme): BestMovePuzzle[] {
-  return BEST_MOVES.filter((puzzle) => puzzle.theme === theme)
-}

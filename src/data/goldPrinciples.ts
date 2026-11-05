@@ -339,7 +339,3 @@ export const GOLD_PRINCIPLES: GoldPrinciple[] = [
     },
   },
 ]
-
-export function goldPrincipleById(id: string): GoldPrinciple | undefined {
-  return GOLD_PRINCIPLES.find((principle) => principle.id === id)
-}

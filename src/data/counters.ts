@@ -366,7 +366,3 @@ export const COUNTERS: CounterLesson[] = [
   // Scandinavian, Grünfeld, Queen's Indian, Ván mở, Caro tiến Tốt) - hai tab lệch
   // nhau nên bé tra cứu bị rối; đã bỏ để hai tab song song đúng một-một.
 ]
-
-export function getCounter(id: string): CounterLesson | undefined {
-  return COUNTERS.find((lesson) => lesson.id === id)
-}
