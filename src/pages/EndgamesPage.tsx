@@ -6,6 +6,7 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
+import { MoveText } from '../components/MoveText'
 import { BoardStage } from '../components/BoardStage'
 import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
@@ -334,13 +335,37 @@ export function EndgamesPage() {
   )
 
   /**
+   * Ô bé vừa bấm trong bài ("Tốt f6", "Xe a8") - khoanh trắng/navy như các tab
+   * khác. Kèm `fen` của lúc bấm: đi một nước là thế cờ đổi nên vệt khoanh tự hết,
+   * không cần dọn tay ở mọi chỗ (đổi bài, đi lại, lùi nước).
+   */
+  const [picked, setPicked] = useState<{ square: string; fen: string } | null>(null)
+  const pickedSquare = picked && picked.fen === board.fen ? picked.square : null
+
+  const pickSquare = (square: string) => {
+    setGoalFocus(false)
+    setPicked((current) =>
+      current && current.fen === board.fen && current.square === square
+        ? null
+        : { square, fen: board.fen },
+    )
+  }
+
+  /**
    * Vệt nước vừa đi + vệt gợi ý quân cần đi. Khi bé đang soi MỤC TIÊU thì chỉ
    * hiện ô mục tiêu cho đỡ rối mắt - giống cách tab Khai cuộc xử lý.
    */
   const squareStyles = useMemo(() => {
     if (goalFocus) return goalSquares ?? {}
-    return hintSquares ? { ...lastMoveSquares, ...hintSquares } : lastMoveSquares
-  }, [goalFocus, goalSquares, lastMoveSquares, hintSquares])
+    const styles: Record<string, CSSProperties> = { ...lastMoveSquares, ...hintSquares }
+    if (pickedSquare) {
+      styles[pickedSquare] = {
+        backgroundColor: BOARD_MARKS.focusFill,
+        boxShadow: BOARD_MARKS.focusRing,
+      }
+    }
+    return styles
+  }, [goalFocus, goalSquares, lastMoveSquares, hintSquares, pickedSquare])
 
   const handleDrop = (from: string, to: string): boolean => {
     if (finished || !board.playerToMove) return false
@@ -640,7 +665,13 @@ export function EndgamesPage() {
                     <span aria-hidden className="mr-1">
                       {step.icon}
                     </span>
-                    {step.text}
+                    {/* Tên quân + ô thành chip có hình quân và bấm được, như “Ba việc”
+                        ở tab Khai cuộc/Đối phó - trước đây bước chỉ là chữ trơn. */}
+                    <MoveText
+                      text={step.text}
+                      onPickSquare={pickSquare}
+                      pickedSquare={pickedSquare}
+                    />
                   </span>
                 </li>
               ))}
@@ -655,7 +686,13 @@ export function EndgamesPage() {
           */}
           <div className="grid gap-1 rounded-2xl border-l-4 border-brand-400 bg-brand-50 px-2.5 py-1.5">
             <LessonLabel icon="👉" title="Bé làm gì?" />
-            <p className="text-sm font-extrabold leading-snug text-brand-900">{challenge?.hint}</p>
+            <p className="text-sm font-extrabold leading-snug text-brand-900">
+              <MoveText
+                text={challenge?.hint ?? ''}
+                onPickSquare={pickSquare}
+                pickedSquare={pickedSquare}
+              />
+            </p>
             <div id="kid-endgame-explanation" className="grid gap-1 border-t border-brand-200 pt-1">
               <LessonLabel icon="💡" title="Vì sao?" tone="gold" size="sm" />
               <p className="text-xs font-medium leading-snug text-ink-600">

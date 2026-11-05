@@ -1,3 +1,4 @@
+import { Chess } from 'chess.js'
 import { useMemo, useState } from 'react'
 import { BoardStage } from '../components/BoardStage'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
@@ -6,7 +7,9 @@ import { InfoButton } from '../components/InfoPopover'
 import { KidButton, Panel, PickSwitch, SectionTitle } from '../components/ui'
 import { GOLD_PRINCIPLES, PRINCIPLE_TONE_STYLES } from '../data/goldPrinciples'
 import { useEyeCheck } from '../hooks/useEyeCheck'
+import { BOARD_MARKS, PIECE_GLYPH, PIECE_NAME_VI } from '../lib/notation'
 import type { CSSProperties } from 'react'
+import type { PieceCode, Side } from '../types'
 
 type DemoSide = 'good' | 'bad'
 
@@ -35,6 +38,8 @@ export function StrategyPage() {
   const [demoSide, setDemoSide] = useState<DemoSide>('good')
   const [quiz, setQuiz] = useState(false)
   const [answer, setAnswer] = useState<'correct' | 'wrong' | null>(null)
+  /** Các ô bé vừa bấm trong bảng chú giải - khoanh trắng/navy trên bàn cờ. */
+  const [focusSquares, setFocusSquares] = useState<string[]>([])
   const hidingAnswer = quiz && answer === null
 
   const activePrinciple = useMemo(
@@ -42,6 +47,33 @@ export function StrategyPage() {
     [openPrinciple],
   )
   const board = activePrinciple[demoSide]
+
+  /**
+   * Quân đang đứng ở từng ô của thế cờ minh hoạ.
+   *
+   * Bảng chú giải cũ chỉ ghi toạ độ trần ("d5") nên bé phải tự nhìn lên bàn cờ
+   * mới biết đó là quân gì - trong khi mọi tab khác đều ghi "Mã d5" kèm hình quân.
+   * Đọc thẳng từ FEN để nhãn và quân trên bàn không thể lệch nhau.
+   */
+  const piecesBySquare = useMemo(() => {
+    const map: Record<string, { piece: PieceCode; color: Side }> = {}
+    const game = new Chess()
+    try {
+      game.load(board.fen)
+    } catch {
+      return map
+    }
+    for (const row of game.board()) {
+      for (const cell of row) {
+        if (!cell) continue
+        map[cell.square] = {
+          piece: cell.type,
+          color: cell.color === 'w' ? 'white' : 'black',
+        }
+      }
+    }
+    return map
+  }, [board.fen])
 
   // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang mở thẻ nguyên tắc nào.
 
@@ -51,8 +83,16 @@ export function StrategyPage() {
       const tone = PRINCIPLE_TONE_STYLES[mark.tone]
       styles[mark.square] = { backgroundColor: tone.fill, boxShadow: tone.ring }
     }
+    // Ô vừa bấm trong bảng chú giải: dùng đúng khung hai tông của các tab khác
+    // (`focusFill`/`focusRing`) để bé chuyển tab không phải học lại quy ước màu.
+    for (const square of focusSquares) {
+      styles[square] = {
+        backgroundColor: BOARD_MARKS.focusFill,
+        boxShadow: BOARD_MARKS.focusRing,
+      }
+    }
     return styles
-  }, [board])
+  }, [board, focusSquares])
 
   /**
    * Chú giải ô màu, gom theo nhãn để hai ô cùng ý nghĩa không chiếm hai dòng.
@@ -72,11 +112,13 @@ export function StrategyPage() {
   const togglePrinciple = (id: string) => {
     setQuiz(false)
     setAnswer(null)
+    setFocusSquares([])
     setDemoSide('good')
     setOpenPrinciple((current) => (current === id ? null : id))
   }
 
   const startQuiz = () => {
+    setFocusSquares([])
     setDemoSide(Math.random() < 0.5 ? 'good' : 'bad')
     setAnswer(null)
     setQuiz(true)
@@ -185,7 +227,10 @@ export function StrategyPage() {
                       size="sm"
                       variant={active ? (option.value === 'good' ? 'grass' : 'rose') : 'ghost'}
                       aria-pressed={active}
-                      onClick={() => setDemoSide(option.value)}
+                      onClick={() => {
+                        setFocusSquares([])
+                        setDemoSide(option.value)
+                      }}
                     >
                       {option.icon} {option.label}
                     </KidButton>
@@ -358,23 +403,56 @@ export function StrategyPage() {
                   <ul
                     id="kid-principle-legend"
                     className="flex flex-wrap gap-1"
-                    aria-label="Vì sao các ô được tô màu"
+                    aria-label="Quân và ô được tô màu trên bàn cờ"
                   >
-                    {legend.map((entry) => (
-                      <li
-                        key={entry.label}
-                        className="flex items-center gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-xs font-bold"
-                      >
-                        <span
-                          className={`shrink-0 rounded px-1 font-mono text-xs font-extrabold text-white ${
-                            demoSide === 'good' ? 'bg-leaf-600' : 'bg-coral-600'
-                          }`}
-                        >
-                          {entry.squares.join(' ')}
-                        </span>
-                        <span className="min-w-0">{entry.label}</span>
-                      </li>
-                    ))}
+                    {legend.map((entry) => {
+                      const active = entry.squares.every((square) => focusSquares.includes(square))
+                      return (
+                        <li key={entry.label}>
+                          <button
+                            type="button"
+                            aria-pressed={active}
+                            title="Bấm để khoanh ô này trên bàn cờ"
+                            onClick={() => setFocusSquares(active ? [] : entry.squares)}
+                            className={`flex flex-wrap items-center gap-1 rounded-lg bg-white/80 px-1.5 py-0.5 text-xs font-bold shadow-sm ring-2 transition-all active:translate-y-[1px] ${
+                              active
+                                ? demoSide === 'good'
+                                  ? 'ring-leaf-600'
+                                  : 'ring-coral-600'
+                                : 'ring-transparent hover:ring-brand-300'
+                            }`}
+                          >
+                            {entry.squares.map((square) => {
+                              const onSquare = piecesBySquare[square]
+                              return (
+                                <span key={square} className="inline-flex items-center gap-1">
+                                  <span
+                                    aria-hidden
+                                    className={`grid size-5 shrink-0 place-items-center rounded-md text-sm leading-none ${
+                                      onSquare?.color === 'black'
+                                        ? 'bg-brand-900 text-white'
+                                        : 'bg-white text-brand-900 ring-1 ring-brand-300'
+                                    }`}
+                                  >
+                                    {onSquare ? PIECE_GLYPH[onSquare.piece] : '·'}
+                                  </span>
+                                  <span
+                                    className={`whitespace-nowrap font-extrabold ${
+                                      demoSide === 'good' ? 'text-leaf-800' : 'text-coral-800'
+                                    }`}
+                                  >
+                                    {onSquare
+                                      ? `${PIECE_NAME_VI[onSquare.piece]} ${square}`
+                                      : square}
+                                  </span>
+                                </span>
+                              )
+                            })}
+                            <span className="min-w-0 text-brand-700">· {entry.label}</span>
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 )}
               </div>
