@@ -78,7 +78,7 @@ của khai cuộc đó - xem trước mà chưa tính là đã học - kèm nút
 
 ## 👁️ Mắt Thần Cờ Vua
 
-Nút công tắc ở góc khu bàn cờ, kèm nút **?** để xem chú giải màu:
+Nút công tắc ở góc khu bàn cờ:
 
 - Quân của bé **đang bị treo** (bị tấn công mà không ai đỡ, hoặc bị quân rẻ hơn đe dọa)
   → ô **đỏ đậm + huy hiệu ⚠️** ở góc ô, kèm **danh sách cảnh báo** ngay dưới bàn cờ:
