@@ -31,13 +31,15 @@ const VARIANTS: Record<Variant, string> = {
 }
 
 /**
- * Cỡ nút. `sm` dùng cho những hàng có nhiều nút (trang Chiến lược) - nhờ vậy cả
- * hàng nút nằm gọn một dòng, bé không phải cuộn và bàn cờ được rộng hơn.
+ * Cỡ nút. `sm` dùng cho những hàng có nhiều nút (dưới bàn cờ, trang Chiến lược) -
+ * nhờ vậy cả hàng nút nằm gọn một dòng, bé không phải cuộn và bàn cờ được rộng hơn.
  */
 const SIZES = {
   // `md` luôn ≥ 44px chiều cao: ngón tay bé 7 tuổi bấm trúng, không phải nhắm.
-  md: 'min-h-11 px-4 py-2.5 text-base',
-  sm: 'min-h-10 px-2.5 py-1.5 text-sm',
+  md: 'min-h-11 rounded-2xl px-4 py-2.5 text-base',
+  // `sm`: cao 36px, chữ nhỏ hơn một bậc và bo góc chặt hơn - hàng nút không còn
+  // phình ra dán sát mép bàn cờ hay đè lên dòng nhắc bên dưới.
+  sm: 'min-h-9 rounded-xl px-2.5 py-1 text-xs sm:text-sm',
 } as const
 
 interface KidButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -56,7 +58,7 @@ export function KidButton({
   return (
     <button
       {...rest}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl font-extrabold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700 transition-all duration-100 select-none active:translate-y-[3px] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:translate-y-[3px] ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 font-extrabold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700 transition-all duration-100 select-none active:translate-y-[3px] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:translate-y-[3px] ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
     >
       {children}
     </button>

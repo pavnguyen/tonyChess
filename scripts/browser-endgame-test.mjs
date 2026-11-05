@@ -174,7 +174,6 @@ check(
   ].every((id) => ids.includes(id)),
   `đủ 20 thế kỹ thuật (${ids.join(', ')})`,
 )
-const endgameText = String(await bodyText())
 // Hai tên mức nằm trong NHÓM của bảng chọn (luôn có trong DOM), không còn là một
 // dòng chữ riêng trên trang - tiêu đề chỉ ghi “🌱 Cơ bản + nâng cao · 20 thế”.
 const levelLabels = await evaluate(

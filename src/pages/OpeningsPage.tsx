@@ -880,12 +880,18 @@ export function OpeningsPage() {
         under={
           <div className="grid gap-2">
             {/*
-              Chọn biến phụ ngay dưới bàn cờ: gặp đối thủ đi khác dòng chính (ví dụ
-              London mà Đen đẩy ...c5 sớm) bé bấm một chip là có bài đúng dòng ấy.
+              Ba khối dưới bàn cờ (chọn biến phụ · câu ý đồ · thẻ xem trước) đều
+              là thông tin NGẮN, nên gom về cùng một bề rộng hẹp và canh giữa theo
+              bàn cờ. Trước đây chúng kéo hết bề rộng cột nên trên máy tính rộng
+              thành ba thanh dài lệch hẳn sang trái bàn cờ, còn thẻ “Bắt đầu học”
+              thì rộng gần 1500px chỉ để chứa một câu.
             */}
             {opening.sidelines && opening.sidelines.length > 0 && (
-              <div id="kid-opening-lines" className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs font-extrabold text-brand-500">
+              <div
+                id="kid-opening-lines"
+                className="mx-auto flex w-full max-w-[36rem] flex-wrap items-center justify-center gap-1.5"
+              >
+                <span className="whitespace-nowrap text-xs font-extrabold text-brand-500">
                   🔀 Đối thủ đi khác:
                 </span>
                 <button
@@ -937,7 +943,7 @@ export function OpeningsPage() {
             {activeLine && (
               <p
                 id="kid-opening-line-idea"
-                className="rounded-2xl bg-info-50 px-2.5 py-1.5 text-xs font-bold text-info-700"
+                className="mx-auto w-full max-w-[36rem] rounded-2xl bg-info-50 px-2.5 py-1.5 text-xs font-bold text-info-700"
               >
                 🧭 {activeLine.idea}
               </p>
@@ -946,14 +952,19 @@ export function OpeningsPage() {
             {planPreview ? (
               <div
                 id="kid-plan-preview-note"
-                className="rounded-2xl border-2 border-dashed border-info-600 bg-info-50 p-2.5 text-center text-sm font-bold text-brand-800"
+                className="mx-auto w-full max-w-[36rem] rounded-2xl border-2 border-dashed border-info-600 bg-info-50 p-2.5 text-center text-sm font-bold text-brand-800"
               >
                 📍 Bé đang xem thế cờ CUỐI khai cuộc — ô tím là việc của câu vừa bấm
               </div>
             ) : openingPreview ? (
+              /*
+                Thẻ mời bám theo ĐỘ DÀI NỘI DUNG (`w-fit`) thay vì kéo hết cột:
+                một câu ngắn + một nút thôi, nên khung chỉ rộng vừa đủ và nằm giữa
+                bàn cờ - không còn là dải xanh nhạt trống trải hai bên.
+              */
               <div
                 id="kid-opening-preview"
-                className="flex flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 px-2.5 py-1.5 text-center"
+                className="mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 px-3 py-1.5 text-center"
               >
                 <p className="min-w-0 text-xs font-extrabold text-brand-800">
                   {opening.emoji} {opening.englishName} · thế cờ cuối (mẫu hình)
@@ -978,7 +989,7 @@ export function OpeningsPage() {
                 variant={bannerState.variant}
               />
             ) : (
-              <div className="rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
+              <div className="mx-auto w-full max-w-[36rem] rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 p-2.5 text-center text-sm font-bold text-brand-500">
                 🐣 Bé hãy kéo quân để bắt đầu bài học nhé!
               </div>
             )}

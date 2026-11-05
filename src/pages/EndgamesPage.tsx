@@ -55,7 +55,7 @@ const LEVELS: {
 const FILE_CHARS = 'abcdefgh'
 
 /**
- * Nút của thanh công cụ dưới bàn cờ: cao đúng 2rem, một dòng, không bóng đổ dày.
+ * Nút của thanh công cụ dưới bàn cờ: cao 2.25rem, một dòng, không bóng đổ dày.
  * Nằm trong lưới 2×2 (điện thoại hẹp) hoặc 4 cột nên nhãn không bị cắt - vì vậy
  * nhãn luôn là bản NGẮN ("Mục tiêu", "Làm lại"); lời giải thích dài nằm ở `title`.
  */
@@ -105,7 +105,7 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-pressed={pressed}
-      className={`inline-flex h-10 min-w-0 items-center justify-center gap-1 rounded-2xl border-2 px-2 py-1.5 text-sm font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none ${palette}`}
+      className={`inline-flex h-9 min-w-0 items-center justify-center gap-1 rounded-xl border-2 px-2 py-1 text-xs font-extrabold leading-none sm:text-sm transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none ${palette}`}
     >
       <span className="shrink-0 text-sm leading-none" aria-hidden>
         {icon}
@@ -479,9 +479,8 @@ export function EndgamesPage() {
           <>
             {/*
               Hàng công cụ GỌN như tab Trung cuộc: bốn nút cùng một cỡ, cùng bóng
-              đáy 2px nên nhìn liền một khối. Lưới 2×2 ở điện thoại hẹp (dưới
-              480px), 4 cột từ 480px trở lên: nhãn “Mục tiêu / Làm lại” không còn
-              bị cắt thành “Mục …”, và mỗi nút vẫn cao 40px - đủ to cho ngón tay bé.
+              đáy 2px nên nhìn liền một khối. Lưới 2×2 ở điện thoại hẹp (dưới               480px), 4 cột từ 480px trở lên: nhãn “Mục tiêu / Làm lại” không còn
+              bị cắt thành “Mục …”, và mỗi nút vẫn cao 36px - đủ to cho ngón tay bé.
             */}
             <div className="mx-auto grid w-full max-w-[32rem] grid-cols-2 gap-1.5 min-[480px]:grid-cols-4">
               <ToolButton

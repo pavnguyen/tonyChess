@@ -34,7 +34,7 @@ interface Props {
  */
 export function BoardStage({ top, board, under, reserve = 260 }: Props) {
   return (
-    <div className="card-pop flex min-h-0 flex-col gap-1.5 p-1.5 sm:gap-2 sm:p-2 shallow:grid shallow:h-[calc(100dvh-5rem)] shallow:shrink-0 shallow:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] shallow:grid-rows-[auto_minmax(0,1fr)] shallow:gap-2 shallow:[grid-template-areas:'board_top'_'board_under']">
+    <div className="card-pop flex min-h-0 flex-col gap-2 p-1.5 sm:gap-2.5 sm:p-2 shallow:grid shallow:h-[calc(100dvh-5rem)] shallow:shrink-0 shallow:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] shallow:grid-rows-[auto_minmax(0,1fr)] shallow:gap-2 shallow:[grid-template-areas:'board_top'_'board_under']">
       {top ? (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 shallow:min-h-0 shallow:overflow-y-auto shallow:[grid-area:top]">
           {top}
@@ -42,7 +42,7 @@ export function BoardStage({ top, board, under, reserve = 260 }: Props) {
       ) : null}
       <BoardBox reserve={reserve}>{board}</BoardBox>
       {under ? (
-        <div className="flex shrink-0 flex-col gap-2 shallow:min-h-0 shallow:min-w-0 shallow:overflow-y-auto shallow:[grid-area:under]">
+        <div className="flex shrink-0 flex-col gap-2.5 shallow:min-h-0 shallow:min-w-0 shallow:overflow-y-auto shallow:[grid-area:under]">
           {under}
         </div>
       ) : null}
