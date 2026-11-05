@@ -645,7 +645,7 @@ export function LessonHead({ icon, title }: { icon: string; title: string }) {
   return (
     <div id="kid-lesson-title" className="flex min-w-0 flex-1 items-center gap-1.5">
       <span
-        className="grid size-6 shrink-0 place-items-center rounded-lg bg-brand-100 text-sm leading-none"
+        className="grid size-5 shrink-0 place-items-center rounded-lg bg-brand-100 text-sm leading-none"
         aria-hidden
       >
         {icon}

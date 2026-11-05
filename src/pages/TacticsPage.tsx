@@ -493,7 +493,7 @@ export function TacticsPage() {
               nằm chung một dòng trên máy tính và hai dòng đều tăm tắp trên điện
               thoại (trước đây để cỡ `md` nên nút to gần gấp rưỡi và tràn khỏi khung).
             */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1.5">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
               {previewing && (
                 <KidButton
                   id="kid-tactic-start"

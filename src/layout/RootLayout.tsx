@@ -52,7 +52,7 @@ export function RootLayout() {
     // từng cột. Trên điện thoại: để trang cuộn dọc như bình thường cho dễ đọc.
     <div className="flex min-h-dvh flex-col stage:h-dvh stage:overflow-hidden">
       <header className="sticky top-0 z-30 shrink-0 border-b border-brand-950/50 bg-gradient-to-r from-brand-900 via-brand-800 to-brand-600 shadow-[0_6px_18px_-12px_rgba(27,38,57,0.75)] stage:static">
-        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-2 px-2 py-1.5 sm:px-3">
+        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-2 px-2 py-1 sm:px-3">
           <Link to="/" className="flex shrink-0 items-center gap-1.5" title="Nam An - Cờ Vua">
             <span className="grid size-8 place-items-center rounded-xl bg-white text-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)]">
               ♟️

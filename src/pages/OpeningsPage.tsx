@@ -902,7 +902,7 @@ export function OpeningsPage() {
             {opening.sidelines && opening.sidelines.length > 0 && (
               <div
                 id="kid-opening-lines"
-                className="mx-auto flex w-full max-w-[36rem] flex-wrap items-center justify-center gap-1.5"
+                className="mx-auto flex w-full max-w-[36rem] flex-wrap items-center justify-center gap-1.5 pt-3"
               >
                 <span className="whitespace-nowrap text-xs font-extrabold text-brand-500">
                   🔀 Đối thủ đi khác:
