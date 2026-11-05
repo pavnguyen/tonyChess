@@ -548,7 +548,7 @@ export function FreePlayPage() {
               KHÔNG lặp lại nút Mắt Thần ở đây: nó đã có nút riêng cạnh bàn cờ (cùng
               chỗ với 3 tab kia), thêm nữa là hai công tắc cho cùng một việc.
             */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-4">
               <KidButton
                 id="kid-freeplay-hint"
                 variant="sky"
