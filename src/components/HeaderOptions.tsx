@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NOTATION_LEGEND, NOTATION_OPTIONS, NOTATION_SYMBOLS } from '../lib/notation'
 import { InfoButton } from './InfoPopover'
+import { LessonLabel } from './ui'
 import { useKidProgress } from '../store/progress'
 
 /**
@@ -50,8 +51,8 @@ export function HeaderOptions() {
               </div>
             </div>
 
-            <div className="mt-2.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              ✍️ Cách ghi nước đi
+            <div className="mt-2.5 flex items-center gap-1.5">
+              <LessonLabel icon="✍️" title="Cách ghi nước đi" size="sm" />
               <InfoButton topic="notation" />
             </div>
             <div className="mt-1 grid gap-1">
@@ -79,9 +80,7 @@ export function HeaderOptions() {
 
             {/* Bảng đối chiếu để bé học ánh xạ: hình cờ = ký hiệu FIDE = tiếng Việt. */}
             <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
-              <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                🔤 Bảng đối chiếu ký hiệu
-              </div>
+              <LessonLabel icon="🔤" title="Bảng đối chiếu ký hiệu" size="sm" />
               {NOTATION_LEGEND.map((row) => (
                 <div
                   key={row.piece}
@@ -109,9 +108,7 @@ export function HeaderOptions() {
               ván) - nhờ vậy bé đọc được trọn một biên bản cờ chứ không chỉ tên quân.
             */}
             <div className="mt-1.5 grid gap-0.5 rounded-xl border-2 border-dashed border-brand-100 bg-brand-50/60 px-2.5 py-1.5">
-              <div className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                ✍️ Ký hiệu đặc biệt trên biên bản
-              </div>
+              <LessonLabel icon="✍️" title="Ký hiệu đặc biệt trên biên bản" size="sm" />
               {NOTATION_SYMBOLS.map((row) => (
                 <div
                   key={row.glyph}

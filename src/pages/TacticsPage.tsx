@@ -447,7 +447,7 @@ export function TacticsPage() {
                 id="kid-tactic-preview-note"
                 className="animate-pop-in rounded-2xl border-2 border-dashed border-brand-300 bg-brand-50 px-3 py-2 text-center text-sm font-extrabold text-brand-800"
               >
-                👀 Bé đang xem thế cờ “{active.title}” — bấm “▶ Giải thế này” để tự tìm nước hay nhất nhé!
+                👀 Bé đang xem thế cờ “{active.title}” - bấm “▶ Giải thế này” để tự tìm nước hay nhất nhé!
               </p>
             )}
             {waitingReply && !previewing && (
@@ -591,7 +591,7 @@ export function TacticsPage() {
             ]}
           />
           {/*
-            MỘT dòng về chủ đề, không hai: câu "chủ đề dạy gì" (blurb) và câu
+            MỘT dòng về chủ đề, không hai: câu "chủ đề dạy gì" và câu
             "khi nào dùng" nói cùng một ý - gộp lại chỉ còn vế "khi nào", vốn là
             thứ bé/ba mẹ cần để nhận ra đòn trên bàn cờ thật. Tên chủ đề đã nằm
             trong hàng chip phía trên và nút ⓘ nên không nhắc lại ở đây.
@@ -621,7 +621,10 @@ export function TacticsPage() {
                   Thế cờ {safeIndex + 1}/{list.length}
                 </span>
               </div>
-              <div className="text-base font-extrabold text-gold-900">{active.title}</div>
+              {/*
+                Không in lại `active.title`: tên thế đã nằm ngay trên hàng chip vừa
+                bấm (và trong tooltip bản đồ), in lại chỉ tốn một dòng chữ to.
+              */}
               <div className="mt-1 text-xs font-bold text-gold-700">
                 🏁 Cả thế này là chuỗi <b>{kidPlies} nước</b>: bé đi, máy đáp, rồi bé đi
                 tiếp mới thắng.

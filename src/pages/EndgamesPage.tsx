@@ -7,7 +7,7 @@ import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
 import { BoardStage } from '../components/BoardStage'
-import { KidPicker, Panel, SectionTitle } from '../components/ui'
+import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
 import { useChessGame } from '../hooks/useChessGame'
@@ -21,6 +21,7 @@ import {
   PLAN_FOCUS_STYLE,
 } from '../lib/notation'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
+import { speakVietnamese } from '../lib/speech'
 import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
 import type { EndgameChallenge, EndgameLevel, OpeningMove } from '../types'
@@ -36,19 +37,16 @@ const LEVELS: {
   level: EndgameLevel
   icon: string
   title: string
-  blurb: string
 }[] = [
   {
     level: 'basic',
     icon: '🌱',
     title: 'Tàn cuộc cơ bản',
-    blurb: 'Vua che Tốt, Xe/Hậu chiếu bí.',
   },
   {
     level: 'advanced',
     icon: '🔥',
     title: 'Tàn cuộc nâng cao',
-    blurb: 'Đổi Xe, Tượng đôi, Mã + Tượng, Lucena.',
   },
 ]
 
@@ -400,11 +398,25 @@ export function EndgamesPage() {
    * số thứ tự - bé đọc như danh sách việc cần làm, không phải một câu dài có dấu
    * chấm giữa (bản cũ gộp cả ba vào một câu, mắt bé phải tự tách lại).
    */
-  const steps =
+  const goalSteps: { icon: string; text: string }[] =
     (challenge?.goal ?? 'promote') === 'promote'
-      ? ['Vua đi trước che Tốt', 'Đẩy Tốt thẳng lên hàng 8', 'Chạm đích là thành Hậu!']
-      : ['Canh chặt hàng ngang', 'Quân còn lại chiếu Vua', 'Hết đường chạy là chiếu bí!']
+      ? [
+          { icon: '🛡️', text: 'Vua che Tốt' },
+          { icon: '⬆️', text: 'Tốt thẳng lên hàng 8' },
+          { icon: '👑', text: 'Chạm đích: thành Hậu' },
+        ]
+      : [
+          { icon: '🤴', text: 'Vua giữ ô chạy' },
+          { icon: '⚔️', text: 'Quân kia chiếu Vua' },
+          { icon: '🏁', text: 'Hết ô: chiếu bí' },
+        ]
 
+  /**
+   * Bản ba bước CHUNG theo `goal` chỉ đúng với Tốt đơn có Vua che. Thế đổi Xe,
+   * Lucena hay chiếu bí hàng cuối thắng bằng kỹ thuật khác, nên mỗi thế có thể
+   * khai báo `steps` riêng trong dữ liệu; thiếu thì mới rơi về bản chung.
+   */
+  const steps = challenge?.steps ?? goalSteps
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
@@ -599,51 +611,83 @@ export function EndgamesPage() {
 
           Sắp lại theo đúng thứ tự bé cần:
             1. BA BƯỚC (mỗi bước một dòng, có số) - việc phải làm, đọc là hiểu;
-            2. 👉 Bài này - nước cụ thể của đúng thế đang đứng;
-            3. 💡 Vì sao - chữ nhẹ hơn, để phần hướng dẫn nổi trước;
-            4. 📜 Các nước đã đi.
+            2. 👉 Bé làm gì - nước cụ thể của đúng thế đang đứng, chữ to đậm nhất;
+            3. 💡 Vì sao - MỘT câu luật, chữ nhỏ nhạt để không tranh chỗ;
+            4. 🎵 Khẩu quyết - pill riêng, có nút đọc;
+            5. 📜 Các nước đã đi.
+
+          Mỗi khối một việc: trước đây “👉 Bài này” và “💡 Mẹo” cùng kể lại một
+          chuyện bằng hai đoạn đậm dài nên bé không biết đọc dòng nào trước.
 
           Tên bài và số nước đã có ngay phía trên (bảng chọn bài + chip cạnh bàn cờ)
           nên khung này không nhắc lại: bớt một hàng tiêu đề trùng và bớt chip “0 nước”.
         */}
         <Panel id="kid-endgame-lesson" className="grid gap-1.5 stage:p-2">
-          <div className="grid gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              🧭 Cách thắng
-            </span>
+          <div className="grid gap-1.5">
+            <LessonLabel icon="🧭" title="Cách thắng" />
             <ol className="grid gap-1">
               {steps.map((step, index) => (
-                <li key={step} className="flex items-start gap-2">
+                <li key={step.text} className="flex items-start gap-2">
+                  {/* Số thứ tự trong ô vuông bo góc (không phải chấm tròn nhỏ)
+                      để bé đếm được "đang ở bước mấy" bằng mắt. */}
                   <span
                     aria-hidden
-                    className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-[11px] font-extrabold text-white"
+                    className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-lg bg-brand-100 text-xs font-extrabold text-brand-700 ring-1 ring-brand-200"
                   >
                     {index + 1}
                   </span>
-                  <span className="min-w-0 flex-1 font-extrabold leading-snug text-brand-900">
-                    {step}
+                  <span className="min-w-0 flex-1 text-sm font-extrabold leading-snug text-brand-900">
+                    <span aria-hidden className="mr-1">
+                      {step.icon}
+                    </span>
+                    {step.text}
                   </span>
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="rounded-2xl border-l-4 border-brand-300 bg-brand-50 px-2.5 py-1.5">
-            <span className="block text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              👉 Bài này
-            </span>
-            <p className="font-bold leading-snug text-brand-800">{challenge?.hint}</p>
+          {/*
+            Việc bé phải làm NGAY: to và đậm nhất trong khung, vì bé 7 tuổi chỉ
+            cần đọc đúng dòng này là biết bấm gì. Lý do nằm CHUNG khung, ngăn bằng
+            đường kẻ mảnh: hai khối rời trước đây tốn thêm một khe + viền, đẩy khung
+            bài học cao hơn mà nội dung vẫn chỉ là “làm gì → vì sao”.
+          */}
+          <div className="grid gap-1 rounded-2xl border-l-4 border-brand-400 bg-brand-50 px-2.5 py-1.5">
+            <LessonLabel icon="👉" title="Bé làm gì?" />
+            <p className="text-sm font-extrabold leading-snug text-brand-900">{challenge?.hint}</p>
+            <div id="kid-endgame-explanation" className="grid gap-1 border-t border-brand-200 pt-1">
+              <LessonLabel icon="💡" title="Vì sao?" tone="gold" size="sm" />
+              <p className="text-xs font-medium leading-snug text-ink-600">
+                {challenge?.explanation}
+              </p>
+            </div>
           </div>
 
-          <div
-            id="kid-endgame-explanation"
-            className="grid gap-1 rounded-2xl border-l-4 border-gold-400 bg-gold-50 px-2.5 py-1.5"
-          >
-            <span className="text-xs font-extrabold tracking-wide text-gold-700">
-              💡 Mẹo của bài này
+          {/* Khẩu quyết là pill riêng (giống banner gợi ý) kèm nút đọc - trước đây
+              nó nằm lẫn cuối khối “Mẹo” nên trôi mất giữa hai đoạn chữ dài. */}
+          <div className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-sun bg-sun/20 px-2 py-1.5">
+            <span
+              aria-hidden
+              className="grid size-6 shrink-0 place-items-center rounded-lg bg-gold-400 text-[13px] leading-none text-gold-950 shadow-[0_2px_0_#9a7018]"
+            >
+              🎵
             </span>
-            <p className="font-medium leading-relaxed text-brand-800">{challenge?.explanation}</p>
-            <p className="font-extrabold text-gold-800">🎵 “{challenge?.rhyme}”</p>
+            <div className="min-w-0 flex-1">
+              <span className="block text-xs font-extrabold text-gold-700">Khẩu quyết</span>
+              <span className="block text-sm font-extrabold leading-snug text-gold-900">
+                “{challenge?.rhyme}”
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => speakVietnamese(challenge?.rhyme ?? '')}
+              aria-label="Đọc lại khẩu quyết"
+              title="Đọc lại khẩu quyết"
+              className="shrink-0 rounded-full px-1 text-sm leading-none text-gold-700 transition-colors hover:bg-gold-100 active:translate-y-[1px]"
+            >
+              🔊
+            </button>
           </div>
 
           <div
@@ -653,14 +697,18 @@ export function EndgamesPage() {
             }
           >
             {playedMoves.length === 0 ? (
-              <p className="font-bold text-ink-600">
-                🖐️ Kéo quân để bắt đầu — từng nước hiện ở đây, bấm để quay lại.
+              <p className="flex items-center gap-1.5 text-sm font-bold text-ink-600">
+                <span aria-hidden className="text-base">
+                  🐣
+                </span>
+                Kéo quân để bắt đầu.
               </p>
             ) : (
               <>
-                <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                  📜 Các nước đã đi · bấm để quay lại
-                </span>
+                <div className="flex flex-wrap items-center justify-between gap-x-2">
+                  <LessonLabel icon="📜" title="Các nước đã đi" />
+                  <span className="text-xs font-bold text-ink-500">bấm một nước để quay lại</span>
+                </div>
               <MoveStrip
                 moves={playedMoves}
                 side={challenge?.playerSide ?? 'white'}

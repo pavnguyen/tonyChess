@@ -1,4 +1,5 @@
 import { InfoButton } from './InfoPopover'
+import { LessonLabel } from './ui'
 
 /**
  * Bong bóng chú thích tự vẽ cho từng trạm trên bản đồ.
@@ -70,9 +71,9 @@ export function ProgressMap({
     <div className="grid gap-1.5">
       {title && (
         <div className="flex items-center gap-2">
-          <p className="min-w-0 flex-1 truncate text-xs font-extrabold uppercase tracking-wide text-brand-500">
-            🗺️ {title}
-          </p>
+          <div className="min-w-0 flex-1 truncate">
+            <LessonLabel icon="🗺️" title={title} size="sm" />
+          </div>
           <InfoButton topic={info} />
         </div>
       )}

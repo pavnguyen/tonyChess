@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { MoveText } from './MoveText'
+import { LessonLabel } from './ui'
 import {
   describeMove,
   formatSan,
@@ -147,9 +148,7 @@ export function ExplanationBanner({
 
         {/* 2. Lý do */}
         <div className="flex min-w-0 flex-col justify-center rounded-xl bg-brand-50 px-2 py-1">
-          <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-brand-500">
-            💡 Vì sao?
-          </div>
+          <LessonLabel icon="💡" title="Vì sao?" tone="gold" size="sm" />
           <p className="text-xs font-bold leading-snug text-brand-900 sm:text-[0.8rem]">
             <MoveText text={annotation.reason} />
           </p>
@@ -158,13 +157,8 @@ export function ExplanationBanner({
         {/* 3. Khẩu quyết vè (chỉ khi là lời nhắc cho nước sắp tới của bé) */}
         {showRhyme ? (
           <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-sun bg-sun/20 px-2 py-1">
-            <span className="shrink-0 text-base" aria-hidden>
-              🎵
-            </span>
             <div className="min-w-0 flex-1">
-              <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-gold-600">
-                Khẩu quyết - nhắc theo nhé!
-              </div>
+              <LessonLabel icon="🎵" title="Khẩu quyết" tone="gold" size="sm" />
               <div className="text-sm font-extrabold leading-snug text-gold-900">
                 “{annotation.rhyme}”
               </div>
@@ -182,13 +176,8 @@ export function ExplanationBanner({
         ) : (
           showPrinciple && (
             <div className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-dashed border-info-300 bg-info-50 px-2 py-1">
-              <span className="shrink-0 text-base" aria-hidden>
-                🎯
-              </span>
               <div className="min-w-0">
-                <div className="text-[0.65rem] font-extrabold uppercase tracking-wide text-info-600">
-                  Nguyên tắc
-                </div>
+                <LessonLabel icon="🎯" title="Nguyên tắc" tone="info" size="sm" />
                 <div className="text-xs font-extrabold leading-snug text-info-900 sm:text-sm">
                   {annotation.principle}
                 </div>

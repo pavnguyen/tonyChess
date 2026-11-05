@@ -477,6 +477,66 @@ export function KidPicker({
   )
 }
 
+export type LessonLabelTone = 'brand' | 'gold' | 'info' | 'coral'
+
+/**
+ * Màu ô icon của nhãn khối. Cùng nghĩa với các gam khác của app: navy = việc
+ * chính, vàng đồng = kiến thức/phần thưởng, xanh thép = thông tin, đỏ san hô =
+ * điều đối thủ đang làm.
+ */
+const LESSON_LABEL_TONES: Record<LessonLabelTone, string> = {
+  brand: 'bg-gradient-to-br from-brand-700 to-brand-500 text-white',
+  gold: 'bg-gold-400 text-gold-950',
+  info: 'bg-info-500 text-white',
+  coral: 'bg-coral-600 text-white',
+}
+
+/**
+ * Nhãn của một khối trong các thẻ dạy (Tàn cuộc · Đối phó · banner giải thích):
+ * **icon nằm trong ô màu** + tên khối viết như tiêu đề, chứ không phải emoji trôi
+ * bên cạnh một dòng chữ in hoa 10-12px.
+ *
+ * Vì sao: nhãn in hoa cỡ nhỏ đọc như chú thích ảnh - bé 7 tuổi không phân biệt
+ * được đâu là tên phần, đâu là nội dung. Ô icon + tên thường cho mỗi khối một
+ * "cái móc" nhìn thấy trước khi đọc chữ, và khớp ngôn ngữ với `SectionTitle`.
+ *
+ * `md` cho thẻ bài học (cột rộng), `sm` cho khối chật như banner dưới bàn cờ -
+ * ô icon 16px nên chiều cao hàng không đổi so với nhãn chữ cũ.
+ */
+export function LessonLabel({
+  icon,
+  title,
+  tone = 'brand',
+  size = 'md',
+  className = '',
+}: {
+  icon: string
+  title: string
+  tone?: LessonLabelTone
+  size?: 'sm' | 'md'
+  className?: string
+}) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 align-middle ${className}`}>
+      <span
+        aria-hidden
+        className={`grid shrink-0 place-items-center rounded-lg leading-none ${
+          size === 'md' ? 'size-6 text-[13px]' : 'size-4 text-[10px]'
+        } ${LESSON_LABEL_TONES[tone]}`}
+      >
+        {icon}
+      </span>
+      <span
+        className={`min-w-0 font-extrabold tracking-tight text-brand-900 ${
+          size === 'md' ? 'text-sm' : 'text-xs'
+        }`}
+      >
+        {title}
+      </span>
+    </span>
+  )
+}
+
 export function Panel({
   children,
   className = '',

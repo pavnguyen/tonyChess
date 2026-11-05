@@ -218,10 +218,12 @@ const readout = await evaluate(`
 `)
 check(typeof readout === 'string' && readout.length > 0, `bong bóng đọc nước gợi ý (${readout})`)
 check(
-  String(await evaluate(`document.getElementById('kid-endgame-explanation').innerText`)).includes(
-    'Mẹo của bài này',
-  ),
-  'giải thích là mẹo, không giả làm nước sắp tới',
+  // Nhãn được CSS `uppercase` nên innerText trả về “VÌ SAO?” - so khớp không phân
+  // biệt hoa thường để bài kiểm bền với cách trình bày.
+  String(await evaluate(`document.getElementById('kid-endgame-explanation').innerText`))
+    .toLowerCase()
+    .includes('vì sao?'),
+  'giải thích là lý do (“Vì sao?”), không giả làm nước sắp tới',
 )
 
 console.log('\n▶ Tốt thông hành: lịch sử, Đi lại, đổi bài khi máy đang chờ')

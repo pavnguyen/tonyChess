@@ -237,4 +237,13 @@ export interface EndgameChallenge {
   hint: string
   explanation: string
   rhyme: string
+  /**
+   * Ba bước riêng của thế này, thay cho ba bước chung theo `goal`.
+   *
+   * Vì sao cần: bản chung ("Vua che Tốt → Tốt lên hàng 8") chỉ đúng với Tốt đơn
+   * có Vua yểm trợ. Các thế đổi Xe, dựng cầu Lucena hay Tượng đôi + Mã đều thắng
+   * bằng kỹ thuật khác, nếu dùng bản chung thì bài dạy nói sai kế hoạch - bé làm
+   * theo sẽ không thắng. Bỏ trống thì mới dùng bản chung theo `goal`.
+   */
+  steps?: { icon: string; text: string }[]
 }

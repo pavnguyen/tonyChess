@@ -9,7 +9,15 @@ import { KidProgressProvider } from './store/progress'
 
 // Nạp sẵn giọng đọc Mỹ cho “bàn cờ biết nói” (một số trình duyệt chỉ có giọng sau
 // sự kiện `voiceschanged`) - gọi sớm để lần chạm quân đầu tiên đã đọc được.
-primeSpeech()
+//
+// Nhưng để SAU khung hình đầu tiên: `getVoices()` phải chờ danh sách giọng của hệ
+// điều hành, gọi ngay trước `createRoot` là chặn đúng lúc bé đang nhìn màn hình
+// trắng. Rảnh rỗi mới nạp - lần chạm quân đầu tiên vẫn kịp.
+if ('requestIdleCallback' in window) {
+  window.requestIdleCallback(() => primeSpeech(), { timeout: 2000 })
+} else {
+  setTimeout(primeSpeech, 200)
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,11 +32,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <KidProgressProvider>
-          {/* Khung “Gợi ý cho ba mẹ” nằm ngoài mọi trang nên cần một chỗ để
-              trang bài học “báo lên” bài đang mở (§10). */}
-          
-            <RouterProvider router={router} />
-          
+        <RouterProvider router={router} />
       </KidProgressProvider>
     </QueryClientProvider>
   </StrictMode>,

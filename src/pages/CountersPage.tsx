@@ -9,7 +9,7 @@ import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { FoldPanel, KidButton, Panel, Segmented } from '../components/ui'
+import { FoldPanel, KidButton, LessonLabel, Panel, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { OPENINGS } from '../data/openings'
@@ -588,9 +588,7 @@ export function CountersPage() {
             className="rounded-xl bg-coral-50 px-2 py-1 ring-1 ring-coral-200"
           >
             <p className="font-medium leading-snug text-coral-900">
-              <span className="mr-1 text-[12px] font-extrabold uppercase tracking-wide text-coral-700">
-                🚩 Đối thủ muốn
-              </span>
+              <LessonLabel icon="🚩" title="Đối thủ muốn" tone="coral" size="sm" className="mr-1" />
               <MoveText
                 text={lesson.opponentPlan}
                 onPickSquare={pickSquare}
@@ -602,9 +600,7 @@ export function CountersPage() {
               gộp hai khối rời cũ (tên và “idea”) vốn nói cùng một ý. */}
           <div className="rounded-2xl border-2 border-info-600 bg-info-50 px-2 py-1">
             <div id="kid-counter-name" className="font-extrabold leading-snug text-brand-900">
-              <span className="mr-1 text-[12px] uppercase tracking-wide text-info-700">
-                🛡️ Cách của bé
-              </span>
+              <LessonLabel icon="🛡️" title="Cách của bé" tone="info" size="sm" className="mr-1" />
               <MoveText
                 text={lesson.counterName}
                 onPickSquare={pickSquare}
@@ -621,12 +617,7 @@ export function CountersPage() {
           */}
           {/* Ba việc: mỗi việc một hàng nền navy nhạt + số tròn, để bé quét mắt
               từng việc thay vì đọc một khối chữ liền. */}
-          <p className="flex items-center gap-1 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
-            <span aria-hidden className="text-sm leading-none">
-              🎯
-            </span>
-            Ba việc cần làm
-          </p>
+          <LessonLabel icon="🎯" title="Ba việc cần làm" size="sm" />
           <ul id="kid-counter-points" className="grid gap-0.5">
             {lesson.points.map((point, index) => (
               <li

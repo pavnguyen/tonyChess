@@ -54,18 +54,18 @@ const LONDON: OpeningTreeData = {
     points: [
       // Dòng chính đưa Tượng c1 ra f4 (không phải Tượng f1 ra d3 như câu cũ):
       // bé đọc kế hoạch rồi nhìn bàn cờ phải thấy đúng quân vừa đi.
-      'Khung London: Tượng ra f4, Tốt c3-e3 giữ d4 - dựng xong khung thì nhập thành.',
+      'Tượng ra f4, Tốt c3-e3 giữ d4 - dựng xong khung thì nhập thành.',
       // Trong London Tượng ô đen của Đen đi ra d6 (không phải g7 như King's Indian),
       // và Tượng của bé đã sang g3 - nên phải đổi ở d6 mới đúng thế cờ.
-      'Đổi Tượng g3 lấy Tượng d6: Đen mất Tượng ô đen thì các ô đen quanh Vua Đen thành mục tiêu.',
-      'Đen dồn sang cánh Hậu thì đẩy h4-h5, đổi Tốt mở cột h rồi đưa Xe sang đánh Vua.',
+      'Đổi Tượng g3 lấy Tượng d6: mất Tượng ô đen là các ô đen quanh Vua Đen thành mục tiêu.',
+      'Đen dồn sang cánh Hậu: đẩy h4-h5 mở cột h rồi đưa Xe sang đánh Vua.',
     ],
   },
   sidelines: [
     {
       id: 'london-early-c5',
       label: 'Đen đi ...c5 sớm',
-      idea: 'Đen đánh ngay vào d4 - bé cứ dựng kim tự tháp e3-c3 rồi mới tính đổi quân, đừng vội đẩy e4.',
+      idea: 'Đen đánh ngay vào d4: cứ dựng e3-c3 trước, đừng vội đẩy e4.',
       moves: [
         { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm, mở đường Tượng.', 'Dâng Tốt trung tâm') },
         { san: 'd5' },
@@ -102,15 +102,15 @@ const ITALIAN: OpeningTreeData = {
       'Đẩy d4 khi Mã f3 và Tốt c3 đã yểm trợ - mở trung tâm cho Tượng c4 nhắm f7.',
       // `...Xe f1 sang e1 nhường chỗ` BẮT BUỘC phải có: nhập thành xong thì Xe đang
       // đứng ở f1, nên câu “sang f1” mà không dọn Xe là nước không đi được.
-      'Đưa Mã b1 lên d2, cho Xe f1 sang e1 nhường chỗ, rồi Mã f1 nhảy g3 đánh cánh Vua.',
-      'Giữ Tượng c4, đừng đổi vội: hễ Đen sơ hở ở f7 là có nước chiếu hoặc ăn quân.',
+      'Đưa Mã b1 lên d2, Xe f1 sang e1 nhường chỗ, rồi Mã f1 nhảy g3 đánh cánh Vua.',
+      'Giữ Tượng c4: hễ Đen sơ hở ở f7 là có nước chiếu hoặc ăn quân.',
     ],
   },
   sidelines: [
     {
       id: 'italian-two-knights',
       label: 'Đen đi 3...Nf6',
-      idea: 'Đen ra Mã trước khi đóng Tốt - bé vẫn d3 rồi nhập thành, chưa vội Ng5 ăn Tốt.',
+      idea: 'Đen ra Mã trước: bé vẫn d3 rồi nhập thành, chưa vội Ng5 ăn Tốt.',
       moves: [
         { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
         { san: 'e5' },
@@ -144,16 +144,16 @@ const KINGS_INDIAN: OpeningTreeData = {
   plan: {
     title: 'Ba việc: pháo đài g7 - dọn f5 - đập cánh Vua',
     points: [
-      'Đưa Mã f6 sang h5 (hoặc d7) dọn đường cho Tốt f5 - cột f mở thì Tượng g7 mới sáng.',
-      'Đẩy f5 rồi f4 khi Trắng dồn sang cánh Hậu: cánh Vua là nơi TẤN CÔNG.',
-      'Đưa Xe f8 lên e8 giữ ô e5 - mất e5 là Tượng g7 hết đất.',
+      'Đưa Mã f6 sang h5 (hoặc d7) dọn đường cho f5: cột f mở thì Tượng g7 mới sáng.',
+      'Đẩy f5 rồi f4 khi Trắng dồn sang cánh Hậu - cánh Vua là nơi tấn công.',
+      'Đưa Xe f8 lên e8 giữ e5: mất e5 là Tượng g7 hết đất.',
     ],
   },
   sidelines: [
     {
       id: 'kid-vs-center',
       label: 'Trắng chơi 4.e4',
-      idea: 'Trắng chiếm trung tâm - bé giữ pháo đài g7, đẩy d6 rồi e5, về sau mới mở cánh Vua.',
+      idea: 'Trắng chiếm trung tâm: giữ pháo đài g7, đẩy d6 rồi e5, sau mới mở cánh Vua.',
       moves: [
         { san: 'd4' },
         { san: 'Nf6', annotation: ann('Nf6', 'n', 'Nhảy Mã chặn Trắng đẩy Tốt e4.', 'Mã chặn trung tâm') },
@@ -187,16 +187,16 @@ const SICILIAN: OpeningTreeData = {
   plan: {
     title: 'Ba việc: đổi Tốt c - mở cột c - đánh cánh Hậu',
     points: [
-      'Đánh cánh Hậu bằng ...b5 rồi đưa Tượng c8 lên b7: Tượng b7 nhắm ô g2 trước Vua Trắng.',
-      'Đổi quân trên d4 rồi đưa Xe a8 sang cột c vừa mở - đó là đường tấn công chính.',
-      'Trắng nhập thành cánh Hậu thì dồn b5-b4, mở đường Tốt đánh thẳng vào Vua.',
+      'Đánh cánh Hậu bằng ...b5 rồi đưa Tượng c8 lên b7 nhắm ô g2 trước Vua Trắng.',
+      'Đổi quân trên d4 rồi đưa Xe a8 sang cột c vừa mở - đường tấn công chính.',
+      'Trắng nhập thành cánh Hậu: dồn b5-b4 đánh thẳng vào Vua.',
     ],
   },
   sidelines: [
     {
       id: 'sicilian-closed',
       label: 'Trắng đi 2.Nc3',
-      idea: 'Trắng chơi kín - bé cứ Nc6 rồi Bg7, giữ chặt d4 và chờ đẩy b5-b4 phản công.',
+      idea: 'Trắng chơi kín: cứ Nc6 rồi Bg7, giữ chặt d4 rồi đẩy b5-b4 phản công.',
       moves: [
         { san: 'e4' },
         { san: 'c5', annotation: ann('c5', 'p', 'Khống chế ô d4 của Trắng từ cánh.', 'Tốt c ngáng đường') },
@@ -232,17 +232,17 @@ const RUY_LOPEZ: OpeningTreeData = {
   plan: {
     title: 'Ba việc: ghim Mã c6 - giữ e5 yếu - chờ đẩy d4',
     points: [
-      'Đẩy d3 rồi c3 trước, chỉ đẩy d4 khi Xe và Tượng đã sẵn - mở sớm là tự phá ghim.',
-      'Giữ Tượng ở b3 nhắm f7, đừng để Đen đuổi về rồi khoá cánh Vua.',
+      'Đẩy d3 rồi c3 trước; chỉ đẩy d4 khi Xe và Tượng đã sẵn.',
+      'Giữ Tượng b3 nhắm f7, đừng để Đen đuổi về khoá cánh Vua.',
       // Ở dòng này Tốt d2 còn nguyên nên Mã b1 CHƯA sang d2 được - phải đẩy d3 trước.
-      'Giữ Xe e1 ở cột e; sau khi đẩy d3 thì Mã b1 sang d2 - cả hai nhắm cánh Vua Đen.',
+      'Giữ Xe e1 ở cột e; đẩy d3 xong thì Mã b1 sang d2, cả hai nhắm cánh Vua.',
     ],
   },
   sidelines: [
     {
       id: 'ruy-berlin',
       label: 'Đen đi 3...Nf6',
-      idea: 'Đen ra Mã thay vì đóng Tốt - bé nhập thành trước, rồi đuổi Mã đang ăn Tốt e4 bằng Re1.',
+      idea: 'Đen ra Mã thay vì đóng Tốt: nhập thành trước rồi đuổi Mã bằng Re1.',
       moves: [
         { san: 'e4', annotation: ann('e4', 'p', 'Chiếm trung tâm, mở đường Hậu & Tượng.', 'Tốt e nhảy vọt') },
         { san: 'e5' },
@@ -280,8 +280,8 @@ const QUEENS_GAMBIT: OpeningTreeData = {
   plan: {
     title: 'Ba việc: đổi d5 - cột c - trung tâm',
     points: [
-      'Đổi Tốt trên d5 hoặc đẩy e4 khi Mã và Tượng đã yểm trợ - giữ d4 làm bàn đạp.',
-      'Đưa Tượng f1 ra d3 nhắm Vua Đen, nhưng chỉ khi Tốt e đã đứng vững.',
+      'Đổi Tốt trên d5 hoặc đẩy e4 khi đã có yểm trợ - giữ d4 làm bàn đạp.',
+      'Đưa Tượng f1 ra d3 nhắm Vua Đen, chỉ khi Tốt e đã đứng vững.',
       // Ở dòng này Mã b1 ĐÃ đi (Nc3), b1 và c1 đều trống nên Xe sang c1 được ngay.
       'Nhập thành rồi đưa Xe a1 sang c1: cột c là đường tấn công chính.',
     ],
@@ -290,7 +290,7 @@ const QUEENS_GAMBIT: OpeningTreeData = {
     {
       id: 'qg-accepted',
       label: 'Đen ăn Tốt c4',
-      idea: 'Đen giữ Tốt c4 - bé đòi lại bằng e3 rồi Bxc4, chưa đẩy e4 khi Tượng chưa ra.',
+      idea: 'Đen giữ Tốt c4: đòi lại bằng e3 rồi Bxc4, chưa đẩy e4 khi Tượng chưa ra.',
       moves: [
         { san: 'd4', annotation: ann('d4', 'p', 'Chiếm trung tâm bằng Tốt Hậu.', 'Dâng Tốt Hậu trước') },
         { san: 'd5' },
@@ -327,18 +327,18 @@ const FRENCH: OpeningTreeData = {
     title: 'Ba việc: hàng rào e6-d5 - đánh d4 - giữ Tượng',
     points: [
       // Tốt c4 KHÔNG tấn công d4 (nó chỉ đánh b3/d3) - phải là c5 đánh thẳng d4.
-      'Đẩy c5 đánh thẳng vào chân đế d4; đổi cxd4 khi có lợi là trung tâm Trắng sụp.',
+      'Đẩy c5 đánh vào chân đế d4; đổi cxd4 khi có lợi là trung tâm Trắng sụp.',
       // Dòng chính đang dạy đánh c5 (vào d4) trước rồi mới tới f6; câu cũ bảo
       // "f6 ngay" nên bé đọc xong nhìn bàn cờ thấy lệch.
-      'Trắng đẩy e5 thì đánh vào chân đế ngay: c5 vào d4 trước, sau đó f6 vào e5.',
-      'Đưa Tượng f8 ra e7 rồi nhập thành; giữ Tượng c8, đừng để bị nhốt sau hàng rào.',
+      'Trắng đẩy e5 thì đánh ngay: c5 vào d4 trước, rồi f6 vào e5.',
+      'Đưa Tượng f8 ra e7 rồi nhập thành; giữ Tượng c8 khỏi bị nhốt sau hàng rào.',
     ],
   },
   sidelines: [
     {
       id: 'french-advance',
       label: 'Trắng đẩy 3.e5',
-      idea: 'Trắng tiến e5 - bé đánh ngay vào chân đế bằng c5, rồi Nc6 và Qb6 ép Tốt d4.',
+      idea: 'Trắng tiến e5: đánh ngay vào chân đế bằng c5, rồi Nc6 và Qb6 ép d4.',
       moves: [
         { san: 'e4' },
         { san: 'e6', annotation: ann('e6', 'p', 'Mở đường Tượng c8, chuẩn bị dựng hàng rào.', 'Tốt e dựng rào') },
@@ -372,16 +372,16 @@ const CARO_KANN: OpeningTreeData = {
   plan: {
     title: 'Ba việc: Tượng ra trước - nhập thành - c5',
     points: [
-      'Đẩy e6 giữ trung tâm và giữ Tượng g6 trên đường chéo an toàn - quân quan trọng nhất.',
-      'Đưa Mã g8 lên f6, Tượng f8 ra e7 rồi nhập thành TRƯỚC khi đẩy c5.',
-      'Giữ Tốt c6 làm chân đế, Mã b8 ra d7, Xe a8 sang cột d - cột d để phản công.',
+      'Đẩy e6 giữ trung tâm, giữ Tượng g6 trên đường chéo an toàn.',
+      'Đưa Mã g8 lên f6, Tượng f8 ra e7, nhập thành TRƯỚC khi đẩy c5.',
+      'Giữ Tốt c6 làm chân đế, Mã b8 ra d7, Xe a8 sang cột d phản công.',
     ],
   },
   sidelines: [
     {
       id: 'caro-advance',
       label: 'Trắng đẩy 3.e5',
-      idea: 'Trắng khoá trung tâm bằng e5 - bé đưa Tượng ra f5 ngay rồi mới đóng e6.',
+      idea: 'Trắng khoá trung tâm bằng e5: đưa Tượng ra f5 ngay rồi mới đóng e6.',
       moves: [
         { san: 'e4' },
         { san: 'c6', annotation: ann('c6', 'p', 'Chuẩn bị đẩy d5 mà không sợ bị đuổi.', 'Tốt c mở đường') },
@@ -416,7 +416,7 @@ const ENGLISH: OpeningTreeData = {
   plan: {
     title: 'Ba việc: giữ d5 - rồi mới mở trung tâm',
     points: [
-      'Đẩy b4-b5 đánh cánh Hậu và mở đường Tượng c1 ra b2 - English đánh bằng CÁNH.',
+      'Đẩy b4-b5 đánh cánh Hậu, mở đường Tượng c1 ra b2 - English đánh bằng cánh.',
       // Mã b1 đã đi Nc3 từ nước 2 nên b1 trống: Xe a1 vào b1 được ngay.
       'Đưa Xe a1 sang b1, dồn sức ép lên cánh Hậu.',
       'Giữ Tượng g2 quét đường chéo dài, đổi quân ở trung tâm khi có lợi.',
@@ -426,7 +426,7 @@ const ENGLISH: OpeningTreeData = {
     {
       id: 'english-reversed-sicilian',
       label: 'Đen đi ...c5',
-      idea: 'Đen chơi ngược Sicilian - bé giữ Tượng g2, đẩy b4-b5 đánh cánh Hậu, chưa mở trung tâm sớm.',
+      idea: 'Đen chơi ngược Sicilian: giữ Tượng g2, đẩy b4-b5 đánh cánh Hậu.',
       moves: [
         { san: 'c4', annotation: ann('c4', 'p', 'Kiểm soát ô d5 từ xa bằng Tốt cánh.', 'Tốt c nhích lên') },
         { san: 'c5' },
@@ -459,9 +459,9 @@ const NIMZO_INDIAN: OpeningTreeData = {
   plan: {
     title: 'Nhận diện: Tượng ghim Mã - Tốt c phá d4',
     points: [
-      'Nhận diện: Trắng đẩy d4 rồi c4, ra Mã c3 - Đen đáp Nf6, e6, rồi Tượng b4 GHIM Mã c3. Thấy Tượng b4 là biết đang ở Nimzo-Indian.',
-      'Ý tưởng: Tượng b4 ghim Mã c3 để Trắng mất quyền đẩy e4; Đen giành trung tâm bằng c5 và d5 chứ không bằng quân.',
-      'Nhớ một câu: “Tượng ghim Mã - Tốt c phá d4”. Đổi Tượng lấy Mã chỉ khi Trắng nhân đôi Tốt c, đừng đổi vội.',
+      'Trắng d4 rồi c4, Nc3 - Đen đáp Nf6, e6, Bb4 ghim Mã c3: thấy Bb4 là biết Nimzo-Indian.',
+      'Tượng b4 ghim Mã c3, Trắng mất quyền đẩy e4; Đen giành trung tâm bằng c5 và d5.',
+      'Nhớ: “Tượng ghim Mã - Tốt c phá d4”. Chỉ đổi Tượng lấy Mã khi Trắng nhân đôi Tốt c.',
     ],
   },
 }

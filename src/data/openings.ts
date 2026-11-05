@@ -58,7 +58,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇮🇹',
     tagline: 'Tốt e nhảy vọt, Tượng nhắm tim Vua Đen ở ô f7.',
-    goal: 'Tượng c4 nhắm ô f7 yếu của Vua Đen; giữ trung tâm bằng c3-d3 rồi đẩy d4 đúng lúc - nhắm f7, không ăn quân vội.',
+    goal: 'Tượng c4 nhắm f7; giữ trung tâm c3-d3 rồi đẩy d4 đúng lúc.',
     rankNote: 'Dễ học, hay gặp',
   },
   {
@@ -69,7 +69,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇬🇧',
     tagline: 'Kim tự tháp Tốt siêu cứng, Vua chỉ việc nhập thành an toàn.',
-    goal: 'Dựng khung c3-d4-e3 với Tượng f4 rồi nhập thành cho chắc; sau đó đổi Tượng ô đen của Đen và mở cột h bằng h4-h5.',
+    goal: 'Khung c3-d4-e3 + Tượng f4, nhập thành rồi đổi Tượng ô đen và mở cột h.',
     rankNote: 'Dễ chơi nhất',
   },
   {
@@ -82,7 +82,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇪🇸',
     tagline: 'Tượng ra ghim Mã đen rồi nhập thành - khai cuộc huyền thoại của Fischer.',
-    goal: 'Tượng b5 ghim Mã c6 làm Tốt e5 của Đen yếu dần; bé chơi d3-c3 rồi mới đẩy d4 - áp lực từ từ, không đổi quân vội.',
+    goal: 'Tượng b5 ghim Mã c6; chơi d3-c3 rồi đẩy d4, áp lực từ từ.',
     rankNote: 'Hay gặp, nhiều lý thuyết',
   },
   {
@@ -93,7 +93,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🇭🇺',
     tagline: 'Dâng Tốt c mời đổi, giành trung tâm rồi ghim quân - tuyệt kỹ của Judit.',
-    goal: 'Dâng Tốt c4 để đổi được Tốt d5 và lấy ô d4 làm bàn đạp; con đường tấn công chính là cột c, không phải ăn Tốt.',
+    goal: 'Dâng c4 đổi Tốt d5, giữ d4 làm bàn đạp; đường chính là cột c.',
     rankNote: 'Bài tiếp theo',
   },
   {
@@ -104,7 +104,7 @@ const META: OpeningMeta[] = [
     side: 'white',
     emoji: '🏝️',
     tagline: 'Kiểm soát ô d5 từ xa bằng Tốt cánh rồi mới mở trung tâm.',
-    goal: 'Kiểm soát ô d5 từ xa bằng Tốt c4 rồi mới mở trung tâm: English dạy bé chơi theo Ô, không theo nước.',
+    goal: 'Tốt c4 kiểm soát d5 từ xa rồi mới mở trung tâm.',
     rankNote: 'Học sau cùng',
   },
 
@@ -117,7 +117,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🌋',
     tagline: 'Tốt c ngáng đường rồi phản công mãnh liệt từ cánh.',
-    goal: 'Đổi Tốt c5 lấy Tốt d4 để Trắng mất trung tâm, rồi phản công cánh Hậu bằng b5-b4 và cột c.',
+    goal: 'Đổi c5 lấy d4 để Trắng mất trung tâm, rồi đánh cánh Hậu bằng b5-b4.',
     rankNote: 'Hay gặp nhất, phản công mạnh',
   },
   {
@@ -128,7 +128,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🛡️',
     tagline: 'Đưa Tượng ra ngoài TRƯỚC khi đóng Tốt e6 - bí quyết của Petrosian.',
-    goal: 'Đưa Tượng c8 ra f5 TRƯỚC khi đóng Tốt e6 để Tượng không bị nhốt, rồi đánh vào d4 bằng c5.',
+    goal: 'Tượng c8 ra f5 TRƯỚC khi đóng e6, rồi đánh d4 bằng c5.',
     rankNote: 'Dễ chơi nhất',
   },
   {
@@ -139,7 +139,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🇫🇷',
     tagline: 'Dựng hàng rào Tốt vững như thành rồi phản công vào chân đế d4.',
-    goal: 'Hàng rào e6-d5 giam Tốt e4 của Trắng, rồi đánh vào chân đế d4 bằng c5 - chật một chút nhưng Trắng hết đường tiến.',
+    goal: 'Hàng rào e6-d5 giam Tốt e4, rồi đánh chân đế d4 bằng c5.',
     rankNote: 'Chắc, hơi chật',
   },
   {
@@ -150,7 +150,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '🏰',
     tagline: 'Giấu Tượng vào lều g7 rồi nhập thành dựng pháo đài.',
-    goal: 'Nhường trung tâm để dựng pháo đài Tượng g7 + Vua nhập thành, rồi đập e5-f5 vào cánh Vua: càng về sau càng mạnh.',
+    goal: 'Dựng pháo đài Tượng g7 rồi đập e5-f5 vào cánh Vua.',
     rankNote: 'Nhiều kế hoạch',
   },
   {
@@ -161,7 +161,7 @@ const META: OpeningMeta[] = [
     side: 'black',
     emoji: '⛓️',
     tagline: 'Tượng ra ghim Mã c3, khoá chặt không cho Trắng đẩy Tốt e4.',
-    goal: 'Tượng b4 ghim Mã c3 buộc Trắng chọn: nhân đôi Tốt c hoặc mất quyền đẩy e4 - Đen thắng bằng cấu trúc Tốt, không bằng nước hay.',
+    goal: 'Tượng b4 ghim Mã c3: Trắng phải nhân đôi Tốt c hoặc bỏ e4.',
     rankNote: 'Chỉ cần nhận diện',
     ideaOnly: true,
   },

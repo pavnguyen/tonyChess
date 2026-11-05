@@ -3,7 +3,7 @@ import type { Square } from 'chess.js'
 import { useCallback, useMemo, useState } from 'react'
 import { BoardStage } from '../components/BoardStage'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
-import { KidButton, Panel, SectionTitle } from '../components/ui'
+import { KidButton, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { FIGURINE, PIECE_NAME_VI } from '../lib/notation'
 import { HEATMAP_COLORS, WARNING_BADGE, findHangingPieces } from '../lib/threats'
 import { playError, playWin } from '../lib/sound'
@@ -298,7 +298,7 @@ export function HazardsPage() {
             >
               {correct
                 ? '✅ Đúng rồi! Bé nhìn thấy quân mình bị treo trước khi đối thủ ăn.'
-                : `⚠️ Chưa đúng — quân đang treo là ${round.hanging
+                : `⚠️ Chưa đúng - quân đang treo là ${round.hanging
                     .map((square) => square)
                     .join(', ')}. Ô đỏ trên bàn cờ là chỗ bị ăn miễn phí.`}
             </p>
@@ -328,9 +328,7 @@ export function HazardsPage() {
             kép, nhìn nặng và lạc tông so với phần còn lại).
           */}
           <div className="flex flex-wrap items-center justify-center gap-1.5">
-            <span className="text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              Mức luyện
-            </span>
+            <LessonLabel icon="🎚️" title="Mức luyện" size="sm" />
             <div id="kid-hazard-levels" className="flex min-w-0 gap-1.5">
               {(Object.keys(LEVELS) as HazardLevel[]).map((key) => {
                 const spec = LEVELS[key]
