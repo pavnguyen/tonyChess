@@ -119,7 +119,7 @@ export const INFO: Record<string, InfoEntry> = {
       'Mười hai thế ở đây chia làm **hai nhóm**: 🛡️ đưa Tốt lên thành Hậu và 🏁 chiếu bí Vua Đen. Bé cứ luyện nhóm nào cũng được - bấm thẻ là bàn cờ đổi ngay sang thế đó.',
       'Bé **tự kéo quân** trên bàn cờ để chơi thật. Vua Đen đi như một bạn nhỏ đang tập chơi nên thỉnh thoảng mắc lỗi - bé cứ bình tĩnh làm đúng kỹ thuật.',
       'Lỡ tay thì bấm **◀ Đi lại** để lùi nước vừa rồi, hoặc bấm một nước trong khung **📜 Nước đi của ván** để quay lại đúng lúc đó.',
-      'Bấm **🎯 Soi mục tiêu** là bàn cờ tô **tím** những gì bé cần nhắm tới: Tốt của bé và ô phong cấp, hoặc Vua Đen cùng mọi ô nó còn chạy được.',
+      'Bấm **🎯 Mục tiêu** là bàn cờ tô **tím** những gì bé cần nhắm tới: Tốt của bé và ô phong cấp, hoặc Vua Đen cùng mọi ô nó còn chạy được.',
     ],
   },
   plan: {

@@ -510,9 +510,9 @@ export function TacticsPage() {
       />
 
       {/*
-        Cột phải xếp theo đúng thứ tự bé làm việc: chọn CHỦ ĐỀ → chọn THẾ CỜ trên
-        bản đồ → đọc lời giải → ôn tập. Bản đồ nằm NGAY dưới khung chọn chủ đề (và
-        sát bàn cờ) nên bé luôn thấy mình đang đứng ở ô nào của chủ đề.
+        Cột phải xếp theo đúng thứ tự bé làm việc: chọn CHỦ ĐỀ → chọn THẾ CỜ →
+        xem mẹo → đọc lời giải → ôn tập. Hai ô chọn nằm sát trên cùng nên đổi
+        chủ đề/thế không phải cuộn qua phần giới thiệu.
       */}
       <div className="lesson-reader flex min-h-0 flex-col gap-2 stage:overflow-y-auto stage:pr-1">
         <Panel className="grid gap-2">
@@ -522,58 +522,17 @@ export function TacticsPage() {
             subtitle="Chọn chủ đề rồi tìm nước hay nhất cho mỗi thế cờ"
             info={`theme:${theme}`}
           />
+          {/*
+            Hàng chủ đề đứng TRƯỚC combo: bé chọn nhóm (trừng phạt quân treo, đồn
+            hiểm ăn Hậu…) rồi mới chọn thế cờ trong nhóm đó - đúng thứ tự suy nghĩ,
+            và cả hai ô chọn vẫn nằm sát trên cùng nên không phải cuộn.
+          */}
           <Segmented
             options={TYPE_OPTIONS}
             value={theme}
             onChange={(value) => goTo(value)}
             size="sm"
           />
-          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
-            {activeMeta.blurb}
-          </p>
-          <p
-            id="kid-tactic-when"
-            className="rounded-2xl border-2 border-dashed border-brand-100 px-3 py-2 text-xs font-bold text-brand-600"
-          >
-            <b className="text-brand-800">🧭 Khi nào dùng?</b> {activeMeta.when}
-          </p>
-        </Panel>
-
-        {/*
-          Chọn thế cờ (combo) và nhiệm vụ của thế đang làm nằm chung một khung: bé
-          chọn xong là thấy ngay phải làm gì với đúng thế đó, không phải dò hai nơi.
-        */}
-        <Panel id="kid-tactic-map" className="grid gap-2">
-          {/*
-            Dải “Hôm nay”: thế đã tới hạn ôn (theo lịch 3/7/21 ngày) và thế mới, gộp
-            trong một dòng. Bé không cần chọn chủ đề trước - bấm “Ôn ngay” là app tự
-            mở đúng thế đang tới hạn.
-          */}
-          <div
-            id="kid-tactic-today"
-            className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5"
-          >
-            <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-gold-800">
-              🎯 Hôm nay: {todayIds.length} thế{' '}
-              {dueIds.length > 0
-                ? `· ${dueIds.length} thế đã tới hạn ôn`
-                : '· thế mới cho bé làm quen'}
-            </span>
-            <button
-              type="button"
-              id="kid-tactic-today-go"
-              disabled={todayIds.length === 0}
-              onClick={() => {
-                const target = (puzzles ?? []).find((item) => item.id === todayIds[0])
-                if (!target) return
-                goTo(target.theme, target)
-                setPreviewing(false)
-              }}
-              className="shrink-0 rounded-full border-2 border-gold-500 bg-white px-2 py-0.5 text-xs font-extrabold text-gold-800 transition-all hover:bg-gold-100 active:translate-y-[1px] disabled:opacity-50"
-            >
-              ▶ Ôn ngay
-            </button>
-          </div>
           {/*
             CHỌN THẾ BẰNG COMBO (cùng kiểu tab Đối phó / Tàn cuộc): bản đồ 10 ô
             trước đây chiếm 2 hàng ô vuông mà không cho biết ô nào là thế nào; combo
@@ -603,7 +562,22 @@ export function TacticsPage() {
               ▾
             </span>
           </label>
+          <p className="rounded-2xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700">
+            {activeMeta.blurb}
+          </p>
+          <p
+            id="kid-tactic-when"
+            className="rounded-2xl border-2 border-dashed border-brand-100 px-3 py-2 text-xs font-bold text-brand-600"
+          >
+            <b className="text-brand-800">🧭 Khi nào dùng?</b> {activeMeta.when}
+          </p>
+        </Panel>
 
+        {/*
+          Nhiệm vụ của thế đang làm: bé vừa chọn thế ở combo phía trên nên khung
+          này chỉ cần nói ĐÚNG việc phải làm với thế đó.
+        */}
+        <Panel id="kid-tactic-map" className="grid gap-2">
           {active && (
             <div className="rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-3 py-2">
               <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
@@ -646,6 +620,37 @@ export function TacticsPage() {
           </Panel>
         )}
 
+        {/*
+          Dải “Hôm nay”: thế đã tới hạn ôn (theo lịch 3/7/21 ngày) và thế mới, gộp
+          trong một dòng. Bé không cần chọn chủ đề trước - bấm “Ôn ngay” là app tự
+          mở đúng thế đang tới hạn. Đặt ở CUỐI cột: việc chính vẫn là chọn thế và
+          giải, còn ôn tập là bước gợi ý nhẹ sau cùng.
+        */}
+        <div
+          id="kid-tactic-today"
+          className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-gold-300 bg-gold-50 px-2.5 py-1.5"
+        >
+          <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-gold-800">
+            🎯 Hôm nay: {todayIds.length} thế{' '}
+            {dueIds.length > 0
+              ? `· ${dueIds.length} thế đã tới hạn ôn`
+              : '· thế mới cho bé làm quen'}
+          </span>
+          <button
+            type="button"
+            id="kid-tactic-today-go"
+            disabled={todayIds.length === 0}
+            onClick={() => {
+              const target = (puzzles ?? []).find((item) => item.id === todayIds[0])
+              if (!target) return
+              goTo(target.theme, target)
+              setPreviewing(false)
+            }}
+            className="shrink-0 rounded-full border-2 border-gold-500 bg-white px-2 py-0.5 text-xs font-extrabold text-gold-800 transition-all hover:bg-gold-100 active:translate-y-[1px] disabled:opacity-50"
+          >
+            ▶ Ôn ngay
+          </button>
+        </div>
       </div>
 
       <CelebrationModal

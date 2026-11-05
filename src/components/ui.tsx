@@ -122,6 +122,65 @@ export function Segmented<T extends string>({
   )
 }
 
+/**
+ * Chọn một mục trong danh sách: **combobox gọn một dòng** khi màn hình hẹp
+ * (ngoài `stage`), **lưới thẻ** do trang tự vẽ trên máy tính (`stage`).
+ *
+ * Vì sao: danh sách 5–10 mục vẽ thành thẻ thì trên điện thoại chiếm gần trọn một
+ * màn hình, đẩy bàn cờ và nội dung bài học xuống dưới; trên máy tính thì thẻ lại
+ * dễ quét mắt và bấm hơn một combo. Hai bản cùng nằm trong DOM (như `FoldPanel`)
+ * nên không phải render hai lần, và bài kiểm tra trình duyệt vẫn bấm được thẻ.
+ */
+export function PickSwitch({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  children,
+  className = '',
+}: {
+  id: string
+  /** Nhãn ngắn đứng trước combo ("Khai cuộc", "Nguyên tắc"…). */
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: { id: string; label: string }[]
+  /** Lưới thẻ chỉ hiện trên máy tính. */
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={`grid gap-1.5 ${className}`}>
+      <label
+        htmlFor={id}
+        className="flex min-w-0 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1 stage:hidden"
+      >
+        <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+          {label}
+        </span>
+        <select
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+          className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
+        >
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span aria-hidden className="shrink-0 text-brand-500">
+          ▾
+        </span>
+      </label>
+      <div className="hidden stage:block">{children}</div>
+    </div>
+  )
+}
+
 export function Panel({
   children,
   className = '',

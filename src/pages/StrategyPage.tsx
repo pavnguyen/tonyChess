@@ -3,7 +3,7 @@ import { BoardStage } from '../components/BoardStage'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
-import { KidButton, Panel, SectionTitle } from '../components/ui'
+import { KidButton, Panel, PickSwitch, SectionTitle } from '../components/ui'
 import { GOLD_PRINCIPLES, PRINCIPLE_TONE_STYLES } from '../data/goldPrinciples'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import type { CSSProperties } from 'react'
@@ -212,7 +212,22 @@ export function StrategyPage() {
             subtitle="Bấm một ô để học · cả 10 nằm gọn một màn"
             info="principles"
           />
-          <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+          {/*
+            Điện thoại: combo một dòng (10 thẻ 2 cột chiếm gần nửa màn hình, đẩy bài
+            học xuống dưới). Máy tính: giữ lưới thẻ để quét mắt cả 10 nguyên tắc.
+          */}
+          <PickSwitch
+            id="kid-principle-pick"
+            label="Nguyên tắc"
+            value={activePrinciple.id}
+            onChange={togglePrinciple}
+            options={GOLD_PRINCIPLES.map((principle) => ({
+              id: principle.id,
+              label: `${principle.order}. ${principle.title}`,
+            }))}
+            className="mt-2"
+          >
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
             {GOLD_PRINCIPLES.map((principle) => {
               const open = activePrinciple.id === principle.id
               return (
@@ -252,6 +267,7 @@ export function StrategyPage() {
               )
             })}
           </div>
+          </PickSwitch>
         </Panel>
 
         {/*

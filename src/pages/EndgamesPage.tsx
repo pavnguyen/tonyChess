@@ -55,15 +55,14 @@ const LEVELS: {
 const FILE_CHARS = 'abcdefgh'
 
 /**
- * Nút nhỏ của thanh công cụ dưới bàn cờ: cao đúng 2rem, một dòng, không bóng đổ
- * dày - nhờ vậy cả 4 nút nằm gọn một hàng trên điện thoại và bàn cờ không bị đẩy
- * nhỏ lại. Trên máy tính hiện nhãn đầy đủ, trên điện thoại hiện nhãn ngắn.
+ * Nút của thanh công cụ dưới bàn cờ: cao đúng 2rem, một dòng, không bóng đổ dày.
+ * Nằm trong lưới 2×2 (điện thoại hẹp) hoặc 4 cột nên nhãn không bị cắt - vì vậy
+ * nhãn luôn là bản NGẮN ("Mục tiêu", "Làm lại"); lời giải thích dài nằm ở `title`.
  */
 function ToolButton({
   id,
   icon,
   label,
-  short,
   title,
   active = false,
   disabled = false,
@@ -74,7 +73,6 @@ function ToolButton({
   id?: string
   icon: string
   label: string
-  short?: string
   title: string
   active?: boolean
   disabled?: boolean
@@ -107,13 +105,12 @@ function ToolButton({
       disabled={disabled}
       title={title}
       aria-pressed={pressed}
-      className={`inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1 rounded-2xl border-2 px-2.5 py-1.5 text-sm font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none stage:flex-none ${palette}`}
+      className={`inline-flex h-10 min-w-0 items-center justify-center gap-1 rounded-2xl border-2 px-2 py-1.5 text-sm font-extrabold leading-none transition-all active:translate-y-[2px] active:shadow-none disabled:translate-y-0 disabled:cursor-not-allowed disabled:border-sand-200 disabled:bg-white disabled:text-brand-400 disabled:opacity-70 disabled:shadow-none ${palette}`}
     >
       <span className="shrink-0 text-sm leading-none" aria-hidden>
         {icon}
       </span>
-      <span className="truncate stage:hidden">{short ?? label}</span>
-      <span className="hidden truncate stage:inline">{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   )
 }
@@ -121,7 +118,7 @@ function ToolButton({
 /**
  * Những ô Vua Đen có thể chạy tới ở thế cờ hiện tại.
  *
- * Vì sao cần: khi bé bấm 🎯 “Soi mục tiêu” ở bài chiếu bí, bàn cờ tô tím đúng
+ * Vì sao cần: khi bé bấm 🎯 “Mục tiêu” ở bài chiếu bí, bàn cờ tô tím đúng
  * Vua Đen + **mọi ô nó còn chạy được**. Bé nhìn thấy ngay còn thiếu ô nào chưa
  * khóa, thay vì phải tự nhẩm trong đầu.
  *
@@ -160,7 +157,7 @@ export function EndgamesPage() {
   const [challengeId, setChallengeId] = useState('opposition')
   const [hintVisible, setHintVisible] = useState(false)
   /**
-   * Bé bấm 🎯 “Soi mục tiêu” → bàn cờ tô tím đúng những ô bé cần nhắm tới:
+   * Bé bấm 🎯 “Mục tiêu” → bàn cờ tô tím đúng những ô bé cần nhắm tới:
    * các Tốt của bé + ô phong cấp (bài phong Hậu), hoặc Vua Đen + mọi ô nó còn
    * chạy được (bài chiếu bí). Nhìn thấy mục tiêu rõ hơn hẳn chỉ đọc chữ.
    */
@@ -291,7 +288,7 @@ export function EndgamesPage() {
   }, [hintMove])
 
   /**
-   * Ô TÍM của “Soi mục tiêu”: những gì bé cần nhắm tới ở thế cờ đang đứng.
+   * Ô TÍM của nút “Mục tiêu”: những gì bé cần nhắm tới ở thế cờ đang đứng.
    *
    * - Bài phong Hậu: tô các Tốt của bé + ô phong cấp trên cùng cột.
    * - Bài chiếu bí: tô Vua Đen + mọi ô Vua Đen còn chạy được (ô bé cần khóa).
@@ -408,28 +405,54 @@ export function EndgamesPage() {
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
-      {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
+      {/*
+        Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ.
+
+        `reserve` là 296 (trước đây 232) vì phép tính của BoardStage còn phải chừa
+        cả thanh tab cố định ở đáy (64px): thiếu nó thì ở cửa sổ 938×914 hàng nút
+        nằm sau thanh tab, bé phải cuộn mới bấm được. Bàn cờ dựng đứng vẫn rộng
+        hết cỡ (bị chặn bề ngang chứ không phải chiều cao) nên không nhỏ đi.
+      */}
       <BoardStage
-        reserve={232}
+        reserve={296}
         top={
-          <>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-gold-100 px-3 py-1 text-xs font-extrabold text-gold-800">
-                {challenge?.goal === 'promote' ? '🛡️ Đưa Tốt lên thành Hậu' : '🏁 Chiếu bí Vua Đen'}
+          /*
+           * `mb-2`: khung gỗ của bàn cờ tràn lên 12px (`-m-3` trong
+           * ChessBoardPanel), nhiều hơn khe 6px giữa hàng này và bàn cờ, nên phải
+           * chừa thêm chút đệm - không thì đáy các chip bị khung bàn cờ che mất
+           * một mảng, trông như bị cắt cụt.
+           */
+          <div className="mb-2 flex w-full min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+            {/*
+              Một hàng trạng thái GỌN cho điện thoại: nhãn mục tiêu viết ngắn, số
+              nước chỉ hiện khi đã có nước, và nút Mắt Thần nằm chung hàng. Trước
+              đây ba chip + nút Mắt Thần rơi thành 3-4 hàng, đẩy bàn cờ xuống gần
+              40px mà không thêm thông tin gì.
+            */}
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <span className="rounded-full bg-gold-100 px-2.5 py-1 text-xs font-extrabold text-gold-800">
+                <span className="stage:hidden">
+                  {challenge?.goal === 'promote' ? '🛡️ Thành Hậu' : '🏁 Chiếu bí'}
+                </span>
+                <span className="hidden stage:inline">
+                  {challenge?.goal === 'promote' ? '🛡️ Đưa Tốt lên thành Hậu' : '🏁 Chiếu bí Vua Đen'}
+                </span>
               </span>
-              <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
-                {board.history.length} nước
-              </span>
+              {board.history.length > 0 && (
+                <span className="rounded-full bg-brand-100 px-2.5 py-1 text-xs font-extrabold text-brand-700">
+                  {board.history.length} nước
+                </span>
+              )}
               <span
                 id="kid-endgame-status"
                 role="status"
-                className="rounded-full bg-leaf-100 px-3 py-1 text-xs font-extrabold text-leaf-700"
+                className="rounded-full bg-leaf-100 px-2.5 py-1 text-xs font-extrabold text-leaf-700"
               >
                 {statusLabel}
               </span>
             </div>
             <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
-          </>
+          </div>
         }
         board={
           isLoading || !challenge ? (
@@ -450,12 +473,12 @@ export function EndgamesPage() {
         under={
           <>
             {/*
-              Hàng công cụ GỌN, canh giữa như tab Trung cuộc: bốn nút cùng một cỡ,
-              cùng bóng đáy 2px nên nhìn liền một khối. Bỏ khung trắng bao ngoài
-              (trước đây khung ấy gần như trùng màu nền nên vừa thừa vừa làm nút
-              trông lọt thỏm). Nhãn dài ở máy tính, nhãn ngắn (1-2 chữ) ở điện thoại.
+              Hàng công cụ GỌN như tab Trung cuộc: bốn nút cùng một cỡ, cùng bóng
+              đáy 2px nên nhìn liền một khối. Lưới 2×2 ở điện thoại hẹp (dưới
+              480px), 4 cột từ 480px trở lên: nhãn “Mục tiêu / Làm lại” không còn
+              bị cắt thành “Mục …”, và mỗi nút vẫn cao 40px - đủ to cho ngón tay bé.
             */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <div className="mx-auto grid w-full max-w-[32rem] grid-cols-2 gap-1.5 min-[480px]:grid-cols-4">
               <ToolButton
                 icon="💡"
                 label="Gợi ý"
@@ -470,11 +493,10 @@ export function EndgamesPage() {
               <ToolButton
                 id="kid-endgame-goal"
                 icon="🎯"
-                label={goalFocus ? 'Tắt mục tiêu' : 'Soi mục tiêu'}
-                short={goalFocus ? 'Tắt' : 'Mục tiêu'}
+                label={goalFocus ? 'Tắt' : 'Mục tiêu'}
                 active={goalFocus}
                 pressed={goalFocus}
-                title="Tô tím những ô bé cần nhắm tới ở thế cờ này"
+                title="Tô tím những ô bé cần nhắm tới ở thế cờ này (bấm lần nữa để tắt)"
                 onClick={() => {
                   setHintVisible(false)
                   setGoalFocus((value) => !value)
@@ -530,6 +552,8 @@ export function EndgamesPage() {
         Cột phải xếp theo đúng thứ tự bé dùng:
           1. CHỌN BÀI (việc làm nhiều nhất - trước đây nằm tận cuối, phải cuộn qua ba khung),
           2. bài đang luyện: mục tiêu → 3 việc → mẹo → nước đã đi, gói trong MỘT khung.
+        Hai khung nằm SÁT nhau nên trên máy tính không còn khoảng trống ~350px
+        giữa hai khung (bỏ `stage:mt-auto` đã đẩy khung bài học xuống đáy cột).
       */}
       <div className="lesson-reader flex min-h-0 flex-col gap-1.5 stage:overflow-y-auto stage:pr-1">
         <Panel id="kid-endgame-list" className="stage:p-2">
@@ -595,11 +619,11 @@ export function EndgamesPage() {
         </Panel>
 
         {/*
-          `stage:mt-auto`: combo chỉ cao một dòng nên cột phải còn dư nhiều chỗ; bám
-          khung bài học xuống đáy thì cột kết thúc đúng hàng với khối bàn cờ (cùng
-          cách xử lý ở tab Đối phó) thay vì để một khoảng trống dưới đáy.
+          Khung bài học cao ĐÚNG BẰNG nội dung và nằm ngay dưới combo. Trước đây
+          nó bị `stage:mt-auto` đẩy xuống đáy cột, để hở một khoảng trống lớn ngay
+          dưới khung chọn bài - nhìn như trang bị thiếu nội dung.
         */}
-        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:mt-auto stage:p-2">
+        <Panel id="kid-endgame-lesson" className="grid gap-0.5 stage:p-2">
           <div className="flex items-center justify-between gap-2">
             <span className="min-w-0 truncate text-sm font-extrabold text-brand-900">
               🧭 {challenge?.title ?? ''}

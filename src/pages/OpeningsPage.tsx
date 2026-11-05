@@ -11,7 +11,7 @@ import { HangingWarnings } from '../components/HangingWarnings'
 import { ProgressMap } from '../components/ProgressMap'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { KidButton, Panel, Segmented } from '../components/ui'
+import { KidButton, Panel, PickSwitch, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -1091,6 +1091,20 @@ export function OpeningsPage() {
               )
             })}
           </div>
+          {/*
+            Điện thoại: combo một dòng thay cho 5 thẻ khai cuộc (thẻ chiếm 2–3 hàng,
+            đẩy phần “Đối phó” và bài học xuống). Máy tính: giữ bản đồ thẻ như cũ.
+          */}
+          <PickSwitch
+            id="kid-opening-pick"
+            label="Khai cuộc"
+            value={opening.id}
+            onChange={selectOpening}
+            options={mainOpenings.map((item, index) => ({
+              id: item.id,
+              label: `${index + 1}. ${item.englishName}`,
+            }))}
+          >
           <ProgressMap
             nodes={mainOpenings.map((item, index) => ({
               id: item.id,
@@ -1112,6 +1126,7 @@ export function OpeningsPage() {
             onSelect={selectOpening}
             showNames
           />
+          </PickSwitch>
           {/*
             Nút Đối phó + câu “cách phản công” nằm NGAY DƯỚI ba thẻ khai cuộc: bé vừa
             chọn bài là thấy liền “nếu đối thủ chơi bài này thì mình đánh lại thế nào”.

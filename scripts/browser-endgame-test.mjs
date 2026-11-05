@@ -3,7 +3,7 @@
  *   1. Có 20 thế kỹ thuật, chia hai mức rõ ràng: “Tàn cuộc cơ bản” (10 thế) và
  *      “Tàn cuộc nâng cao” (10 thế); các khung tham khảo cũ đã bị gỡ.
  *   2. Bấm thẻ thì bàn cờ lớn đổi sang đúng thế cờ của bài đó.
- *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Soi mục tiêu” tô xanh thép
+ *   3. “💡 Gợi ý” hiện mũi tên + bong bóng đọc nước; “🎯 Mục tiêu” tô xanh thép
  *      đúng Tốt + ô phong cấp.
  *   4. Lịch sử / Đi lại chạy đúng, đổi bài giữa lúc máy đang nghĩ không nhận nước cũ.
  *   5. Thắng thật: Tượng đôi chiếu bí trong 1 nước → mở lời chúc mừng; còn nước
