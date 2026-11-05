@@ -561,7 +561,7 @@ export function EndgamesPage() {
               đáy 2px nên nhìn liền một khối. Lưới 2×2 ở điện thoại hẹp (dưới               480px), 4 cột từ 480px trở lên: nhãn “Mục tiêu / Làm lại” không còn
               bị cắt thành “Mục …”, và mỗi nút vẫn cao 36px - đủ to cho ngón tay bé.
             */}
-            <div className="mx-auto grid w-full max-w-[32rem] grid-cols-2 gap-1.5 pt-3 min-[480px]:grid-cols-4">
+            <div className="mx-auto grid w-full max-w-[32rem] grid-cols-2 gap-1.5 pt-4 min-[480px]:grid-cols-4">
               <ToolButton
                 icon="💡"
                 label="Gợi ý"
