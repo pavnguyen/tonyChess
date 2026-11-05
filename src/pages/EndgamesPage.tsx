@@ -12,7 +12,7 @@ import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
 import { randomIndex } from '../lib/randomPick'
 import { completeSessionItem } from '../lib/session'
-import { KidPicker, LessonHead, LessonLabel, Panel, SectionTitle } from '../components/ui'
+import { KidButton, KidPicker, LessonHead, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { ENDGAMES } from '../data/endgames'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
@@ -464,6 +464,23 @@ export function EndgamesPage() {
    */
   const steps = challenge?.steps ?? goalSteps
 
+  /**
+   * Bài kế tiếp trong danh sách (hết danh sách thì quay lại bài đầu). Hoàn thành
+   * một bài thì việc tự nhiên là sang bài khác - không bắt bé bấm “Làm lại” rồi
+   * tự mở bảng chọn tìm bài mới.
+   */
+  const nextChallenge = useMemo(() => {
+    if (!endgames || endgames.length < 2) return undefined
+    const index = endgames.findIndex((item) => item.id === challenge?.id)
+    return endgames[(index + 1) % endgames.length]
+  }, [endgames, challenge?.id])
+
+  const goToNextChallenge = () => {
+    if (!nextChallenge) return
+    setResult(null)
+    setChallengeId(nextChallenge.id)
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
@@ -603,11 +620,23 @@ export function EndgamesPage() {
               </p>
             )}
 
-            {finished && (
+            {finished === 'success' && (
+              <div className="animate-pop-in flex flex-wrap items-center justify-center gap-2 rounded-xl bg-leaf-50 px-2.5 py-1.5 text-center text-xs font-extrabold text-leaf-700">
+                <span>🎯 Đạt mục tiêu!</span>
+                <KidButton
+                  id="kid-endgame-next"
+                  variant="primary"
+                  size="sm"
+                  onClick={goToNextChallenge}
+                  disabled={!nextChallenge}
+                >
+                  ➡️ Bài tiếp
+                </KidButton>
+              </div>
+            )}
+            {finished === 'retry' && (
               <p className="animate-pop-in rounded-xl bg-leaf-50 px-2.5 py-1.5 text-center text-xs font-extrabold text-leaf-700">
-                {finished === 'success'
-                  ? '🎯 Đạt mục tiêu! Chọn bài khác để luyện tiếp nhé.'
-                  : '🌱 Chưa đạt mục tiêu. Bấm ◀ Đi lại để sửa hoặc 🔄 Làm lại nhé.'}
+                🌱 Chưa đạt mục tiêu. Bấm ◀ Đi lại để sửa hoặc 🔄 Làm lại nhé.
               </p>
             )}
           </>
@@ -800,6 +829,8 @@ export function EndgamesPage() {
           setConfetti(false)
         }}
         retryLabel="Chơi lại"
+        onNext={finished === 'success' && nextChallenge ? goToNextChallenge : undefined}
+        nextLabel="Bài tiếp"
       />
     </div>
   )

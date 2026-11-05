@@ -10,6 +10,9 @@ interface Props {
   onClose: () => void
   onRetry?: () => void
   retryLabel?: string
+  /** Nút chính "sang bài khác" - dùng khi hoàn thành bài (Tàn cuộc). */
+  onNext?: () => void
+  nextLabel?: string
 }
 
 export function CelebrationModal({
@@ -21,6 +24,8 @@ export function CelebrationModal({
   onClose,
   onRetry,
   retryLabel = 'Chơi lại',
+  onNext,
+  nextLabel = 'Bài tiếp',
 }: Props) {
   if (!open) return null
   return (
@@ -45,7 +50,12 @@ export function CelebrationModal({
               🔄 {retryLabel}
             </KidButton>
           )}
-          <KidButton variant="primary" onClick={onClose}>
+          {onNext && (
+            <KidButton variant="primary" onClick={onNext}>
+              ➡️ {nextLabel}
+            </KidButton>
+          )}
+          <KidButton variant={onNext ? 'ghost' : 'primary'} onClick={onClose}>
             👍 Tuyệt vời!
           </KidButton>
         </div>
