@@ -380,7 +380,10 @@ export function OpeningsPage() {
 
   /** Bé đi đúng hết bài → tặng Cúp Vàng. */
   useEffect(() => {
-    if (mode === 'learn' || !opening || finished || ply === 0) return
+    // Không còn chế độ "thuộc lòng" riêng: đi hết dòng chính ngay trong chế độ
+    // học từng bước là xong bài - trước đây điều kiện `mode === 'learn'` chặn luôn
+    // cả Cúp Vàng lẫn việc báo xong buổi luyện, vì `mode` đã cố định là 'learn'.
+    if (!opening || finished || ply === 0) return
     if (!atLeaf) return
     setFinished(true)
     if (awardedRef.current) return

@@ -10,7 +10,7 @@
 import { OPENINGS } from '../data/openings'
 import { BEST_MOVES } from '../data/bestMoves'
 import { ENDGAMES } from '../data/endgames'
-import { advanceDone, itemKind } from './sessionProgress'
+import { advanceDone } from './sessionProgress'
 import type { SessionKind } from './sessionProgress'
 
 export interface SessionItem {
@@ -65,17 +65,20 @@ export function buildSession(date = new Date()): SessionItem[] {
       id: `puzzle:${puzzle.id}`,
       label: `Tìm nước hay: ${puzzle.title}`,
       icon: '⚔️',
-      to: `/tactics?theme=${puzzle.theme}`,
+      to: `/tactics?theme=${puzzle.theme}&puzzle=${puzzle.id}`,
     })
   }
 
-  const endgame = pick(ENDGAMES, seed >> 6)
+  const endgame = pick(
+    ENDGAMES.filter((item) => item.level === 'basic'),
+    seed >> 6,
+  )
   if (endgame) {
     items.push({
       id: `endgame:${endgame.id}`,
       label: `Tàn cuộc: ${endgame.title}`,
       icon: '👑',
-      to: '/endgames',
+      to: `/endgames?challenge=${endgame.id}`,
     })
   }
 
@@ -124,12 +127,6 @@ export function saveSessionState(done: number) {
   }
 }
 
-/** Đánh dấu xong bài thứ `index` (0-based) - dùng cho "Luyện lại" toàn buổi. */
-export function markDone(index: number) {
-  const state = loadSessionState()
-  saveSessionState(Math.max(state.done, index + 1))
-}
-
 /**
  * Bé vừa **làm xong** một bài thuộc loại `kind` (khai cuộc, thế trung cuộc…).
  *
@@ -143,12 +140,6 @@ export function completeSessionItem(kind: SessionKind): boolean {
   if (next === state.done) return false
   saveSessionState(next)
   return true
-}
-
-/** Loại bài của mục đang chờ - để trang đích biết mình có phải bài kế tiếp không. */
-export function pendingKind(): SessionKind | null {
-  const state = loadSessionState()
-  return itemKind(buildSession()[state.done])
 }
 
 export function resetSession() {

@@ -1,3 +1,4 @@
+import { useSearch } from '@tanstack/react-router'
 import { Chess } from 'chess.js'
 import type { Square } from 'chess.js'
 import { useEffect, useMemo, useState } from 'react'
@@ -11,6 +12,7 @@ import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
 import { completeSessionItem } from '../lib/session'
 import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
+import { ENDGAMES } from '../data/endgames'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
 import { useChessGame } from '../hooks/useChessGame'
@@ -154,8 +156,13 @@ export function EndgamesPage() {
   const { data: endgames, isLoading } = useEndgamesQuery()
   const { notation, soundOn } = useKidProgress()
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
+  const search = useSearch({ from: '/endgames' })
 
-  const [challengeId, setChallengeId] = useState('opposition')
+  const [challengeId, setChallengeId] = useState(() =>
+    search.challenge && ENDGAMES.some((item) => item.id === search.challenge)
+      ? search.challenge
+      : 'opposition',
+  )
   const [hintVisible, setHintVisible] = useState(false)
   /**
    * Bé bấm 🎯 “Mục tiêu” → bàn cờ tô tím đúng những ô bé cần nhắm tới:

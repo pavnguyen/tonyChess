@@ -1,4 +1,4 @@
-import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
+import { Link, Outlet, useMatchRoute, useRouterState } from '@tanstack/react-router'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { HeaderOptions } from '../components/HeaderOptions'
 import { InfoButton } from '../components/InfoPopover'
@@ -44,6 +44,8 @@ export function RootLayout() {
   const matchRoute = useMatchRoute()
   /** Trang Học là "nhà": chỉ ở đó mới bày buổi luyện hôm nay cho khỏi chật. */
   const onLearnHome = Boolean(matchRoute({ to: '/' }))
+  /** Đổi trang là đặt lại ErrorBoundary: lỗi ở một bài không khoá cả app. */
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   return (
     // Trên máy tính/tablet: khung app cao đúng bằng màn hình, nội dung cuộn trong
@@ -134,7 +136,7 @@ export function RootLayout() {
             </div>
           )}
         </div>
-        <ErrorBoundary>
+        <ErrorBoundary key={pathname}>
           <Outlet />
         </ErrorBoundary>
       </main>

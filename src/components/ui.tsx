@@ -233,6 +233,8 @@ export function KidPicker({
   const current = flat[selectedIndex]
   const [open, setOpen] = useState(false)
   const [cursor, setCursor] = useState(selectedIndex)
+  /** Bảng ở đáy trang (tab Đối phó) phải mở LÊN TRÊN, không thì bị cắt. */
+  const [dropUp, setDropUp] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -323,12 +325,18 @@ export function KidPicker({
         aria-label={`${label}: ${current?.label ?? 'chưa chọn'}`}
         onClick={() => {
           setCursor(selectedIndex)
+          if (!open) {
+            const rect = triggerRef.current?.getBoundingClientRect()
+            setDropUp(Boolean(rect && window.innerHeight - rect.bottom < 300))
+          }
           setOpen((value) => !value)
         }}
         onKeyDown={(event) => {
           if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
           event.preventDefault()
           setCursor(selectedIndex)
+          const rect = triggerRef.current?.getBoundingClientRect()
+          setDropUp(Boolean(rect && window.innerHeight - rect.bottom < 300))
           setOpen(true)
         }}
         className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-2 py-1.5 text-left shadow-[0_2px_0_#e3cda3] transition-all hover:border-brand-300 hover:bg-brand-50 active:translate-y-[1px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
@@ -390,7 +398,9 @@ export function KidPicker({
               choose(cursor)
             }
           }}
-          className="animate-pop-in absolute inset-x-0 top-[calc(100%+6px)] z-40 max-h-[min(16rem,45vh)] overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-200 bg-white p-1 shadow-[0_18px_36px_-14px_rgba(27,38,57,0.45)]"
+          className={`animate-pop-in absolute inset-x-0 z-40 max-h-[min(16rem,45vh)] overflow-y-auto overscroll-contain rounded-2xl border-2 border-brand-200 bg-white p-1 shadow-[0_18px_36px_-14px_rgba(27,38,57,0.45)] ${
+            dropUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'
+          }`}
         >
           {groups.map((group, groupIndex) => (
             <Fragment key={groupIndex}>

@@ -23,7 +23,7 @@ Kiểm tra trong trình duyệt thật (cần Chrome + `vite preview` đang ch�
 npm run preview &
 npm run check:browser   # 18 bộ: Web Worker · mũi tên · kéo-thả · gợi ý · Chiến lược · Stockfish ·
                         # gợi ý cho ba mẹ · nút ⓘ · toạ độ · giọng đọc · Trung cuộc · đánh tiếp ·
-                        # Tàn cuộc · mẫu hình · Đối phó · Đấu tập · màu · bố cục (10 khung nhìn)
+                        # Tàn cuộc · mẫu hình · Đối phó · Đấu tập · màu · bố cục (13 khung nhìn)
 ```
 
 > `npm run check:browser` chạy khá lâu (vài phút). Khi phát triển, chạy lẻ từng bộ bên dưới cho nhanh.
@@ -50,7 +50,7 @@ Biến thể Tailwind **`stage`** (`min-width: 60rem` **và** `min-aspect-ratio:
 | Hẹp mà vẫn thấp (`< 60rem`) | **1 cột** - bàn cờ thu vừa tầm mắt, có sàn tối thiểu 17rem |
 | **Thấp mà rộng** (`shallow`: 640-959px **và** cao ≤ 544px) | **2 cột ngay trong thẻ bàn cờ** - đây là khổ điện thoại nằm ngang (iPhone 15 Pro Max ngang = 932×430) |
 
-`browser-layout-test.mjs` đo lại trên **10 khung nhìn** (1440×900 → cửa sổ vuông 1200×1200 → iPhone 15
+`browser-layout-test.mjs` đo lại trên **13 khung nhìn** (1440×900 → cửa sổ vuông 1200×1200 → iPhone 15
 Pro Max dọc 430×932 **và** ngang 932×430) với cả 7 trang, và bắt buộc: **không tràn ngang**, **trang không
 cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và **bàn cờ đủ to**.
 
@@ -323,6 +323,9 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | --- | --- |
 | `validate-chess.ts` | Mọi FEN hợp lệ, mọi dòng khai cuộc đi đúng luật, thế tàn cờ thật sự chiếu bí được, các chủ đề Trung cuộc đủ 2 thế/chủ đề, **chuỗi “đánh tiếp” hợp lệ và có độ dài chẵn**, và **vè 4–6 chữ** ở mọi dữ liệu viết tay. |
 | `smoke-logic.ts` | Ký hiệu nước đi, heatmap 64 ô, **cảnh báo quân bị treo**, gợi ý tàn cuộc. |
+| `smoke-session.ts` | **Buổi luyện hôm nay**: tiến độ chỉ nhích khi bé HOÀN THÀNH đúng bài đang chờ; làm lại bài cũ hay vào giữa buổi bằng ▶ không nhảy điểm. |
+| `check-duplicate-copy.ts` | Bắt hai câu trùng ≥ 90% từ trong cùng một bài (hint ↔ 3 bước, tên ↔ ý tưởng, mục tiêu ↔ kế hoạch). |
+| `smoke-voice.ts` | Chọn giọng tiếng Việt mặc định là **giọng Nam**; chỉ dùng giọng nữ khi máy không có giọng nam. |
 | `smoke-plan.ts` | Khung “kế hoạch theo thế cờ hiện tại” (`buildLivePlan`) sinh đủ loại việc. |
 | `smoke-info.ts` | Mọi khoá nội dung trong `src/lib/info.ts` đều có chủ đề hợp lệ (nút ⓘ). |
 | `smoke-engine.ts` | Bộ máy tự đấu hết ván, tìm được chiếu bí, biết ăn Hậu bị treo, không bao giờ trả nước sai luật. |
@@ -344,7 +347,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-pwa-offline-test.mjs` | Khung điện thoại 390×844: manifest + service worker cài xong, **tắt mạng bằng DevTools** rồi tải lại và mở tab Đấu ván - bàn cờ, hai mức máy và **engine vẫn chạy** từ cache. |
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
 | `browser-coords-test.mjs` | Toạ độ bàn cờ (cột a-h, hàng 1-8) ở cả 4 mép, đọc tên ô + tên quân tiếng Anh, và xoay đúng khi bé cầm quân Đen. |
-| `browser-voice-test.mjs` | Mục **🔈 Giọng đọc** trong ⚙️: liệt kê giọng tiếng Anh máy có, **mỗi dòng có nút 🔊 nghe thử riêng**, chọn giọng thì lưu lại và còn nguyên sau khi tải lại. |
+| `browser-voice-test.mjs` | Bảng ⚙️ **không còn danh sách giọng**: app tự chọn giọng, đọc toạ độ bằng **giọng Mỹ** (không phải giọng “đồ chơi”), khẩu quyết tiếng Việt ưu tiên **giọng Nam**. |
 | `browser-tactics-test.mjs` | Tab **Trung cuộc**: mở đúng chủ đề qua `/tactics?theme=…`, giải đúng một thế rồi phát lại **“Xem lại lời giải”** (quân đi lại đúng, có mũi tên, đọc to nước). |
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
 | `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |
@@ -353,7 +356,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-theme-test.mjs` | Ghim **bảng màu thật**: nền gỗ sáng, thanh trên cùng navy, bàn cờ ô gỗ + ô navy, mũi tên vàng đồng - và **không còn màu tím** sót lại. |
 | `browser-freeplay-hint-test.mjs` | Tab **Đấu tập tự do**: đủ **2 mức** Dễ / Khá, bấm **💡 Gợi ý** thì máy tìm nước cho bé và vẽ **mũi tên vàng**; **giới hạn 3 lần mỗi ván** (nút đếm ngược rồi tự khoá, ♟️ Ván mới cấp lại đủ 3). |
 | `browser-counters-test.mjs` | Tab **Đối phó khai cuộc**: combo có đủ 5 bài cho đối thủ cầm Trắng và 5 bài cho đối thủ cầm Đen, đổi bài trong combo thì hiện **“đối thủ đang định làm gì”** + ý tưởng + 3 việc, **phím ◀ ▶ tiến/lùi từng nước**, đổi màu đối thủ thì combo đổi theo, và **liên kết hai chiều**: `?vs=` mở sẵn đúng bài, **📖 Mở bài khai cuộc gốc** nhảy về đúng bài Khai cuộc, **🧭** nhảy ngược lại Đối phó. |
-| `browser-layout-test.mjs` | Duyệt cả 7 trang trên **10 khung nhìn**: **không tràn ngang**, **trang không cuộn dọc**, **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
+| `browser-layout-test.mjs` | Duyệt cả 7 trang trên **13 khung nhìn** (1440×900 → 320×568 → iPhone ngang 932×430), gồm cả tab **Soi quân**: **không tràn ngang**, **trang không cuộn dọc** (bố cục 2 cột), **thấy trọn khối bàn cờ** và **bàn cờ đủ to**. |
 | `generate-assets.mjs` | Sinh `og-image.png` (1200×630) và `apple-touch-icon.png` (180×180) bằng Chrome headless, rồi tự giải mã lại ảnh để kiểm tra kích thước và màu. |
 
 > Để chạy lẻ một bộ: `npm run check:layout`, `npm run check:tactics`, `npm run check:patterns`…

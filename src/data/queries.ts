@@ -11,39 +11,19 @@ import { COUNTERS } from './counters'
  * cũng có một nhịp skeleton 60ms và bàn cờ hiện chậm hơn cần thiết. Nay
  * `initialData` trả dữ liệu ngay từ lần render đầu, `isLoading` luôn `false`;
  * TanStack Query chỉ còn giữ vai trò cache/không nháy khi đổi tab.
+ *
+ * Bốn hook chỉ khác nhau ở khoá cache + mảng dữ liệu, nên gom về một chỗ.
  */
-export function useOpeningsQuery() {
+function useLocalLessonData<T>(queryKey: string, data: T) {
   return useQuery({
-    queryKey: ['openings'],
-    queryFn: async () => OPENINGS,
-    initialData: OPENINGS,
+    queryKey: [queryKey],
+    queryFn: async () => data,
+    initialData: data,
     staleTime: Number.POSITIVE_INFINITY,
   })
 }
 
-export function useTacticsQuery() {
-  return useQuery({
-    queryKey: ['best-moves'],
-    queryFn: async () => BEST_MOVES,
-    initialData: BEST_MOVES,
-    staleTime: Number.POSITIVE_INFINITY,
-  })
-}
-
-export function useCountersQuery() {
-  return useQuery({
-    queryKey: ['counters'],
-    queryFn: async () => COUNTERS,
-    initialData: COUNTERS,
-    staleTime: Number.POSITIVE_INFINITY,
-  })
-}
-
-export function useEndgamesQuery() {
-  return useQuery({
-    queryKey: ['endgames'],
-    queryFn: async () => ENDGAMES,
-    initialData: ENDGAMES,
-    staleTime: Number.POSITIVE_INFINITY,
-  })
-}
+export const useOpeningsQuery = () => useLocalLessonData('openings', OPENINGS)
+export const useTacticsQuery = () => useLocalLessonData('best-moves', BEST_MOVES)
+export const useCountersQuery = () => useLocalLessonData('counters', COUNTERS)
+export const useEndgamesQuery = () => useLocalLessonData('endgames', ENDGAMES)

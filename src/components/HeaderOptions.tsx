@@ -38,6 +38,23 @@ export function HeaderOptions() {
     setOpen(true)
   }
 
+  // Bảng nằm trong portal nên phải tự tính lại toạ độ khi cửa sổ đổi kích thước
+  // (xoay điện thoại, kéo cửa sổ) - nếu không nó sẽ lơ lửng sai chỗ.
+  useEffect(() => {
+    if (!open) return
+    const place = () => {
+      const rect = buttonRef.current?.getBoundingClientRect()
+      if (!rect) return
+      setAnchor({
+        top: rect.bottom + 8,
+        right: Math.max(8, window.innerWidth - rect.right),
+      })
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [open])
+
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {

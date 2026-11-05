@@ -88,10 +88,23 @@ export function TacticsPage() {
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/tactics' })
 
-  const [theme, setTheme] = useState<BestMoveTheme>(() =>
-    isBestMoveTheme(search.theme) ? search.theme : 'win-material',
+  /**
+   * Buổi luyện trỏ thẳng tới một thế (`?puzzle=…`): mở đúng chủ đề + đúng vị trí
+   * của thế đó, thay vì mở chủ đề rồi bé phải tự tìm.
+   */
+  const initialPuzzle = useMemo(
+    () => (puzzles ?? []).find((item) => item.id === search.puzzle),
+    [puzzles, search.puzzle],
   )
-  const [index, setIndex] = useState(0)
+  const [theme, setTheme] = useState<BestMoveTheme>(() => {
+    if (initialPuzzle && isBestMoveTheme(initialPuzzle.theme)) return initialPuzzle.theme
+    return isBestMoveTheme(search.theme) ? search.theme : 'win-material'
+  })
+  const [index, setIndex] = useState(() => {
+    if (!initialPuzzle) return 0
+    const sameTheme = (puzzles ?? []).filter((item) => item.theme === initialPuzzle.theme)
+    return Math.max(0, sameTheme.findIndex((item) => item.id === initialPuzzle.id))
+  })
   /**
    * Lịch ôn từng thế (localStorage). Nhờ nó 50 thế không “giải xong là hết”: thế
    * đã giải đúng sẽ quay lại sau 3 / 7 / 21 ngày, thế đi sai thì hẹn mai.

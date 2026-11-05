@@ -24,10 +24,11 @@ const openingsRoute = createRoute({
 const tacticsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/tactics',
-  // Mở sẵn đúng chủ đề qua đường dẫn `/tactics?theme=win-material`.
-  // Tab Trung cuộc tự kiểm lại giá trị này trước khi dùng.
-  validateSearch: (search: Record<string, unknown>): { theme?: string } => ({
+  // Mở sẵn đúng chủ đề (và đúng thế) qua `/tactics?theme=…&puzzle=…` - nút
+  // "Hôm nay" và buổi luyện trỏ thẳng tới thế cần làm, không chỉ tới chủ đề.
+  validateSearch: (search: Record<string, unknown>): { theme?: string; puzzle?: string } => ({
     theme: typeof search.theme === 'string' ? search.theme : undefined,
+    puzzle: typeof search.puzzle === 'string' ? search.puzzle : undefined,
   }),
   component: lazyRouteComponent(() => import('./pages/TacticsPage'), 'TacticsPage'),
 })
@@ -46,6 +47,10 @@ const countersRoute = createRoute({
 const endgamesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/endgames',
+  // Buổi luyện trỏ thẳng tới đúng thế: `/endgames?challenge=lucena`.
+  validateSearch: (search: Record<string, unknown>): { challenge?: string } => ({
+    challenge: typeof search.challenge === 'string' ? search.challenge : undefined,
+  }),
   component: lazyRouteComponent(() => import('./pages/EndgamesPage'), 'EndgamesPage'),
 })
 
