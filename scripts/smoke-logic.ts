@@ -14,7 +14,6 @@ import {
   squareSpeech,
 } from '../src/lib/speech.ts'
 import { findHintMove } from '../src/lib/hints.ts'
-import { tabKeyForPath, TIPS_BY_LESSON, TIPS_BY_TAB, tipsFor } from '../src/lib/parentTips.ts'
 import {
   formatSan,
   formatSanLetters,
@@ -196,48 +195,6 @@ for (const puzzle of BEST_MOVES) {
   const options = game.moves()
   check(options.length > 0, `${puzzle.id}: sau ${puzzle.bestSan} đối thủ còn nước đi`)
 }
-
-console.log('\n▶ Gợi ý cho ba mẹ (§10)')
-check(tabKeyForPath('/') === '/', 'tab gốc: Khai cuộc')
-check(tabKeyForPath('/tactics') === '/tactics', 'khớp đúng tab Trung cuộc')
-check(tabKeyForPath('/free-play') === '/free-play', 'khớp tab Đấu với Robot')
-check(tabKeyForPath('/khong-ton-tai') === '/', 'đường dẫn lạ → quay về mẫu của tab gốc')
-
-for (const [route, tip] of Object.entries(TIPS_BY_TAB)) {
-  check(
-    tip.questions.length >= 1 && tip.questions.length <= 2,
-    `${route}: có 1-2 câu hỏi (${tip.questions.length})`,
-  )
-  check(
-    tip.questions.every((item) => item.q.trim().length >= 20),
-    `${route}: câu hỏi đủ rõ để ba mẹ hỏi ngay`,
-  )
-  check(
-    tip.questions.every((item) => item.a.trim().length >= 20),
-    `${route}: câu hỏi nào cũng có đáp án gợi ý (ba mẹ không biết cờ vẫn dùng được)`,
-  )
-}
-
-// Mỗi bài học đang dạy phải có câu hỏi RIÊNG, không rơi về mẫu chung.
-for (const opening of OPENINGS) {
-  const key = `opening:${opening.id}`
-  check(Boolean(TIPS_BY_LESSON[key]?.length), `${key}: có câu hỏi riêng`)
-}
-const lessonTip = tipsFor('/strategy', 'opening:london')
-const tabTip = tipsFor('/strategy', null)
-check(
-  lessonTip.questions[0].q === TIPS_BY_LESSON['opening:london'][0].q,
-  'đang mở bài học → hiện đúng câu hỏi của bài đó',
-)
-check(
-  tabTip.questions[0].q === TIPS_BY_TAB['/strategy'].questions[0].q,
-  'không rõ bài → rơi về câu hỏi chung của tab',
-)
-check(
-  Object.values(TIPS_BY_LESSON).every((items) => items.every((item) => item.a.trim().length >= 20)),
-  'mọi câu hỏi riêng của bài học đều có đáp án gợi ý',
-)
-check(tipsFor('/endgames', 'opening:london').questions.length > 0, 'bài lạ trong tab khác vẫn có câu hỏi')
 
 console.log('\n▶ Toạ độ bàn cờ (cột a-h, hàng 1-8)')
 const whiteLabels = coordinateLabels('white')

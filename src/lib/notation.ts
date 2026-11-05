@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { MoveAnnotation, NotationStyle, PieceCode } from '../types'
+import type { NotationStyle, PieceCode } from '../types'
 
 /** Tên quân cờ tiếng Việt đầy đủ. */
 export const PIECE_NAME_VI: Record<PieceCode, string> = {
@@ -301,16 +301,6 @@ export function describeMove(san: string, style: NotationStyle) {
       ? `Tốt tiến tới ${target}`
       : `${pieceName} nhảy tới ${target}`
   return { notation, pieceName, target, isCastle, action, piece }
-}
-
-/** Lời giải thích thay thế cho nước đi của đối thủ. */
-export function opponentAnnotation(san: string, notation: NotationStyle): MoveAnnotation {
-  return {
-    san,
-    piece: pieceFromSan(san),
-    reason: `Đối thủ đi ${formatSan(san, notation)} để chống lại kế hoạch của bé.`,
-    rhyme: 'Nhìn kỹ đối thủ',
-  }
 }
 
 /** "1. d4" / "3... Nf6" theo số ply (0-based). */

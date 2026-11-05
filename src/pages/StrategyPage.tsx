@@ -77,7 +77,6 @@ export function StrategyPage() {
     return map
   }, [board.fen])
 
-  // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang mở thẻ nguyên tắc nào.
 
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {}

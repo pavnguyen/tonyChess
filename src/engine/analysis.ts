@@ -16,10 +16,10 @@ import { rankMoves } from './minimax'
 import { stockfishAnalyze } from './stockfishLoader'
 import { uciToEngineMove } from './uci'
 
-/** Ngân sách mặc định cho một lần chấm (đúng như spec: tối đa ~1.5s). */
-export const ANALYSIS_BUDGET_MS = 1500
-
 /** Điểm quy đổi cho thế chiếu bí - lớn hơn mọi ưu thế quân bình thường. */
+/** Ngân sách mặc định cho một lần chấm (đúng như spec: tối đa ~1.5s). */
+const ANALYSIS_BUDGET_MS = 1500
+
 const MATE_SCORE = 10000
 
 export interface PositionEval {
@@ -69,7 +69,7 @@ function turnOf(fen: string): 'w' | 'b' {
  * Điểm của một thế cờ, nhìn từ phía TRẮNG.
  * Trả `null` khi FEN hỏng (không thể xảy ra với dữ liệu app sinh ra).
  */
-export async function evaluatePosition(
+async function evaluatePosition(
   fen: string,
   budgetMs: number = ANALYSIS_BUDGET_MS,
 ): Promise<PositionEval | null> {
@@ -192,9 +192,4 @@ export async function gradeMove(
     fenAfter,
     from: before.from,
   }
-}
-
-/** Chỉ dùng trong bài kiểm: xoá bộ nhớ đệm. */
-export function clearAnalysisCache() {
-  cache.clear()
 }

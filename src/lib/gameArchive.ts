@@ -76,11 +76,6 @@ export function saveGame(input: Omit<SavedGame, 'id' | 'date'>): SavedGame[] {
   return next
 }
 
-export function clearGames(): SavedGame[] {
-  persist([])
-  return []
-}
-
 /** Nhãn ngày gọn cho danh sách ván: “Hôm nay 14:05” / “2 ngày trước”. */
 export function gameDateLabel(iso: string, now: Date = new Date()): string {
   const date = new Date(iso)

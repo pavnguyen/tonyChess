@@ -13,7 +13,7 @@ import { ENDGAMES } from '../data/endgames'
 import { advanceDone } from './sessionProgress'
 import type { SessionKind } from './sessionProgress'
 
-export interface SessionItem {
+interface SessionItem {
   id: string
   label: string
   icon: string
@@ -23,7 +23,7 @@ export interface SessionItem {
 const STORAGE_KEY = 'hoc-vien-co-vua-nhi.session.v1'
 
 /** `YYYY-MM-DD` theo giờ máy - khoá của buổi luyện trong ngày. */
-export function todayKey(date = new Date()): string {
+function todayKey(date = new Date()): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
@@ -118,7 +118,7 @@ export function loadSessionState(): SessionState {
   }
 }
 
-export function saveSessionState(done: number) {
+function saveSessionState(done: number) {
   if (typeof localStorage === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayKey(), done }))

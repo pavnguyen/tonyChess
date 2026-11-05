@@ -112,7 +112,6 @@ export function OpeningsPage() {
     [openingList, openingId],
   )
 
-  // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học khai cuộc nào.
 
   /** Chỉ những khai cuộc của phe đang xem - chia rõ Trắng / Đen cho dễ chọn. */
   const sideOpenings = useMemo(

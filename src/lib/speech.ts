@@ -31,7 +31,7 @@ const PIECE_EN: Record<string, string> = {
 }
 
 /** Trình duyệt có giọng đọc không? */
-export function speechSupported(): boolean {
+function speechSupported(): boolean {
   return (
     typeof window !== 'undefined' &&
     typeof window.speechSynthesis !== 'undefined' &&
@@ -186,7 +186,7 @@ function viVoice(): SpeechSynthesisVoice | null {
  * Đọc một câu tiếng Anh. Cắt câu đang đọc dở trước khi đọc câu mới để bé bấm
  * liên tục không bị "dồn" thành một tràng lộn xộn.
  */
-export function speak(text: string) {
+function speak(text: string) {
   utter(text, false)
 }
 

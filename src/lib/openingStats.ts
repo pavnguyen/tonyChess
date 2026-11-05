@@ -20,7 +20,6 @@ const TTL_MS = 30 * 24 * 60 * 60 * 1000
 
 /** Ghi nguyên văn trên chip để ba mẹ kiểm chứng lại được. */
 export const STATS_SOURCE = 'Lichess Opening Explorer · blitz + rapid · mức 1200-1800'
-export const STATS_URL = 'https://lichess.org/analysis'
 
 /**
  * **Thế cờ nhận diện** của từng khai cuộc - số nửa nước tính từ nước 1.

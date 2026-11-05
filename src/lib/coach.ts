@@ -83,7 +83,7 @@ export function describeDanger(pieces: readonly string[]): string {
 
 /* ── Sổ lỗi: giữ lại để “Tổng kết ván” ở tab Đấu Máy đọc lại lỗi nặng nhất ─── */
 
-export function loadBlunders(): Blunder[] {
+function loadBlunders(): Blunder[] {
   if (typeof localStorage === 'undefined') return []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -114,15 +114,6 @@ export function saveBlunder(blunder: Blunder) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   } catch {
     /* trình duyệt chặn lưu trữ thì HLV vẫn chạy trong phiên này */
-  }
-}
-
-export function clearBlunders() {
-  if (typeof localStorage === 'undefined') return
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    /* bỏ qua */
   }
 }
 

@@ -73,12 +73,6 @@ export function playMove() {
   tone({ freq: 320, slideTo: 190, duration: 0.12, type: 'triangle', gain: 0.16 })
 }
 
-/** "Ting!" reo vui khi giải đúng. */
-export function playTing() {
-  tone({ freq: 1320, duration: 0.22, type: 'sine', gain: 0.16 })
-  tone({ freq: 1760, duration: 0.3, type: 'sine', gain: 0.12, delay: 0.08 })
-}
-
 /** Tiếng "bụp" khi sai. */
 export function playError() {
   tone({ freq: 200, slideTo: 110, duration: 0.26, type: 'sawtooth', gain: 0.1 })

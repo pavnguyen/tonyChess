@@ -7,10 +7,10 @@
  */
 
 /** Cột theo hướng bàn Trắng: trái → phải là `a` → `h`. */
-export const COORD_FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const
+const COORD_FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const
 
 /** Hàng theo hướng bàn Trắng: TRÊN → DƯỚI là `8` → `1` (hàng 1 nằm sát bé Trắng). */
-export const COORD_RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'] as const
+const COORD_RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'] as const
 
 export type CoordOrientation = 'white' | 'black'
 

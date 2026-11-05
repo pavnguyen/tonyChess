@@ -22,7 +22,7 @@ Kiểm tra trong trình duyệt thật (cần Chrome + `vite preview` đang ch�
 ```bash
 npm run preview &
 npm run check:browser   # 18 bộ: Web Worker · mũi tên · kéo-thả · gợi ý · Chiến lược · Stockfish ·
-                        # gợi ý cho ba mẹ · nút ⓘ · toạ độ · giọng đọc · Trung cuộc · đánh tiếp ·
+                        # nút ⓘ · toạ độ · giọng đọc · Trung cuộc · đánh tiếp ·
                         # Tàn cuộc · mẫu hình · Đối phó · Đấu tập · màu · bố cục (13 khung nhìn)
 ```
 
@@ -215,7 +215,7 @@ Thư viện ít khi đổi được tách thành chunk riêng trong `vite.config
 src/
 ├── components/     # Bàn cờ (ChessBoardPanel) · BoardStage (khối bàn cờ tự co) · banner giải thích ·
 │                   # Mắt Thần · bản đồ bài học · modal · UI (KidButton/Panel/SectionTitle/Segmented) ·
-│                   # PageFallback · ParentTips · HeaderOptions
+│                   # PageFallback · HeaderOptions
 ├── data/           # openings (metadata) · openingTrees (dòng chính) · counters (đối phó) · bestMoves ·
 │                   # endgames · goldPrinciples · queries
 ├── engine/         # minimax.ts (pickMove, rankMoves) · engine.worker.ts · useChessEngine.ts ·
@@ -223,13 +223,12 @@ src/
 ├── hooks/          # useChessGame (ván cờ SAN) · useArrowKeys · useEyeCheck
 ├── layout/         # RootLayout: header, 3 nhóm tab, dải bài trong nhóm, thanh tuỳ chọn của bé
 ├── lib/            # notation · speech (đọc to giọng Mỹ + chọn giọng) · coordinates · threats · hints ·
-│                   # planFocus · livePlan · parentTips · sound · info
+│                   # planFocus · livePlan · sound · info
 ├── pages/          # Openings · Counters · Tactics · Endgames · Strategy · FreePlay
 └── store/          # KidProgressProvider (tuỳ chọn ghi nước đi + âm thanh - localStorage)
-                    # LessonProvider (trang tự báo bài đang mở cho khung gợi ý cho ba mẹ)
 scripts/            # validate-chess · smoke-logic · smoke-plan · smoke-info ·
                     # smoke-engine · smoke-uci · verify-bestmove
-                    # browser-{engine,arrow,learn-drag,hint-drag,strategy-drag,stockfish,parent-tips,
+                    # browser-{engine,arrow,learn-drag,hint-drag,strategy-drag,stockfish,
                     #   info,coords,voice,tactics,tactics-continuation,endgame,openings-patterns,
                     #   counters,freeplay-hint,theme,layout}-test
                     # generate-assets (sinh favicon/OG) · browser-overflow · browser-shot (gỡ lỗi)

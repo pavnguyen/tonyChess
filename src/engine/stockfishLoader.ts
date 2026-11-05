@@ -113,7 +113,7 @@ function bootWorker(): Promise<Worker> {
 }
 
 /** Tạo (một lần) và trả về Worker Stockfish đã sẵn sàng. */
-export function ensureStockfish(): Promise<Worker> {
+function ensureStockfish(): Promise<Worker> {
   if (worker) return Promise.resolve(worker)
   if (!readyPromise) {
     readyPromise = bootWorker().catch((error: unknown) => {
@@ -129,24 +129,6 @@ export function ensureStockfish(): Promise<Worker> {
 /** Hâm nóng engine trước (gọi khi bé chọn mức Siêu) - lỗi thì im lặng. */
 export function preloadStockfish(): void {
   void ensureStockfish().catch(() => {})
-}
-
-/** Stockfish đã sẵn sàng chưa? */
-export function isStockfishReady(): boolean {
-  return worker !== null
-}
-
-/** Tắt hẳn engine (dùng khi rời trang hoặc trong bài kiểm tra). */
-export function disposeStockfish(): void {
-  try {
-    worker?.terminate()
-  } catch {
-    /* bỏ qua */
-  }
-  worker = null
-  readyPromise = null
-  collect = null
-  chain = Promise.resolve()
 }
 
 function run(commands: readonly string[], timeoutMs: number): Promise<string[]> {

@@ -21,7 +21,7 @@ export const HEATMAP_COLORS: HeatmapColors = {
 }
 
 /** Giá trị quân cờ dùng để phát hiện quân đang bị treo. */
-export const PIECE_VALUES: Record<string, number> = {
+const PIECE_VALUES: Record<string, number> = {
   p: 100,
   n: 320,
   b: 330,

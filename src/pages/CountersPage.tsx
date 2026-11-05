@@ -130,7 +130,6 @@ export function CountersPage() {
   const lesson: CounterLesson | undefined =
     list.find((item) => item.id === lessonId) ?? list[0]
 
-  // Báo cho khung “Gợi ý cho ba mẹ” (§10) biết bé đang học bài đối phó nào.
 
   /** Bé cầm màu ngược với đối thủ. */
   const kidSide: Side = lesson?.opponentSide === 'white' ? 'black' : 'white'

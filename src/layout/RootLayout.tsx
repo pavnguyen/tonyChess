@@ -141,10 +141,6 @@ export function RootLayout() {
         </ErrorBoundary>
       </main>
 
-      {/*
-        Khung “Gợi ý cho ba mẹ” (§10) - nằm NGOÀI luồng bố cục (`position: fixed`)
-        nên hiện ở mọi tab mà không làm trang phải cuộn thêm.
-      */}
     </div>
   )
 }
