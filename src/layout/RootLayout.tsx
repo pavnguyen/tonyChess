@@ -1,4 +1,5 @@
 import { Link, Outlet, useMatchRoute } from '@tanstack/react-router'
+import { ErrorBoundary } from '../components/ErrorBoundary'
 import { HeaderOptions } from '../components/HeaderOptions'
 import { InfoButton } from '../components/InfoPopover'
 import { GroupNav } from '../components/GroupNav'
@@ -121,11 +122,21 @@ export function RootLayout() {
           (điện thoại nằm ngang 430px) chúng tự ẩn để khối bàn cờ vẫn nằm trọn một
           màn hình - bé muốn sang bài khác thì dùng thanh tab dưới đáy.
         */}
-        <div className="shrink-0 [@media(max-height:560px)]:hidden">
+        {/*
+          Điện thoại nằm ngang: chỉ ẩn dải "Hôm nay" (cao 2 dòng), GIỮ dải chuyển
+          bài trong nhóm - trước đây ẩn cả hai nên bé mất lối sang bài kế bên.
+        */}
+        <div className="shrink-0">
           <GroupNav />
-          {onLearnHome && <TodaySession />}
+          {onLearnHome && (
+            <div className="[@media(max-height:560px)]:hidden">
+              <TodaySession />
+            </div>
+          )}
         </div>
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/*

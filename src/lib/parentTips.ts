@@ -96,7 +96,7 @@ export const TIPS_BY_TAB: Record<string, ParentTip> = {
     ],
   },
   '/free-play': {
-    title: 'Đấu tập với chú Máy',
+    title: 'Đấu tập với Máy',
     questions: [
       {
         q: 'Trước mỗi nước, hỏi con: “Đối thủ vừa đi để làm gì?”',

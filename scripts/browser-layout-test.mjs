@@ -32,6 +32,30 @@ const VIEWPORTS = [
     mustFitHeight: false,
     minBoard: 290,
   },
+  // Máy nhỏ / Android phổ thông: trước đây bộ kiểm chỉ xuống tới 390px nên lỗi
+  // tràn ở 320-360px không ai bắt. Bàn cờ vẫn phải đủ to để nhìn quân.
+  //
+  // `cardMustFit: false` vì ở 320-360px khối bàn cờ + băng giải thích cao hơn
+  // màn hình một chút - trang cuộn dọc là chấp nhận được, MIỄN LÀ bàn cờ nằm
+  // trọn trong màn hình (bài kiểm số 3 vẫn bắt buộc). Các khung từ 390px trở lên
+  // giữ nguyên yêu cầu thấy trọn khối.
+  {
+    name: 'Điện thoại nhỏ 320×568',
+    width: 320,
+    height: 568,
+    mustFitHeight: false,
+    minBoard: 250,
+    cardMustFit: false,
+  },
+  {
+    name: 'Android 360×640',
+    width: 360,
+    height: 640,
+    mustFitHeight: false,
+    minBoard: 280,
+    cardMustFit: false,
+  },
+  { name: 'iPad dọc 768×1024', width: 768, height: 1024, mustFitHeight: false, minBoard: 600 },
 ]
 
 const ROUTES = [
@@ -44,6 +68,8 @@ const ROUTES = [
   // Trang Chiến lược có nhiều nút điều khiển dưới bàn cờ hơn nên chừa nhiều chỗ hơn.
   { path: '/strategy', name: 'Chiến lược', minBoardScale: 0.86 },
   { path: '/free-play', name: 'Đấu Máy' },
+  // Trang Soi quân từng không có mặt trong bài kiểm bố cục nào.
+  { path: '/hazards', name: 'Soi quân', minBoardScale: 0.9 },
 ]
 
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
@@ -188,7 +214,9 @@ for (const viewport of VIEWPORTS) {
     }
 
     // 4. Cả khối bàn cờ (kèm băng giải thích / nút bên dưới) phải nằm trong màn hình.
-    if (m.card) {
+    // Màn hình rất nhỏ (320-360px) được miễn: ở đó trang cuộn dọc là bình thường,
+    // còn bàn cờ vẫn bị bắt phải nằm trọn (bài kiểm số 3).
+    if (m.card && viewport.cardMustFit !== false) {
       check(
         m.card.top >= -2 && m.card.bottom <= m.innerH + 2,
         `${route.name}: thấy trọn khối bàn cờ, không phải cuộn (đáy ${Math.round(

@@ -342,9 +342,7 @@ export function KidPicker({
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 items-center gap-1.5">
-            <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              {label}
-            </span>
+            <span className="shrink-0 text-[0.7rem] font-extrabold text-brand-500">{label}</span>
             <span className="shrink-0 rounded-full bg-gold-100 px-1.5 text-xs font-extrabold text-gold-800 ring-1 ring-gold-200">
               {selectedIndex + 1}/{flat.length}
             </span>
@@ -397,7 +395,7 @@ export function KidPicker({
           {groups.map((group, groupIndex) => (
             <Fragment key={groupIndex}>
               {group.label && (
-                <div className="flex items-center gap-1 px-2 pb-0.5 pt-1.5 text-xs font-extrabold uppercase tracking-wide text-brand-500 first:pt-0.5">
+                <div className="flex items-center gap-1 px-2 pb-0.5 pt-1.5 text-[0.7rem] font-extrabold text-brand-500 first:pt-0.5">
                   {group.icon && <span aria-hidden>{group.icon}</span>}
                   {group.label}
                 </div>

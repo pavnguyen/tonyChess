@@ -8,6 +8,8 @@
  *
  * Đọc bằng **giọng Mỹ** (`en-US`) đúng như ba mẹ yêu cầu: bé vừa học toạ độ vừa
  * làm quen cách đọc nước đi kiểu quốc tế - `Ne3` đọc là "Knight E 3".
+ * Riêng khẩu quyết tiếng Việt (`speakVietnamese`) mặc định dùng **giọng Nam**,
+ * xem `voicePick.ts`.
  *
  * Tôn trọng nút 🔊 Âm thanh: đang tắt âm thanh thì không đọc gì (xem `isMuted`).
  * Toàn bộ phần dựng câu là hàm thuần (`describeMoveEnglish`, `squareSpeech`) nên
@@ -16,6 +18,7 @@
 // Đuôi `.ts` là bắt buộc: file này còn được `node scripts/smoke-logic.ts` nạp thẳng
 // (Node tự bỏ kiểu), mà Node không tự thêm đuôi cho import lúc chạy.
 import { isMuted } from './sound.ts'
+import { chooseVietnameseVoice } from './voicePick.ts'
 
 /** Tên quân cờ tiếng Anh - dùng cho giọng đọc quốc tế. */
 const PIECE_EN: Record<string, string> = {
@@ -130,25 +133,12 @@ function pickVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
- * Giọng TIẾNG VIỆT cho khẩu quyết vè. Ưu tiên các giọng Việt tự nhiên hay có sẵn
- * trên máy phổ thông; không có thì lấy giọng Việt đầu tiên, cuối cùng trả `null`
- * để trình duyệt tự chọn theo `lang`.
+ * Giọng TIẾNG VIỆT cho khẩu quyết vè - **mặc định là giọng Nam** (Nam Minh,
+ * “Male”/“Nam”…), chỉ dùng giọng nữ khi máy không có giọng nam nào. Danh sách
+ * xếp hạng nằm ở `voicePick.ts` để có bài kiểm riêng mà không cần trình duyệt.
  */
 function autoVietnameseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  const vi = voices.filter((voice) => voice.lang?.toLowerCase().startsWith('vi'))
-  if (vi.length === 0) return null
-  const preferred = [
-    'Google Tiếng Việt',
-    'Microsoft HoaiMy Online (Natural) - Vietnamese',
-    'Microsoft NamMinh Online (Natural) - Vietnamese',
-    'Linh',
-    'Mai',
-  ]
-  for (const hint of preferred) {
-    const match = vi.find((voice) => matchesHint(voice.name, hint))
-    if (match) return match
-  }
-  return vi[0]
+  return chooseVietnameseVoice(voices)
 }
 
 function pickVietnameseVoice(): SpeechSynthesisVoice | null {

@@ -10,6 +10,8 @@
 import { OPENINGS } from '../data/openings'
 import { BEST_MOVES } from '../data/bestMoves'
 import { ENDGAMES } from '../data/endgames'
+import { advanceDone, itemKind } from './sessionProgress'
+import type { SessionKind } from './sessionProgress'
 
 export interface SessionItem {
   id: string
@@ -122,10 +124,31 @@ export function saveSessionState(done: number) {
   }
 }
 
-/** Đánh dấu xong bài thứ `index` (0-based). */
+/** Đánh dấu xong bài thứ `index` (0-based) - dùng cho "Luyện lại" toàn buổi. */
 export function markDone(index: number) {
   const state = loadSessionState()
   saveSessionState(Math.max(state.done, index + 1))
+}
+
+/**
+ * Bé vừa **làm xong** một bài thuộc loại `kind` (khai cuộc, thế trung cuộc…).
+ *
+ * Chỉ nhích khi bài đang chờ đúng loại - nhờ vậy mở bài số 4 bằng ▶ rồi thoát,
+ * hay làm lại bài cũ, không còn được tính là đã xong.
+ * Trả về `true` nếu tiến độ vừa thay đổi.
+ */
+export function completeSessionItem(kind: SessionKind): boolean {
+  const state = loadSessionState()
+  const next = advanceDone(buildSession(), state.done, kind)
+  if (next === state.done) return false
+  saveSessionState(next)
+  return true
+}
+
+/** Loại bài của mục đang chờ - để trang đích biết mình có phải bài kế tiếp không. */
+export function pendingKind(): SessionKind | null {
+  const state = loadSessionState()
+  return itemKind(buildSession()[state.done])
 }
 
 export function resetSession() {

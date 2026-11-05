@@ -128,7 +128,7 @@ const OG_HTML = `<!doctype html><html lang="vi"><head><meta charset="utf-8">
       <span class="chip">🛡️ Khai cuộc GM</span>
       <span class="chip">⚔️ Săn quân</span>
       <span class="chip">👑 Tàn cuộc</span>
-      <span class="chip">🎮 Đấu tập với chú Máy</span>
+      <span class="chip">🎮 Đấu tập với Máy</span>
     </div>
     <p class="foot">👁️ Mắt Thần Cờ Vua · ⭐ Kỳ thủ Nhí → Grand Master Nhí</p>
   </div>

@@ -2,6 +2,8 @@ import { Chess } from 'chess.js'
 import type { Square } from 'chess.js'
 import { useCallback, useMemo, useState } from 'react'
 import { BoardStage } from '../components/BoardStage'
+import { BOARD_RESERVE } from '../lib/boardReserve'
+import { completeSessionItem } from '../lib/session'
 import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { KidButton, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { FIGURINE, PIECE_NAME_VI } from '../lib/notation'
@@ -207,6 +209,7 @@ export function HazardsPage() {
         setStreak(nextStreak)
         setScore((value) => value + 10 * nextStreak)
         if (soundOn) playWin()
+        completeSessionItem('hazard')
       } else {
         setStreak(0)
         setTries((value) => value + 1)
@@ -256,7 +259,7 @@ export function HazardsPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 stage:grid stage:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] stage:grid-rows-[minmax(0,1fr)] stage:overflow-hidden">
       <BoardStage
-        reserve={260}
+        reserve={BOARD_RESERVE.hazards}
         top={
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
@@ -299,7 +302,10 @@ export function HazardsPage() {
               {correct
                 ? '✅ Đúng rồi! Bé nhìn thấy quân mình bị treo trước khi đối thủ ăn.'
                 : `⚠️ Chưa đúng - quân đang treo là ${round.hanging
-                    .map((square) => square)
+                    .map((square) => {
+                      const piece = round.choices.find((item) => item.square === square)?.piece
+                      return piece ? `${PIECE_NAME_VI[piece]} ${square}` : square
+                    })
                     .join(', ')}. Ô đỏ trên bàn cờ là chỗ bị ăn miễn phí.`}
             </p>
           ) : (
@@ -412,7 +418,7 @@ export function HazardsPage() {
 
           <p className="text-xs font-bold leading-snug text-ink-600">
             Đúng liên tiếp thì điểm nhân lên (10 → 20 → 30...), sai là chuỗi về 0.
-            {tries > 0 ? ` Số lần chưa đúng: ${tries}.` : ''} Cứ chậm mà chắc: đếm quân
+            {tries > 0 ? ` Số lần sai: ${tries}.` : ''} Cứ chậm mà chắc: đếm quân
             bị tấn công trước rồi mới bấm.
           </p>
         </Panel>

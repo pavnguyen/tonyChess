@@ -8,6 +8,8 @@ import { EyeToggle } from '../components/EyeToggle'
 import { MoveStrip } from '../components/MoveStrip'
 import { MoveText } from '../components/MoveText'
 import { BoardStage } from '../components/BoardStage'
+import { BOARD_RESERVE } from '../lib/boardReserve'
+import { completeSessionItem } from '../lib/session'
 import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { useEndgamesQuery } from '../data/queries'
 import { pickMove } from '../engine/minimax'
@@ -214,6 +216,7 @@ export function EndgamesPage() {
       setFinished(game.turn() !== PLAYER_COLOR ? 'success' : 'retry')
       if (game.turn() !== PLAYER_COLOR) {
         if (soundOn) playWin()
+        completeSessionItem('endgame')
         setConfetti(true)
         setResult({
           emoji: '🏁',
@@ -246,6 +249,7 @@ export function EndgamesPage() {
         playPromote()
         playWin()
       }
+      completeSessionItem('endgame')
       setConfetti(true)
       setResult({
         emoji: '👑',
@@ -456,7 +460,7 @@ export function EndgamesPage() {
         hết cỡ (bị chặn bề ngang chứ không phải chiều cao) nên không nhỏ đi.
       */}
       <BoardStage
-        reserve={296}
+        reserve={BOARD_RESERVE.endgames}
         top={
           /*
            * `mb-2`: khung gỗ của bàn cờ tràn lên 12px (`-m-3` trong

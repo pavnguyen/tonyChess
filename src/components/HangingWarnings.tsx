@@ -38,7 +38,7 @@ export function HangingWarnings({ fen, viewpoint, enabled }: Props) {
 
   return (
     <div className="rounded-xl border-2 border-coral-300 bg-coral-50 p-2">
-      <p className="text-xs font-extrabold uppercase tracking-wide text-coral-600">
+      <p className="text-xs font-extrabold text-coral-600">
         ⚠️ Báo động: {hanging.length} quân đang bị treo!
       </p>
       <ul className="mt-1 flex flex-wrap gap-1">

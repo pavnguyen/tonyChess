@@ -9,7 +9,7 @@ import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { FoldPanel, KidButton, LessonLabel, Panel, Segmented } from '../components/ui'
+import { FoldPanel, KidButton, KidPicker, LessonLabel, Panel, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { OPENINGS } from '../data/openings'
@@ -665,30 +665,29 @@ export function CountersPage() {
           <Segmented options={SIDE_OPTIONS} value={viewSide} onChange={changeSide} size="sm" />
 
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            <label
-              htmlFor="kid-counter-select"
-              className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border-2 border-brand-200 bg-white px-2 py-1"
-            >
-              <span className="shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                Bài đối phó
-              </span>
-              <select
-                id="kid-counter-select"
-                value={lesson.id}
-                onChange={(event) => selectLesson(event.target.value)}
-                aria-label="Chọn bài đối phó"
-                className="min-w-0 flex-1 appearance-none truncate bg-transparent text-sm font-extrabold text-brand-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
-              >
-                {list.map((item) => (
-                  <option key={item.id} value={item.id} data-counter-id={item.id}>
-                    {item.emoji} {item.englishName} · {item.counterName}
-                  </option>
-                ))}
-              </select>
-              <span aria-hidden className="shrink-0 text-brand-500">
-                ▾
-              </span>
-            </label>
+            {/*
+              Bảng chọn của APP, không dùng `<select>` của máy: đây là tab cuối
+              còn sót combo native - trên iOS nó mở bánh xe xám, cắt mất tên bài
+              và không có icon. Bản `sr-only` bên trong vẫn giữ id
+              `kid-counter-select` cho bài kiểm cũ gán value + phát `change`.
+            */}
+            <KidPicker
+              id="kid-counter-select"
+              label="Bài đối phó"
+              value={lesson.id}
+              onChange={selectLesson}
+              groups={[
+                {
+                  items: list.map((item) => ({
+                    id: item.id,
+                    label: `${item.englishName} · ${item.counterName}`,
+                    icon: item.emoji,
+                    data: { 'data-counter-id': item.id },
+                  })),
+                },
+              ]}
+              className="min-w-0 flex-1"
+            />
             {lesson.openingId && (
               <button
                 type="button"

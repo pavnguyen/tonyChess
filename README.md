@@ -2,7 +2,7 @@
 
 Web App tương tác (SPA) giúp **bé 7 tuổi** học thuộc **Khai cuộc Grand Master (GM)**, luyện
 **Trung cuộc** (tìm nước hay nhất), **Tàn cuộc** (kể cả chơi thật với máy), **Chiến lược** vị trí,
-**Đối phó khai cuộc** và **đấu trọn một ván với chú Máy**. Giao diện hoạt hình tươi sáng, responsive 100% cho điện thoại,
+**Đối phó khai cuộc** và **đấu trọn một ván với Máy**. Giao diện hoạt hình tươi sáng, responsive 100% cho điện thoại,
 iPad/tablet và máy tính. Mục tiêu trình độ hướng tới **1600–1800 Elo**, nội dung **tinh gọn**.
 
 ## 🚀 Chạy ngay
@@ -63,7 +63,7 @@ cuộn dọc** (ở bố cục 2 cột), **thấy trọn khối bàn cờ**, và
 | ⚔️ **Trung cuộc - Tìm nước hay nhất** (`/tactics`) | **50 thế cờ thật / 5 chủ đề** (mỗi chủ đề 10 thế): 🎯 Trừng phạt quân treo · 👸 Đòn hiểm ăn Hậu · 📌 Đòn ghim · 🏁 Chiếu bí 3 nước · 💥 Hy sinh mở đường. Chọn thế bằng **combo một dòng** ngay dưới hàng chủ đề. Bé tự tìm **nước mạnh nhất** trên thế cờ thật (không học thuộc tên đòn); mỗi lời giải đã được máy chấm điểm và **kiểm chứng** (`verify:bestmove`). Thế nào có **chuỗi “đánh tiếp”** thì sau nước hay nhất, **máy tự đáp trả** rồi bé đi nốt để kết liễu. Có 💡 Gợi ý, thẻ **“Khi nào dùng?”** và nút **🔁 Xem lại lời giải** phát lại đúng chuỗi nước kèm mũi tên. |
 | 👑 **Tàn cuộc** (`/endgames`) | **20 thế kỹ thuật thật**, chia hai mức: 10 **cơ bản** (Vua–Tốt ô đối diện · Tốt thông · Xe + Tốt chọi Xe · Mã + Tượng chiếu bí · cặp Tượng chiếu bí…) và 10 **nâng cao** (Lucena, chiếu bí hàng cuối, Xe chọi Xe…). Chọn bài bằng **combo một dòng** chia sẵn hai mức. Đấu với máy mức Khó; kèm gợi ý, mục tiêu và nút đi lại. |
 | 🏅 **Chiến lược - 10 nguyên tắc vàng** (`/strategy`) | **10 nguyên tắc vàng** (chiếm trung tâm, phát triển quân, nhập thành, tránh quân treo, cột mở, tiền đồn, hàng 7, Tốt thông, cặp Tượng, trao đổi đúng). Mỗi nguyên tắc có **hai thế cờ đối chiếu tốt / chưa tốt** kèm ô cờ và nhãn soi. |
-| 🎮 **Đấu tập tự do với chú Máy** (`/free-play`) | Chơi trọn một ván cờ thật với engine (negamax + bảng điểm vị trí). **2 mức 🐰 Dễ / 🦁 Khá** (nhãn thân thiện, bên dưới vẫn là engine mức Khó và Stockfish), nút **💡 Gợi ý** (máy tìm nước mạnh nhất cho chính bé rồi vẽ mũi tên, **giới hạn 3 lần mỗi ván** - nút đếm ngược rồi tự khoá, ván mới cấp lại), chọn quân Trắng/Đen, nút đi lại nước vừa rồi, “Sách ghi ván cờ” và túi chiến lợi phẩm. HLV **nói tiếng Việt** chỉ ra lỗi vừa đi. |
+| 🎮 **Đấu tập tự do với Máy** (`/free-play`) | Chơi trọn một ván cờ thật với engine (negamax + bảng điểm vị trí). **2 mức 🦊 Dễ / 🦁 Khá** (nhãn thân thiện, bên dưới vẫn là engine mức Khó và Stockfish), nút **💡 Gợi ý** (máy tìm nước mạnh nhất cho chính bé rồi vẽ mũi tên, **giới hạn 3 lần mỗi ván** - nút đếm ngược rồi tự khoá, ván mới cấp lại), chọn quân Trắng/Đen, nút đi lại nước vừa rồi, “Sách ghi ván cờ” và túi chiến lợi phẩm. HLV **nói tiếng Việt** chỉ ra lỗi vừa đi. |
 | 🔍 **Soi quân treo** (`/hazards`) | Bé nhìn bàn cờ rồi **chỉ ra quân mình đang bị treo** trước khi đi; đúng/sai báo ngay, có mức thường và mức khó (nhiều quân hơn, có quân bị quân rẻ hơn tấn công, tính điểm theo chuỗi). |
 
 ## 🗺️ Bản đồ bài học

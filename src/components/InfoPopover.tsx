@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { infoById } from '../lib/info'
 
 /**
@@ -56,12 +56,27 @@ export function InfoButton({
   tone?: keyof typeof TONES
 }) {
   const [open, setOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const entry = topic ? infoById(topic) : undefined
+
+  // Cùng quy ước với bảng ⚙️: Escape thì đóng và trả tiêu điểm về nút ⓘ.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      buttonRef.current?.focus()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
   if (!entry) return null
 
   return (
     <>
       <button
+        ref={buttonRef}
         type="button"
         id={`kid-info-${topic}`}
         data-info-topic={topic}
@@ -96,6 +111,7 @@ export function InfoButton({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
+                autoFocus
                 aria-label="Đóng giải thích"
                 className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-50 text-sm font-extrabold text-brand-600 transition-all hover:bg-brand-100 active:translate-y-[1px]"
               >

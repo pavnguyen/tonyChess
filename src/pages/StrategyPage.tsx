@@ -34,7 +34,9 @@ const DEMO_OPTIONS: { value: DemoSide; label: string; icon: string }[] = [
 export function StrategyPage() {
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
 
-  const [openPrinciple, setOpenPrinciple] = useState<string | null>(null)
+  // Mở sẵn nguyên tắc đầu tiên: khối nội dung bên dưới là nơi DUY NHẤT bày
+  // nguyên tắc đang chọn, nên không có trạng thái "đóng hết".
+  const [openPrinciple, setOpenPrinciple] = useState<string | null>(GOLD_PRINCIPLES[0].id)
   const [demoSide, setDemoSide] = useState<DemoSide>('good')
   const [quiz, setQuiz] = useState(false)
   const [answer, setAnswer] = useState<'correct' | 'wrong' | null>(null)
@@ -114,7 +116,7 @@ export function StrategyPage() {
     setAnswer(null)
     setFocusSquares([])
     setDemoSide('good')
-    setOpenPrinciple((current) => (current === id ? null : id))
+    setOpenPrinciple(id)
   }
 
   const startQuiz = () => {

@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
-import { buildSession, loadSessionState, markDone, resetSession } from '../lib/session'
+import { buildSession, loadSessionState, resetSession } from '../lib/session'
 
 /**
  * Dải **“Buổi luyện hôm nay”** ở tab Học: thấp đúng một hai dòng nên không làm bàn
@@ -20,10 +20,13 @@ export function TodaySession() {
   const nextIndex = Math.min(done, items.length - 1)
   const nextItem = items[nextIndex]
 
+  /**
+   * Chỉ ĐI tới bài, không tự cộng tiến độ. Tiến độ do chính trang đích báo về
+   * khi bé làm xong (`completeSessionItem`), nên bấm ▶ rồi thoát ngay không còn
+   * được tính là đã học bài đó.
+   */
   const start = () => {
     if (!nextItem) return
-    markDone(nextIndex)
-    setDone(nextIndex)
     navigate({ to: nextItem.to })
   }
 

@@ -165,7 +165,7 @@ export function HeaderOptions() {
                 Aria / Jenny / Samantha, bỏ qua giọng “đồ chơi” như Albert, Bells).
               */}
               <p className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-brand-500">
-                🔈 Giọng đọc: tự chọn giọng hay nhất máy có
+                🔈 Giọng đọc: tự chọn giọng hay nhất máy có (ưu tiên giọng Nam tiếng Việt)
               </p>
 
               <div className="mt-2.5 grid gap-1.5">

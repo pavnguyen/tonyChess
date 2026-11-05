@@ -41,13 +41,15 @@ export function useChessGame(initialFen: string, playerSide: Side) {
     try {
       chess.load(initialFen)
     } catch {
-      /* FEN gốc lỗi thì để bàn cờ mặc định */
+      // FEN gốc lỗi thì vẫn hiện bàn cờ mặc định, nhưng phải để lại dấu vết:
+      // nuốt lỗi im lặng khiến bàn cờ lệch hẳn với danh sách nước mà không ai biết.
+      console.warn('useChessGame: FEN gốc không hợp lệ', initialFen)
     }
     for (const san of sans) {
       try {
         chess.move(san)
       } catch {
-        /* bỏ qua nước lỗi */
+        console.warn('useChessGame: bỏ qua nước không phát lại được', san, initialFen)
       }
     }
     return chess

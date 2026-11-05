@@ -5,11 +5,14 @@ import { ChessBoardPanel } from '../components/ChessBoardPanel'
 import { Confetti } from '../components/Confetti'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
+import { BOARD_RESERVE } from '../lib/boardReserve'
+import { completeSessionItem } from '../lib/session'
 import { FoldPanel, KidButton, Panel, SectionTitle, Segmented } from '../components/ui'
 import type { Difficulty } from '../engine/minimax'
 import { preloadStockfish } from '../engine/stockfishLoader'
 import { useChessEngine } from '../engine/useChessEngine'
 import { useChessGame } from '../hooks/useChessGame'
+import { useStageLayout } from '../hooks/useStageLayout'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import {
   ARROW_COLOR,
@@ -84,6 +87,8 @@ const DIFFICULTY_BLURB: Record<Difficulty, string> = {
 export function FreePlayPage() {
   const { notation, soundOn } = useKidProgress()
   const { think } = useChessEngine()
+  // Bố cục 2 cột hay 1 cột - để chỉ render MỘT bản điều khiển (không nhân đôi nút).
+  const stage = useStageLayout()
 
   const [kidSide, setKidSide] = useState<Side>('white')
   // Chỉ còn hai mức KHÓ và SIÊU (đã bỏ Dễ và Vừa vì dưới 1200 Elo). Đây là app học
@@ -152,6 +157,8 @@ export function FreePlayPage() {
     if (!gameOver || archivedRef.current) return
     if (board.history.length < 4) return
     archivedRef.current = true
+    // Ván đủ dài đã xong → tính là hoàn thành bài "đấu với máy" của buổi hôm nay.
+    completeSessionItem('play')
     setRecentGames(
       saveGame({
         kidSide,
@@ -206,7 +213,7 @@ export function FreePlayPage() {
         setResult({
           emoji: '🏆',
           title: 'Bé chiếu bí máy rồi!',
-          message: `Tuyệt vời! Bé đã hạ gục chú máy ở mức ${DIFFICULTY_LABEL[difficulty]}.`,
+          message: `Tuyệt vời! Bé đã hạ gục Máy ở mức ${DIFFICULTY_LABEL[difficulty]}.`,
         })
       } else {
         setResult({
@@ -447,7 +454,7 @@ export function FreePlayPage() {
 
       {/* Cột trái CHỈ có bàn cờ + nút điều khiển → bàn cờ luôn to hết cỡ. */}
       <BoardStage
-        reserve={300}
+        reserve={BOARD_RESERVE.freePlay}
         top={
           <>
             {/*
@@ -467,6 +474,37 @@ export function FreePlayPage() {
             <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[0.7rem] font-extrabold whitespace-nowrap text-gold-800">
               Nước {board.history.length + 1}
             </span>
+
+            {/*
+              Trên điện thoại, hai lựa chọn PHẢI chạm được ngay khi vào tab (cầm
+              quân nào, máy giỏi cỡ nào) nằm ngay dưới bàn cờ - trước đây chúng
+              nằm trong cột phải, phải cuộn qua bàn cờ và túi quân mới thấy.
+              Bản trong cột phải chỉ còn hiện ở bố cục 2 cột (`stage`).
+            */}
+            {!stage && (
+            <div className="flex w-full items-center gap-1">
+              <Segmented
+                options={[
+                  { value: 'white', label: 'Trắng', icon: '⬜' },
+                  { value: 'black', label: 'Đen', icon: '⬛' },
+                ]}
+                value={kidSide}
+                onChange={(value) => newGame(value)}
+                size="sm"
+                className="min-w-0 flex-1"
+              />
+              <Segmented
+                options={DIFFICULTY_OPTIONS}
+                value={difficulty}
+                onChange={(value) => {
+                  setDifficulty(value)
+                  if (value === 'master') preloadStockfish()
+                }}
+                size="sm"
+                className="min-w-0 flex-1"
+              />
+            </div>
+            )}
             {coachBusy && !gameOver && (
               <span
                 id="kid-coach-busy"
@@ -638,15 +676,14 @@ export function FreePlayPage() {
         <Panel className="grid gap-2">
           <SectionTitle
             icon="🎮"
-            title="Đấu tập tự do cùng bạn Robot"
+            title="Đấu tập tự do cùng Máy"
             subtitle="Chơi trọn một ván cờ thật, có Vua, Hậu, Xe, Tượng, Mã, Tốt đông đủ!"
             info="machine"
           />
-          <div className="grid gap-2 sm:grid-cols-2">
+          {stage && (
+          <div className="grid gap-2 stage:grid-cols-2">
             <div>
-              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                🐣 Bé cầm quân gì?
-              </p>
+              <p className="mb-1 text-xs font-extrabold text-brand-500">🐣 Bé cầm quân gì?</p>
               <Segmented
                 options={[
                   { value: 'white', label: 'Trắng', icon: '⬜' },
@@ -658,9 +695,7 @@ export function FreePlayPage() {
               />
             </div>
             <div>
-              <p className="mb-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-                🤖 Máy chơi giỏi cỡ nào?
-              </p>
+              <p className="mb-1 text-xs font-extrabold text-brand-500">🤖 Máy chơi giỏi cỡ nào?</p>
               <Segmented
                 options={DIFFICULTY_OPTIONS}
                 value={difficulty}
@@ -673,6 +708,7 @@ export function FreePlayPage() {
               />
             </div>
           </div>
+          )}
           <p className="rounded-2xl bg-brand-50 px-3 py-2 text-xs font-bold text-brand-700">
             {DIFFICULTY_BLURB[difficulty]}
           </p>
@@ -830,7 +866,7 @@ export function FreePlayPage() {
         <Panel>
           <SectionTitle
             icon="🧠"
-            title="Bí kíp thắng bạn Robot"
+            title="Bí kíp thắng Máy"
             subtitle="Ba điều bé nên nhớ trong mỗi nước đi"
             info="machine"
           />

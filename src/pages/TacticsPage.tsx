@@ -7,6 +7,8 @@ import { Confetti } from '../components/Confetti'
 import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
+import { BOARD_RESERVE } from '../lib/boardReserve'
+import { completeSessionItem } from '../lib/session'
 import { KidButton, KidPicker, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { BEST_MOVE_THEMES } from '../data/bestMoves'
@@ -346,6 +348,7 @@ export function TacticsPage() {
     setPhase('solved')
     setConfetti(true)
     if (soundOn) playWin()
+    completeSessionItem('puzzle')
     setResult({
       emoji: '🏁',
       title: 'Đánh tiếp tuyệt vời!',
@@ -397,7 +400,7 @@ export function TacticsPage() {
       <Confetti show={confetti} onDone={() => setConfetti(false)} />
 
       <BoardStage
-        reserve={232}
+        reserve={BOARD_RESERVE.tactics}
         top={
           <>
             <div className="flex flex-wrap items-center gap-2">
@@ -665,9 +668,7 @@ export function TacticsPage() {
         >
           <span className="min-w-0 flex-1 text-xs font-extrabold leading-tight text-gold-800">
             🎯 Hôm nay: {todayIds.length} thế{' '}
-            {dueIds.length > 0
-              ? `· ${dueIds.length} thế đã tới hạn ôn`
-              : '· thế mới cho bé làm quen'}
+            {dueIds.length > 0 ? `· ${dueIds.length} thế cần ôn lại` : '· thế mới'}
           </span>
           <button
             type="button"

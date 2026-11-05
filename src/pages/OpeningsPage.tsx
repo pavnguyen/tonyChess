@@ -13,6 +13,8 @@ import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
 import { KidButton, LessonLabel, Panel, PickSwitch, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
+import { BOARD_RESERVE } from '../lib/boardReserve'
+import { completeSessionItem } from '../lib/session'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
 import { COUNTERS } from '../data/counters'
@@ -384,6 +386,7 @@ export function OpeningsPage() {
     if (awardedRef.current) return
     awardedRef.current = true
     if (soundOn) playWin()
+    completeSessionItem('opening')
     setConfetti(true)
     setResult({
       emoji: '🏆',
@@ -857,7 +860,7 @@ export function OpeningsPage() {
 
       {/* Cột trái CHỈ có bàn cờ + băng giải thích → bàn cờ luôn to hết cỡ. */}
       <BoardStage
-        reserve={296}
+        reserve={BOARD_RESERVE.openings}
         board={
           // Không tự bung gì khi rê chuột: trước đây chỉ cần đưa chuột ngang bàn cờ là
           // khung mẫu hình bật lên, dễ bấm nhầm và che mất thế cờ bé đang học. Giờ bé
@@ -1071,7 +1074,7 @@ export function OpeningsPage() {
             cuộn (xem `reserve` của BoardStage và chiều cao cột).
           */}
           <div id="kid-opening-move-filter" className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-0.5 shrink-0 text-xs font-extrabold uppercase tracking-wide text-brand-500">
+            <span className="mr-0.5 shrink-0 text-xs font-extrabold text-brand-500">
               🗺️ {side === 'white' ? 'Quân Trắng' : 'Quân Đen'}
             </span>
             <button

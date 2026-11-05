@@ -226,7 +226,7 @@ export function ChessBoardPanel({
                   <span key={square} className="flex items-start justify-end p-[2px] leading-none">
                     <span
                       data-square-coord={square}
-                      className="select-none text-[0.5rem] font-extrabold sm:text-[0.55rem]"
+                      className="select-none text-[0.6rem] font-extrabold sm:text-[0.62rem]"
                       style={{ color: dark ? 'rgba(239,225,199,0.62)' : 'rgba(27,38,57,0.42)' }}
                     >
                       {square}
