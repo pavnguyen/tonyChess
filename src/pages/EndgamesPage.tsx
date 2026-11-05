@@ -10,6 +10,7 @@ import { MoveStrip } from '../components/MoveStrip'
 import { MoveText } from '../components/MoveText'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
+import { dailyIndex } from '../lib/dailyPick'
 import { completeSessionItem } from '../lib/session'
 import { KidPicker, LessonLabel, Panel, SectionTitle } from '../components/ui'
 import { ENDGAMES } from '../data/endgames'
@@ -54,6 +55,12 @@ const LEVELS: {
     title: 'Tàn cuộc nâng cao',
   },
 ]
+
+/**
+ * Bài mặc định mỗi ngày chỉ xoay trong 10 thế CƠ BẢN: thế nâng cao (Lucena…) để
+ * bé tự chọn khi đã vững, không bắt bé 7 tuổi mở tab là gặp bài khó.
+ */
+const BASIC_ENDGAMES = ENDGAMES.filter((item) => item.level === 'basic')
 
 const FILE_CHARS = 'abcdefgh'
 
@@ -158,11 +165,13 @@ export function EndgamesPage() {
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/endgames' })
 
-  const [challengeId, setChallengeId] = useState(() =>
-    search.challenge && ENDGAMES.some((item) => item.id === search.challenge)
-      ? search.challenge
-      : 'opposition',
-  )
+  const [challengeId, setChallengeId] = useState(() => {
+    // Buổi luyện trỏ thẳng tới đúng thế thì ưu tiên; không thì lấy thế của hôm nay.
+    if (search.challenge && ENDGAMES.some((item) => item.id === search.challenge)) {
+      return search.challenge
+    }
+    return BASIC_ENDGAMES[dailyIndex(BASIC_ENDGAMES.length, 'endgame')]?.id ?? 'opposition'
+  })
   const [hintVisible, setHintVisible] = useState(false)
   /**
    * Bé bấm 🎯 “Mục tiêu” → bàn cờ tô tím đúng những ô bé cần nhắm tới:

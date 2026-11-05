@@ -14,6 +14,8 @@ import { MoveText } from '../components/MoveText'
 import { KidButton, LessonLabel, Panel, PickSwitch, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
+import { dailyIndex } from '../lib/dailyPick'
+import { OPENINGS } from '../data/openings'
 import { completeSessionItem } from '../lib/session'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -50,13 +52,19 @@ export function OpeningsPage() {
   const { on: heatmap, toggle: toggleHeatmap } = useEyeCheck()
   const search = useSearch({ from: '/' })
   const navigate = useNavigate()
+  /**
+   * Mỗi ngày mở tab, chọn sẵn MỘT khai cuộc khác (ổn định trong ngày, đổi lúc
+   * nửa đêm). Bé không phải tự chọn lại từ đầu mà cũng không học mãi một bài;
+   * đường dẫn `?opening=…` vẫn được ưu tiên hơn.
+   */
+  const dailyOpening = OPENINGS[dailyIndex(OPENINGS.length, 'opening')]
 
   /** Bài mặc định = bài đứng ĐẦU danh sách ưu tiên (xem `src/data/openings.ts`). */
-  const [openingId, setOpeningId] = useState('italian')
+  const [openingId, setOpeningId] = useState(dailyOpening.id)
   /** App chỉ còn MỘT cách học: đi từng bước kèm gợi ý (đã bỏ chế độ thuộc lòng). */
   const mode = 'learn' as const
   /** Cột khai cuộc đang xem: quân Trắng hay quân Đen. */
-  const [side, setSide] = useState<Side>('white')
+  const [side, setSide] = useState<Side>(dailyOpening.side)
   /** Bộ lọc theo nước mở đầu của bé (null = xem tất cả). */
   const [moveFilter, setMoveFilter] = useState<string | null>(null)
   /** Số nửa nước (ply) bé đã đi. Mỗi khai cuộc chỉ có MỘT dòng chính. */

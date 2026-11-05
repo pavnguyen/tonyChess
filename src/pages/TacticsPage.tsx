@@ -8,6 +8,7 @@ import { ExplanationBanner } from '../components/ExplanationBanner'
 import { EyeToggle } from '../components/EyeToggle'
 import { BoardStage } from '../components/BoardStage'
 import { BOARD_RESERVE } from '../lib/boardReserve'
+import { dailyIndex } from '../lib/dailyPick'
 import { completeSessionItem } from '../lib/session'
 import { KidButton, KidPicker, Panel, SectionTitle, Segmented } from '../components/ui'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -96,14 +97,26 @@ export function TacticsPage() {
     () => (puzzles ?? []).find((item) => item.id === search.puzzle),
     [puzzles, search.puzzle],
   )
+  /** Mỗi ngày mở tab, chọn sẵn một thế khác - ổn định trong ngày. */
+  const dailyPuzzle = useMemo(() => {
+    const list = puzzles ?? []
+    return list.length > 0 ? list[dailyIndex(list.length, 'tactic')] : undefined
+  }, [puzzles])
+  /** Đường dẫn `?puzzle=…` thắng lựa chọn theo ngày. */
+  const targetPuzzle = initialPuzzle ?? dailyPuzzle
   const [theme, setTheme] = useState<BestMoveTheme>(() => {
+    // Thứ tự ưu tiên: thế chỉ định → chủ đề chỉ định → thế của hôm nay.
     if (initialPuzzle && isBestMoveTheme(initialPuzzle.theme)) return initialPuzzle.theme
-    return isBestMoveTheme(search.theme) ? search.theme : 'win-material'
+    if (isBestMoveTheme(search.theme)) return search.theme
+    if (dailyPuzzle && isBestMoveTheme(dailyPuzzle.theme)) return dailyPuzzle.theme
+    return 'win-material'
   })
   const [index, setIndex] = useState(() => {
-    if (!initialPuzzle) return 0
-    const sameTheme = (puzzles ?? []).filter((item) => item.theme === initialPuzzle.theme)
-    return Math.max(0, sameTheme.findIndex((item) => item.id === initialPuzzle.id))
+    // Mở đúng chủ đề bằng đường dẫn thì luôn bắt đầu từ thế đầu của chủ đề đó.
+    if (search.theme && !initialPuzzle) return 0
+    if (!targetPuzzle) return 0
+    const sameTheme = (puzzles ?? []).filter((item) => item.theme === targetPuzzle.theme)
+    return Math.max(0, sameTheme.findIndex((item) => item.id === targetPuzzle.id))
   })
   /**
    * Lịch ôn từng thế (localStorage). Nhờ nó 50 thế không “giải xong là hết”: thế
