@@ -11,7 +11,7 @@ import { HangingWarnings } from '../components/HangingWarnings'
 import { ProgressMap } from '../components/ProgressMap'
 import { InfoButton } from '../components/InfoPopover'
 import { MoveText } from '../components/MoveText'
-import { KidButton, Panel, PickSwitch, Segmented } from '../components/ui'
+import { KidButton, LessonLabel, Panel, PickSwitch, Segmented } from '../components/ui'
 import { BoardStage } from '../components/BoardStage'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
@@ -954,7 +954,7 @@ export function OpeningsPage() {
                 id="kid-plan-preview-note"
                 className="mx-auto w-full max-w-[36rem] rounded-2xl border-2 border-dashed border-info-600 bg-info-50 p-2.5 text-center text-sm font-bold text-brand-800"
               >
-                📍 Bé đang xem thế cờ CUỐI khai cuộc — ô tím là việc của câu vừa bấm
+                📍 Bé đang xem thế cờ CUỐI khai cuộc - ô tím là việc của câu vừa bấm
               </div>
             ) : openingPreview ? (
               /*
@@ -1196,17 +1196,13 @@ export function OpeningsPage() {
             nói rõ “Mục tiêu + ba việc”, nên chỉ cần một dòng nhãn mỏng.
           */}
           <div className="flex items-center gap-1.5">
-            {/* `line-clamp-1` (không phải `truncate`): vẫn cắt gọn 1 dòng nhưng chữ
-                được phép xuống dòng nên không kéo cả khung rộng quá màn hình. */}
-            <p className="min-w-0 flex-1 line-clamp-1 text-xs font-extrabold uppercase tracking-wide text-brand-500">
-              {/*
-                BỘ ICON DÙNG CHUNG cho ba tab dạy (Khai cuộc · Đối phó · Nguyên tắc):
-                🧠 = mind-set, tức “ý đồ / vì sao”; 🎯 = “việc bé phải làm” (mục tiêu,
-                ba việc, câu tự hỏi trước khi đi). Nhờ vậy bé thấy cùng một cặp icon ở
-                mọi tab và biết ngay dòng nào là ý đồ, dòng nào là việc cụ thể.
-              */}
-              🧠 Mindset khai cuộc
-            </p>
+            {/*
+              Hai nhãn cho hai việc khác nhau, cùng bộ icon với tab Đối phó/Nguyên
+              tắc: 🧠 = “vì sao / ý đồ”, 🎯 = “việc bé phải làm”. Bản cũ để nhãn
+              chung “Mindset khai cuộc” rồi ngay dưới lại một nhãn 🎯 thứ hai, mà câu
+              mục tiêu cũng tự mở đầu bằng “🎯 Mục tiêu:” - ba dấu 🎯 cho một ý.
+            */}
+            <LessonLabel icon="🧠" title="Mục tiêu khai cuộc" tone="gold" size="sm" />
             <InfoButton topic="goal" />
           </div>
           <button
@@ -1228,10 +1224,6 @@ export function OpeningsPage() {
             }`}
           >
             <span className="block text-sm font-extrabold leading-snug text-brand-900">
-              <span aria-hidden className="mr-1">
-                🎯
-              </span>{' '}
-              <span className="text-brand-500">Mục tiêu: </span>
               <MoveText text={opening.goal} />
             </span>
           </button>
@@ -1240,10 +1232,10 @@ export function OpeningsPage() {
             <>
               <div className="flex items-center gap-1.5">
                 {/* Tên khối ba việc là chính cái “mindset” ("Giữ ô f7 trong tầm ngắm"),
-                    nên không được cắt cụt - cho xuống tối đa 2 dòng. */}
-                <p className="min-w-0 flex-1 line-clamp-2 text-xs font-extrabold uppercase leading-tight tracking-wide text-brand-500">
-                  🎯 {opening.plan.title}
-                </p>
+                    nên viết như tên khối chứ không in hoa cả câu dài. */}
+                <div className="min-w-0 flex-1">
+                  <LessonLabel icon="🎯" title={opening.plan.title} size="sm" />
+                </div>
                 {/* Chỉ hiện khi bàn cờ đang ở thế cuối - thay cho dòng gợi ý dài cũ. */}
                 {previewing && (
                   <button

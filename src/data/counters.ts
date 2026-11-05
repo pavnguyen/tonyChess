@@ -33,7 +33,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'white',
     emoji: '🇬🇧',
     counterName: 'Giữ d5, đánh vào chân đế d4',
-    idea: 'Giữ d5 rồi đẩy c5 đánh vào chân đế d4 trước khi Trắng khoá thế.',
+    idea: 'Trắng cần vài nước mới dựng xong khung c3-d4-e3; đánh d4 sớm thì khung đó không đứng vững.',
     opponentPlan: 'Trắng dựng khung c3-d4-e3, ra Tượng f4, nhập thành rồi mở cột h bằng h4-h5.',
     points: [
       'Giữ Tốt d5 đối đầu Tốt d4 của Trắng.',
@@ -69,7 +69,7 @@ export const COUNTERS: CounterLesson[] = [
     emoji: '🇮🇹',
     // `f2` mới là ô yếu của Trắng (f7 là ô yếu của chính Đen) - đừng viết lẫn.
     counterName: 'Đáp đối xứng, nhắm ô f2',
-    idea: 'Giữ e5, ra Tượng c5 nhắm f2 rồi nhập thành, chờ Trắng sơ hở.',
+    idea: 'Đáp đối xứng giữ thế cân bằng, còn Tượng c5 thì luôn nhắm f2 - ô chỉ có Vua Trắng che.',
     // Nhập thành TRƯỚC rồi mới đẩy d3-c3 và d4 - đúng thứ tự dòng chính ở tab
     // Khai cuộc (1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.O-O ... 5.d3 6.c3 7.d4).
     opponentPlan: 'Trắng nhắm f7 bằng Tượng c4, nhập thành rồi đẩy d3-c3-d4 đánh cánh Vua.',
@@ -102,7 +102,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'white',
     emoji: '🇭🇺',
     counterName: 'Giữ d5, phá ghim bằng h6',
-    idea: 'Giữ d5, đáp e6 rồi phá ghim Bg5 bằng h6.',
+    idea: 'Tốt d5 và e6 khoá trung tâm, nên Trắng không mở được cột c cho Xe - đó là cả ý đồ phòng thủ.',
     opponentPlan: 'Trắng dâng c4, ra Tượng g5 ghim Mã f6, nhập thành rồi đưa Xe sang cột c.',
     points: [
       'Giữ Tốt d5, đáp e6 bảo vệ trung tâm.',
@@ -134,7 +134,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'white',
     emoji: '🏝️',
     counterName: 'Chiếm e5, ghim Mã c3',
-    idea: 'Đáp e5, ra Tượng b4 ghim Mã c3 rồi đẩy d5.',
+    idea: 'Trắng chơi chậm ở cánh Hậu, nên bé chiếm e5 và ghim Mã c3 trước khi Trắng kịp mở trung tâm.',
     opponentPlan: 'Trắng giữ c4 kiểm soát d5, dựng Tượng g2 rồi đánh cánh Hậu bằng b4-b5.',
     points: [
       'Đáp e5 chiếm trung tâm, không cho Trắng dựng thế.',
@@ -166,7 +166,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'white',
     emoji: '🇪🇸',
     counterName: 'Phòng thủ Morphy: đuổi Tượng',
-    idea: 'Đuổi Tượng bằng a6 rồi dựng Nf6, Be7, b5, O-O.',
+    idea: 'Tượng b5 chỉ đáng sợ khi còn ghim; đuổi nó bằng a6 rồi b5 là gỡ đòn ngay từ đầu.',
     opponentPlan: 'Trắng ghim Mã c6 bằng Tượng b5, giữ Xe e1 rồi đẩy d3-c3-d4 ép Tốt e5.',
     points: [
       'Đáp e5, ra Mã c6 giữ Tốt e5 trước Tượng b5.',
@@ -202,7 +202,7 @@ export const COUNTERS: CounterLesson[] = [
     // Cột c KHÔNG mở cho Trắng (Tốt c2 còn nguyên, Tốt c Đen đã bị ăn ở d4):
     // cái mở ra là trung tâm + ô d4 cho Mã. Đừng viết "mở cột c" ở phía Trắng.
     counterName: 'Sicilian Mở: đổi Tốt, Mã vào d4',
-    idea: 'Đẩy d4 đổi Tốt, dựng Mã d4 rồi f4 đánh cánh Vua trước khi Đen phản công.',
+    idea: 'Đổi Tốt ở d4 cho bé trung tâm trước khi Đen kịp ...b5 và ...Bb7 - phải đi nhanh.',
     opponentPlan: 'Đen đánh cánh Hậu bằng ...b5, ...Bb7 và đổi Tốt ở d4.',
     points: [
       'Đẩy d4 đổi Tốt, lấy ô d4 làm bàn đạp cho Mã.',
@@ -234,7 +234,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'black',
     emoji: '🇫🇷',
     counterName: 'Đẩy e5 giam quân, dựng f4',
-    idea: 'Đẩy e5 khoá trung tâm, giam quân Đen rồi dựng f4-f5.',
+    idea: 'Pháp chật vì Tượng c8 bị nhốt; bé đóng e5 rồi đánh cánh Vua, nơi Đen thiếu quân phòng thủ.',
     // Không hứa "mở đường Tượng c8": trong Pháp Tượng đó thường nằm nhà, tab
     // Khai cuộc cũng dạy đúng như vậy ("giữ Tượng c8, đừng để bị nhốt").
     opponentPlan: 'Đen dựng hàng rào e6-d5 rồi phá trung tâm bằng ...c5 và ...f6.',
@@ -268,7 +268,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'black',
     emoji: '🛡️',
     counterName: 'Chiếm trung tâm, đuổi Tượng g6',
-    idea: 'Chiếm d4, đổi Tốt rồi Ng3-h4 đuổi Tượng g6.',
+    idea: 'Đen mất hai nước đưa Tượng ra f5, nên bé có thời gian chiếm trung tâm và đuổi Tượng về g6.',
     opponentPlan: 'Đen đưa Tượng ra f5 trước khi đóng e6, giữ trung tâm cân bằng.',
     points: [
       'Chiếm trung tâm bằng d4 rồi đổi Tốt mở đường cho quân.',
@@ -300,7 +300,7 @@ export const COUNTERS: CounterLesson[] = [
     opponentSide: 'black',
     emoji: '🏰',
     counterName: 'Trung tâm lớn d4-c4-e4',
-    idea: 'Chiếm trung tâm d4-c4-e4 rồi nhập thành, buộc Đen chống đỡ.',
+    idea: 'Đen nhường trung tâm để đánh cánh Vua sau; bé chiếm kín trước thì cơn bão Tốt không có chỗ bung.',
     opponentPlan: 'Đen nhường trung tâm, dựng Tượng g7 rồi phản công bằng ...e5 và ...f5.',
     points: [
       'Chiếm trung tâm bằng bộ ba Tốt d4-c4-e4.',
@@ -335,7 +335,7 @@ export const COUNTERS: CounterLesson[] = [
     // e3 KHÔNG gỡ được ghim (ghim còn cho tới khi Đen đổi Tượng hoặc bé đẩy a3);
     // cái e3 đánh đổi là nhường ô e4 để giữ cặp Tượng - nói đúng như vậy.
     counterName: 'Nhường e4: e3-Bd3 giữ cặp Tượng',
-    idea: 'Chọn e3 rồi Bd3 giữ cặp Tượng, nhập thành, chờ ...c5 để mở cột c.',
+    idea: 'Ghim Mã c3 khiến Trắng không đẩy được e4; bé đổi lại bằng cặp Tượng và cột c sau ...c5.',
     opponentPlan: 'Đen ghim Mã c3 bằng Tượng b4, dọa đổi quân rồi đẩy ...c5 phá trung tâm.',
     points: [
       'Chọn e3 thay vì e4: chịu ghim Mã c3, đổi lại giữ cặp Tượng.',

@@ -277,10 +277,12 @@ export function StrategyPage() {
           qua lại và đọc trùng nội dung.
         */}
         <Panel id="kid-principle-check" className="grid gap-1.5">
+          {/*
+            Không lặp số thứ tự ở đây nữa: nó đã nằm trên ô đang chọn trong lưới 10
+            nguyên tắc và trong hàng trạng thái ngay trên bàn cờ. Ba chỗ cùng một
+            con số làm tiêu đề nặng mà không thêm thông tin.
+          */}
           <div className="flex min-w-0 items-center gap-2">
-            <span className="grid size-7 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-gold-400 to-gold-300 text-sm font-extrabold text-gold-950">
-              {activePrinciple.order}
-            </span>
             <h3 className="min-w-0 flex-1 truncate text-base font-extrabold text-brand-900">
               {activePrinciple.emoji} {activePrinciple.title}
             </h3>
