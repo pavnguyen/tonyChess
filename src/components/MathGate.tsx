@@ -4,7 +4,7 @@ import type { MathProblem } from '../lib/mathProblem'
 import { KidButton } from './ui'
 
 interface Props {
-  /** Gọi sau khi bé trả lời đúng (nút Đồng ý đã khoá, chờ ~0.5s cho bé thấy ✅). */
+  /** Gọi sau khi bé trả lời đúng (nút Đồng ý đã khoá, chờ ~0.12s cho bé thấy ✅). */
   onSolved: () => void
 }
 
@@ -53,7 +53,9 @@ export function MathGate({ onSolved }: Props) {
     if (!Number.isFinite(answer)) return
     if (answer === problem.answer) {
       setCorrect(true)
-      timerRef.current = window.setTimeout(onSolved, 550)
+      // Đóng gần như ngay: chỉ giữ đúng một nhịp để bé kịp thấy dấu ✅, không bắt
+      // bé chờ nửa giây. Nước cờ đi ngay sau đó nên cảm giác là "gõ xong là đi".
+      timerRef.current = window.setTimeout(onSolved, 120)
       return
     }
     setWrong((count) => count + 1)

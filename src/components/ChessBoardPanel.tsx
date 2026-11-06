@@ -142,8 +142,9 @@ export function ChessBoardPanel({
     const move = pendingMove
     setPendingMove(null)
     if (!move) return
-    // Để cửa toán kịp đóng rồi mới đi; tránh quân cờ nhảy trong lúc lớp phủ còn đó.
-    window.setTimeout(() => onDrop?.(move.from, move.to), 0)
+    // Gọi thẳng: React gộp việc đóng cửa và nước đi vào CÙNG một lượt render, nên
+    // lớp phủ biến mất đúng lúc quân cờ bắt đầu nhảy - không cần hẹn giờ chờ.
+    onDrop?.(move.from, move.to)
   }
 
   /*

@@ -196,7 +196,7 @@ check(Boolean(layout?.focused), 'ô đáp án vẫn tự lấy nét trên điệ
 
 console.log('\n▶ Giải đúng → nước cờ vừa kéo được đi')
 
-check(await solveMathGate(evaluate), 'gõ đáp án đúng 0.5 giây sau cửa toán đóng')
+check(await solveMathGate(evaluate), 'gõ đáp án đúng thì cửa toán đóng ngay')
 await sleep(1300)
 check(await hasPiece('wP', 'd4'), 'quân Tốt đã đi tới d4 sau khi giải đúng')
 
