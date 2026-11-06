@@ -34,9 +34,10 @@ export function solveEquation(equation) {
 
 /**
  * Nếu cửa toán đang mở thì giải và chờ nó đóng. Trả `true` khi đã giải xong.
- * `timeoutMs` ngắn vì helper còn được gọi cả ở lần chạm chỉ để CHỌN quân.
+ * `timeoutMs` ngắn vì helper còn được gọi ở mọi nước - từ khi cửa toán chỉ mở
+ * mỗi 2–3 nước, phần lớn lần gọi không có cửa nào để giải.
  */
-export async function solveMathGate(evaluate, timeoutMs = 1200) {
+export async function solveMathGate(evaluate, timeoutMs = 400) {
   let equation = ''
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {

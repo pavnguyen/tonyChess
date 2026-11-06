@@ -25,8 +25,8 @@ export interface ChessBoardPanelProps {
   onDrop?: (from: string, to: string) => boolean
   /**
    * Bắt bé giải một phép toán trước khi nước đi được chấp nhận (dùng cho các tab
-   * Học/Luyện). Bật thì mỗi nước của bé có một "cửa toán"; tắt (mặc định) thì bàn
-   * cờ chỉ để chơi/xem.
+   * Học/Luyện/Chơi). Bật thì cứ 2–3 nước của bé lại có một "cửa toán"; tắt (mặc
+   * định) thì bàn cờ chỉ để chơi/xem.
    */
   mathGate?: boolean
   /**
@@ -116,16 +116,23 @@ export function ChessBoardPanel({
   /*
    * Cửa toán: bé kéo/chạm đi một nước thì CHƯA đi ngay - nước đó được giữ lại,
    * cửa toán mở ra; giải đúng xong mới thật sự gọi `onDrop`. Nhờ vậy luật "phải
-   * giải toán trước mỗi nước" nằm gọn ở một chỗ, mọi trang Học/Luyện dùng chung.
-   * `mathSolvedFen` nhớ THẾ CỜ đã giải để nước kế tiếp (thế cờ khác) lại phải giải.
+   * giải toán trước khi đi" nằm gọn ở một chỗ, mọi trang Học/Luyện/Chơi dùng chung.
+   *
+   * Không hỏi mỗi nước (bé 7 tuổi sẽ mất nhịp chơi): đếm số nước đã đi từ cửa gần
+   * nhất, cứ 2–3 nước mới mở cửa một lần. Ngưỡng bốc lại sau mỗi lần giải để bé
+   * không đoán trước được nước nào phải làm toán.
+   *
+   * `mathEvery` là TỔNG số nước của một chặng (2 hoặc 3), nên cửa mở khi bé đã đi
+   * được `mathEvery - 1` nước - nước tiếp theo (nước thứ 2 hoặc thứ 3) phải giải toán.
    */
   const [mathOpen, setMathOpen] = useState(mathGateOnEnter)
   const [pendingMove, setPendingMove] = useState<{ from: string; to: string } | null>(null)
-  const [mathSolvedFen, setMathSolvedFen] = useState<string | null>(null)
+  const [movesSinceMath, setMovesSinceMath] = useState(0)
+  const [mathEvery, setMathEvery] = useState(() => 2 + Math.floor(Math.random() * 2))
 
   const tryMove = (from: string, to: string): boolean => {
     if (!onDrop) return false
-    if (mathGate && mathSolvedFen !== fen) {
+    if (mathGate && movesSinceMath >= mathEvery - 1) {
       setPendingMove({ from, to })
       setMathOpen(true)
       setSelected(null)
@@ -133,12 +140,15 @@ export function ChessBoardPanel({
     }
     const moved = onDrop(from, to)
     setSelected(null)
+    // Chỉ đếm nước THẬT SỰ được đi (nước sai luật không tính).
+    if (moved && mathGate) setMovesSinceMath((count) => count + 1)
     return moved
   }
 
   const handleMathSolved = () => {
     setMathOpen(false)
-    setMathSolvedFen(fen)
+    setMovesSinceMath(0)
+    setMathEvery(2 + Math.floor(Math.random() * 2))
     const move = pendingMove
     setPendingMove(null)
     if (!move) return

@@ -1,9 +1,9 @@
 /**
- * Kiểm tra "cửa toán" trước mỗi nước cờ ở tab Học/Luyện:
- *   1. Bé kéo một nước → nước cờ CHƯA được đi, cửa toán mở với ô nhập tự lấy nét.
- *   2. Ô nhập dùng bàn phím số trên điện thoại (`inputMode="numeric"`).
- *   3. Trả lời sai → báo đỏ, cửa vẫn mở, bé thử lại; bấm ra ngoài không đóng được.
- *   4. Trả lời đúng → cửa đóng và nước cờ vừa kéo được đi tiếp.
+ * Kiểm tra "cửa toán":
+ *   1. Vào Đấu Máy / Soi quân là cửa toán mở sẵn, ô nhập tự lấy nét, bàn phím số.
+ *   2. Trả lời sai → báo đỏ, cửa vẫn mở; bấm ra ngoài không đóng được.
+ *   3. KHÔNG hỏi mỗi nước: nước đầu tiên đi luôn, cửa chỉ mở lại sau 2–3 nước.
+ *   4. Cửa mở thì nước cờ bị giữ lại, giải đúng mới được đi.
  *   5. Trên khung 390×844 thẻ toán nằm gọn trong màn hình, không tràn ngang.
  *
  * Chạy: node scripts/browser-math-test.mjs (cần dev/preview server)
@@ -14,7 +14,7 @@ import { solveEquation, solveMathGate } from './lib/mathGate.mjs'
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
 const { skipped, failedToConnect, evaluate, send, close } = await openPage(
-  `${APP_URL}/?opening=london#math-gate`,
+  `${APP_URL}/free-play#math-gate`,
   { port: 9397, windowSize: '1440,900' },
 )
 
@@ -44,34 +44,23 @@ const hasPiece = (piece, square) =>
 
 const bodyText = () => evaluate(`document.body.innerText`)
 
-const rectOf = (square) =>
-  evaluate(`
-    (() => {
-      const el = document.getElementById('kid-board-square-${square}')
-      if (!el) return null
-      const r = el.getBoundingClientRect()
-      return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 }
-    })()
-  `)
+const gateOpen = () => evaluate(`Boolean(document.getElementById('kid-math-gate'))`)
 
-const mouse = (type, x, y, extra = {}) =>
-  send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1, ...extra })
+const square = (name) =>
+  evaluate(`(() => {
+    const el = document.getElementById('kid-board-square-${name}')
+    if (!el) return false
+    el.click()
+    return true
+  })()`)
 
-const dragPiece = async (from, to) => {
-  const a = await rectOf(from)
-  const b = await rectOf(to)
-  if (!a || !b) return false
-  await mouse('mousePressed', a.x, a.y, { buttons: 1 })
-  await sleep(80)
-  for (let step = 1; step <= 6; step += 1) {
-    await mouse('mouseMoved', a.x + ((b.x - a.x) * step) / 6, a.y + ((b.y - a.y) * step) / 6, {
-      buttons: 1,
-    })
-    await sleep(60)
-  }
-  await mouse('mouseReleased', b.x, b.y, { buttons: 0 })
-  return true
-}
+const clickButtonText = (pattern) =>
+  evaluate(`(() => {
+    const btn = [...document.querySelectorAll('button')].find((b) => ${pattern}.test(b.innerText || ''))
+    if (!btn) return false
+    btn.click()
+    return true
+  })()`)
 
 const setInput = (value) =>
   evaluate(`(() => {
@@ -91,14 +80,25 @@ const clickSubmit = () =>
     return true
   })()`)
 
+/** Chờ tới lượt bé (máy đang nghĩ thì đừng cố đi). */
+const waitTurn = async () => {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    if (String(await bodyText()).includes('Lượt của bé')) return true
+    await sleep(200)
+  }
+  return false
+}
+
 await sleep(2500)
 
-console.log('\n▶ Kéo một nước → cửa toán mở, nước cờ chưa được đi')
+// Bàn cờ có thể mặc định cho bé cầm Đen; chọn Trắng để chắc chắn tới lượt bé.
+// Đổi bên dựng lại bàn cờ nên cửa toán mở lại với phép mới.
+await clickButtonText('/Trắng/')
+await sleep(1000)
 
-check(await dragPiece('d2', 'd4'), 'đã kéo quân Tốt d2 → d4')
-check(await waitFor('#kid-math-gate'), 'cửa toán mở ra')
-check(await hasPiece('wP', 'd2'), 'quân Tốt vẫn ở d2 - nước cờ CHƯA được đi')
-check(!(await hasPiece('wP', 'd4')), 'ô d4 còn trống khi chưa giải toán')
+console.log('\n▶ Vào Đấu Máy là cửa toán mở sẵn')
+
+check(await waitFor('#kid-math-gate'), 'cửa toán mở ngay khi vào Đấu Máy')
 
 const equation = String(
   await evaluate(`document.getElementById('kid-math-gate')?.dataset.equation ?? ''`),
@@ -122,10 +122,7 @@ console.log('\n▶ Sai thì cửa vẫn đóng chặt, bé thử lại')
 
 await evaluate(`document.getElementById('kid-math-gate').click()`)
 await sleep(200)
-check(
-  await evaluate(`Boolean(document.getElementById('kid-math-gate'))`),
-  'bấm ra ngoài thẻ không đóng được cửa toán',
-)
+check(await gateOpen(), 'bấm ra ngoài thẻ không đóng được cửa toán')
 
 const answer = solveEquation(equation)
 check(answer !== null, `giải được phép tính (${equation} → ${answer})`)
@@ -138,10 +135,7 @@ check(
   String(await bodyText()).includes('Chưa đúng'),
   'hiện lời nhắc “Chưa đúng rồi, bé thử lại nhé!”',
 )
-check(
-  await evaluate(`Boolean(document.getElementById('kid-math-gate'))`),
-  'cửa toán vẫn mở sau câu trả lời sai',
-)
+check(await gateOpen(), 'cửa toán vẫn mở sau câu trả lời sai')
 check(
   (await evaluate(`document.getElementById('kid-math-input')?.value ?? ''`)) === '',
   'ô đáp án được xoá để bé gõ lại',
@@ -157,10 +151,7 @@ await send('Emulation.setDeviceMetricsOverride', {
   mobile: false,
 })
 await sleep(300)
-check(
-  await evaluate(`Boolean(document.getElementById('kid-math-gate'))`),
-  'cửa toán vẫn mở sau khi đổi sang khung điện thoại',
-)
+check(await gateOpen(), 'cửa toán vẫn mở sau khi đổi sang khung điện thoại')
 
 const layout = await evaluate(`(() => {
   const gate = document.getElementById('kid-math-gate')
@@ -194,24 +185,72 @@ check(
 )
 check(Boolean(layout?.focused), 'ô đáp án vẫn tự lấy nét trên điện thoại')
 
-console.log('\n▶ Giải đúng → nước cờ vừa kéo được đi')
+console.log('\n▶ Giải đúng → cửa đóng ngay')
 
 check(await solveMathGate(evaluate), 'gõ đáp án đúng thì cửa toán đóng ngay')
-await sleep(1300)
-check(await hasPiece('wP', 'd4'), 'quân Tốt đã đi tới d4 sau khi giải đúng')
+check(!(await gateOpen()), 'cửa toán đóng sau khi giải')
 
-console.log('\n▶ Vào Chơi (Đấu Máy / Soi quân) cũng mở cửa toán ngay')
+console.log('\n▶ Nước đầu tiên đi luôn, không hỏi toán')
 
-for (const [path, label] of [['/free-play', 'Đấu Máy'], ['/hazards', 'Soi quân']]) {
-  await evaluate(`location.href = ${JSON.stringify(`${APP_URL}${path}#math-gate-entry`)}`)
-  await sleep(2500)
-  check(await waitFor('#kid-math-gate'), `vào ${label} là cửa toán mở ngay`)
-  check(await solveMathGate(evaluate), `giải xong cửa toán ở ${label}`)
-  check(
-    !(await evaluate(`Boolean(document.getElementById('kid-math-gate'))`)),
-    `cửa toán đóng sau khi giải ở ${label}`,
-  )
+await waitTurn()
+await square('d2')
+await sleep(180)
+await square('d4')
+await sleep(900)
+check(!(await gateOpen()), 'nước đầu tiên KHÔNG mở cửa toán')
+check(await hasPiece('wP', 'd4'), 'quân Tốt đã đi tới d4 ngay, không bị giữ lại')
+
+console.log('\n▶ Cứ 2–3 nước bé mới phải giải toán một lần')
+
+// Nước 1 (d4) đã đi. Thử các nước an toàn; nước nào đi được thì tính, tới nước
+// thứ 2 hoặc thứ 3 thì cửa toán phải mở và giữ nước đó lại.
+let movesDone = 1
+let gated = null
+for (const [piece, from, to] of [
+  ['wP', 'e2', 'e3'],
+  ['wN', 'g1', 'f3'],
+  ['wP', 'a2', 'a3'],
+  ['wN', 'b1', 'c3'],
+  ['wP', 'h2', 'h3'],
+]) {
+  if (gated) break
+  await waitTurn()
+  await square(from)
+  await sleep(180)
+  await square(to)
+  await sleep(800)
+  if (await gateOpen()) {
+    gated = { piece, from, to, number: movesDone + 1 }
+    break
+  }
+  if (await hasPiece(piece, to)) movesDone += 1
 }
+
+check(Boolean(gated), 'cửa toán mở lại sau vài nước')
+check(
+  Boolean(gated) && gated.number >= 2 && gated.number <= 3,
+  `cửa mở đúng sau 2–3 nước (mở ở nước thứ ${gated?.number})`,
+)
+
+if (gated) {
+  check(
+    await hasPiece(gated.piece, gated.from),
+    'cửa mở thì nước cờ bị giữ lại, quân chưa rời ô cũ',
+  )
+  check(await solveMathGate(evaluate), 'giải đúng cửa toán đang giữ nước cờ')
+  // Nước treo quân có thể bị HLV hỏi lại; các nước ở trên đều an toàn nên hiếm khi có.
+  await clickButtonText('/Vẫn đi/')
+  await sleep(900)
+  check(await hasPiece(gated.piece, gated.to), `quân đã đi tới ${gated.to} sau khi giải`)
+}
+
+console.log('\n▶ Vào Soi quân cũng mở cửa toán ngay')
+
+await evaluate(`location.href = ${JSON.stringify(`${APP_URL}/hazards#math-gate-entry`)}`)
+await sleep(2500)
+check(await waitFor('#kid-math-gate'), 'vào Soi quân là cửa toán mở ngay')
+check(await solveMathGate(evaluate), 'giải xong cửa toán ở Soi quân')
+check(!(await gateOpen()), 'cửa toán đóng sau khi giải ở Soi quân')
 
 close()
 finish('BROWSER MATH')

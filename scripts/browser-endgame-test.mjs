@@ -97,8 +97,9 @@ const moveByClick = async (from, to) => {
   }
   // Chờ hoạt ảnh quân cờ kết thúc trước khi thao tác tiếp trên cùng bàn.
   await sleep(350)
-  // Mỗi nước của bé phải qua "cửa toán" trước khi được đi.
-  await solveMathGate(evaluate)
+  // Cửa toán chỉ mở mỗi 2–3 nước. Chờ ngắn thôi: chờ lâu quá thì máy đã đáp trả,
+  // không còn kịp thấy trạng thái "Máy đang nghĩ" ngay sau nước đi.
+  await solveMathGate(evaluate, 150)
 }
 const historyCount = () => evaluate(`document.querySelectorAll('#kid-endgame-history button').length`)
 const status = () => evaluate(`document.getElementById('kid-endgame-status').innerText`)
