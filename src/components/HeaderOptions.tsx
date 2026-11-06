@@ -190,7 +190,7 @@ export function HeaderOptions() {
                 {/*
                   Ba mẹ tạm tắt cửa toán ở đây thay vì một nút riêng trên bàn cờ:
                   đây là chỗ gom mọi tuỳ chọn của bé, và nút trên bàn cờ dễ bị bé
-                  bấm nhầm giữa lúc chơi. Trạng thái được nhớ cho lần mở sau.
+                  bấm nhầm giữa lúc chơi. Tắt chỉ có hiệu lực hết hôm nay.
                 */}
                 <button
                   type="button"
@@ -199,12 +199,17 @@ export function HeaderOptions() {
                   aria-pressed={!mathGateOff}
                   title={
                     mathGateOff
-                      ? 'Cửa toán đang TẮT - bấm để bật lại'
-                      : 'Cửa toán đang BẬT - bấm để tạm tắt cho bé khỏi phải giải toán'
+                      ? 'Cửa toán đang TẮT hôm nay - bấm để bật lại ngay'
+                      : 'Cửa toán đang BẬT - bấm để tắt cho hết hôm nay (mai tự bật lại)'
                   }
                   className="flex items-center justify-between gap-2 rounded-xl border-2 border-brand-100 bg-white px-2.5 py-1.5 text-xs font-extrabold text-brand-600 transition-all active:translate-y-[1px]"
                 >
-                  <span>🧮 Hỏi toán trước khi đi cờ</span>
+                  <span className="min-w-0">
+                    🧮 Hỏi toán trước khi đi cờ
+                    <span className="block text-xs font-bold text-brand-400">
+                      Tắt chỉ hết hôm nay, mai tự bật lại
+                    </span>
+                  </span>
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${
                       mathGateOff ? 'bg-ink-100 text-ink-500' : 'bg-leaf-100 text-leaf-700'

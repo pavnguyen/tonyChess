@@ -348,7 +348,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
 | `browser-coords-test.mjs` | Toạ độ bàn cờ (cột a-h, hàng 1-8) ở cả 4 mép, đọc tên ô + tên quân tiếng Anh, và xoay đúng khi bé cầm quân Đen. |
 | `browser-voice-test.mjs` | Bảng ⚙️ **không còn danh sách giọng**: app tự chọn giọng, đọc toạ độ bằng **giọng Mỹ** (không phải giọng “đồ chơi”). |
-| `browser-math-test.mjs` | **Cửa toán định kỳ**: vào Đấu Máy / Soi quân là cửa mở sẵn; giải xong thì nước đầu đi luôn, cứ 2–3 nước cửa mới mở lại và giữ nước cờ cho tới khi giải đúng; phép tính tự lấy nét, gõ sai thì cửa vẫn mở; ba mẹ **tạm tắt / bật lại** cửa toán trong ⚙️ Tùy chọn của bé (nhớ qua lần tải lại); thẻ nằm gọn trên điện thoại 390×844. |
+| `browser-math-test.mjs` | **Cửa toán định kỳ**: vào Đấu Máy / Soi quân là cửa mở sẵn; giải xong thì nước đầu đi luôn, cứ 2–3 nước cửa mới mở lại và giữ nước cờ cho tới khi giải đúng; phép tính tự lấy nét, gõ sai thì cửa vẫn mở; ba mẹ **tạm tắt cho hết hôm nay** cửa toán trong ⚙️ Tùy chọn của bé (hôm sau tự bật lại, đúng ngày thì nhớ qua lần tải lại); thẻ nằm gọn trên điện thoại 390×844. |
 | `browser-tactics-test.mjs` | Tab **Trung cuộc**: mở đúng chủ đề qua `/tactics?theme=…`, giải đúng một thế rồi phát lại **“Xem lại lời giải”** (quân đi lại đúng, có mũi tên, đọc to nước). |
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
 | `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |

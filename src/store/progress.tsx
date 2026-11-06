@@ -16,16 +16,24 @@ interface Persisted {
   notation: NotationStyle
   soundOn: boolean
   /**
-   * Ba mẹ tạm tắt cửa toán (bé mệt, đang chơi ván dở…). Mặc định BẬT để giữ
-   * thói quen "giải toán rồi mới đi cờ".
+   * Ngày (YYYY-MM-DD theo giờ máy) ba mẹ tạm tắt cửa toán; `null` là đang bật.
+   * Chỉ có hiệu lực trong ĐÚNG ngày đó - hôm sau cửa toán tự bật lại.
    */
-  mathGateOff: boolean
+  mathGateOffOn: string | null
+}
+
+/** Ngày hôm nay dạng `YYYY-MM-DD` theo giờ máy (không dùng UTC kẻo lệch múi giờ). */
+function todayKey(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
 }
 
 const DEFAULTS: Persisted = {
   notation: 'figurine',
   soundOn: true,
-  mathGateOff: false,
+  mathGateOffOn: null,
 }
 
 interface KidContextValue {
@@ -33,7 +41,7 @@ interface KidContextValue {
   setNotation: (notation: NotationStyle) => void
   soundOn: boolean
   toggleSound: () => void
-  /** Ba mẹ đã tạm tắt cửa toán chưa (bật/tắt trong ⚙️ Tùy chọn của bé). */
+  /** Ba mẹ đã tạm tắt cửa toán trong hôm nay chưa (bật/tắt trong ⚙️ Tùy chọn của bé). */
   mathGateOff: boolean
   toggleMathGate: () => void
 }
@@ -45,13 +53,21 @@ function load(): Persisted {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULTS
-    const parsed = JSON.parse(raw) as Partial<Persisted>
+    const parsed = JSON.parse(raw) as Partial<Persisted> & { mathGateOff?: boolean }
+    const today = todayKey()
+    // Bản cũ lưu cờ `mathGateOff: true` và nhớ mãi; nay chỉ tắt cho hết ngày, nên
+    // dữ liệu cũ được coi như vừa tắt hôm nay rồi mai tự bật lại.
+    const legacyOff = parsed.mathGateOff === true
     return {
       // Bản cũ từng cho bé chọn tuýp "chuẩn quốc tế thuần" (Nf3) - nay đã bỏ, nên
       // dữ liệu đã lưu cần quy về "hình cờ + quốc tế" cho khớp bảng tuỳ chọn.
       notation: parsed.notation === 'vietnamese' ? 'vietnamese' : 'figurine',
       soundOn: parsed.soundOn ?? true,
-      mathGateOff: parsed.mathGateOff ?? false,
+      // Qua ngày mới thì coi như đang BẬT, kể cả khi app không được mở lại.
+      mathGateOffOn:
+        parsed.mathGateOffOn === today || (parsed.mathGateOffOn == null && legacyOff)
+          ? today
+          : null,
     }
   } catch {
     return DEFAULTS
@@ -79,8 +95,25 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const toggleMathGate = useCallback(() => {
-    setState((prev) => ({ ...prev, mathGateOff: !prev.mathGateOff }))
+    setState((prev) => ({
+      ...prev,
+      // Tắt là tắt cho hết HÔM NAY; mai mở app là cửa toán tự bật lại.
+      mathGateOffOn: prev.mathGateOffOn === null ? todayKey() : null,
+    }))
   }, [])
+
+  // Máy tính bảng để mở qua đêm: vừa qua ngày mới là tự bật lại cửa toán, không
+  // đợi ba mẹ nhớ ra. Hẹn đúng mốc nửa đêm nên không phải kiểm tra mỗi phút.
+  useEffect(() => {
+    if (!state.mathGateOffOn) return
+    const now = new Date()
+    const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    const timer = window.setTimeout(
+      () => setState((prev) => (prev.mathGateOffOn ? { ...prev, mathGateOffOn: null } : prev)),
+      Math.max(1000, nextDay.getTime() - now.getTime()),
+    )
+    return () => window.clearTimeout(timer)
+  }, [state.mathGateOffOn])
 
   const value = useMemo<KidContextValue>(
     () => ({
@@ -88,10 +121,10 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
       soundOn: state.soundOn,
       setNotation,
       toggleSound,
-      mathGateOff: state.mathGateOff,
+      mathGateOff: state.mathGateOffOn !== null,
       toggleMathGate,
     }),
-    [state.notation, state.soundOn, state.mathGateOff, setNotation, toggleSound, toggleMathGate],
+    [state.notation, state.soundOn, state.mathGateOffOn, setNotation, toggleSound, toggleMathGate],
   )
 
   return <KidContext.Provider value={value}>{children}</KidContext.Provider>

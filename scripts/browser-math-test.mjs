@@ -301,5 +301,23 @@ await sleep(250)
 await reload()
 check(await waitFor('#kid-math-gate'), 'bật lại thì cửa toán mở lại khi vào trang')
 
+console.log('\n▶ Hôm sau cửa toán tự bật lại')
+
+// Giả lập ba mẹ tắt từ hôm qua: ghi ngày cũ vào bộ nhớ của app rồi mở lại trang.
+await evaluate(`(() => {
+  const key = 'hoc-vien-co-vua-nhi.v1'
+  const raw = JSON.parse(localStorage.getItem(key) || '{}')
+  raw.mathGateOffOn = '2020-01-01'
+  localStorage.setItem(key, JSON.stringify(raw))
+})()`)
+await reload()
+check(await waitFor('#kid-math-gate'), 'hôm sau vào trang là cửa toán mở lại')
+check(
+  (await evaluate(
+    `JSON.parse(localStorage.getItem('hoc-vien-co-vua-nhi.v1') || '{}').mathGateOffOn ?? null`,
+  )) === null,
+  'ngày tắt cũ được tự xoá khi đã qua ngày mới',
+)
+
 close()
 finish('BROWSER MATH')
