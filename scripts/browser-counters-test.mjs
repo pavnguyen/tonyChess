@@ -9,6 +9,7 @@
  * Chạy: npm run check:counters
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -247,6 +248,8 @@ const move = async (from, to) => {
   await sleep(100)
   await evaluate(`document.getElementById('kid-board-square-${to}').click()`)
   await sleep(350)
+  // Mỗi nước đáp phải qua "cửa toán" trước khi bàn cờ nhận.
+  await solveMathGate(evaluate)
 }
 await move('d7', 'd6')
 check(await present('#kid-board-piece-bP-d7'), 'nước đáp chưa đúng bị từ chối, quân vẫn ở d7')

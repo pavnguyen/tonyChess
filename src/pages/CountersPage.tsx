@@ -462,8 +462,11 @@ export function CountersPage() {
       <BoardStage
         reserve={244}
         top={
-          <>
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,1fr)] items-center gap-2">
+            {/* Hai cột hai bên rộng BẰNG NHAU (cột phải chứa nút Mắt Thần) nên hai chip
+                luôn nằm đúng giữa bàn cờ, không lệch sang trái. */}
+            <span aria-hidden className="size-9 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2">
               <span className="rounded-full bg-coral-100 px-3 py-1 text-xs font-extrabold text-coral-700">
                 🧭 Đối thủ: {lesson.emoji} {lesson.englishName}
               </span>
@@ -471,8 +474,10 @@ export function CountersPage() {
                 Bé cầm {sideLabel(kidSide)}
               </span>
             </div>
-            <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
-          </>
+            <div className="justify-self-end">
+              <EyeToggle on={heatmap} onToggle={toggleHeatmap} />
+            </div>
+          </div>
         }
         board={
           <ChessBoardPanel
