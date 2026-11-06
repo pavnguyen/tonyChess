@@ -509,10 +509,13 @@ export function EndgamesPage() {
               40px mà không thêm thông tin gì.
             */}
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-              <LessonHead
-                icon={LEVELS.find((item) => item.level === (challenge?.level ?? 'basic'))?.icon ?? '👑'}
-                title={challenge?.title ?? 'Tàn cuộc'}
-              />
+              {/* Tên bài nằm trọn một dòng và canh giữa bàn cờ (cùng icon). */}
+              <div className="flex min-w-0 basis-full justify-center">
+                <LessonHead
+                  icon={LEVELS.find((item) => item.level === (challenge?.level ?? 'basic'))?.icon ?? '👑'}
+                  title={challenge?.title ?? 'Tàn cuộc'}
+                />
+              </div>
               <span className="rounded-full bg-gold-100 px-2.5 py-1 text-xs font-extrabold text-gold-800">
                 <span className="stage:hidden">
                   {challenge?.goal === 'promote' ? '🛡️ Thành Hậu' : '🏁 Chiếu bí'}
@@ -549,6 +552,7 @@ export function EndgamesPage() {
               heatmap={heatmap}
               arrows={goalFocus ? [] : hintArrow}
               extraSquareStyles={squareStyles}
+              mathGate
               onDrop={handleDrop}
             />
           )

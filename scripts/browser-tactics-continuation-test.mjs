@@ -5,6 +5,7 @@
  * Chạy: node scripts/browser-tactics-continuation-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -51,6 +52,8 @@ const clickSquare = async (square) => {
       return Boolean(el)
     })()
   `)
+  // Mỗi nước của bé phải qua "cửa toán" trước khi được đi.
+  await solveMathGate(evaluate)
 }
 
 await sleep(2500)

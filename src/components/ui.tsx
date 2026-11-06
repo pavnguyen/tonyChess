@@ -643,7 +643,7 @@ export function FoldPanel({
  */
 export function LessonHead({ icon, title }: { icon: string; title: string }) {
   return (
-    <div id="kid-lesson-title" className="flex min-w-0 flex-1 items-center gap-1.5">
+    <div id="kid-lesson-title" className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
       <span
         className="grid size-5 shrink-0 place-items-center rounded-lg bg-brand-100 text-sm leading-none"
         aria-hidden
@@ -651,7 +651,7 @@ export function LessonHead({ icon, title }: { icon: string; title: string }) {
         {icon}
       </span>
       <span
-        className="min-w-0 flex-1 truncate text-xs font-extrabold text-brand-900 sm:text-sm"
+        className="min-w-0 truncate text-center text-xs font-extrabold text-brand-900 sm:text-sm"
         title={title}
       >
         {title}

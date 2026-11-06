@@ -430,10 +430,13 @@ export function TacticsPage() {
         top={
           <>
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-              <LessonHead
-                icon={BEST_MOVE_THEMES[theme]?.emoji ?? '⚔️'}
-                title={active?.title ?? 'Trung cuộc'}
-              />
+              {/* Tên bài nằm trọn một dòng và canh giữa bàn cờ (cùng icon). */}
+              <div className="flex min-w-0 basis-full justify-center">
+                <LessonHead
+                  icon={BEST_MOVE_THEMES[theme]?.emoji ?? '⚔️'}
+                  title={active?.title ?? 'Trung cuộc'}
+                />
+              </div>
               <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-extrabold text-brand-700">
                 Thế cờ {safeIndex + 1}/{list.length}
               </span>
@@ -469,6 +472,7 @@ export function TacticsPage() {
               arrows={previewing ? [] : solutionArrow}
               extraSquareStyles={previewing ? undefined : squareStyles}
               announce={announceSan}
+              mathGate
               onDrop={handleDrop}
             />
           )

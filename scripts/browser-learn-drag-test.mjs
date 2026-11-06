@@ -10,6 +10,7 @@
  * Chạy: node scripts/browser-learn-drag-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = process.env.APP_URL ?? 'http://localhost:5198/'
 
@@ -141,6 +142,8 @@ const dragPiece = async (from, to) => {
     await sleep(60)
   }
   await mouse('mouseReleased', b.x, b.y, { buttons: 0 })
+  // Mỗi nước của bé phải qua "cửa toán" trước khi được đi.
+  await solveMathGate(evaluate)
   return true
 }
 
@@ -173,6 +176,7 @@ const clickSquare = async (square) => {
   await mouse('mousePressed', point.x, point.y, { buttons: 1 })
   await mouse('mouseReleased', point.x, point.y, { buttons: 0 })
   await sleep(250)
+  await solveMathGate(evaluate)
 }
 
 await clickSquare('c1')

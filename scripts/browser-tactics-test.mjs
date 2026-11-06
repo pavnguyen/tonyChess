@@ -11,6 +11,7 @@
  * Chạy: node scripts/browser-tactics-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -62,8 +63,8 @@ const clickById = (id) =>
     })()
   `)
 
-const clickSquare = (square) =>
-  evaluate(`
+const clickSquare = async (square) => {
+  await evaluate(`
     (() => {
       const el = document.getElementById('kid-board-square-' + ${JSON.stringify(square)})
       if (!el) return false
@@ -71,6 +72,9 @@ const clickSquare = (square) =>
       return true
     })()
   `)
+  // Chạm ô đích là một nước đi → phải qua "cửa toán" trước khi bàn cờ nhận.
+  await solveMathGate(evaluate)
+}
 
 /**
  * Đưa bé về đúng thế `material-1` bằng combo chọn thế cờ.

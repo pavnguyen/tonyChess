@@ -10,6 +10,7 @@
  * Chạy: node scripts/browser-hint-drag-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 // Bỏ dấu “/” cuối: `goto` nối thêm “/tactics” vào chuỗi này, để nguyên thì thành
 // “http://localhost:5198//tactics” - router không khớp đường dẫn nên trang nhảy về “/”
@@ -131,6 +132,8 @@ const dragPiece = async (from, to) => {
     await sleep(60)
   }
   await mouse('mouseReleased', b.x, b.y, { buttons: 0 })
+  // Mỗi nước của bé phải qua "cửa toán" trước khi được đi.
+  await solveMathGate(evaluate)
   return true
 }
 

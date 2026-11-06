@@ -885,6 +885,7 @@ export function OpeningsPage() {
             arrows={arrow}
             extraSquareStyles={squareStyles}
             announce={announceSan}
+            mathGate
             onDrop={handleDrop}
             />
             {patternOverlay}

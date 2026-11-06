@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react'
 import { Chess } from 'chess.js'
 import { coordinateLabels } from '../lib/coordinates'
 import { speakMove, speakPiece, speakSquare } from '../lib/speech'
+import { MathGate } from './MathGate'
 import { computeHeatmap, legalTargets } from '../lib/threats'
 import type { Side } from '../types'
 
@@ -22,6 +23,12 @@ export interface ChessBoardPanelProps {
    */
   announce?: string | null
   onDrop?: (from: string, to: string) => boolean
+  /**
+   * Bắt bé giải một phép toán trước khi nước đi được chấp nhận (dùng cho các tab
+   * Học/Luyện). Bật thì mỗi nước của bé có một "cửa toán"; tắt (mặc định) thì bàn
+   * cờ chỉ để chơi/xem.
+   */
+  mathGate?: boolean
   /**
    * Tiền tố id của các phần tử DOM bàn cờ (mặc định `kid-board`). Đặt khác đi khi
    * render NHIỀU bàn cờ trên cùng một trang (ví dụ bàn cờ trong modal ôn mẫu hình)
@@ -56,6 +63,7 @@ export function ChessBoardPanel({
   extraSquareStyles,
   announce = null,
   onDrop,
+  mathGate = false,
   boardId = 'kid-board',
   className = '',
 }: ChessBoardPanelProps) {
@@ -98,11 +106,37 @@ export function ChessBoardPanel({
     return styles
   }, [game, heatmap, playerSide, selected, interactive, extraSquareStyles])
 
+  /*
+   * Cửa toán: bé kéo/chạm đi một nước thì CHƯA đi ngay - nước đó được giữ lại,
+   * cửa toán mở ra; giải đúng xong mới thật sự gọi `onDrop`. Nhờ vậy luật "phải
+   * giải toán trước mỗi nước" nằm gọn ở một chỗ, mọi trang Học/Luyện dùng chung.
+   * `mathSolvedFen` nhớ THẾ CỜ đã giải để nước kế tiếp (thế cờ khác) lại phải giải.
+   */
+  const [mathOpen, setMathOpen] = useState(false)
+  const [pendingMove, setPendingMove] = useState<{ from: string; to: string } | null>(null)
+  const [mathSolvedFen, setMathSolvedFen] = useState<string | null>(null)
+
   const tryMove = (from: string, to: string): boolean => {
     if (!onDrop) return false
+    if (mathGate && mathSolvedFen !== fen) {
+      setPendingMove({ from, to })
+      setMathOpen(true)
+      setSelected(null)
+      return false
+    }
     const moved = onDrop(from, to)
     setSelected(null)
     return moved
+  }
+
+  const handleMathSolved = () => {
+    setMathOpen(false)
+    setMathSolvedFen(fen)
+    const move = pendingMove
+    setPendingMove(null)
+    if (!move) return
+    // Để cửa toán kịp đóng rồi mới đi; tránh quân cờ nhảy trong lúc lớp phủ còn đó.
+    window.setTimeout(() => onDrop?.(move.from, move.to), 0)
   }
 
   /*
@@ -299,6 +333,8 @@ export function ChessBoardPanel({
           </div>
         )}
       </div>
+
+      {mathOpen && <MathGate onSolved={handleMathSolved} />}
     </div>
   )
 }

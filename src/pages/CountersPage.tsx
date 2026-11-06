@@ -484,6 +484,7 @@ export function CountersPage() {
             arrows={arrows}
             extraSquareStyles={{ ...lastMoveSquares, ...nextMoveSquares, ...pickedSquares }}
             announce={announceSan}
+            mathGate
             onDrop={handleDrop}
           />
         }

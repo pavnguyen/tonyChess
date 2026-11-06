@@ -324,6 +324,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `validate-chess.ts` | Mọi FEN hợp lệ, mọi dòng khai cuộc đi đúng luật, thế tàn cờ thật sự chiếu bí được, các chủ đề Trung cuộc đủ 2 thế/chủ đề, **chuỗi “đánh tiếp” hợp lệ và có độ dài chẵn**, và **vè 4–6 chữ** ở mọi dữ liệu viết tay. |
 | `smoke-logic.ts` | Ký hiệu nước đi, heatmap 64 ô, **cảnh báo quân bị treo**, gợi ý tàn cuộc. |
 | `smoke-session.ts` | **Buổi luyện hôm nay**: tiến độ chỉ nhích khi bé HOÀN THÀNH đúng bài đang chờ; làm lại bài cũ hay vào giữa buổi bằng ▶ không nhảy điểm. |
+| `smoke-math.ts` | Bộ sinh **cửa toán** trước mỗi nước cờ: đúng một ô trống, cộng/trừ số 1–2 chữ số, nhân/chia trong bảng cửu chương, đáp án 1–99. |
 | `check-duplicate-copy.ts` | Bắt hai câu trùng ≥ 90% từ trong cùng một bài (hint ↔ 3 bước, tên ↔ ý tưởng, mục tiêu ↔ kế hoạch). |
 | `smoke-plan.ts` | Khung “kế hoạch theo thế cờ hiện tại” (`buildLivePlan`) sinh đủ loại việc. |
 | `smoke-info.ts` | Mọi khoá nội dung trong `src/lib/info.ts` đều có chủ đề hợp lệ (nút ⓘ). |
@@ -347,6 +348,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
 | `browser-coords-test.mjs` | Toạ độ bàn cờ (cột a-h, hàng 1-8) ở cả 4 mép, đọc tên ô + tên quân tiếng Anh, và xoay đúng khi bé cầm quân Đen. |
 | `browser-voice-test.mjs` | Bảng ⚙️ **không còn danh sách giọng**: app tự chọn giọng, đọc toạ độ bằng **giọng Mỹ** (không phải giọng “đồ chơi”). |
+| `browser-math-test.mjs` | **Cửa toán trước mỗi nước cờ**: kéo quân thì nước đi bị giữ lại, phép tính tự lấy nét, gõ sai thì cửa vẫn mở, gõ đúng mới đi; thẻ nằm gọn trên điện thoại 390×844. |
 | `browser-tactics-test.mjs` | Tab **Trung cuộc**: mở đúng chủ đề qua `/tactics?theme=…`, giải đúng một thế rồi phát lại **“Xem lại lời giải”** (quân đi lại đúng, có mũi tên, đọc to nước). |
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
 | `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |
