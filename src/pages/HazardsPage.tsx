@@ -287,6 +287,8 @@ export function HazardsPage() {
             playerSide="white"
             interactive={false}
             extraSquareStyles={revealStyles}
+            mathGate
+            mathGateOnEnter
           />
         }
         under={

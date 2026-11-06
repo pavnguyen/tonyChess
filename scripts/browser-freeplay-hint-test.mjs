@@ -9,6 +9,7 @@
  * Chạy: npm run check:freeplay
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -91,6 +92,8 @@ const hintBusy = () =>
   evaluate(`/đang tính/i.test(document.getElementById('kid-freeplay-hint')?.innerText || '')`)
 
 await sleep(2500)
+// Vào Đấu Máy là mở cửa toán trước khi bé chơi.
+await solveMathGate(evaluate)
 
 console.log('\n▶ Hai mức máy: nhãn Dễ · Khá')
 
@@ -149,6 +152,8 @@ check(
   'bấm “♟️ Ván mới”',
 )
 await sleep(600)
+// Ván mới dựng lại bàn cờ → cửa toán mở lại.
+await solveMathGate(evaluate)
 check((await hintLabel()).includes('(3)'), `ván mới → nút 💡 hiện lại (3) (${await hintLabel()})`)
 // Bé có thể được bốc cầm quân Đen: máy (Trắng) đi nước mở đầu trước, nên chờ tới
 // lượt bé thay vì đòi nút bấm được ngay.

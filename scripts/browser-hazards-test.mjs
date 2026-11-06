@@ -13,6 +13,7 @@
  * Chạy: node scripts/browser-hazards-test.mjs
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -42,6 +43,8 @@ const waitFor = async (selector, timeoutMs = 12000) => {
 }
 
 await sleep(2200)
+// Vào Soi quân là mở cửa toán trước khi bé bắt đầu soi.
+check(await solveMathGate(evaluate), 'giải cửa toán mở sẵn khi vào Soi quân')
 
 console.log('\n▶ Trang Soi quân treo sinh thế cờ và có đáp án')
 

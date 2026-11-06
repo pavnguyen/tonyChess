@@ -533,6 +533,8 @@ export function FreePlayPage() {
             heatmap={heatmap}
             arrows={hintArrow}
             extraSquareStyles={boardStyles}
+            mathGate
+            mathGateOnEnter
             onDrop={handleDrop}
           />
         }

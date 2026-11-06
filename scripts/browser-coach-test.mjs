@@ -10,6 +10,7 @@
  * Chạy: node scripts/browser-coach-test.mjs  (cần server ở cổng 5198)
  */
 import { makeChecker, openPage, sleep } from './lib/cdp.mjs'
+import { solveMathGate } from './lib/mathGate.mjs'
 
 const APP_URL = (process.env.APP_URL ?? 'http://localhost:5198/').replace(/\/$/, '')
 
@@ -46,6 +47,8 @@ const text = (selector) =>
 
 /** Kéo quân bằng chuỗi sự kiện chuột thật, giống thao tác tay của bé. */
 const moveByClick = async (from, to) => {
+  // Cửa toán mở ngay khi vào Đấu Máy (và trước mỗi nước sau đó).
+  await solveMathGate(evaluate)
   for (const square of [from, to]) {
     const point = await evaluate(`(() => {
       const r = document.getElementById('kid-board-square-${square}').getBoundingClientRect()
@@ -60,6 +63,7 @@ const moveByClick = async (from, to) => {
     await sleep(90)
   }
   await sleep(500)
+  await solveMathGate(evaluate)
 }
 
 await sleep(2400)

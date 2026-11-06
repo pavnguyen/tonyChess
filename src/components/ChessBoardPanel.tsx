@@ -30,6 +30,12 @@ export interface ChessBoardPanelProps {
    */
   mathGate?: boolean
   /**
+   * Mở cửa toán NGAY khi vào trang (dùng cho Chơi/Soi quân - nơi bé cần làm toán
+   * trước khi bắt đầu, kể cả bàn cờ chỉ để xem như Soi quân). Giải xong thì nước
+   * đầu tiên được đi luôn, không phải giải thêm lần nữa.
+   */
+  mathGateOnEnter?: boolean
+  /**
    * Tiền tố id của các phần tử DOM bàn cờ (mặc định `kid-board`). Đặt khác đi khi
    * render NHIỀU bàn cờ trên cùng một trang (ví dụ bàn cờ trong modal ôn mẫu hình)
    * để không trùng id - trùng id cũng làm id sinh tự động của thư viện trùng theo.
@@ -64,6 +70,7 @@ export function ChessBoardPanel({
   announce = null,
   onDrop,
   mathGate = false,
+  mathGateOnEnter = false,
   boardId = 'kid-board',
   className = '',
 }: ChessBoardPanelProps) {
@@ -112,7 +119,7 @@ export function ChessBoardPanel({
    * giải toán trước mỗi nước" nằm gọn ở một chỗ, mọi trang Học/Luyện dùng chung.
    * `mathSolvedFen` nhớ THẾ CỜ đã giải để nước kế tiếp (thế cờ khác) lại phải giải.
    */
-  const [mathOpen, setMathOpen] = useState(false)
+  const [mathOpen, setMathOpen] = useState(mathGateOnEnter)
   const [pendingMove, setPendingMove] = useState<{ from: string; to: string } | null>(null)
   const [mathSolvedFen, setMathSolvedFen] = useState<string | null>(null)
 

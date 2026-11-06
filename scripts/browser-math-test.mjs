@@ -200,5 +200,18 @@ check(await solveMathGate(evaluate), 'gõ đáp án đúng 0.5 giây sau cửa t
 await sleep(1300)
 check(await hasPiece('wP', 'd4'), 'quân Tốt đã đi tới d4 sau khi giải đúng')
 
+console.log('\n▶ Vào Chơi (Đấu Máy / Soi quân) cũng mở cửa toán ngay')
+
+for (const [path, label] of [['/free-play', 'Đấu Máy'], ['/hazards', 'Soi quân']]) {
+  await evaluate(`location.href = ${JSON.stringify(`${APP_URL}${path}#math-gate-entry`)}`)
+  await sleep(2500)
+  check(await waitFor('#kid-math-gate'), `vào ${label} là cửa toán mở ngay`)
+  check(await solveMathGate(evaluate), `giải xong cửa toán ở ${label}`)
+  check(
+    !(await evaluate(`Boolean(document.getElementById('kid-math-gate'))`)),
+    `cửa toán đóng sau khi giải ở ${label}`,
+  )
+}
+
 close()
 finish('BROWSER MATH')
