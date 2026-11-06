@@ -27,7 +27,6 @@ import {
   PLAN_FOCUS_STYLE,
 } from '../lib/notation'
 import { playError, playMove, playPromote, playWin } from '../lib/sound'
-import { speakVietnamese } from '../lib/speech'
 import { useKidProgress } from '../store/progress'
 import type { CSSProperties } from 'react'
 import type { EndgameChallenge, EndgameLevel, OpeningMove } from '../types'
@@ -770,15 +769,6 @@ export function EndgamesPage() {
                 “{challenge?.rhyme}”
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => speakVietnamese(challenge?.rhyme ?? '')}
-              aria-label="Đọc lại khẩu quyết"
-              title="Đọc lại khẩu quyết"
-              className="shrink-0 rounded-full px-1 text-sm leading-none text-gold-700 transition-colors hover:bg-gold-100 active:translate-y-[1px]"
-            >
-              🔊
-            </button>
           </div>
 
           <div

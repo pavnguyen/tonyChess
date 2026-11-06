@@ -223,7 +223,7 @@ src/
 │                   # stockfishLoader.ts · uci.ts
 ├── hooks/          # useChessGame (ván cờ SAN) · useArrowKeys · useEyeCheck
 ├── layout/         # RootLayout: header, 3 nhóm tab, dải bài trong nhóm, thanh tuỳ chọn của bé
-├── lib/            # notation · speech (đọc to giọng Mỹ + chọn giọng) · coordinates · threats · hints ·
+├── lib/            # notation · speech (đọc toạ độ/nước đi bằng giọng Mỹ) · coordinates · threats · hints ·
 │                   # planFocus · livePlan · sound · info
 ├── pages/          # Openings · Counters · Tactics · Endgames · Strategy · FreePlay
 └── store/          # KidProgressProvider (tuỳ chọn ghi nước đi + âm thanh - localStorage)
@@ -325,7 +325,6 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `smoke-logic.ts` | Ký hiệu nước đi, heatmap 64 ô, **cảnh báo quân bị treo**, gợi ý tàn cuộc. |
 | `smoke-session.ts` | **Buổi luyện hôm nay**: tiến độ chỉ nhích khi bé HOÀN THÀNH đúng bài đang chờ; làm lại bài cũ hay vào giữa buổi bằng ▶ không nhảy điểm. |
 | `check-duplicate-copy.ts` | Bắt hai câu trùng ≥ 90% từ trong cùng một bài (hint ↔ 3 bước, tên ↔ ý tưởng, mục tiêu ↔ kế hoạch). |
-| `smoke-voice.ts` | Chọn giọng tiếng Việt mặc định là **giọng Nam**; chỉ dùng giọng nữ khi máy không có giọng nam. |
 | `smoke-plan.ts` | Khung “kế hoạch theo thế cờ hiện tại” (`buildLivePlan`) sinh đủ loại việc. |
 | `smoke-info.ts` | Mọi khoá nội dung trong `src/lib/info.ts` đều có chủ đề hợp lệ (nút ⓘ). |
 | `smoke-engine.ts` | Bộ máy tự đấu hết ván, tìm được chiếu bí, biết ăn Hậu bị treo, không bao giờ trả nước sai luật. |
@@ -347,7 +346,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `browser-pwa-offline-test.mjs` | Khung điện thoại 390×844: manifest + service worker cài xong, **tắt mạng bằng DevTools** rồi tải lại và mở tab Đấu ván - bàn cờ, hai mức máy và **engine vẫn chạy** từ cache. |
 | `browser-info-test.mjs` | Nút **ⓘ** có mặt ở đúng chỗ và bấm ra bảng giải thích đúng chủ đề, đóng được, bảng nằm gọn màn hình. |
 | `browser-coords-test.mjs` | Toạ độ bàn cờ (cột a-h, hàng 1-8) ở cả 4 mép, đọc tên ô + tên quân tiếng Anh, và xoay đúng khi bé cầm quân Đen. |
-| `browser-voice-test.mjs` | Bảng ⚙️ **không còn danh sách giọng**: app tự chọn giọng, đọc toạ độ bằng **giọng Mỹ** (không phải giọng “đồ chơi”), khẩu quyết tiếng Việt ưu tiên **giọng Nam**. |
+| `browser-voice-test.mjs` | Bảng ⚙️ **không còn danh sách giọng**: app tự chọn giọng, đọc toạ độ bằng **giọng Mỹ** (không phải giọng “đồ chơi”). |
 | `browser-tactics-test.mjs` | Tab **Trung cuộc**: mở đúng chủ đề qua `/tactics?theme=…`, giải đúng một thế rồi phát lại **“Xem lại lời giải”** (quân đi lại đúng, có mũi tên, đọc to nước). |
 | `browser-tactics-continuation-test.mjs` | Tab **Trung cuộc**: chế độ **đánh tiếp** - máy tự đáp trả rồi bé đi nốt nước chiếu bí. |
 | `browser-endgame-test.mjs` | Tab **Tàn cuộc**: tiêu đề “Tàn cuộc cơ bản”, đủ 5 thẻ luyện, các khung tham khảo cũ **đã được gỡ**; bấm thẻ thì bàn cờ đổi đúng thế cờ; bấm Gợi ý thì hiện mũi tên + bong bóng đọc nước. |

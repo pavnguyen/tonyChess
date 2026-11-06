@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { MoveText } from './MoveText'
 import { LessonLabel } from './ui'
 import {
@@ -10,7 +9,6 @@ import {
   PIECE_GLYPH,
   PIECE_NAME_VI,
 } from '../lib/notation'
-import { speakVietnamese } from '../lib/speech'
 import type { MoveAnnotation, NotationStyle } from '../types'
 
 export type BannerVariant = 'hint' | 'played' | 'opponent' | 'wrong'
@@ -89,16 +87,6 @@ export function ExplanationBanner({
   const showRhyme = Boolean(annotation.rhyme) && (variant === 'hint' || variant === 'wrong')
   const showPrinciple = !showRhyme && Boolean(annotation.principle)
 
-  /**
-   * Nhắc tuồng: khẩu quyết được đọc to bằng tiếng Việt ngay khi băng "nước sắp tới"
-   * hiện ra, để bé nghe trước rồi làm theo. Máy tắt tiếng (🔇) hoặc không có giọng
-   * đọc thì im lặng, không báo lỗi.
-   */
-  useEffect(() => {
-    if (variant !== 'hint' || !annotation.rhyme) return
-    speakVietnamese(annotation.rhyme)
-  }, [variant, annotation.rhyme, annotation.san])
-
   /*
     Bố cục BA CỘT ĐỀU NHAU trên màn hình rộng (nước đi · vì sao · khẩu quyết) thay
     cho hai cột lệch trước đây: cột trái vừa chip vừa khối xanh lớn nên cao gấp rưỡi
@@ -163,15 +151,6 @@ export function ExplanationBanner({
                 “{annotation.rhyme}”
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => speakVietnamese(annotation.rhyme ?? '')}
-              aria-label="Đọc lại khẩu quyết"
-              title="Đọc lại khẩu quyết"
-              className="shrink-0 rounded-full px-1 text-sm leading-none text-gold-700 transition-colors hover:bg-gold-100 active:translate-y-[1px]"
-            >
-              🔊
-            </button>
           </div>
         ) : (
           showPrinciple && (

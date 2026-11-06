@@ -6,10 +6,9 @@
  * không hỗ trợ thì `speechSupported()` trả `false` và mọi lời gọi đều im lặng -
  * app vẫn chạy y như cũ.
  *
- * Đọc bằng **giọng Mỹ** (`en-US`) đúng như ba mẹ yêu cầu: bé vừa học toạ độ vừa
- * làm quen cách đọc nước đi kiểu quốc tế - `Ne3` đọc là "Knight E 3".
- * Riêng khẩu quyết tiếng Việt (`speakVietnamese`) mặc định dùng **giọng Nam**,
- * xem `voicePick.ts`.
+ * Chỉ đọc bằng **giọng Mỹ** (`en-US`): bé vừa học toạ độ vừa làm quen cách đọc
+ * nước đi kiểu quốc tế - `Ne3` đọc là "Knight E 3". Khẩu quyết tiếng Việt vẫn
+ * hiện trên màn hình nhưng không đọc to nữa.
  *
  * Tôn trọng nút 🔊 Âm thanh: đang tắt âm thanh thì không đọc gì (xem `isMuted`).
  * Toàn bộ phần dựng câu là hàm thuần (`describeMoveEnglish`, `squareSpeech`) nên
@@ -18,7 +17,6 @@
 // Đuôi `.ts` là bắt buộc: file này còn được `node scripts/smoke-logic.ts` nạp thẳng
 // (Node tự bỏ kiểu), mà Node không tự thêm đuôi cho import lúc chạy.
 import { isMuted } from './sound.ts'
-import { chooseVietnameseVoice } from './voicePick.ts'
 
 /** Tên quân cờ tiếng Anh - dùng cho giọng đọc quốc tế. */
 const PIECE_EN: Record<string, string> = {
@@ -40,8 +38,6 @@ function speechSupported(): boolean {
 }
 
 let cachedVoice: SpeechSynthesisVoice | null = null
-/** Giọng tiếng Việt, dùng riêng cho **khẩu quyết vè** (xem `speakVietnamese`). */
-let cachedViVoice: SpeechSynthesisVoice | null = null
 
 /**
  * Các giọng tiếng Anh nghe tự nhiên nhất trên máy phổ thông, xếp theo mức ưu
@@ -133,20 +129,6 @@ function pickVoice(): SpeechSynthesisVoice | null {
 }
 
 /**
- * Giọng TIẾNG VIỆT cho khẩu quyết vè - **mặc định là giọng Nam** (Nam Minh,
- * “Male”/“Nam”…), chỉ dùng giọng nữ khi máy không có giọng nam nào. Danh sách
- * xếp hạng nằm ở `voicePick.ts` để có bài kiểm riêng mà không cần trình duyệt.
- */
-function autoVietnameseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  return chooseVietnameseVoice(voices)
-}
-
-function pickVietnameseVoice(): SpeechSynthesisVoice | null {
-  if (!speechSupported()) return null
-  return autoVietnameseVoice(window.speechSynthesis.getVoices() ?? [])
-}
-
-/**
  * Nạp sẵn danh sách giọng đọc. **Quan trọng**: Chrome/Safari trả danh sách RỖNG ở
  * lần gọi đầu và chỉ có giọng sau sự kiện `voiceschanged`. Nếu ta “khoá” kết quả
  * rỗng lại thì mãi mãi không có giọng Mỹ - nên chỉ lưu khi thật sự tìm thấy giọng,
@@ -160,8 +142,6 @@ export function primeSpeech() {
   const refresh = () => {
     const voice = pickVoice()
     if (voice) cachedVoice = voice
-    const vi = pickVietnameseVoice()
-    if (vi) cachedViVoice = vi
   }
   refresh()
   synth.addEventListener?.('voiceschanged', refresh)
@@ -175,53 +155,27 @@ function usVoice(): SpeechSynthesisVoice | null {
   return voice
 }
 
-function viVoice(): SpeechSynthesisVoice | null {
-  if (cachedViVoice) return cachedViVoice
-  const voice = pickVietnameseVoice()
-  if (voice) cachedViVoice = voice
-  return voice
-}
-
 /**
  * Đọc một câu tiếng Anh. Cắt câu đang đọc dở trước khi đọc câu mới để bé bấm
  * liên tục không bị "dồn" thành một tràng lộn xộn.
  */
 function speak(text: string) {
-  utter(text, false)
-}
-
-/**
- * Đọc một câu TIẾNG VIỆT - dùng cho **khẩu quyết vè** trước nước đi của bé (bé nghe
- * như được “nhắc tuồng” rồi nhắc theo). Không có giọng Việt trên máy thì vẫn đọc
- * bằng giọng mặc định theo `lang`, bé nghe được câu chữ dù giọng hơi lạ.
- */
-export function speakVietnamese(text: string) {
-  const clean = (text ?? '').trim()
-  if (!clean) return
-  utter(clean, false, { lang: 'vi-VN', voice: viVoice(), rate: 0.88 })
-}
-
-function utter(
-  text: string,
-  force: boolean,
-  options: { lang?: string; voice?: SpeechSynthesisVoice | null; rate?: number } = {},
-) {
   if (!text || !speechSupported()) return
-  if (!force && isMuted()) return
+  if (isMuted()) return
   try {
     const synth = window.speechSynthesis
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = options.lang ?? 'en-US'
+    utterance.lang = 'en-US'
     // Chậm hơn một chút cho bé 7 tuổi nghe kịp.
-    utterance.rate = options.rate ?? 0.92
-    const voice = options.voice ?? usVoice()
+    utterance.rate = 0.92
+    const voice = usVoice()
     if (voice) utterance.voice = voice
     // Đang đọc dở thì ngắt để câu mới phát ngay; đang rảnh thì đọc thẳng - tránh
     // vài bản Chrome “nuốt” mất câu khi vừa `cancel()` xong đã `speak()` liền.
     if (synth.speaking || synth.pending) {
       synth.cancel()
       window.setTimeout(() => {
-        if (force || !isMuted()) synth.speak(utterance)
+        if (!isMuted()) synth.speak(utterance)
       }, 70)
     } else {
       synth.speak(utterance)
