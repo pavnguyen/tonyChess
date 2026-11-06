@@ -13,8 +13,8 @@ interface Props {
  * trống, bé gõ số vào chính ô đó rồi bấm **Đồng ý**.
  *
  * Vì sao để ô trống NGAY TRONG phép tính (chứ không phải "đáp án: …" bên dưới):
- * bé 7 tuổi đọc `12 − [ ] = 8` là hiểu ngay mình cần tìm gì, không phải dịch từ
- * câu chữ. Ô nhập dùng bàn phím số trên điện thoại (`inputMode="numeric"`) và tự
+ * bé 7 tuổi đọc `12 − [ ] = 8` hay `[ ] × 3 = 6` là hiểu ngay mình cần tìm gì,
+ * không phải dịch từ câu chữ. Ô nhập dùng bàn phím số trên điện thoại (`inputMode="numeric"`) và tự
  * lấy nét để bé gõ được luôn, không phải chạm thêm một lần.
  *
  * Không có nút đóng: đây là cửa "phải giải xong mới qua", không phải hộp thoại

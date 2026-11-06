@@ -3,7 +3,8 @@
  *   - mỗi phép có ĐÚNG MỘT ô trống `x`, đáp án là số tự nhiên 1…99;
  *   - cộng/trừ chỉ dùng số 1–2 chữ số, kết quả không âm;
  *   - nhân/chia nằm trong bảng cửu chương 2–9 và chia luôn chia hết;
- *   - đủ 9 kiểu bài (cả ô trống ở vị trí kết quả lẫn thừa số).
+ *   - đủ 12 kiểu bài: mỗi phép (cộng, trừ, nhân, chia) có `x` ở cả vị trí
+ *     số hạng đầu, số hạng sau và kết quả.
  *
  * Chạy: node scripts/smoke-math.ts
  */
@@ -71,18 +72,50 @@ check(seen.has('−'), 'có phép trừ')
 check(seen.has('×'), 'có phép nhân')
 check(seen.has('÷'), 'có phép chia')
 
-console.log('\n▶ Đúng dạng ba mẹ yêu cầu')
+console.log('\n▶ Đủ 12 dạng, x nằm ở mọi vị trí')
 
-const minusMissing = makeMathProblem(() => 0.34) // → a − x = b
-check(
-  minusMissing.equation.includes('− x ='),
-  `có dạng “12 − x = 8” (nhận ${minusMissing.equation})`,
-)
-const minusResult = makeMathProblem(() => 0.23) // → a − b = x
-check(
-  minusResult.equation.endsWith('= x'),
-  `có dạng “12 − 4 = x” (nhận ${minusResult.equation})`,
-)
+/** `12 − x = 8` → `n − x = n` (n = một số bất kỳ). */
+const shapeOf = (equation: string) =>
+  equation
+    .split(' ')
+    .map((token) => (/^\d+$/.test(token) ? 'n' : token))
+    .join(' ')
+
+const examples = new Map<string, string>()
+for (let attempt = 0; attempt < 600; attempt += 1) {
+  const problem = makeMathProblem(() => attempt / 600)
+  examples.set(shapeOf(problem.equation), problem.equation)
+}
+
+const requiredShapes = [
+  'n + n = x',
+  'n + x = n',
+  'x + n = n',
+  'n − n = x',
+  'n − x = n',
+  'x − n = n',
+  'n × n = x',
+  'n × x = n',
+  'x × n = n',
+  'n ÷ n = x',
+  'n ÷ x = n',
+  'x ÷ n = n',
+]
+for (const shape of requiredShapes) {
+  check(
+    examples.has(shape),
+    `có dạng “${shape}” (ví dụ ${examples.get(shape) ?? 'KHÔNG CÓ'})`,
+  )
+}
+
+// Đúng ba ví dụ ba mẹ nêu.
+for (const [equation, answer] of [
+  ['x + 5 = 8', 3],
+  ['x × 3 = 6', 2],
+  ['x ÷ 3 = 2', 6],
+] as const) {
+  check(Math.abs(evaluateWith(equation, answer)) < 1e-9, `${equation} → ${answer}`)
+}
 
 console.log('\n▶ Hai đầu thang ngẫu nhiên vẫn hợp lệ')
 

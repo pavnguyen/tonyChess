@@ -324,7 +324,7 @@ chốt. Thiết kế hỏng là báo lỗi ngay.
 | `validate-chess.ts` | Mọi FEN hợp lệ, mọi dòng khai cuộc đi đúng luật, thế tàn cờ thật sự chiếu bí được, các chủ đề Trung cuộc đủ 2 thế/chủ đề, **chuỗi “đánh tiếp” hợp lệ và có độ dài chẵn**, và **vè 4–6 chữ** ở mọi dữ liệu viết tay. |
 | `smoke-logic.ts` | Ký hiệu nước đi, heatmap 64 ô, **cảnh báo quân bị treo**, gợi ý tàn cuộc. |
 | `smoke-session.ts` | **Buổi luyện hôm nay**: tiến độ chỉ nhích khi bé HOÀN THÀNH đúng bài đang chờ; làm lại bài cũ hay vào giữa buổi bằng ▶ không nhảy điểm. |
-| `smoke-math.ts` | Bộ sinh **cửa toán** trước mỗi nước cờ: đúng một ô trống, cộng/trừ số 1–2 chữ số, nhân/chia trong bảng cửu chương, đáp án 1–99. |
+| `smoke-math.ts` | Bộ sinh **cửa toán** trước mỗi nước cờ: đúng một ô trống, **x ở mọi vị trí** (`x + 5 = 8`, `12 − x = 8`, `12 − 4 = x`, `x × 3 = 6`, `x ÷ 3 = 2`…), cộng/trừ số 1–2 chữ số, nhân/chia trong bảng cửu chương, đáp án 1–99. |
 | `check-duplicate-copy.ts` | Bắt hai câu trùng ≥ 90% từ trong cùng một bài (hint ↔ 3 bước, tên ↔ ý tưởng, mục tiêu ↔ kế hoạch). |
 | `smoke-plan.ts` | Khung “kế hoạch theo thế cờ hiện tại” (`buildLivePlan`) sinh đủ loại việc. |
 | `smoke-info.ts` | Mọi khoá nội dung trong `src/lib/info.ts` đều có chủ đề hợp lệ (nút ⓘ). |
