@@ -252,5 +252,54 @@ check(await waitFor('#kid-math-gate'), 'vào Soi quân là cửa toán mở ngay
 check(await solveMathGate(evaluate), 'giải xong cửa toán ở Soi quân')
 check(!(await gateOpen()), 'cửa toán đóng sau khi giải ở Soi quân')
 
+console.log('\n▶ Ba mẹ tạm tắt / bật lại cửa toán trong Tùy chọn của bé')
+
+const mathTogglePressed = () =>
+  evaluate(`document.getElementById('kid-math-toggle')?.getAttribute('aria-pressed') ?? null`)
+const clickOptionsButton = () =>
+  evaluate(`(() => {
+    const button = document.querySelector('button[aria-label="Tùy chọn của bé"]')
+    if (!button) return false
+    button.click()
+    return true
+  })()`)
+const clickMathToggle = () =>
+  evaluate(`(() => {
+    const button = document.getElementById('kid-math-toggle')
+    if (!button) return false
+    button.click()
+    return true
+  })()`)
+const reload = async () => {
+  await evaluate(`location.reload()`)
+  await sleep(2600)
+}
+
+check(await clickOptionsButton(), 'mở bảng ⚙️ Tùy chọn của bé')
+await sleep(250)
+check((await mathTogglePressed()) === 'true', 'Tùy chọn có mục 🧮 hỏi toán, mặc định BẬT')
+
+check(await clickMathToggle(), 'bấm tắt cửa toán trong Tùy chọn')
+await sleep(250)
+check((await mathTogglePressed()) === 'false', 'mục 🧮 chuyển sang TẮT')
+await clickOptionsButton()
+await sleep(250)
+
+// Tắt rồi thì vào lại trang cũng không bị hỏi toán, và trạng thái được nhớ.
+await reload()
+check(!(await gateOpen()), 'tắt rồi thì vào lại trang không bị hỏi toán')
+await clickOptionsButton()
+await sleep(250)
+check((await mathTogglePressed()) === 'false', 'trạng thái TẮT được nhớ sau khi tải lại')
+
+// Bật lại: cửa toán mở lại như cũ.
+check(await clickMathToggle(), 'bấm bật lại cửa toán trong Tùy chọn')
+await sleep(250)
+check((await mathTogglePressed()) === 'true', 'mục 🧮 chuyển lại BẬT')
+await clickOptionsButton()
+await sleep(250)
+await reload()
+check(await waitFor('#kid-math-gate'), 'bật lại thì cửa toán mở lại khi vào trang')
+
 close()
 finish('BROWSER MATH')

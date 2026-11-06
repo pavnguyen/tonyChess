@@ -15,11 +15,17 @@ const STORAGE_KEY = 'hoc-vien-co-vua-nhi.v1'
 interface Persisted {
   notation: NotationStyle
   soundOn: boolean
+  /**
+   * Ba mẹ tạm tắt cửa toán (bé mệt, đang chơi ván dở…). Mặc định BẬT để giữ
+   * thói quen "giải toán rồi mới đi cờ".
+   */
+  mathGateOff: boolean
 }
 
 const DEFAULTS: Persisted = {
   notation: 'figurine',
   soundOn: true,
+  mathGateOff: false,
 }
 
 interface KidContextValue {
@@ -27,6 +33,9 @@ interface KidContextValue {
   setNotation: (notation: NotationStyle) => void
   soundOn: boolean
   toggleSound: () => void
+  /** Ba mẹ đã tạm tắt cửa toán chưa (bật/tắt trong ⚙️ Tùy chọn của bé). */
+  mathGateOff: boolean
+  toggleMathGate: () => void
 }
 
 const KidContext = createContext<KidContextValue | null>(null)
@@ -42,6 +51,7 @@ function load(): Persisted {
       // dữ liệu đã lưu cần quy về "hình cờ + quốc tế" cho khớp bảng tuỳ chọn.
       notation: parsed.notation === 'vietnamese' ? 'vietnamese' : 'figurine',
       soundOn: parsed.soundOn ?? true,
+      mathGateOff: parsed.mathGateOff ?? false,
     }
   } catch {
     return DEFAULTS
@@ -68,9 +78,20 @@ export function KidProgressProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, soundOn: !prev.soundOn }))
   }, [])
 
+  const toggleMathGate = useCallback(() => {
+    setState((prev) => ({ ...prev, mathGateOff: !prev.mathGateOff }))
+  }, [])
+
   const value = useMemo<KidContextValue>(
-    () => ({ notation: state.notation, soundOn: state.soundOn, setNotation, toggleSound }),
-    [state.notation, state.soundOn, setNotation, toggleSound],
+    () => ({
+      notation: state.notation,
+      soundOn: state.soundOn,
+      setNotation,
+      toggleSound,
+      mathGateOff: state.mathGateOff,
+      toggleMathGate,
+    }),
+    [state.notation, state.soundOn, state.mathGateOff, setNotation, toggleSound, toggleMathGate],
   )
 
   return <KidContext.Provider value={value}>{children}</KidContext.Provider>

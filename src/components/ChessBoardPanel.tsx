@@ -6,6 +6,7 @@ import { Chess } from 'chess.js'
 import { coordinateLabels } from '../lib/coordinates'
 import { speakMove, speakPiece, speakSquare } from '../lib/speech'
 import { MathGate } from './MathGate'
+import { useKidProgress } from '../store/progress'
 import { computeHeatmap, legalTargets } from '../lib/threats'
 import type { Side } from '../types'
 
@@ -74,6 +75,10 @@ export function ChessBoardPanel({
   boardId = 'kid-board',
   className = '',
 }: ChessBoardPanelProps) {
+  // Ba mẹ có thể tạm tắt cửa toán trong ⚙️ Tùy chọn của bé khi bé đang mệt hoặc
+  // đang chơi dở ván. Tắt thì bàn cờ không giữ nước đi để hỏi toán nữa.
+  const { mathGateOff } = useKidProgress()
+  const mathOn = mathGate && !mathGateOff
   // Đọc to nước đi vừa hiện ra (nếu ba mẹ đang bật âm thanh).
   useEffect(() => {
     if (announce) speakMove(announce)
@@ -125,14 +130,14 @@ export function ChessBoardPanel({
    * `mathEvery` là TỔNG số nước của một chặng (2 hoặc 3), nên cửa mở khi bé đã đi
    * được `mathEvery - 1` nước - nước tiếp theo (nước thứ 2 hoặc thứ 3) phải giải toán.
    */
-  const [mathOpen, setMathOpen] = useState(mathGateOnEnter)
+  const [mathOpen, setMathOpen] = useState(mathGateOnEnter && !mathGateOff)
   const [pendingMove, setPendingMove] = useState<{ from: string; to: string } | null>(null)
   const [movesSinceMath, setMovesSinceMath] = useState(0)
   const [mathEvery, setMathEvery] = useState(() => 2 + Math.floor(Math.random() * 2))
 
   const tryMove = (from: string, to: string): boolean => {
     if (!onDrop) return false
-    if (mathGate && movesSinceMath >= mathEvery - 1) {
+    if (mathOn && movesSinceMath >= mathEvery - 1) {
       setPendingMove({ from, to })
       setMathOpen(true)
       setSelected(null)
@@ -141,7 +146,7 @@ export function ChessBoardPanel({
     const moved = onDrop(from, to)
     setSelected(null)
     // Chỉ đếm nước THẬT SỰ được đi (nước sai luật không tính).
-    if (moved && mathGate) setMovesSinceMath((count) => count + 1)
+    if (moved && mathOn) setMovesSinceMath((count) => count + 1)
     return moved
   }
 
