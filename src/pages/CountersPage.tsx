@@ -12,8 +12,10 @@ import { MoveText } from '../components/MoveText'
 import { FoldPanel, KidButton, KidPicker, LessonLabel, Panel, Segmented } from '../components/ui'
 import { useArrowKeys } from '../hooks/useArrowKeys'
 import { useEyeCheck } from '../hooks/useEyeCheck'
+import { COUNTERS } from '../data/counters'
 import { OPENINGS } from '../data/openings'
 import { useCountersQuery } from '../data/queries'
+import { randomIndex } from '../lib/randomPick'
 import {
   ARROW_COLOR,
   BOARD_MARKS,
@@ -56,10 +58,24 @@ export function CountersPage() {
   const search = useSearch({ from: '/counters' })
   const navigate = useNavigate()
 
+  /**
+   * Bài mở sẵn khi vào tab: đi từ bài Khai cuộc sang (`?vs=…`) thì đúng bài đó,
+   * còn vào từ chỗ khác thì bốc ngẫu nhiên một bài - giống các tab Khai cuộc /
+   * Chiến thuật / Tàn cờ. Bốc một lần mỗi phiên nên chuyển tab qua lại vẫn giữ bài.
+   */
+  const [initialEntry] = useState<{ counter: CounterLesson; source: 'random' | 'linked' }>(() => {
+    const linked = search.vs ? COUNTERS.find((item) => item.id === search.vs) : undefined
+    if (linked) return { counter: linked, source: 'linked' }
+    return { counter: COUNTERS[randomIndex(COUNTERS.length, 'counter')], source: 'random' }
+  })
   /** Màu quân của ĐỐI THỦ; bé cầm màu ngược lại. */
-  const [viewSide, setViewSide] = useState<Side>('white')
-  /** Bài mặc định cùng thứ tự ưu tiên với tab Khai cuộc (Ván cờ Ý đứng đầu). */
-  const [lessonId, setLessonId] = useState('vs-italian')
+  const [viewSide, setViewSide] = useState<Side>(initialEntry.counter.opponentSide)
+  const [lessonId, setLessonId] = useState(initialEntry.counter.id)
+  /**
+   * Nguồn bài đang mở: bốc ngẫu nhiên hay mở từ tab Khai cuộc. Bé tự đổi bài
+   * trong combo thì ẩn gợi ý (null) - lúc đó bài không còn "từ đâu tới" nữa.
+   */
+  const [source, setSource] = useState<'random' | 'linked' | null>(initialEntry.source)
   const [ply, setPly] = useState(0)
   /**
    * Ô bé vừa bấm trong nội dung bài (ví dụ bấm “♗ Tượng c5”) → tô sáng đúng ô đó
@@ -100,7 +116,20 @@ export function CountersPage() {
     if (!target) return
     setViewSide(target.opponentSide)
     setLessonId(target.id)
+    setSource('linked')
   }, [search.vs, counters])
+
+  /**
+   * Đường dẫn mất `?vs=…` (bấm lại tab “Đối phó” khi đang mở bài từ Khai cuộc)
+   * thì bốc ngẫu nhiên một bài - coi như vào tab từ chỗ khác.
+   */
+  useEffect(() => {
+    if (search.vs) return
+    const random = COUNTERS[randomIndex(COUNTERS.length, 'counter')]
+    setViewSide(random.opponentSide)
+    setLessonId(random.id)
+    setSource('random')
+  }, [search.vs])
 
   /**
    * Thứ tự ưu tiên học = thứ tự trong `OPENINGS` (gặp nhiều + dễ triển khai quân
@@ -354,6 +383,7 @@ export function CountersPage() {
 
   const changeSide = (next: Side) => {
     setViewSide(next)
+    setSource(null)
     const first = (counters ?? []).find((item) => item.opponentSide === next)
     if (first) setLessonId(first.id)
     setPly(0)
@@ -361,6 +391,7 @@ export function CountersPage() {
 
   const selectLesson = (id: string) => {
     setLessonId(id)
+    setSource(null)
     setPly(0)
   }
 
@@ -693,6 +724,22 @@ export function CountersPage() {
               ]}
               className="min-w-0 flex-1"
             />
+            {source ? (
+              <span
+                title={
+                  source === 'random'
+                    ? 'Bài này được bốc ngẫu nhiên khi mở tab Đối phó'
+                    : 'Bài này mở từ tab Khai cuộc'
+                }
+                className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-extrabold ${
+                  source === 'random'
+                    ? 'border-brand-200 bg-brand-50 text-brand-600'
+                    : 'border-coral-200 bg-coral-50 text-coral-700'
+                }`}
+              >
+                {source === 'random' ? '🎲 Ngẫu nhiên' : '🧭 Từ Khai cuộc'}
+              </span>
+            ) : null}
             {lesson.openingId && (
               <button
                 type="button"
